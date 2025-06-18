@@ -6,34 +6,49 @@
 
 #include "BufferLayout.h"
 
+#include "../Core/Ref.h"
+
 namespace Lumina
 {
-    class VertexBuffer
+    class VertexBuffer : public Referencable 
     {
     public:
-        virtual ~VertexBuffer() = default;
+        static Ref<VertexBuffer> Create(uint32_t size); 
+        static Ref<VertexBuffer> Create(const void* data, uint32_t size); 
 
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
-        virtual void SetData(const void* data, uint32_t size) = 0;
+        ~VertexBuffer() = default;
 
-        virtual const BufferLayout& GetLayout() const = 0;
-        virtual void SetLayout(const BufferLayout& layout) = 0;
+        void Bind() const;
+        void Unbind() const;
+        void SetData(const void* data, uint32_t size);
 
-        static std::shared_ptr<VertexBuffer> Create(uint32_t size);
-        static std::shared_ptr<VertexBuffer> Create(const void* vertices, uint32_t size);
+        const BufferLayout& GetLayout() const { return m_Layout; };
+        void SetLayout(const BufferLayout& layout) { m_Layout = layout; };
+
+    private:
+        VertexBuffer(uint32_t size); 
+        VertexBuffer(const void* data, uint32_t size); 
+    private: 
+        uint32_t m_BufferID;
+        BufferLayout m_Layout;
     };
 
     class IndexBuffer
     {
     public:
+        static Ref<IndexBuffer> Create(uint32_t* data, uint32_t count); 
+
         virtual ~IndexBuffer() = default;
 
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
+        void Bind() const; 
+        void Unbind() const;
 
-        virtual uint32_t GetCount() const = 0;
+         uint32_t GetCount() const;
 
-        static std::shared_ptr<IndexBuffer> Create(uint32_t* indices, uint32_t count);
+    private:
+        IndexBuffer(uint32_t* data, uint32_t count); 
+    private: 
+        uint32_t m_BufferID; 
+        uint32_t m_Count; 
     };
 }

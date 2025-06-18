@@ -1,3 +1,5 @@
+#if 0 
+
 #include "Renderer.h"
 
 #include <glad/glad.h>
@@ -526,3 +528,4 @@ namespace Lumina
 		memset(&s_Data.Stats, 0, sizeof(Statistics));
 	}
 }
+#endif

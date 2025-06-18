@@ -1,3 +1,5 @@
+#if 0
+
 #pragma once
 #include "VertexArray.h"
 #include "Texture.h"
@@ -82,3 +84,4 @@ namespace Lumina
         static void ResetStats();
     };
 }
+#endif

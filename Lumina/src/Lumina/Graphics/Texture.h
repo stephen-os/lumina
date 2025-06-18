@@ -3,9 +3,11 @@
 #include <string>
 #include <memory>
 
+#include "../Core/Ref.h"
+
 namespace Lumina
 {
-    class Texture
+    class Texture : public Referencable
     {
     public:
         virtual ~Texture() = default;
@@ -22,7 +24,7 @@ namespace Lumina
         virtual uint32_t GetHeight() const = 0;
         virtual std::string GetPath() const = 0; 
 
-        static std::shared_ptr<Texture> Create(std::string& source);
-        static std::shared_ptr<Texture> Create(uint32_t width, uint32_t height);
+        static Ref<Texture> Create(std::string& source);
+        static Ref<Texture> Create(uint32_t width, uint32_t height);
     };
 }

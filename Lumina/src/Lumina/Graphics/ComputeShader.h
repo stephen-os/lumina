@@ -5,43 +5,56 @@
 #include <string>
 #include <glm/glm.hpp>
 
+#include "../Core/Ref.h"
+
 namespace Lumina 
 {
-    class ComputeShader
+    class ComputeShader : public Referencable
     {
     public:
+        static Ref<ComputeShader> Create(const std::string& source); 
+
         virtual ~ComputeShader() = default;
 
         // Bind and dispatch
-        virtual void Bind() const = 0;
-        virtual void Unbind() const = 0;
-        virtual void Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const = 0;
+        void Bind() const;
+        void Unbind() const;
+        void Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const;
 
         // Uniform setters
-        virtual void SetUniformInt(const std::string& name, int value) = 0;
-        virtual void SetUniformFloat(const std::string& name, float value) = 0;
+        void SetUniformInt(const std::string& name, int value);
+        void SetUniformFloat(const std::string& name, float value);
 
-        virtual void SetUniformVec2(const std::string& name, float a, float b) = 0;
-        virtual void SetUniformVec2(const std::string& name, const glm::vec2& value) = 0;
+        void SetUniformVec2(const std::string& name, float a, float b);
+        void SetUniformVec2(const std::string& name, const glm::vec2& value);
 
-        virtual void SetUniformVec3(const std::string& name, float a, float b, float c) = 0;
-        virtual void SetUniformVec3(const std::string& name, const glm::vec3& value) = 0;
+        void SetUniformVec3(const std::string& name, float a, float b, float c);
+        void SetUniformVec3(const std::string& name, const glm::vec3& value);
 
-        virtual void SetUniformMat4(const std::string& name, float a, float b, float c, float d) = 0;
-        virtual void SetUniformMat4(const std::string& name, const glm::mat4& value) = 0;
+        void SetUniformMat4(const std::string& name, float a, float b, float c, float d);
+        void SetUniformMat4(const std::string& name, const glm::mat4& value);
 
-		virtual void SetStorageBuffer(const std::string& name, const void* data, size_t size) = 0;
+		void SetStorageBuffer(const std::string& name, const void* data, size_t size);
 
         // Bind texture to image unit
-        virtual void BindImageTexture(uint32_t unit, uint32_t textureID, bool read, bool write, int mipLevel = 0) = 0;
+        void BindImageTexture(uint32_t unit, uint32_t textureID, bool read, bool write, int mipLevel = 0);
 
         // Optional: memory barrier to synchronize
-        virtual void InsertMemoryBarrier() const = 0;
+        void InsertMemoryBarrier() const;
 
         // Debugging
-        virtual const std::string& GetName() const = 0;
+        const std::string& GetName() const;
 
-        // Create from GLSL compute shader source string or path
-        static std::shared_ptr<ComputeShader> Create(const std::string& source);
+    private: 
+        ComputeShader(const std::string& source);
+
+        uint32_t CompileShader(const std::string& source);
+        void AssertUniform(const std::string& name);
+    private: 
+        uint32_t m_ShaderProgramID = 0;
+        uint32_t m_ComputeShaderID = 0;
+        std::unordered_map<std::string, int> m_Uniforms;
+        std::unordered_map<std::string, int> m_SSBOs;
+        std::string m_Name;
     };
 }

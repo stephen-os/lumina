@@ -1,35 +1,84 @@
 #include "Buffer.h"
 
-#include "OpenGL/OpenGLBuffer.h"
+#include <glad/glad.h>
 
-#include "../Core/API.h"
+#include "RendererDebug.h"
+#include "../Core/Assert.h"
 
 namespace Lumina
 {
-    std::shared_ptr<VertexBuffer> VertexBuffer::Create(uint32_t size)
+    // Vertex Buffer
+
+    VertexBuffer::VertexBuffer(uint32_t size)
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: return std::make_shared<OpenGLVertexBuffer>(size);
-            default: return nullptr; 
-        }
+        GLCALL(glCreateBuffers(1, &m_BufferID));
+        LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
+
+        GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW));
     }
 
-    std::shared_ptr<VertexBuffer> VertexBuffer::Create(const void* vertices, uint32_t size)
+    VertexBuffer::VertexBuffer(const void* vertices, uint32_t size)
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: return std::make_shared<OpenGLVertexBuffer>(vertices, size);
-        default: return nullptr;
-        }
+        GLCALL(glCreateBuffers(1, &m_BufferID));
+        LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
+
+        GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW));
     }
 
-    std::shared_ptr<IndexBuffer> IndexBuffer::Create(uint32_t* indices, uint32_t count)
+    VertexBuffer::~VertexBuffer()
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: return std::make_shared<OpenGLIndexBuffer>(indices, count);
-        default: return nullptr;
-        }
+        GLCALL(glDeleteBuffers(1, &m_BufferID));
+    }
+
+    void VertexBuffer::Bind() const
+    {
+        LUMINA_ASSERT(m_BufferID != 0, "Trying to bind an invalid vertex buffer!");
+        GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
+    }
+
+    void VertexBuffer::Unbind() const
+    {
+        GLCALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
+    }
+
+    void VertexBuffer::SetData(const void* data, uint32_t size)
+    {
+        LUMINA_ASSERT(data != nullptr, "VertexBuffer::SetData called with null data!");
+        LUMINA_ASSERT(size > 0, "VertexBuffer::SetData called with zero size!");
+
+        GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+    }
+
+    // Index Buffer
+
+    IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count) : m_Count(count)
+    {
+        LUMINA_ASSERT(indices != nullptr, "Null index data passed to IndexBuffer!");
+        LUMINA_ASSERT(count > 0, "Index buffer count is zero!");
+
+        GLCALL(glCreateBuffers(1, &m_BufferID));
+        LUMINA_ASSERT(m_BufferID != 0, "Failed to create index buffer!");
+
+        GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW));
+    }
+
+    IndexBuffer::~IndexBuffer()
+    {
+        GLCALL(glDeleteBuffers(1, &m_BufferID));
+    }
+
+    void IndexBuffer::Bind() const
+    {
+        LUMINA_ASSERT(m_BufferID != 0, "Trying to bind an invalid index buffer!");
+        GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
+    }
+
+    void IndexBuffer::Unbind() const
+    {
+        GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
 }

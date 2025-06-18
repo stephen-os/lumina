@@ -4,6 +4,7 @@
 
 namespace Lumina
 {
+#if 0
 	std::shared_ptr<TextureAtlas> TextureAtlas::Create(std::string& source, int width, int height) 
     { 
         return std::make_shared<TextureAtlas>(TextureAtlas(source, width, height));
@@ -14,6 +15,7 @@ namespace Lumina
         return std::make_shared<TextureAtlas>(TextureAtlas(width, height));
     }
 
+#endif 
     TextureAtlas::TextureAtlas(int width, int height)
     {
         Resize(width, height); 
@@ -52,7 +54,9 @@ namespace Lumina
 
     void TextureAtlas::SetTexture(std::string& source)
     {
+#if 0
         m_Texture = Texture::Create(source);
+#endif
         m_HasTexture = true; 
     }
 

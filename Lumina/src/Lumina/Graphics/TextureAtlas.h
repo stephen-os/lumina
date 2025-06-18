@@ -13,8 +13,10 @@ namespace Lumina
 	class TextureAtlas
 	{
 	public:
+#if 0
 		static std::shared_ptr<TextureAtlas> Create(std::string& source, int width, int height);
 		static std::shared_ptr<TextureAtlas> Create(int width, int height);
+#endif
 
 		~TextureAtlas() = default;
 
