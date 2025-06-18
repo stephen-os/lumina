@@ -1,27 +1,37 @@
 #pragma once
 
-#include <memory>
+#include <cstdint>
+
+#include "../Core/Ref.h"
 
 namespace Lumina
 {
-	class FrameBuffer
-	{
-	public:
-		virtual ~FrameBuffer() = default;
+    class FrameBuffer : public Referencable
+    {
+    public:
+        static Ref<FrameBuffer> Create();
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+        FrameBuffer();
+        ~FrameBuffer();
 
-		virtual void Resize(uint32_t width, uint32_t height) = 0;
+        void Bind() const;
+        void Unbind() const;
+        void Resize(uint32_t width, uint32_t height);
 
-		virtual uint32_t GetID() const = 0;
-		virtual uint32_t GetColorAttachment() const = 0;
+        uint32_t GetID() const { return m_BufferID; }
+        uint32_t GetColorAttachment() const { return m_ColorAttachment; }
 
-		virtual uint32_t GetWidth() const = 0;
-		virtual uint32_t GetHeight() const = 0;
+        uint32_t GetWidth() const { return m_Width; }
+        uint32_t GetHeight() const { return m_Height; }
 
-		virtual void ReadPixels(int x, int y, uint32_t width, uint32_t height, void* data) const = 0;
+        void ReadPixels(int x, int y, uint32_t width, uint32_t height, void* data) const;
 
-		static std::shared_ptr<FrameBuffer> Create();
-	};
+    private:
+        uint32_t m_BufferID = 0;
+        uint32_t m_ColorAttachment = 0;
+        uint32_t m_DepthAttachment = 0;
+
+        uint32_t m_Width = 900;
+        uint32_t m_Height = 900;
+    };
 }

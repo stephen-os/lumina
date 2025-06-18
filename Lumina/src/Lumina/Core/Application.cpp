@@ -10,11 +10,12 @@
 #include <stdlib.h>
 
 #include <backends/imgui_impl_glfw.h>
-
-#include "ContextFactory.h"
+#include <backends/imgui_impl_opengl3.h>
 
 #include "Log.h"
 #include "Assert.h"
+
+#include <glad/glad.h>
 
 namespace Lumina
 {
@@ -31,8 +32,6 @@ namespace Lumina
     {
 		s_Instance = this;
         m_Specifications = applicationSpecification;
-
-        RendererAPI::SetAPI(applicationSpecification.Api);
 
         Log::Init();
         LUMINA_LOG_INFO("Starting Lumina Application: {}", m_Specifications.Name);
@@ -53,9 +52,35 @@ namespace Lumina
             return;
         }
 
-        m_Context = ContextFactory::Create(RendererAPI::GetAPI());
-        LUMINA_ASSERT(m_Context, "Failed to create rendering context.");
-        m_Context->Init(m_Window);
+        glfwMakeContextCurrent(m_Window);
+        glfwSwapInterval(1);
+
+        int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
+        LUMINA_ASSERT(status, "[OpenGL Context] Failed to initialize GLAD.");
+
+        const char* version = (const char*)glGetString(GL_VERSION);
+        LUMINA_ASSERT(version, "[OpenGL Context] Failed to retrieve OpenGL version.");
+        LUMINA_LOG_INFO("OpenGL Version: {}", version);
+
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
+
+        ImGuiIO& io = ImGui::GetIO(); (void)io;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+
+        ImGuiStyle& style = ImGui::GetStyle();
+        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        {
+            style.WindowRounding = 0.0f;
+            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+        }
+
+        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        const char* glsl_version = "#version 130";
+        ImGui_ImplOpenGL3_Init(glsl_version);
 
         // Fullscreen with taskbar
         if (m_Specifications.Dock)
@@ -93,7 +118,7 @@ namespace Lumina
 
         m_LayerStack.clear(); 
         
-        m_Context->Shutdown(); 
+        ImGui_ImplOpenGL3_Shutdown();
 
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -115,7 +140,7 @@ namespace Lumina
 
             glfwPollEvents();
 
-            m_Context->PreRender(); 
+            ImGui_ImplOpenGL3_NewFrame();
 
             // ImGui new frame
             ImGui_ImplGlfw_NewFrame();
@@ -158,8 +183,10 @@ namespace Lumina
             const bool main_is_minimized = (main_draw_data->DisplaySize.x <= 0.0f || main_draw_data->DisplaySize.y <= 0.0f);
 
             if (!main_is_minimized)
-                m_Context->Render();
-
+            {
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+            }
 
             // Handle ImGui viewport if enabled
             ImGuiIO& io = ImGui::GetIO();
@@ -172,7 +199,7 @@ namespace Lumina
             }
 
             if (!main_is_minimized)
-                m_Context->PostRender();
+                glfwSwapBuffers(m_Window);
         }
     }
 

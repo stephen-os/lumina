@@ -1,76 +1,49 @@
 #include "RenderCommands.h"
 
-#include "Opengl/OpenGLRenderCommands.h"
+#include <glad/glad.h>
+#include "RendererDebug.h"
 
-#include "../Core/API.h"
+#include "../Core/Assert.h"
 
 namespace Lumina
 {
-    void RenderCommands::SetViewport(int x, int y, int width, int height) 
+    void RenderCommands::SetViewport(int x, int y, int width, int height)
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::SetViewport(x, y, width, height); break; 
-        default: break; 
-        }
-        
+        LUMINA_ASSERT(width > 0 && height > 0, "Viewport dimensions must be greater than zero!");
+
+        GLCALL(glViewport(x, y, width, height));
     }
 
-    void RenderCommands::Clear() 
+    void RenderCommands::Clear()
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::Clear(); break;
-        default: break;
-        }
+        GLCALL(glClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+        GLCALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT));
     }
 
-    void RenderCommands::EnableDepthTest() 
+    void RenderCommands::EnableDepthTest()
     {
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::EnableDepthTest(); break;
-        default: break;
-        }
+        GLCALL(glEnable(GL_DEPTH_TEST));
     }
 
-    void RenderCommands::DrawLines(const std::shared_ptr<VertexArray>& vao, uint32_t count) 
+    void RenderCommands::DrawLines(const Ref<VertexArray>& vao, uint32_t count)
+    {
+        GLCALL(glDrawArrays(GL_LINES, 0, count));
+    }
+
+    void RenderCommands::DrawLineStrips(const Ref<VertexArray>& vao, uint32_t count)
     {
         vao->Bind();
-
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::DrawLines(count); break;
-        default: break;
-        }
-
-        vao->Unbind(); 
-    }
-
-    void RenderCommands::DrawLineStrips(const std::shared_ptr<VertexArray>& vao, uint32_t count)
-    {
-        vao->Bind();
-
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::DrawLineStrips(count); break;
-        default: break;
-        }
-
+        GLCALL(glDrawArrays(GL_LINE_STRIP, 0, count));
         vao->Unbind();
     }
 
-    void RenderCommands::DrawTriangles(const std::shared_ptr<VertexArray>& vao)
+    void RenderCommands::DrawTriangles(const Ref<VertexArray>& vao)
     {
         vao->Bind();
-        auto ib = vao->GetIndexBuffer();
+        const auto ib = vao->GetIndexBuffer();
 
-        switch (RendererAPI::GetAPI())
-        {
-        case API::OPENGL: OpenGLRenderCommands::DrawTriangles(ib->GetCount()); break;
-        default: break;
-        }
+        GLCALL(glDrawElements(GL_TRIANGLES, ib->GetCount(), GL_UNSIGNED_INT, nullptr));
 
-        vao->Unbind(); 
+        vao->Unbind();
     }
 }

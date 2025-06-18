@@ -10,9 +10,6 @@
 #include <vector>
 #include <memory>
 
-#include "Context.h"
-#include "API.h"
-
 namespace Lumina 
 {
 
@@ -24,7 +21,6 @@ namespace Lumina
 		bool Fullscreen = false;
 		bool Dock = false;
 		bool Theme = true; 
-		API Api = API::OPENGL;
 	};
 
 	class Application
@@ -55,8 +51,6 @@ namespace Lumina
 		GLFWwindow* m_Window = nullptr;
 
 		bool m_Running = true;
-
-		std::unique_ptr<Context> m_Context;
 
 		std::vector<std::shared_ptr<Layer>> m_LayerStack;
 		ApplicationSpecification m_Specifications;

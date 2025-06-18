@@ -1,25 +1,36 @@
 #pragma once
 
+#include <vector>
+#include <memory>
+
 #include "Buffer.h"
 
-#include <memory>
+#include "../Core/Ref.h"
 
 namespace Lumina
 {
-	class VertexArray
-	{
-	public: 
-		virtual ~VertexArray() = default;
+    class VertexArray : public Referencable
+    {
+    public:
+        static Ref<VertexArray> Create();
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+        VertexArray();
+        ~VertexArray();
 
-		virtual void SetVertexBuffer(std::shared_ptr<VertexBuffer> vertexBuffer) = 0;
-		virtual void SetIndexBuffer(std::shared_ptr<IndexBuffer> indexBuffer) = 0;
+        void Bind() const;
+        void Unbind() const;
 
-		virtual std::shared_ptr<VertexBuffer> GetVertexBuffer() = 0;
-		virtual std::shared_ptr<IndexBuffer> GetIndexBuffer() = 0;
+        void SetVertexBuffer(Ref<VertexBuffer> vertexBuffer);
+        void SetIndexBuffer(Ref<IndexBuffer> indexBuffer);
 
-		static std::shared_ptr<VertexArray> Create(); 
-	};
+        const Ref<VertexBuffer> GetVertexBuffer() const { return m_VertexBuffer; }
+        const Ref<IndexBuffer> GetIndexBuffer() const { return m_IndexBuffer; }
+
+    private:
+        uint32_t m_BufferID = 0;
+        uint32_t m_VertexBufferIndex = 0;
+
+        Ref<IndexBuffer> m_IndexBuffer = nullptr;
+        Ref<VertexBuffer> m_VertexBuffer = nullptr;
+    };
 }

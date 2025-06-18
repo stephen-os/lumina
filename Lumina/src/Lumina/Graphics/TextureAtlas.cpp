@@ -4,18 +4,16 @@
 
 namespace Lumina
 {
-#if 0
-	std::shared_ptr<TextureAtlas> TextureAtlas::Create(std::string& source, int width, int height) 
-    { 
-        return std::make_shared<TextureAtlas>(TextureAtlas(source, width, height));
-    }
+    Ref<TextureAtlas> Create(std::string& source, int width, int height) 
+	{
+		return Ref<TextureAtlas>::Create(source, width, height); 
+	}
 
-    std::shared_ptr<TextureAtlas> TextureAtlas::Create(int width, int height) 
-    { 
-        return std::make_shared<TextureAtlas>(TextureAtlas(width, height));
-    }
+    Ref<TextureAtlas> Create(int width, int height)
+	{
+		return Ref<TextureAtlas>::Create(width, height); 
+	}
 
-#endif 
     TextureAtlas::TextureAtlas(int width, int height)
     {
         Resize(width, height); 
@@ -62,7 +60,7 @@ namespace Lumina
 
     void TextureAtlas::RemoveTexture()
     {
-        m_Texture.reset();
+        m_Texture.Reset();
         m_HasTexture = false; 
     }
 

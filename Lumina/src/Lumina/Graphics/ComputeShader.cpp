@@ -5,12 +5,18 @@
 #include "../Utils/FileReader.h"
 
 #include <glad/glad.h>
+
 #include <glm/gtc/type_ptr.hpp>
 
 #include "RendererDebug.h"
 
 namespace Lumina
 {
+    Ref<ComputeShader> Create(const std::string& source) 
+    { 
+        return Ref<ComputeShader>::Create(source); 
+    }
+
     ComputeShader::ComputeShader(const std::string& source)
     {
         m_ComputeShaderID = CompileShader(source);

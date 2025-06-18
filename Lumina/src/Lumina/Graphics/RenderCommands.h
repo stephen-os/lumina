@@ -4,6 +4,8 @@
 
 #include "VertexArray.h"
 
+#include "../Core/Ref.h"
+
 namespace Lumina
 {
     class RenderCommands 
@@ -13,8 +15,8 @@ namespace Lumina
         static void Clear();
         static void EnableDepthTest();
 
-        static void DrawLines(const std::shared_ptr<VertexArray>& vao, uint32_t count);
-        static void DrawLineStrips(const std::shared_ptr<VertexArray>& vao, uint32_t count);
-        static void DrawTriangles(const std::shared_ptr<VertexArray>& vao);
+        static void DrawLines(const Ref<VertexArray>& vao, uint32_t count);
+        static void DrawLineStrips(const Ref<VertexArray>& vao, uint32_t count);
+        static void DrawTriangles(const Ref<VertexArray>& vao);
     };
 }

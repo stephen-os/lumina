@@ -9,8 +9,12 @@
 #include "Lumina/Core/Ref.h"
 #include "Lumina/Core/Log.h"
 #include "Lumina/Utils/Timer.h"
-#include "Lumina/Graphics/Renderer.h"
-#include "Lumina/Graphics/Texture.h"
+
+#include "Lumina/Graphics/Buffer.h"
+#include "Lumina/Graphics/VertexArray.h"
+#include "Lumina/Graphics/ShaderProgram.h"
+#include "Lumina/Graphics/FrameBuffer.h"
+#include "Lumina/Graphics/RenderCommands.h"
 
 #include "Lumina/Graphics/Cameras/OrthographicCamera.h"
 #include "Lumina/Graphics/Cameras/PerspectiveCamera.h"
@@ -30,9 +34,38 @@ class Example : public Lumina::Layer
 public:
     virtual void OnAttach() override
     {
-        uint32_t whiteTextureData = 0xffffffff;
-        m_Texture = Lumina::Texture::Create(1, 1);
-        m_Texture->SetData(&whiteTextureData, sizeof(uint32_t)); 
+        float vertices[] = {
+            -0.5f, -0.5f,
+             0.5f, -0.5f,
+             0.5f,  0.5f,
+            -0.5f,  0.5f
+        };
+
+        uint32_t indices[] = {
+            0, 1, 2,
+            2, 3, 0
+        };
+
+        auto vbo = Lumina::VertexBuffer::Create(vertices, sizeof(vertices));
+		auto ibo = Lumina::IndexBuffer::Create(indices, sizeof(indices));
+
+        auto layout = Lumina::BufferLayout({
+			{ Lumina::BufferDataType::Float2, "a_Position" }
+		});
+
+		vbo->SetLayout(layout);
+
+		m_VertexArray = Lumina::VertexArray::Create();
+		m_VertexArray->SetVertexBuffer(vbo);
+		m_VertexArray->SetIndexBuffer(ibo);
+
+        m_FrameBuffer = Lumina::FrameBuffer::Create();
+        m_FrameBuffer->Resize(800, 800);
+
+        std::string vertexShader = Lumina::ReadFile("res/shaders/Simple.vert");
+		std::string fragmentShader = Lumina::ReadFile("res/shaders/Simple.frag");
+
+        m_Shader = Lumina::ShaderProgram::Create(vertexShader, fragmentShader);
     }
 
     virtual void OnDetach() override {}
@@ -44,18 +77,28 @@ public:
 
     virtual void OnUIRender() override
     {
-
         ImGui::Begin("Test");
-        ImVec2 size = ImGui::GetContentRegionAvail(); 
+        ImVec2 size = ImGui::GetContentRegionAvail();
+        
+        m_FrameBuffer->Bind();
+        // m_FrameBuffer->Resize(size.x, size.y);
 
+        m_Shader->Bind();
 
-        ImGui::Image((void*)m_Texture->GetID(), size);
+        Lumina::RenderCommands::DrawTriangles(m_VertexArray); 
+        
+        m_Shader->Unbind();
+
+        ImGui::Image((void*)m_FrameBuffer->GetColorAttachment(), size);
+		m_FrameBuffer->Unbind();
+
         ImGui::End(); 
-
     }
 private:
-    Lumina::Ref<Lumina::Texture> m_Texture = nullptr; 
-
+    Lumina::Ref<Lumina::VertexArray> m_VertexArray;
+    Lumina::Ref<Lumina::ShaderProgram> m_Shader;
+	Lumina::Ref<Lumina::FrameBuffer> m_FrameBuffer;
+    
     Lumina::Timer m_FrameTimer;
     float m_FPS = 0.0f;
 };

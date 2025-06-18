@@ -48,6 +48,7 @@ namespace Lumina
             return Ref<T>(new T(std::forward<Args>(args)...));
         }
 
+        Ref() noexcept : m_Instance(nullptr) {}
         Ref(std::nullptr_t) : m_Instance(nullptr) {}
 
         explicit Ref(T* instance) : m_Instance(instance)
@@ -78,6 +79,13 @@ namespace Lumina
         ~Ref()
         {
             Release();
+        }
+
+        void Reset(T* instance = nullptr)
+        {
+            Release();
+            m_Instance = instance;
+            AddRef();
         }
 
         Ref<T>& operator=(const Ref<T>& other)

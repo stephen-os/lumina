@@ -1,33 +1,48 @@
 #pragma once
 
-#include <memory>
 #include <string>
+#include <iostream>
+#include <fstream>
 #include <unordered_map>
 
 #include <glm/glm.hpp>
 
+#include "../Core/Ref.h"
+
 namespace Lumina
 {
-	class ShaderProgram
-	{
-	public:
-		virtual ~ShaderProgram() = default;
+    class ShaderProgram : public Referencable
+    {
+    public:
+        static Ref<ShaderProgram> Create(const std::string& vertexSource, const std::string& fragmentSource);
 
-		virtual void Bind() const = 0;
-		virtual void Unbind() const = 0;
+        ShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
+        ~ShaderProgram();
 
-		virtual void SetUniformInt(const std::string& name, int value) = 0;
-		virtual void SetUniformFloat(const std::string& name, float value) = 0;
+        void Bind() const ;
+        void Unbind() const ;
 
-		virtual void SetUniformVec2(const std::string& name, float a, float b) = 0;
-		virtual void SetUniformVec2(const std::string& name, const glm::vec2& value) = 0;
+        int GetAttributeLocation(const std::string& name);
 
-		virtual void SetUniformVec3(const std::string& name, float a, float b, float c) = 0;
-		virtual void SetUniformVec3(const std::string& name, const glm::vec3& value) = 0;
+        void SetUniformInt(const std::string& name, int value);
+        void SetUniformFloat(const std::string& name, float value);
 
-		virtual void SetUniformMat4(const std::string& name, float a, float b, float c, float d) = 0;
-		virtual void SetUniformMat4(const std::string& name, const glm::mat4& value) = 0;
+        void SetUniformVec2(const std::string& name, float a, float b);
+        void SetUniformVec2(const std::string& name, const glm::vec2& value);
 
-		static std::shared_ptr<ShaderProgram> Create(const std::string& vertexSource, const std::string& fragmentSource);
-	};
+        void SetUniformVec3(const std::string& name, float a, float b, float c);
+        void SetUniformVec3(const std::string& name, const glm::vec3& value);
+
+        void SetUniformMat4(const std::string& name, float a, float b, float c, float d);
+        void SetUniformMat4(const std::string& name, const glm::mat4& value);
+    
+        unsigned int CompileSource(unsigned int type, const std::string& source);
+        void AssertUniform(const std::string& name);
+    private:
+        unsigned int m_VertexShaderID = 0;
+        unsigned int m_FragmentShaderID = 0;
+        unsigned int m_ShaderProgramID = 0;
+
+        std::unordered_map<std::string, int> m_Uniforms;
+    };
 }

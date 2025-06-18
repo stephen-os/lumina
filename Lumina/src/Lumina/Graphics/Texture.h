@@ -1,30 +1,39 @@
 #pragma once
 
+#include <glad/glad.h>
+
 #include <string>
-#include <memory>
 
 #include "../Core/Ref.h"
 
 namespace Lumina
 {
-    class Texture : public Referencable
-    {
-    public:
-        virtual ~Texture() = default;
+	class Texture : public Referencable
+	{
+	public:
+		static Ref<Texture> Create(std::string& source);
+		static Ref<Texture> Create(uint32_t width, uint32_t height);
 
-        virtual void Bind(uint32_t slot = 0) const = 0;
-        virtual void Unbind() const = 0;
+		Texture(std::string& source);
+		Texture(uint32_t width, uint32_t height);
+		~Texture();
 
-        virtual bool SetResolution(int width, int height) = 0;
+		void Bind(uint32_t slot = 0) const ;
+		void Unbind() const ;
 
-        virtual void SetData(void* data, uint32_t size) = 0;
+		bool SetResolution(int width, int height) ;
 
-        virtual uint32_t GetID() const = 0;
-        virtual uint32_t GetWidth() const = 0;
-        virtual uint32_t GetHeight() const = 0;
-        virtual std::string GetPath() const = 0; 
+		void SetData(void* data, uint32_t size);
 
-        static Ref<Texture> Create(std::string& source);
-        static Ref<Texture> Create(uint32_t width, uint32_t height);
-    };
+		uint32_t GetID() const { return m_BufferID; }
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
+		std::string GetPath() const { return m_Path; }
+
+	private:
+		std::string m_Path;
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+		uint32_t m_BufferID = 0;
+	};
 }

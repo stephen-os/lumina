@@ -14,7 +14,9 @@ namespace Lumina
     public:
         static Ref<ComputeShader> Create(const std::string& source); 
 
-        virtual ~ComputeShader() = default;
+
+        ComputeShader(const std::string& source);
+        ~ComputeShader();
 
         // Bind and dispatch
         void Bind() const;
@@ -43,10 +45,7 @@ namespace Lumina
         void InsertMemoryBarrier() const;
 
         // Debugging
-        const std::string& GetName() const;
-
-    private: 
-        ComputeShader(const std::string& source);
+        const std::string& GetName() const { return m_Name; }
 
         uint32_t CompileShader(const std::string& source);
         void AssertUniform(const std::string& name);
