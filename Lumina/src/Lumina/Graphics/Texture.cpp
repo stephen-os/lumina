@@ -1,6 +1,8 @@
 #include "Texture.h"
 #include "RendererDebug.h"
 
+#include <glad/glad.h>
+
 #include <stb_image.h>
 #include <iostream>
 

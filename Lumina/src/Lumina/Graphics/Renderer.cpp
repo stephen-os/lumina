@@ -1,10 +1,4 @@
-#if 0 
-
 #include "Renderer.h"
-
-#include <glad/glad.h>
-
-#include <spdlog/spdlog.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -57,17 +51,17 @@ namespace Lumina
     struct RendererData
     {
         // Core renderer resources
-        std::shared_ptr<FrameBuffer> RendererFrameBuffer;
+        Ref<FrameBuffer> RendererFrameBuffer;
 
         // Quad
-        std::shared_ptr<VertexArray> QuadVertexArray;
-        std::shared_ptr<VertexBuffer> QuadVertexBuffer;
-        std::shared_ptr<IndexBuffer> QuadIndexBuffer;
+        Ref<VertexArray> QuadVertexArray;
+        Ref<VertexBuffer> QuadVertexBuffer;
+        Ref<IndexBuffer> QuadIndexBuffer;
 
         // Cube
-		std::shared_ptr<VertexArray> CubeVertexArray;
-		std::shared_ptr<VertexBuffer> CubeVertexBuffer;
-		std::shared_ptr<IndexBuffer> CubeIndexBuffer;
+		Ref<VertexArray> CubeVertexArray;
+		Ref<VertexBuffer> CubeVertexBuffer;
+		Ref<IndexBuffer> CubeIndexBuffer;
 
         // Batch rendering data
         uint32_t QuadIndexCount = 0;
@@ -79,11 +73,11 @@ namespace Lumina
         CubeVertex* CubeVertexBufferPtr = nullptr;
 
         // Shaders
-		std::shared_ptr<ShaderProgram> QuadShader = nullptr;
-		std::shared_ptr<ShaderProgram> CubeShader = nullptr;
+		Ref<ShaderProgram> QuadShader = nullptr;
+		Ref<ShaderProgram> CubeShader = nullptr;
 
         // Texture management
-        std::array<std::shared_ptr<Texture>, MaxTextureSlots> TextureSlots;
+        std::array<Ref<Texture>, MaxTextureSlots> TextureSlots;
         uint32_t TextureSlotIndex = 1; // 0 is white texture
 
         // Quad rendering data
@@ -198,7 +192,7 @@ namespace Lumina
 
         for (uint32_t i = 0; i < MaxCubes; ++i)
         {
-            uint32_t offset = i * 24; // 24 vertices if using non-indexed cube (std::shared_ptr vertices = 8)
+            uint32_t offset = i * 24; // 24 vertices if using non-indexed cube (Ref vertices = 8)
 
             std::array<uint32_t, 36> faceIndices = {
                 0, 1, 2, 2, 3, 0, // Front
@@ -317,8 +311,9 @@ namespace Lumina
 
         // Set viewport
         RenderCommands::SetViewport(0, 0, s_Data.Width, s_Data.Height);
+        s_Data.RendererFrameBuffer->Resize(s_Data.Width, s_Data.Height); 
 
-        glEnable(GL_DEPTH_TEST);
+        RenderCommands::EnableDepthTest(); 
 
         // Bind all used textures
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
@@ -379,7 +374,7 @@ namespace Lumina
         return s_Data.RendererFrameBuffer->GetColorAttachment();
     }
 
-	float Renderer::ComputeTextureIndex(const std::shared_ptr<Texture>& texture)
+	float Renderer::ComputeTextureIndex(const Ref<Texture>& texture)
 	{
 		if (texture == nullptr)
 			return 0.0f;
@@ -528,4 +523,3 @@ namespace Lumina
 		memset(&s_Data.Stats, 0, sizeof(Statistics));
 	}
 }
-#endif

@@ -4,12 +4,12 @@
 
 namespace Lumina
 {
-    Ref<TextureAtlas> Create(std::string& source, int width, int height) 
+    Ref<TextureAtlas> TextureAtlas::Create(std::string& source, int width, int height)
 	{
 		return Ref<TextureAtlas>::Create(source, width, height); 
 	}
 
-    Ref<TextureAtlas> Create(int width, int height)
+    Ref<TextureAtlas> TextureAtlas::Create(int width, int height)
 	{
 		return Ref<TextureAtlas>::Create(width, height); 
 	}
@@ -52,9 +52,8 @@ namespace Lumina
 
     void TextureAtlas::SetTexture(std::string& source)
     {
-#if 0
         m_Texture = Texture::Create(source);
-#endif
+
         m_HasTexture = true; 
     }
 

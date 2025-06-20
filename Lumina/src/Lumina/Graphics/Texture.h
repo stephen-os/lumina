@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glad/glad.h>
-
 #include <string>
 
 #include "../Core/Ref.h"
