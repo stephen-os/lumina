@@ -129,9 +129,6 @@ namespace Lumina
 
     void Application::Run()
     {
-        // Only for Vulkan 
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
-
         // Main loop
         while (!glfwWindowShouldClose(m_Window) && m_Running)
         {
