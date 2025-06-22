@@ -248,7 +248,7 @@ namespace Lumina
 
     void Renderer::Begin(Camera& camera)
     {
-        s_Data.ViewProjectionMatrix = camera.GetViewMatrix() * camera.GetProjectionMatrix();
+        s_Data.ViewProjectionMatrix = camera.GetProjectionMatrix() * camera.GetViewMatrix();
         StartBatch(); 
     }
 
