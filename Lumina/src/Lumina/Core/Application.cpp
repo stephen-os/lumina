@@ -135,6 +135,9 @@ namespace Lumina
         // Main loop
         while (!glfwWindowShouldClose(m_Window) && m_Running)
         {
+            m_TimeStep = m_FrameTimer.Elapsed();
+            m_FrameTimer.Reset();
+
             for (auto& layer : m_LayerStack)
                 layer->OnUpdate(m_TimeStep);
 

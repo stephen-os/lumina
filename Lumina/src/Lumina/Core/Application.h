@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 
 #include "Layer.h"
+#include "../Utils/Timer.h"
 
 #include <string>
 #include <vector>
@@ -55,7 +56,8 @@ namespace Lumina
 		std::vector<std::shared_ptr<Layer>> m_LayerStack;
 		ApplicationSpecification m_Specifications;
 
-		float m_TimeStep = 0.0f; 
+		float m_TimeStep = 0.0f;
+		Timer m_FrameTimer;
 	};
 
 	// Implemented by CLIENT
