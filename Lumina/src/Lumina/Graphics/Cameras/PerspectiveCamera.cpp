@@ -2,21 +2,43 @@
 
 namespace Lumina
 {
-    PerspectiveCamera::PerspectiveCamera()
-        : Camera()
+    PerspectiveCamera::PerspectiveCamera(float fov, float aspectRatio, float nearPlane, float farPlane)
+        : m_FOV(fov), m_AspectRatio(aspectRatio), m_NearPlane(nearPlane), m_FarPlane(farPlane)
     {
-        // Default perspective projection
-        SetProjectionMatrix(45.0f, 4.0f / 3.0f, 0.1f, 100.0f);
+        UpdateProjectionMatrix();
     }
 
-    PerspectiveCamera::PerspectiveCamera(float fov, float aspect, float near, float far)
-        : Camera()
+    void PerspectiveCamera::SetFOV(float fov)
     {
-        SetProjectionMatrix(fov, aspect, near, far);
+        m_FOV = fov;
+        UpdateProjectionMatrix();
     }
 
-    void PerspectiveCamera::SetProjectionMatrix(float fov, float aspect, float near, float far)
+    void PerspectiveCamera::SetAspectRatio(float aspectRatio)
     {
-        m_ProjectionMatrix = glm::perspective(glm::radians(fov), aspect, near, far);
+        m_AspectRatio = aspectRatio;
+        UpdateProjectionMatrix();
+    }
+
+    void PerspectiveCamera::SetClippingPlanes(float nearPlane, float farPlane)
+    {
+        m_NearPlane = nearPlane;
+        m_FarPlane = farPlane;
+        UpdateProjectionMatrix();
+    }
+
+    void PerspectiveCamera::SetPerspectiveParams(float fov, float aspectRatio, float nearPlane, float farPlane)
+    {
+        m_FOV = fov;
+        m_AspectRatio = aspectRatio;
+        m_NearPlane = nearPlane;
+        m_FarPlane = farPlane;
+        UpdateProjectionMatrix();
+    }
+
+    void PerspectiveCamera::UpdateProjectionMatrix()
+    {
+        m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
+        UpdateViewMatrix(); 
     }
 }

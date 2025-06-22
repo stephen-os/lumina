@@ -13,47 +13,38 @@ namespace Lumina
         Camera();
         virtual ~Camera() = default;
 
-        virtual void SetPosition(const glm::vec3& position);
-        virtual void SetRotation(float pitch, float yaw);
-        virtual void Strafe(float distance);
-        virtual void Advance(float distance);
-        virtual void Pitch(float degrees);
-        virtual void Yaw(float degrees);
+        void SetPosition(const glm::vec3& position);
+		void Translate(const glm::vec3& translation);
+        void SetRotation(const glm::quat& rotation);
 
-        // This becomes pure virtual to force derived classes to implement their own projection logic
-        virtual void SetProjectionMatrix(float fov, float aspect, float near, float far) = 0;
+        void Rotate(float angle, const glm::vec3& axis);
+        void SetEulerAngles(float pitch, float yaw, float roll); 
 
-        const glm::mat4& GetProjectionMatrix() const;
-        const glm::mat4& GetViewMatrix() const;
-        std::string GetProjMatrixToString() const;
-        std::string GetViewMatrixToString() const;
-        glm::vec3 GetPosition() const { return m_Position; }
+        void LookAt(const glm::vec3& target, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
 
-        void HandleKeyInput(const float& distance);
-        void HandleMouseInput(const float& sensitivity);
-        void HandleScrollInput(const float& sensitivity);
+
+		const glm::vec3& GetPosition() const { return m_Position; }
+		const glm::quat& GetRotation() const { return m_Rotation; }
+
+        glm::vec3 GetForward() const { return glm::normalize(m_Rotation * glm::vec3(0.0f, 0.0f, -1.0f)); };
+        glm::vec3 GetRight() const { return glm::normalize(m_Rotation * glm::vec3(1.0f, 0.0f, 0.0f)); };
+        glm::vec3 GetUp() const { return glm::normalize(m_Rotation * glm::vec3(0.0f, 1.0f, 0.0f)); };
+
+        const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; };
+        const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; };
+      
+        static std::string MatrixToString(const glm::mat4& matrix);
+
+    protected: 
+        void UpdateViewMatrix();
+        virtual void UpdateProjectionMatrix() = 0;
 
     protected:
-        std::string MatrixToString(const std::string& name, const glm::mat4& matrix) const;
-        virtual void UpdateViewMatrix();
 
-        glm::mat4 m_ProjectionMatrix;
-        glm::mat4 m_ViewMatrix;
-        glm::vec3 m_Position;
-        glm::vec3 m_Front;
-        glm::vec3 m_Up;
-        glm::vec3 m_Right;
+        glm::vec3 m_Position = glm::vec3(0.0f);
+		glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
 
-        // Keyboard
-        bool m_MoveForward = false;
-        bool m_MoveBackward = false;
-        bool m_MoveLeft = false;
-        bool m_MoveRight = false;
-
-        // Mouse
-        glm::vec2 m_CurrentMousePos = glm::vec2(0.0f, 0.0f);
-        glm::vec2 m_OriginalMousePos = glm::vec2(0.0f, 0.0f);
-        bool m_IsMouseDown = false;
-        bool m_IsFirstMouse = true;
-    };
+		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
+        glm::mat4 m_ViewMatrix = glm::mat4(1.0f);
+	};
 }
