@@ -8,7 +8,6 @@ bin-int/
 *.vcxproj.user
 *.vcxproj.filters
 *.sln
-*.ini
 
 # Exclude
 !Directories/premake

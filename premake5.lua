@@ -1,14 +1,17 @@
 -- premake5.lua
-workspace "LuminaApp"
+workspace "Lumina"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "LuminaApp"
+   startproject "Example"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 include "LuminaExternal.lua"
 
--- Project Template
+-- Projects
 
-include "LuminaApp"
-include "LuminaTestApp"
+group "Projects"
+   include "Projects/Example"
+   include "Projects/BasicRendering"
+   include "Projects/AdvancedRendering"
+group ""
