@@ -7,14 +7,13 @@
 #include "../Core/Log.h"
 #include "../Core/Assert.h"
 
+#include "../Utils/FileReader.h"
+
 #include "VertexArray.h"
 #include "Buffer.h"
 #include "BufferLayout.h"
 #include "FrameBuffer.h"
 #include "RenderCommands.h"
-
-#include "Primatives/Quad.h"
-#include "Primatives/Cube.h"
 
 #include <iostream>
 #include <fstream>
@@ -143,8 +142,8 @@ namespace Lumina
 
         // Create a default shader
         {
-            std::string vertexSource = Quad::GetVertexShader();
-            std::string fragmentSource = Quad::GetFragmentShader();
+			std::string vertexSource = ReadFile("res/shaders/Quad.vert");
+			std::string fragmentSource = ReadFile("res/shaders/Quad.frag");
             s_Data.QuadShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
         
@@ -182,8 +181,8 @@ namespace Lumina
 
         // Cube Shader
         {
-            std::string vertexSource = Cube::GetVertexShader();
-            std::string fragmentSource = Cube::GetFragmentShader();
+            std::string vertexSource = ReadFile("res/shaders/Cube.vert");
+            std::string fragmentSource = ReadFile("res/shaders/Cube.frag");
             s_Data.CubeShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
 
