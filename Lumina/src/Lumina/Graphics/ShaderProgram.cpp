@@ -175,10 +175,16 @@ namespace Lumina
         GLCALL(glUniform3fv(m_Uniforms[name], 1, glm::value_ptr(value)));
     }
 
-    void ShaderProgram::SetUniformMat4(const std::string& name, float a, float b, float c, float d)
+    void ShaderProgram::SetUniformVec4(const std::string& name, float a, float b, float c, float d)
     {
         AssertUniform(name);
         GLCALL(glUniform4f(m_Uniforms[name], a, b, c, d));
+    }
+
+    void ShaderProgram::SetUniformVec4(const std::string& name, const glm::vec4& value)
+    {
+        AssertUniform(name);
+        GLCALL(glUniform4fv(m_Uniforms[name], 1, glm::value_ptr(value)));
     }
 
     void ShaderProgram::SetUniformMat4(const std::string& name, const glm::mat4& matrix)

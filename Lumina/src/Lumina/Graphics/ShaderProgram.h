@@ -33,7 +33,9 @@ namespace Lumina
         void SetUniformVec3(const std::string& name, float a, float b, float c);
         void SetUniformVec3(const std::string& name, const glm::vec3& value);
 
-        void SetUniformMat4(const std::string& name, float a, float b, float c, float d);
+        void SetUniformVec4(const std::string& name, float a, float b, float c, float d);
+        void SetUniformVec4(const std::string& name, const glm::vec4& value);
+
         void SetUniformMat4(const std::string& name, const glm::mat4& value);
     
         unsigned int CompileSource(unsigned int type, const std::string& source);
