@@ -25,9 +25,17 @@ namespace Lumina
         GLCALL(glEnable(GL_DEPTH_TEST));
     }
 
+	void RenderCommands::SetLineWidth(float width)
+	{
+		LUMINA_ASSERT(width > 0.0f, "Line width must be greater than zero!");
+		GLCALL(glLineWidth(width));
+	}
+
     void RenderCommands::DrawLines(const Ref<VertexArray>& vao, uint32_t count)
     {
+        vao->Bind();
         GLCALL(glDrawArrays(GL_LINES, 0, count));
+		vao->Unbind();
     }
 
     void RenderCommands::DrawLineStrips(const Ref<VertexArray>& vao, uint32_t count)

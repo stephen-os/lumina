@@ -23,17 +23,37 @@ namespace Lumina
         glm::vec4 TintColor = glm::vec4(1.0f);
     };
 
-    struct CubeAttributes
+    struct CircleAttributes
     {
         glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
-        glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-        glm::vec3 Size = { 1.0f, 1.0f, 1.0f };
-        Ref<Texture> Texture = nullptr;
-        glm::vec4 TextureCoords = { 0, 0, 1, 1 };
-        glm::vec4 TintColor = glm::vec4(1.0f);
+		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec2 Radius = { 0.5f, 0.5f }; 
+		Ref<Texture> Texture = nullptr;
+		glm::vec4 TextureCoords = { 0, 0, 1, 1 };
+        glm::vec4 Color = glm::vec4(1.0f);
+		float Thickness = 1.0f;
+		float Fade = 0.0f;
     };
 
-    class Renderer
+    struct LineAttributes
+    {
+        glm::vec3 Start = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 End = { 1.0f, 1.0f, 0.0f };
+        float Thickness = 2.0f;
+        glm::vec4 Color = glm::vec4(1.0f);
+    };
+
+    // Text: to be implemented with bitmap fonts
+    struct TextAttributes
+    {
+        std::string Text;
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        glm::vec4 Color = glm::vec4(1.0f);
+        float Size = 1.0f;
+        Ref<Texture> FontTexture = nullptr;
+    };
+
+    class Renderer2D
     {
     public:
         // Core Renderer Functions
@@ -63,14 +83,17 @@ namespace Lumina
 
         // Basic Drawing Functions
         static void DrawQuad(const QuadAttributes& attributes);
-		static void DrawCube(const CubeAttributes& attributes);
+        static void DrawCircle(const CircleAttributes& attributes);
+        static void DrawLine(const LineAttributes& attributes);
+        static void DrawText(const TextAttributes& attributes); 
        
         // Statistics Tracking
         struct Statistics
         {
             uint32_t DrawCalls = 0;
             uint32_t QuadCount = 0;
-			uint32_t CubeCount = 0;
+			uint32_t CircleCount = 0;
+			uint32_t LineCount = 0;
             uint32_t TexturesUsed = 0;
 			uint32_t ShadersUsed = 0;
             uint32_t DataSize = 0; 
