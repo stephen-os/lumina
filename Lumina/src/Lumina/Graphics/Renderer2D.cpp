@@ -13,7 +13,6 @@
 #include "Buffer.h"
 #include "BufferLayout.h"
 #include "FrameBuffer.h"
-#include "RenderCommands.h"
 
 #include <iostream>
 #include <fstream>
@@ -108,7 +107,13 @@ namespace Lumina
         glm::vec4 QuadVertexPositions[4];
         glm::vec3 CircleVertexPositions[4]; 
         glm::vec2 TexCoords[4];
-        float LineWidth = 3.0f; 
+
+        // Geometry Variables
+        float LineWidth = 3.0f;
+
+        // Wireframe
+        PolygonMode PolygonMode = PolygonMode::Fill;
+        glm::vec3 WireFrameColor = { 0.0f, 1.0f, 0.0f };
 
         // View Projection
         glm::mat4 ViewProjectionMatrix = glm::mat4(1.0f);
@@ -328,6 +333,7 @@ namespace Lumina
         s_Data.RendererFrameBuffer->Resize(s_Data.Width, s_Data.Height);
 
         RenderCommands::EnableDepthTest();
+        RenderCommands::SetPolygonMode(s_Data.PolygonMode); 
 
         // Bind all textures
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
@@ -338,6 +344,8 @@ namespace Lumina
         {
             s_Data.QuadShader->Bind();
             s_Data.QuadShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+            s_Data.QuadShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
+            s_Data.QuadShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
 
             s_Data.QuadVertexArray->Bind();
             RenderCommands::DrawTriangles(s_Data.QuadVertexArray);
@@ -351,6 +359,8 @@ namespace Lumina
         {
             s_Data.CircleShader->Bind();
             s_Data.CircleShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+            s_Data.CircleShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
+            s_Data.CircleShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
 
             s_Data.CircleVertexArray->Bind();
             RenderCommands::DrawTriangles(s_Data.CircleVertexArray);
@@ -364,6 +374,8 @@ namespace Lumina
         {
             s_Data.LineShader->Bind();
             s_Data.LineShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+            s_Data.LineShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
+            s_Data.LineShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
 
             s_Data.LineVertexArray->Bind();
 			RenderCommands::SetLineWidth(s_Data.LineWidth);
@@ -406,6 +418,11 @@ namespace Lumina
     uint32_t Renderer2D::GetImage()
     {
         return s_Data.RendererFrameBuffer->GetColorAttachment();
+    }
+
+    void Renderer2D::SetRenderMode(PolygonMode mode)
+    {
+        s_Data.PolygonMode = mode; 
     }
 
 	float Renderer2D::ComputeTextureIndex(const Ref<Texture>& texture)

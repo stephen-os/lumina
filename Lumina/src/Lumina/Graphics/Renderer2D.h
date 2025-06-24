@@ -3,6 +3,7 @@
 #include "VertexArray.h"
 #include "Texture.h"
 #include "ShaderProgram.h"
+#include "RenderCommands.h"
 
 #include <glm/glm.hpp>
 
@@ -27,7 +28,7 @@ namespace Lumina
     {
         glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
-        glm::vec2 Radius = { 0.5f, 0.5f }; 
+        glm::vec2 Radius = { 1.0f, 1.0f }; 
 		Ref<Texture> Texture = nullptr;
 		glm::vec4 TextureCoords = { 0, 0, 1, 1 };
         glm::vec4 Color = glm::vec4(1.0f);
@@ -75,6 +76,8 @@ namespace Lumina
         static void SetResolution(uint32_t width, uint32_t height);
         static glm::vec2 GetResolution();
         
+        static void SetRenderMode(PolygonMode mode); 
+
         // Get the image stored in the Framebuffer
         static uint32_t GetImage();
 

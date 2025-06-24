@@ -78,6 +78,8 @@ namespace Lumina
             m_PerspectiveCamera.SetAspectRatio(size.x / size.y);
             Renderer2D::SetResolution(size.x, size.y);
 
+            Renderer2D::SetRenderMode(m_Mode);
+
             if (m_SceneCamera == SceneCamera::Perspective)
                 Renderer2D::Begin(m_PerspectiveCamera);
             else
@@ -168,6 +170,24 @@ namespace Lumina
                 m_SceneCamera = static_cast<SceneCamera>(cameraMode);
             ImGui::End();
 
+            ImGui::Begin("Draw Controls");
+            if (ImGui::BeginCombo("Polygon Mode",
+                m_Mode == PolygonMode::Fill ? "Fill" :
+                m_Mode == PolygonMode::Line ? "Line" : "Point"))
+            {
+                if (ImGui::Selectable("Fill", m_Mode == PolygonMode::Fill))
+                    m_Mode = PolygonMode::Fill;
+
+                if (ImGui::Selectable("Line", m_Mode == PolygonMode::Line))
+                    m_Mode = PolygonMode::Line;
+
+                if (ImGui::Selectable("Point", m_Mode == PolygonMode::Point))
+                    m_Mode = PolygonMode::Point;
+
+                ImGui::EndCombo();
+            }
+            ImGui::End(); 
+
             // Camera Controls
             {
                 ImGui::Begin("Perspective Camera");
@@ -237,9 +257,11 @@ namespace Lumina
         Timer m_FrameTimer;
         float m_FPS = 0.0f;
 
+        PolygonMode m_Mode = PolygonMode::Fill; 
+
         // Texture control variables
-        int m_QuadTextureIndex = 0;
-        int m_CircleTextureIndex = 0;
+        int m_QuadTextureIndex = 121;
+        int m_CircleTextureIndex = 160;
         bool m_QuadTextureEnabled = true;
         bool m_CircleTextureEnabled = true;
     };

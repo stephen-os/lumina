@@ -31,6 +31,16 @@ namespace Lumina
 		GLCALL(glLineWidth(width));
 	}
 
+    void RenderCommands::SetPolygonMode(PolygonMode mode)
+    {
+        if (mode == PolygonMode::Fill)
+            GLCALL(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+        if (mode == PolygonMode::Line)
+            GLCALL(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE)); 
+        if (mode == PolygonMode::Point)
+            GLCALL(glPolygonMode(GL_FRONT_AND_BACK, GL_POINT));
+    }
+
     void RenderCommands::DrawLines(const Ref<VertexArray>& vao, uint32_t count)
     {
         vao->Bind();

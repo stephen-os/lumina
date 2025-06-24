@@ -8,10 +8,18 @@ flat in float v_TexIndex;
 in float v_Thickness;
 in float v_Fade;
 
+uniform int u_WireframeMode;
+
 layout (binding = 0) uniform sampler2D u_Textures[32];
 
 void main()
 {
+	if (u_WireframeMode == 1)
+	{
+		o_Color = v_Color; 
+		return; 
+	}
+
     // Calculate distance from center
     float dist = length(v_LocalPosition.xy);
     

@@ -8,6 +8,13 @@
 
 namespace Lumina
 {
+    enum class PolygonMode
+    {
+        Fill = 0,
+        Line,
+        Point
+    };
+
     class RenderCommands 
     {
     public:
@@ -16,6 +23,8 @@ namespace Lumina
         static void EnableDepthTest();
 
         static void SetLineWidth(float width);
+
+        static void SetPolygonMode(PolygonMode mode);
 
         static void DrawLines(const Ref<VertexArray>& vao, uint32_t count);
         static void DrawLineStrips(const Ref<VertexArray>& vao, uint32_t count);
