@@ -352,6 +352,8 @@ namespace Lumina
             s_Data.QuadVertexArray->Unbind();
 
             s_Data.QuadShader->Unbind();
+
+            s_Data.Stats.DrawCalls++;
         }
 
         // Draw Circles
@@ -367,6 +369,8 @@ namespace Lumina
             s_Data.CircleVertexArray->Unbind();
 
             s_Data.CircleShader->Unbind();
+
+            s_Data.Stats.DrawCalls++;
         }
 
         // Draw Lines
@@ -380,10 +384,11 @@ namespace Lumina
             s_Data.LineVertexArray->Bind();
 			RenderCommands::SetLineWidth(s_Data.LineWidth);
             RenderCommands::DrawLines(s_Data.LineVertexArray, s_Data.LineVertexCount);
-
             s_Data.LineVertexArray->Unbind();
 
             s_Data.LineShader->Unbind();
+            
+            s_Data.Stats.DrawCalls++;
         }
 
         s_Data.RendererFrameBuffer->Unbind();
@@ -393,7 +398,6 @@ namespace Lumina
             s_Data.TextureSlots[i]->Unbind();
 
         // Update stats
-        s_Data.Stats.DrawCalls++;
         s_Data.Stats.TexturesUsed = s_Data.TextureSlotIndex - 1;
 
         // Reset counts after flush
