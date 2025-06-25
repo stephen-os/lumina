@@ -264,7 +264,7 @@ namespace Lumina
         }
         else
         {
-            RenderCommands::DrawArrays(mesh.VAO, mesh.Vertices.size());
+            RenderCommands::DrawArrays(mesh.VAO, PrimitiveType::Triangles, mesh.Vertices.size());
             s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
         }
         mesh.VAO->Unbind();

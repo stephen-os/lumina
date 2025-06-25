@@ -272,7 +272,7 @@ namespace Lumina
             }
             else
             {
-                RenderCommands::DrawArrays(mesh.VAO, mesh.Vertices.size());
+                RenderCommands::DrawArrays(mesh.VAO, PrimitiveType::Triangles, mesh.Vertices.size());
             }
             mesh.VAO->Unbind();
         }
