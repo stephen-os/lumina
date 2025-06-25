@@ -64,4 +64,11 @@ namespace Lumina
 
         vao->Unbind();
     }
+
+    void RenderCommands::DrawArrays(const Ref<VertexArray>& vao, uint32_t count)
+    {
+        vao->Bind();
+        GLCALL(glDrawArrays(GL_TRIANGLES, 0, count));
+        vao->Unbind();
+    }
 }

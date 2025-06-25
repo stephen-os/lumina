@@ -29,5 +29,6 @@ namespace Lumina
         static void DrawLines(const Ref<VertexArray>& vao, uint32_t count);
         static void DrawLineStrips(const Ref<VertexArray>& vao, uint32_t count);
         static void DrawTriangles(const Ref<VertexArray>& vao);
+        static void DrawArrays(const Ref<VertexArray>& vao, uint32_t count);
     };
 }
