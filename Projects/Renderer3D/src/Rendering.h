@@ -175,18 +175,18 @@ namespace Lumina
 
             // Render Mode Controls
             ImGui::Begin("Render Controls");
-            if (ImGui::BeginCombo("Polygon Mode",
-                m_Mode == PolygonMode::Fill ? "Fill" :
-                m_Mode == PolygonMode::Line ? "Wireframe" : "Point"))
+            if (ImGui::BeginCombo("Render Mode",
+                m_Mode == RenderMode::Normal ? "Normal" :
+                m_Mode == RenderMode::Wireframe ? "Wireframe" : "Points"))
             {
-                if (ImGui::Selectable("Fill", m_Mode == PolygonMode::Fill))
-                    m_Mode = PolygonMode::Fill;
+                if (ImGui::Selectable("Normal", m_Mode == RenderMode::Normal))
+                    m_Mode = RenderMode::Normal;
 
-                if (ImGui::Selectable("Wireframe", m_Mode == PolygonMode::Line))
-                    m_Mode = PolygonMode::Line;
+                if (ImGui::Selectable("Wireframe", m_Mode == RenderMode::Wireframe))
+                    m_Mode = RenderMode::Wireframe;
 
-                if (ImGui::Selectable("Point", m_Mode == PolygonMode::Point))
-                    m_Mode = PolygonMode::Point;
+                if (ImGui::Selectable("Points", m_Mode == RenderMode::Points))
+                    m_Mode = RenderMode::Points;
 
                 ImGui::EndCombo();
             }
@@ -383,7 +383,7 @@ namespace Lumina
         std::vector<PointLight> m_PointLights;
 
         // Render settings
-        PolygonMode m_Mode = PolygonMode::Fill;
+        RenderMode m_Mode = RenderMode::Normal;
 
         // Animation
         bool m_AutoRotate = true;

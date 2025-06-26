@@ -19,6 +19,7 @@ struct Material {
 
 uniform Material u_Material;
 uniform vec4 u_TintColor;
+uniform int u_RenderMode; // 0 = Fill, 1 = Wireframe, 2 = Points
 
 // Texture uniforms
 uniform sampler2D u_AlbedoTexture;
@@ -59,11 +60,12 @@ uniform vec3 u_CameraPos;
 
 // Constants
 const float PI = 3.14159265359;
+const vec3 GREEN = vec3(0.0, 1.0, 0.3);
 
 // PBR Functions
 vec3 getNormalFromMap()
 {
-    if (u_HasNormalTexture == 1)
+    if (u_HasNormalTexture == 1 && u_RenderMode != 2) // Don't use normal maps for points
     {
         vec3 tangentNormal = texture(u_NormalTexture, v_TexCoord).xyz * 2.0 - 1.0;
         return normalize(v_TBN * tangentNormal);
@@ -121,6 +123,21 @@ vec3 fresnelSchlickRoughness(float cosTheta, vec3 F0, float roughness)
 
 void main()
 {
+    // Handle point rendering
+    if (u_RenderMode == 2) // Points mode
+    {
+        FragColor = vec4(GREEN, 1.0f); 
+        return;
+    }
+    
+    // Handle wireframe rendering
+    if (u_RenderMode == 1) // Wireframe mode
+    {   
+        FragColor = FragColor = vec4(GREEN, 1.0f);
+        return;
+    }
+    
+    // Standard PBR rendering for Fill mode
     // Sample material properties
     vec3 albedo = u_Material.Albedo;
     if (u_HasAlbedoTexture == 1)

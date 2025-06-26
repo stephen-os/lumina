@@ -155,6 +155,17 @@ namespace Lumina
         s_CurrentState.pointSize = size;
     }
 
+    // Point Size Program Control
+    void RenderCommands::EnableProgramPointSize()
+    {
+        GLCALL(glEnable(GL_PROGRAM_POINT_SIZE));
+    }
+
+    void RenderCommands::DisableProgramPointSize()
+    {
+        GLCALL(glDisable(GL_PROGRAM_POINT_SIZE));
+    }
+
     // State Management
     void RenderCommands::SetRenderState(const RenderState& state)
     {

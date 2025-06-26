@@ -132,6 +132,10 @@ namespace Lumina
         static void SetLineWidth(float width);
         static void SetPointSize(float size);
 
+        // Point Size Program Control
+        static void EnableProgramPointSize();
+        static void DisableProgramPointSize();
+        
         // State Management
         static void SetRenderState(const RenderState& state);
         static RenderState GetRenderState();

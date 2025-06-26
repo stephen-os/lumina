@@ -38,7 +38,8 @@ namespace Lumina
         Ref<Texture> SkyboxTexture = nullptr;
 
         // Render settings
-        PolygonMode PolygonMode = PolygonMode::Fill;
+        RenderMode CurrentRenderMode = RenderMode::Normal;
+        float GlobalPointSize = 1.0f;
 
         // View Projection
         glm::mat4 ViewMatrix = glm::mat4(1.0f);
@@ -116,9 +117,10 @@ namespace Lumina
         s_Data.RendererFrameBuffer->Resize(s_Data.Width, s_Data.Height);
 
         RenderCommands::SetViewport(0, 0, s_Data.Width, s_Data.Height);
+        RenderCommands::SetClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         RenderCommands::Clear();
         RenderCommands::EnableDepthTest();
-        RenderCommands::SetPolygonMode(s_Data.PolygonMode);
+        RenderCommands::EnableProgramPointSize();
     }
 
     void Renderer3D::Begin(const glm::mat4& viewProjection)
@@ -133,9 +135,10 @@ namespace Lumina
         s_Data.RendererFrameBuffer->Resize(s_Data.Width, s_Data.Height);
 
         RenderCommands::SetViewport(0, 0, s_Data.Width, s_Data.Height);
+        RenderCommands::SetClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         RenderCommands::Clear();
         RenderCommands::EnableDepthTest();
-        RenderCommands::SetPolygonMode(s_Data.PolygonMode);
+        RenderCommands::EnableProgramPointSize();
     }
 
     void Renderer3D::End()
@@ -158,8 +161,6 @@ namespace Lumina
         // Set matrices
         s_Data.PBRShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
         s_Data.PBRShader->SetUniformMat4("u_Model", modelMatrix);
-        // s_Data.PBRShader->SetUniformMat4("u_View", s_Data.ViewMatrix);
-        // s_Data.PBRShader->SetUniformMat4("u_Projection", s_Data.ProjectionMatrix);
 
         // Set camera position
         s_Data.PBRShader->SetUniformVec3("u_CameraPos", s_Data.CameraPosition);
@@ -167,7 +168,11 @@ namespace Lumina
         // Set global tint color
         s_Data.PBRShader->SetUniformVec4("u_TintColor", attributes.TintColor);
 
+        // Set render mode in shader
+        s_Data.PBRShader->SetUniformInt("u_RenderMode", static_cast<int>(s_Data.CurrentRenderMode));
+
         SetupLighting();
+        SetupRenderMode(attributes);
 
         const auto& meshes = model->GetMeshes();
         for (const auto& mesh : meshes)
@@ -255,18 +260,56 @@ namespace Lumina
         s_Data.PBRShader->SetUniformFloat("u_Material.Roughness", mesh.Mat.Roughness);
         s_Data.PBRShader->SetUniformFloat("u_Material.AO", mesh.Mat.AO);
 
-        // Draw the mesh
+        // Draw based on render mode
         mesh.VAO->Bind();
-        if (!mesh.Indices.empty())
+
+        switch (s_Data.CurrentRenderMode)
         {
-            RenderCommands::DrawTriangles(mesh.VAO);
-            s_Data.Stats.TriangleCount += mesh.Indices.size() / 3;
-        }
-        else
+        case RenderMode::Normal:
         {
-            RenderCommands::DrawArrays(mesh.VAO, PrimitiveType::Triangles, mesh.Vertices.size());
-            s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
+            RenderCommands::SetPolygonMode(PolygonMode::Fill);
+            if (!mesh.Indices.empty())
+            {
+                RenderCommands::DrawTrianglesIndexed(mesh.VAO);
+                s_Data.Stats.TriangleCount += mesh.Indices.size() / 3;
+            }
+            else
+            {
+                RenderCommands::DrawTriangles(mesh.VAO, mesh.Vertices.size());
+                s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
+            }
+            break;
         }
+        case RenderMode::Wireframe:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Line);
+            if (!mesh.Indices.empty())
+            {
+                RenderCommands::DrawTrianglesIndexed(mesh.VAO);
+                s_Data.Stats.TriangleCount += mesh.Indices.size() / 3;
+            }
+            else
+            {
+                RenderCommands::DrawTriangles(mesh.VAO, mesh.Vertices.size());
+                s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
+            }
+            break;
+        }
+        case RenderMode::Points:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Fill); // Reset polygon mode
+            if (!mesh.Indices.empty())
+            {
+                RenderCommands::DrawPointsIndexed(mesh.VAO);
+            }
+            else
+            {
+                RenderCommands::DrawPoints(mesh.VAO, mesh.Vertices.size());
+            }
+            break;
+        }
+        }
+
         mesh.VAO->Unbind();
 
         s_Data.Stats.MeshCount++;
@@ -291,9 +334,24 @@ namespace Lumina
         return { s_Data.Width, s_Data.Height };
     }
 
-    void Renderer3D::SetRenderMode(PolygonMode mode)
+    void Renderer3D::SetRenderMode(RenderMode mode)
     {
-        s_Data.PolygonMode = mode;
+        s_Data.CurrentRenderMode = mode;
+    }
+
+    RenderMode Renderer3D::GetRenderMode()
+    {
+        return s_Data.CurrentRenderMode;
+    }
+
+    void Renderer3D::SetGlobalPointSize(float size)
+    {
+        s_Data.GlobalPointSize = size;
+    }
+
+    float Renderer3D::GetGlobalPointSize()
+    {
+        return s_Data.GlobalPointSize;
     }
 
     uint32_t Renderer3D::GetImage()
@@ -374,6 +432,17 @@ namespace Lumina
         else
         {
             s_Data.PBRShader->SetUniformInt("u_HasEnvironmentMap", 0);
+        }
+    }
+
+    void Renderer3D::SetupRenderMode(const ModelAttributes& attributes)
+    {
+        if (s_Data.CurrentRenderMode == RenderMode::Points)
+        {
+            // Set point size - use per-object size if specified, otherwise global
+            float pointSize = (attributes.PointSize > 0.0f) ? attributes.PointSize : s_Data.GlobalPointSize;
+            RenderCommands::SetPointSize(pointSize);
+            s_Data.PBRShader->SetUniformFloat("u_PointSize", pointSize);
         }
     }
 

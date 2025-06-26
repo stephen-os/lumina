@@ -8,8 +8,8 @@ layout (location = 4) in vec3 a_Bitangent;
 
 uniform mat4 u_ViewProjection;
 uniform mat4 u_Model;
-// uniform mat4 u_View;
-// uniform mat4 u_Projection;
+uniform int u_RenderMode; // 0 = Fill, 1 = Wireframe, 2 = Points
+uniform float u_PointSize;
 
 out vec3 v_WorldPos;
 out vec3 v_Normal;
@@ -33,6 +33,9 @@ void main()
     v_TBN = mat3(v_Tangent, v_Bitangent, v_Normal);
     
     v_TexCoord = a_TexCoord;
+    
+    // Always set point size (OpenGL needs this for point rendering to work)
+    gl_PointSize = u_PointSize;
     
     gl_Position = u_ViewProjection * worldPos;
 }

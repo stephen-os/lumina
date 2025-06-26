@@ -1,5 +1,4 @@
 #pragma once
-
 #include "VertexArray.h"
 #include "Texture.h"
 #include "ShaderProgram.h"
@@ -13,12 +12,20 @@
 
 namespace Lumina
 {
+    enum class RenderMode
+    {
+        Normal = 0,
+        Wireframe,
+        Points
+    };
+
     struct ModelAttributes
     {
         glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
         glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
         glm::vec4 TintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float PointSize = 1.0f; // For point rendering
     };
 
     struct DirectionalLight
@@ -59,7 +66,12 @@ namespace Lumina
         static glm::vec2 GetResolution();
 
         // Render Mode
-        static void SetRenderMode(PolygonMode mode);
+        static void SetRenderMode(RenderMode mode);
+        static RenderMode GetRenderMode();
+
+        // Point rendering settings
+        static void SetGlobalPointSize(float size);
+        static float GetGlobalPointSize();
 
         // Framebuffer Access
         static uint32_t GetImage();
@@ -90,6 +102,7 @@ namespace Lumina
 
     private:
         static void SetupLighting();
+        static void SetupRenderMode(const ModelAttributes& attributes);
         static glm::mat4 CalculateModelMatrix(const ModelAttributes& attributes);
     };
 }
