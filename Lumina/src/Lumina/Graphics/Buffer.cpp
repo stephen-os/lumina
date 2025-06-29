@@ -81,4 +81,13 @@ namespace Lumina
     {
         GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
     }
+
+	void IndexBuffer::SetData(uint32_t* data, uint32_t count)
+	{
+		LUMINA_ASSERT(data != nullptr, "IndexBuffer::SetData called with null data!");
+		LUMINA_ASSERT(count > 0, "IndexBuffer::SetData called with zero count!");
+		m_Count = count;
+		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
+		GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+	}
 }

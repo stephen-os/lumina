@@ -186,12 +186,20 @@ namespace Lumina
         s_Data.Stats.DrawCalls++;
     }
 
-    void Renderer3D::DrawMesh(const Mesh& mesh, const ModelAttributes& attributes)
+    void Renderer3D::DrawMesh(const Ref<Mesh>& mesh, const ModelAttributes& attributes)
     {
-        // Bind material textures
-        if (mesh.Mat.AlbedoTexture)
+        if (!mesh || !mesh->IsSetup())
         {
-            mesh.Mat.AlbedoTexture->Bind(0);
+            LUMINA_LOG_WARN("Attempted to draw null or uninitialized mesh");
+            return;
+        }
+
+        auto material = mesh->GetMaterial();
+
+        // Bind material textures
+        if (material && material->GetAlbedoTexture())
+        {
+            material->GetAlbedoTexture()->Bind(0);
             s_Data.PBRShader->SetUniformInt("u_AlbedoTexture", 0);
             s_Data.PBRShader->SetUniformInt("u_HasAlbedoTexture", 1);
         }
@@ -202,9 +210,9 @@ namespace Lumina
             s_Data.PBRShader->SetUniformInt("u_HasAlbedoTexture", 0);
         }
 
-        if (mesh.Mat.NormalTexture)
+        if (material && material->GetNormalTexture())
         {
-            mesh.Mat.NormalTexture->Bind(1);
+            material->GetNormalTexture()->Bind(1);
             s_Data.PBRShader->SetUniformInt("u_NormalTexture", 1);
             s_Data.PBRShader->SetUniformInt("u_HasNormalTexture", 1);
         }
@@ -215,9 +223,9 @@ namespace Lumina
             s_Data.PBRShader->SetUniformInt("u_HasNormalTexture", 0);
         }
 
-        if (mesh.Mat.MetallicTexture)
+        if (material && material->GetMetallicTexture())
         {
-            mesh.Mat.MetallicTexture->Bind(2);
+            material->GetMetallicTexture()->Bind(2);
             s_Data.PBRShader->SetUniformInt("u_MetallicTexture", 2);
             s_Data.PBRShader->SetUniformInt("u_HasMetallicTexture", 1);
         }
@@ -228,9 +236,9 @@ namespace Lumina
             s_Data.PBRShader->SetUniformInt("u_HasMetallicTexture", 0);
         }
 
-        if (mesh.Mat.RoughnessTexture)
+        if (material && material->GetRoughnessTexture())
         {
-            mesh.Mat.RoughnessTexture->Bind(3);
+            material->GetRoughnessTexture()->Bind(3);
             s_Data.PBRShader->SetUniformInt("u_RoughnessTexture", 3);
             s_Data.PBRShader->SetUniformInt("u_HasRoughnessTexture", 1);
         }
@@ -241,9 +249,9 @@ namespace Lumina
             s_Data.PBRShader->SetUniformInt("u_HasRoughnessTexture", 0);
         }
 
-        if (mesh.Mat.AOTexture)
+        if (material && material->GetAOTexture())
         {
-            mesh.Mat.AOTexture->Bind(4);
+            material->GetAOTexture()->Bind(4);
             s_Data.PBRShader->SetUniformInt("u_AOTexture", 4);
             s_Data.PBRShader->SetUniformInt("u_HasAOTexture", 1);
         }
@@ -255,65 +263,88 @@ namespace Lumina
         }
 
         // Set material properties
-        s_Data.PBRShader->SetUniformVec3("u_Material.Albedo", mesh.Mat.Albedo);
-        s_Data.PBRShader->SetUniformFloat("u_Material.Metallic", mesh.Mat.Metallic);
-        s_Data.PBRShader->SetUniformFloat("u_Material.Roughness", mesh.Mat.Roughness);
-        s_Data.PBRShader->SetUniformFloat("u_Material.AO", mesh.Mat.AO);
+        if (material)
+        {
+            s_Data.PBRShader->SetUniformVec3("u_Material.Albedo", material->GetAlbedo());
+            s_Data.PBRShader->SetUniformFloat("u_Material.Metallic", material->GetMetallic());
+            s_Data.PBRShader->SetUniformFloat("u_Material.Roughness", material->GetRoughness());
+            s_Data.PBRShader->SetUniformFloat("u_Material.AO", material->GetAO());
+        }
+        else
+        {
+            // Default material properties
+            s_Data.PBRShader->SetUniformVec3("u_Material.Albedo", glm::vec3(1.0f, 1.0f, 1.0f));
+            s_Data.PBRShader->SetUniformFloat("u_Material.Metallic", 0.0f);
+            s_Data.PBRShader->SetUniformFloat("u_Material.Roughness", 0.5f);
+            s_Data.PBRShader->SetUniformFloat("u_Material.AO", 1.0f);
+        }
+
+        // Get VAO from mesh
+        auto vao = mesh->GetVAO();
+        if (!vao)
+        {
+            LUMINA_LOG_WARN("Mesh has no VAO setup");
+            return;
+        }
 
         // Draw based on render mode
-        mesh.VAO->Bind();
+        vao->Bind();
+
+        bool hasIndices = mesh->HasIndices();
+        size_t indexCount = mesh->GetIndexCount();
+        size_t vertexCount = mesh->GetVertexCount();
 
         switch (s_Data.CurrentRenderMode)
         {
         case RenderMode::Normal:
         {
             RenderCommands::SetPolygonMode(PolygonMode::Fill);
-            if (!mesh.Indices.empty())
+            if (hasIndices)
             {
-                RenderCommands::DrawTrianglesIndexed(mesh.VAO);
-                s_Data.Stats.TriangleCount += mesh.Indices.size() / 3;
+                RenderCommands::DrawTrianglesIndexed(vao);
+                s_Data.Stats.TriangleCount += indexCount / 3;
             }
             else
             {
-                RenderCommands::DrawTriangles(mesh.VAO, mesh.Vertices.size());
-                s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
+                RenderCommands::DrawTriangles(vao, vertexCount);
+                s_Data.Stats.TriangleCount += vertexCount / 3;
             }
             break;
         }
         case RenderMode::Wireframe:
         {
             RenderCommands::SetPolygonMode(PolygonMode::Line);
-            if (!mesh.Indices.empty())
+            if (hasIndices)
             {
-                RenderCommands::DrawTrianglesIndexed(mesh.VAO);
-                s_Data.Stats.TriangleCount += mesh.Indices.size() / 3;
+                RenderCommands::DrawTrianglesIndexed(vao);
+                s_Data.Stats.TriangleCount += indexCount / 3;
             }
             else
             {
-                RenderCommands::DrawTriangles(mesh.VAO, mesh.Vertices.size());
-                s_Data.Stats.TriangleCount += mesh.Vertices.size() / 3;
+                RenderCommands::DrawTriangles(vao, vertexCount);
+                s_Data.Stats.TriangleCount += vertexCount / 3;
             }
             break;
         }
         case RenderMode::Points:
         {
             RenderCommands::SetPolygonMode(PolygonMode::Fill); // Reset polygon mode
-            if (!mesh.Indices.empty())
+            if (hasIndices)
             {
-                RenderCommands::DrawPointsIndexed(mesh.VAO);
+                RenderCommands::DrawPointsIndexed(vao);
             }
             else
             {
-                RenderCommands::DrawPoints(mesh.VAO, mesh.Vertices.size());
+                RenderCommands::DrawPoints(vao, vertexCount);
             }
             break;
         }
         }
 
-        mesh.VAO->Unbind();
+        vao->Unbind();
 
         s_Data.Stats.MeshCount++;
-        s_Data.Stats.VertexCount += mesh.Vertices.size();
+        s_Data.Stats.VertexCount += vertexCount;
         s_Data.Stats.TexturesUsed += 5; // Always bind 5 texture slots
     }
 

@@ -59,7 +59,7 @@ namespace Lumina
 
         // Rendering Functions
         static void DrawModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
-        static void DrawMesh(const Mesh& mesh, const ModelAttributes& attributes = {});
+        static void DrawMesh(const Ref<Mesh>& mesh, const ModelAttributes& attributes = {});
 
         // Resolution Management
         static void SetResolution(uint32_t width, uint32_t height);

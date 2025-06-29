@@ -9,9 +9,12 @@
 #include "imgui.h"
 
 #include "Lumina/Core/Layer.h"
+#include "Lumina/Core/Log.h"
+
 #include "Lumina/Utils/Timer.h"
 #include "Lumina/Graphics/Renderer3D.h"
 #include "Lumina/Graphics/Model.h"
+#include "Lumina/Graphics/ModelRegistry.h"
 
 #include "Lumina/Graphics/Cameras/OrthographicCamera.h"
 #include "Lumina/Graphics/Cameras/PerspectiveCamera.h"
@@ -34,15 +37,20 @@ namespace Lumina
         {
             // Initialize 3D renderer
             Renderer3D::Init();
+            
+			// Initialize model registry
+            ModelRegistry::Init();
 
             // Try to load cube model from file first
-            m_CubeModel = Model::Create("res/geometry/suzzan.gltf"); 
+            // m_CubeModel = Model::Load("res/geometry/suzzan.gltf");
+            m_CubeModel = Model::Load("res/geometry/bomb.glb"); 
 
-            if (!m_CubeModel || m_CubeModel->GetMeshes().empty())
+            if (!m_CubeModel || m_CubeModel->GetMeshCount() == 0)
             {
-                std::cout << "Could not load cube.gltf, creating procedural cube..." << std::endl;
+                std::cout << "Could not load suzzan.gltf, creating procedural cube..." << std::endl;
                 // Create a procedural cube if file loading fails
-                // CreateProceduralCube();
+                // CreateProceduralCube(); 
+                Application::GetInstance().Shutdown();
             }
 
             // Initialize model attributes
@@ -50,12 +58,13 @@ namespace Lumina
             m_ModelAttribs.Rotation = { 0.0f, 0.0f, 0.0f };
             m_ModelAttribs.Scale = { 1.0f, 1.0f, 1.0f };
             m_ModelAttribs.TintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+            m_ModelAttribs.PointSize = 10.0f;
 
             // Setup cameras
             m_PerspectiveCamera.SetPosition(glm::vec3(3.0f, 3.0f, 5.0f));
             m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
             m_PerspectiveCamera.SetFOV(45.0f);
-			m_PerspectiveCamera.SetClippingPlanes(0.1f, 100.0f);
+            m_PerspectiveCamera.SetClippingPlanes(0.1f, 100.0f);
 
             m_OrthographicCamera.SetPosition(glm::vec3(3.0f, 3.0f, 5.0f));
             m_OrthographicCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
@@ -93,6 +102,7 @@ namespace Lumina
 
         virtual void OnDetach() override
         {
+            ModelRegistry::Shutdown();
             Renderer3D::Shutdown();
         }
 
@@ -116,7 +126,7 @@ namespace Lumina
         {
             ImGui::Begin("FPS");
             ImGui::Text("FPS: %.2f", m_FPS);
-            ImGui::End(); 
+            ImGui::End();
 
             // Main 3D scene viewer
             ImGui::Begin("3D Scene Viewer");
@@ -138,7 +148,7 @@ namespace Lumina
                 Renderer3D::Begin(m_OrthographicCamera);
 
             // Draw the cube model
-            if (m_CubeModel && !m_CubeModel->GetMeshes().empty())
+            if (m_CubeModel && m_CubeModel->GetMeshCount() > 0)
             {
                 Renderer3D::DrawModel(m_CubeModel, m_ModelAttribs);
             }
@@ -213,7 +223,7 @@ namespace Lumina
                     m_PerspectiveCamera.SetPosition(position);
                     m_PerspectiveCamera.SetRotation(rotation);
                     m_PerspectiveCamera.SetFOV(fov);
-					m_PerspectiveCamera.SetClippingPlanes(nearPlane, farPlane);
+                    m_PerspectiveCamera.SetClippingPlanes(nearPlane, farPlane);
                 }
 
                 if (ImGui::Button("Reset Camera"))
@@ -328,40 +338,55 @@ namespace Lumina
             {
                 ImGui::Separator();
                 ImGui::Text("Model Info:");
-                ImGui::Text("Meshes: %zu", m_CubeModel->GetMeshes().size());
+                ImGui::Text("Name: %s", m_CubeModel->GetName().c_str());
+                ImGui::Text("Meshes: %zu", m_CubeModel->GetMeshCount());
+                ImGui::Text("Total Vertices: %zu", m_CubeModel->GetTotalVertexCount());
+                ImGui::Text("Total Triangles: %zu", m_CubeModel->GetTotalTriangleCount());
                 ImGui::Text("Directory: %s", m_CubeModel->GetDirectory().c_str());
             }
             ImGui::End();
 
             // Model Information
-            if (m_CubeModel && !m_CubeModel->GetMeshes().empty())
+            if (m_CubeModel && m_CubeModel->GetMeshCount() > 0)
             {
                 ImGui::Begin("Model Information");
                 const auto& meshes = m_CubeModel->GetMeshes();
 
                 for (size_t i = 0; i < meshes.size(); ++i)
                 {
-                    if (ImGui::CollapsingHeader(("Mesh " + std::to_string(i)).c_str()))
+                    const auto& mesh = meshes[i];
+                    std::string meshName = mesh->GetName().empty() ?
+                        ("Mesh " + std::to_string(i)) : mesh->GetName();
+
+                    if (ImGui::CollapsingHeader(meshName.c_str()))
                     {
-                        const auto& mesh = meshes[i];
-                        ImGui::Text("Vertices: %zu", mesh.Vertices.size());
-                        ImGui::Text("Indices: %zu", mesh.Indices.size());
-                        ImGui::Text("Triangles: %zu", mesh.Indices.size() / 3);
+                        ImGui::Text("Vertices: %zu", mesh->GetVertexCount());
+                        ImGui::Text("Indices: %zu", mesh->GetIndexCount());
+                        ImGui::Text("Triangles: %zu", mesh->GetTriangleCount());
 
-                        ImGui::Separator();
-                        ImGui::Text("Material:");
-                        ImGui::Text("Albedo: (%.2f, %.2f, %.2f)",
-                            mesh.Mat.Albedo.x, mesh.Mat.Albedo.y, mesh.Mat.Albedo.z);
-                        ImGui::Text("Metallic: %.2f", mesh.Mat.Metallic);
-                        ImGui::Text("Roughness: %.2f", mesh.Mat.Roughness);
-                        ImGui::Text("AO: %.2f", mesh.Mat.AO);
+                        auto material = mesh->GetMaterial();
+                        if (material)
+                        {
+                            ImGui::Separator();
+                            ImGui::Text("Material: %s", material->GetName().c_str());
+                            const auto& albedo = material->GetAlbedo();
+                            ImGui::Text("Albedo: (%.2f, %.2f, %.2f)", albedo.x, albedo.y, albedo.z);
+                            ImGui::Text("Metallic: %.2f", material->GetMetallic());
+                            ImGui::Text("Roughness: %.2f", material->GetRoughness());
+                            ImGui::Text("AO: %.2f", material->GetAO());
 
-                        ImGui::Text("Textures:");
-                        ImGui::Text("  Albedo: %s", mesh.Mat.AlbedoTexture ? "Yes" : "No");
-                        ImGui::Text("  Normal: %s", mesh.Mat.NormalTexture ? "Yes" : "No");
-                        ImGui::Text("  Metallic: %s", mesh.Mat.MetallicTexture ? "Yes" : "No");
-                        ImGui::Text("  Roughness: %s", mesh.Mat.RoughnessTexture ? "Yes" : "No");
-                        ImGui::Text("  AO: %s", mesh.Mat.AOTexture ? "Yes" : "No");
+                            ImGui::Text("Textures:");
+                            ImGui::Text("  Albedo: %s", material->GetAlbedoTexture() ? "Yes" : "No");
+                            ImGui::Text("  Normal: %s", material->GetNormalTexture() ? "Yes" : "No");
+                            ImGui::Text("  Metallic: %s", material->GetMetallicTexture() ? "Yes" : "No");
+                            ImGui::Text("  Roughness: %s", material->GetRoughnessTexture() ? "Yes" : "No");
+                            ImGui::Text("  AO: %s", material->GetAOTexture() ? "Yes" : "No");
+                        }
+                        else
+                        {
+                            ImGui::Separator();
+                            ImGui::Text("Material: None");
+                        }
                     }
                 }
                 ImGui::End();
@@ -387,10 +412,10 @@ namespace Lumina
 
         // Animation
         bool m_AutoRotate = true;
-        float m_RotationSpeed = 1.0f; 
+        float m_RotationSpeed = 1.0f;
 
         // Utility
         Timer m_FrameTimer;
-        float m_FPS = 0; 
+        float m_FPS = 0;
     };
 }
