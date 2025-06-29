@@ -5,6 +5,7 @@
 #include "RenderCommands.h"
 #include "FrameBuffer.h"
 #include "Model.h"
+#include "Skybox.h"
 #include "Cameras/Camera.h"
 #include <glm/glm.hpp>
 #include <string>
@@ -60,6 +61,7 @@ namespace Lumina
         // Rendering Functions
         static void DrawModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
         static void DrawMesh(const Ref<Mesh>& mesh, const ModelAttributes& attributes = {});
+        static void DrawSkybox(const Ref<Skybox>& skybox);
 
         // Resolution Management
         static void SetResolution(uint32_t width, uint32_t height);
@@ -83,7 +85,6 @@ namespace Lumina
 
         // Environment
         static void SetEnvironmentMap(const Ref<Texture>& envMap);
-        static void SetSkybox(const Ref<Texture>& skybox);
 
         // Statistics
         struct Statistics

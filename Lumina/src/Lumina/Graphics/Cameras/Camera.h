@@ -20,8 +20,11 @@ namespace Lumina
         void Rotate(float angle, const glm::vec3& axis);
         void SetEulerAngles(float pitch, float yaw, float roll); 
 
-        void LookAt(const glm::vec3& target, const glm::vec3& up = glm::vec3(0.0f, 1.0f, 0.0f));
-
+		// Note: The wolrd up vector is usually (0, 1, 0) but for some reason this causes everything to be upside down. 
+		// This is a quick fix to make everything the right side up.
+		// This is only fixing the issue when we use the LookAt function.
+		// Normal camera instantiation is still upside down.
+        void LookAt(const glm::vec3& target, const glm::vec3& up = glm::vec3(0.0f, -1.0f, 0.0f));
 
 		const glm::vec3& GetPosition() const { return m_Position; }
 		const glm::quat& GetRotation() const { return m_Rotation; }
@@ -42,7 +45,7 @@ namespace Lumina
     protected:
 
         glm::vec3 m_Position = glm::vec3(0.0f);
-		glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+		glm::quat m_Rotation = glm::quat(1.0f, 0.0f, 1.0f, 0.0f);
 
 		glm::mat4 m_ProjectionMatrix = glm::mat4(1.0f);
         glm::mat4 m_ViewMatrix = glm::mat4(1.0f);

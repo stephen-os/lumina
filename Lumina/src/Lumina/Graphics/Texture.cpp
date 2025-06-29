@@ -56,7 +56,7 @@ namespace Lumina
             return nullptr;
         }
 
-        auto texture = Ref<Texture>::Create(0, 0, TextureFormat::RGBA8);
+        auto texture = Ref<Texture>::Create(1, 1, TextureFormat::RGBA8);
         texture->m_IsCubemap = true;
 
         // Create cubemap texture using DSA
@@ -145,7 +145,15 @@ namespace Lumina
 
     void Texture::Bind(uint32_t slot) const
     {
-        GLCALL(glBindTextureUnit(slot, m_BufferID));
+        GLCALL(glActiveTexture(GL_TEXTURE0 + slot));
+        if (m_IsCubemap)
+        {
+            GLCALL(glBindTexture(GL_TEXTURE_CUBE_MAP, m_BufferID));
+        }
+        else
+        {
+            GLCALL(glBindTexture(GL_TEXTURE_2D, m_BufferID));
+        }
     }
 
     void Texture::Unbind() const

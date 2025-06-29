@@ -15,6 +15,7 @@
 #include "Lumina/Graphics/Renderer3D.h"
 #include "Lumina/Graphics/Model.h"
 #include "Lumina/Graphics/ModelRegistry.h"
+#include "Lumina/Graphics/Skybox.h"
 
 #include "Lumina/Graphics/Cameras/OrthographicCamera.h"
 #include "Lumina/Graphics/Cameras/PerspectiveCamera.h"
@@ -53,6 +54,31 @@ namespace Lumina
                 Application::GetInstance().Shutdown();
             }
 
+            // Create 6 different colored faces for testing
+            std::vector<uint32_t> faceColors = {
+                0xFF0000FF, // Red   - +X (right)
+                0x00FF00FF, // Green - -X (left)
+                0x0000FFFF, // Blue  - +Y (top)
+                0xFFFF00FF, // Yellow- -Y (bottom)
+                0xFF00FFFF, // Magenta-+Z (front)
+                0x00FFFFFF  // Cyan  - -Z (back)
+            };
+
+            auto cubemapTexture = Texture::CreateCubemap(1, 1, faceColors.data());
+
+			// Initialize skybox
+            std::vector<std::string> faces = 
+            {
+                "res/skybox/storforsen/posx.jpg",  // Right face  (+X)
+                "res/skybox/storforsen/negx.jpg",  // Left face   (-X)
+                "res/skybox/storforsen/posy.jpg",  // Top face    (+Y)
+                "res/skybox/storforsen/negy.jpg",  // Bottom face (-Y)
+                "res/skybox/storforsen/posz.jpg",  // Front face  (+Z)
+                "res/skybox/storforsen/negz.jpg"   // Back face   (-Z)
+            };
+			m_Skybox = Skybox::Create(faces);
+			// m_Skybox = Skybox::Create(cubemapTexture);
+
             // Initialize model attributes
             m_ModelAttribs.Position = { 0.0f, 0.0f, 0.0f };
             m_ModelAttribs.Rotation = { 0.0f, 0.0f, 0.0f };
@@ -61,12 +87,12 @@ namespace Lumina
             m_ModelAttribs.PointSize = 10.0f;
 
             // Setup cameras
-            m_PerspectiveCamera.SetPosition(glm::vec3(3.0f, 3.0f, 5.0f));
-            m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+            m_PerspectiveCamera.SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
+            // m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
             m_PerspectiveCamera.SetFOV(45.0f);
-            m_PerspectiveCamera.SetClippingPlanes(0.1f, 100.0f);
+            m_PerspectiveCamera.SetClippingPlanes(0.1f, 1000.0f);
 
-            m_OrthographicCamera.SetPosition(glm::vec3(3.0f, 3.0f, 5.0f));
+            m_OrthographicCamera.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
             m_OrthographicCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
             m_OrthographicCamera.SetZoom(2.0f);
 
@@ -152,6 +178,8 @@ namespace Lumina
             {
                 Renderer3D::DrawModel(m_CubeModel, m_ModelAttribs);
             }
+
+            Renderer3D::DrawSkybox(m_Skybox);
 
             // End rendering
             Renderer3D::End();
@@ -396,6 +424,7 @@ namespace Lumina
     private:
         // 3D Model and attributes
         Ref<Model> m_CubeModel;
+		Ref<Skybox> m_Skybox;
         ModelAttributes m_ModelAttribs;
 
         // Cameras

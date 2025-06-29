@@ -10,6 +10,8 @@
 #include <iostream>
 #include <vector>
 
+#include <glad/glad.h>
+
 namespace Lumina
 {
     // Constants
@@ -35,7 +37,7 @@ namespace Lumina
 
         // Environment
         Ref<Texture> EnvironmentMap = nullptr;
-        Ref<Texture> SkyboxTexture = nullptr;
+        // Note: No skybox data here anymore - it's in the Skybox class
 
         // Render settings
         RenderMode CurrentRenderMode = RenderMode::Normal;
@@ -348,6 +350,59 @@ namespace Lumina
         s_Data.Stats.TexturesUsed += 5; // Always bind 5 texture slots
     }
 
+    void Renderer3D::DrawSkybox(const Ref<Skybox>& skybox)
+    {
+         
+
+        if (!skybox || !skybox->IsValid() || !s_Data.SkyboxShader)
+        {
+            return; // No skybox, invalid skybox, or no shader available
+        }
+
+        // Setup render state for skybox
+        RenderCommands::SetDepthMask(false);  // Disable depth writing
+        RenderCommands::DisableFaceCulling(); // Disable face culling
+        RenderCommands::SetDepthFunc(DepthFunc::LessEqual);
+
+        // Bind skybox shader
+        s_Data.SkyboxShader->Bind();
+        
+        // Remove translation from view matrix (keep only rotation)
+        glm::mat4 skyboxView = glm::mat4(glm::mat3(s_Data.ViewMatrix));
+        glm::mat4 skyboxViewProjection = s_Data.ProjectionMatrix * skyboxView;
+
+        // Set shader uniforms
+        s_Data.SkyboxShader->SetUniformMat4("u_ViewProjection", skyboxViewProjection);
+        s_Data.SkyboxShader->SetUniformFloat("u_Intensity", skybox->GetIntensity());
+        s_Data.SkyboxShader->SetUniformVec3("u_Tint", skybox->GetTint());
+        s_Data.SkyboxShader->SetUniformInt("u_Skybox", 6);
+
+        // Bind skybox texture
+        auto texture = skybox->GetTexture();
+        if (texture)
+        {
+            texture->Bind(6);
+        }
+
+        // Draw skybox geometry
+        auto vao = skybox->GetVAO();
+        if (vao)
+        {
+            RenderCommands::DrawTriangles(vao, 36); // 36 vertices for cube
+        }
+
+        s_Data.SkyboxShader->Unbind();
+
+        // Restore render state
+        RenderCommands::EnableFaceCulling();
+        RenderCommands::SetDepthMask(true);
+		RenderCommands::SetDepthFunc(DepthFunc::Less);
+
+        // Update statistics
+        s_Data.Stats.DrawCalls++;
+        s_Data.Stats.TriangleCount += 12; // 6 faces * 2 triangles per face
+    }
+
     void Renderer3D::SetResolution(uint32_t width, uint32_t height)
     {
         if (width == 0 || height == 0)
@@ -415,11 +470,6 @@ namespace Lumina
     void Renderer3D::SetEnvironmentMap(const Ref<Texture>& envMap)
     {
         s_Data.EnvironmentMap = envMap;
-    }
-
-    void Renderer3D::SetSkybox(const Ref<Texture>& skybox)
-    {
-        s_Data.SkyboxTexture = skybox;
     }
 
     Renderer3D::Statistics Renderer3D::GetStats()
