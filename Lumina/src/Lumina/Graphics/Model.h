@@ -4,7 +4,7 @@
 #include <string>
 
 #include "../Core/Ref.h"
-#include "ModelFormat.h"
+#include "Formats/ModelFormat.h"
 
 #include "Mesh.h"
 

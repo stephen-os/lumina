@@ -3,7 +3,8 @@
 #include "../Core/Ref.h"
 
 #include "Model.h"
-#include "ModelFormat.h"
+
+#include "Formats/ModelFormat.h"
 
 #include "Loaders/ModelLoader.h"
 
