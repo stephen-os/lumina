@@ -44,7 +44,7 @@ namespace Lumina
 
             // Try to load cube model from file first
             // m_CubeModel = Model::Load("res/geometry/suzzan.gltf");
-            m_CubeModel = Model::Load("res/geometry/bomb.glb"); 
+            m_CubeModel = Model::Load("res/geometry/ufo.glb"); 
 
             if (!m_CubeModel || m_CubeModel->GetMeshCount() == 0)
             {
@@ -55,7 +55,8 @@ namespace Lumina
             }
 
             // Create 6 different colored faces for testing
-            std::vector<uint32_t> faceColors = {
+            std::vector<uint32_t> faceColors = 
+            {
                 0xFF0000FF, // Red   - +X (right)
                 0x00FF00FF, // Green - -X (left)
                 0x0000FFFF, // Blue  - +Y (top)
@@ -69,12 +70,12 @@ namespace Lumina
 			// Initialize skybox
             std::vector<std::string> faces = 
             {
-                "res/skybox/storforsen/posx.jpg",  // Right face  (+X)
-                "res/skybox/storforsen/negx.jpg",  // Left face   (-X)
-                "res/skybox/storforsen/posy.jpg",  // Top face    (+Y)
-                "res/skybox/storforsen/negy.jpg",  // Bottom face (-Y)
-                "res/skybox/storforsen/posz.jpg",  // Front face  (+Z)
-                "res/skybox/storforsen/negz.jpg"   // Back face   (-Z)
+                "res/skybox/galexy/right.png",  // Right face  (+X)
+                "res/skybox/galexy/left.png",  // Left face   (-X)
+                "res/skybox/galexy/top.png",  // Top face    (+Y)
+                "res/skybox/galexy/bottom.png",  // Bottom face (-Y)
+                "res/skybox/galexy/front.png",  // Front face  (+Z)
+                "res/skybox/galexy/back.png"   // Back face   (-Z)
             };
 			m_Skybox = Skybox::Create(faces);
 			// m_Skybox = Skybox::Create(cubemapTexture);
@@ -88,8 +89,8 @@ namespace Lumina
 
             // Setup cameras
             m_PerspectiveCamera.SetPosition(glm::vec3(0.0f, 0.0f, 5.0f));
-            // m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-            m_PerspectiveCamera.SetFOV(45.0f);
+            m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
+            m_PerspectiveCamera.SetFOV(90.0f);
             m_PerspectiveCamera.SetClippingPlanes(0.1f, 1000.0f);
 
             m_OrthographicCamera.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
