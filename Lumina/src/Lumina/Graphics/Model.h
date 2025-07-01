@@ -10,8 +10,14 @@
 
 namespace Lumina
 {
-    // Forward declaration
-    enum class ModelFormat;
+    struct ModelAttributes
+    {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
+        glm::vec4 TintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float PointSize = 1.0f;
+    };
 
     class Model : public Referencable
     {
