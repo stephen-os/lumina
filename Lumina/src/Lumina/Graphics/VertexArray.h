@@ -1,10 +1,7 @@
 #pragma once
-
 #include <vector>
 #include <memory>
-
 #include "Buffer.h"
-
 #include "../Core/Ref.h"
 
 namespace Lumina
@@ -21,16 +18,23 @@ namespace Lumina
         void Unbind() const;
 
         void SetVertexBuffer(Ref<VertexBuffer> vertexBuffer);
+        void SetInstanceBuffer(Ref<VertexBuffer> instanceBuffer);
         void SetIndexBuffer(Ref<IndexBuffer> indexBuffer);
 
-        const Ref<VertexBuffer> GetVertexBuffer() const { return m_VertexBuffer; }
-        const Ref<IndexBuffer> GetIndexBuffer() const { return m_IndexBuffer; }
+        const Ref<VertexBuffer>& GetVertexBuffer() const { return m_VertexBuffer; }
+        const Ref<VertexBuffer>& GetInstanceBuffer() const { return m_InstanceBuffer; }
+        const Ref<IndexBuffer>& GetIndexBuffer() const { return m_IndexBuffer; }
+
+        bool HasInstanceBuffer() const { return m_InstanceBuffer != nullptr; }
 
     private:
         uint32_t m_BufferID = 0;
         uint32_t m_VertexBufferIndex = 0;
 
-        Ref<IndexBuffer> m_IndexBuffer = nullptr;
         Ref<VertexBuffer> m_VertexBuffer = nullptr;
+        Ref<VertexBuffer> m_InstanceBuffer = nullptr;
+        Ref<IndexBuffer> m_IndexBuffer = nullptr;
+
+        void SetVertexAttributes(Ref<VertexBuffer> buffer, uint32_t divisor);
     };
 }
