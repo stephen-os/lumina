@@ -9,6 +9,20 @@ namespace Lumina
 {
     // Vertex Buffer
 
+    namespace Utils
+    {
+        static uint32_t UsageToEnum(BufferUsage usage)
+        {
+            switch (usage)
+            {
+            case BufferUsage::Static:   return GL_STATIC_DRAW; 
+            case BufferUsage::Dynamic:  return GL_DYNAMIC_DRAW; 
+            case BufferUsage::Stream:   return GL_STREAM_DRAW; 
+            }
+        }
+    }
+
+
      Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)
     { 
         return Ref<VertexBuffer>::Create(size, usage);
@@ -25,7 +39,7 @@ namespace Lumina
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
 
         GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
-        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW));
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, nullptr, Utils::UsageToEnum(m_Usage)));
     }
 
     VertexBuffer::VertexBuffer(const void* vertices, uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
@@ -34,7 +48,7 @@ namespace Lumina
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
 
         GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
-        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW));
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, vertices, Utils::UsageToEnum(m_Usage)));
     }
 
     VertexBuffer::~VertexBuffer()
@@ -62,17 +76,13 @@ namespace Lumina
 
 		if (size <= m_Size)
 		{
-			GLCALL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data););
-			m_Size = size;
+			GLCALL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
             return; 
 		}
 
-        switch (m_Usage)
-        {
-        case BufferUsage::Static:   GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));  break;
-        case BufferUsage::Dynamic:  GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW)); break;
-        case BufferUsage::Stream:   GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW));  break; 
-        }
+        m_Size = size;
+
+        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, Utils::UsageToEnum(m_Usage)));
     }
 
     // Index Buffer
@@ -91,7 +101,7 @@ namespace Lumina
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create index buffer!");
 
         GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
-        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, Utils::UsageToEnum(m_Usage)));
     }
 
     IndexBuffer::~IndexBuffer()
@@ -118,20 +128,16 @@ namespace Lumina
 		uint32_t newSize = count * sizeof(uint32_t);
 		uint32_t currentSize = m_Count * sizeof(uint32_t);
 
+        m_Count = count;
+
         GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
 
         if (newSize <= currentSize)
         {
-			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
-            m_Count = count;
+            GLCALL(glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, newSize, data));
             return; 
         }
 
-		switch (m_Usage)
-		{
-		case BufferUsage::Static:   GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_STATIC_DRAW));  break;
-		case BufferUsage::Dynamic:  GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_DYNAMIC_DRAW)); break;
-		case BufferUsage::Stream:   GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_STREAM_DRAW));  break;
-		}
+        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, Utils::UsageToEnum(m_Usage)));
 	}
 }
