@@ -9,7 +9,17 @@ namespace Lumina
 {
     // Vertex Buffer
 
-    VertexBuffer::VertexBuffer(uint32_t size)
+     Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)
+    { 
+        return Ref<VertexBuffer>::Create(size, usage);
+    }
+
+    Ref<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size, BufferUsage usage)
+    { 
+        return Ref<VertexBuffer>::Create(data, size, usage);
+    }
+
+    VertexBuffer::VertexBuffer(uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
     {
         GLCALL(glCreateBuffers(1, &m_BufferID));
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
@@ -18,7 +28,7 @@ namespace Lumina
         GLCALL(glBufferData(GL_ARRAY_BUFFER, size, nullptr, GL_DYNAMIC_DRAW));
     }
 
-    VertexBuffer::VertexBuffer(const void* vertices, uint32_t size)
+    VertexBuffer::VertexBuffer(const void* vertices, uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
     {
         GLCALL(glCreateBuffers(1, &m_BufferID));
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create vertex buffer!");
@@ -49,21 +59,39 @@ namespace Lumina
         LUMINA_ASSERT(size > 0, "VertexBuffer::SetData called with zero size!");
 
         GLCALL(glBindBuffer(GL_ARRAY_BUFFER, m_BufferID));
-        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));
+
+		if (size <= m_Size)
+		{
+			GLCALL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data););
+			m_Size = size;
+            return; 
+		}
+
+        switch (m_Usage)
+        {
+        case BufferUsage::Static:   GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STATIC_DRAW));  break;
+        case BufferUsage::Dynamic:  GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_DYNAMIC_DRAW)); break;
+        case BufferUsage::Stream:   GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, GL_STREAM_DRAW));  break; 
+        }
     }
 
     // Index Buffer
 
-    IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count) : m_Count(count)
+    Ref<IndexBuffer> IndexBuffer::Create(uint32_t * data, uint32_t count, BufferUsage usage)
+    { 
+        return Ref<IndexBuffer>::Create(data, count, usage);
+    }
+
+	IndexBuffer::IndexBuffer(uint32_t* data, uint32_t count, BufferUsage usage) : m_Count(count), m_Usage(usage)
     {
-        LUMINA_ASSERT(indices != nullptr, "Null index data passed to IndexBuffer!");
+        LUMINA_ASSERT(data != nullptr, "Null index data passed to IndexBuffer!");
         LUMINA_ASSERT(count > 0, "Index buffer count is zero!");
 
         GLCALL(glCreateBuffers(1, &m_BufferID));
         LUMINA_ASSERT(m_BufferID != 0, "Failed to create index buffer!");
 
         GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
-        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), indices, GL_STATIC_DRAW));
+        GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
     }
 
     IndexBuffer::~IndexBuffer()
@@ -86,8 +114,24 @@ namespace Lumina
 	{
 		LUMINA_ASSERT(data != nullptr, "IndexBuffer::SetData called with null data!");
 		LUMINA_ASSERT(count > 0, "IndexBuffer::SetData called with zero count!");
-		m_Count = count;
-		GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
-		GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, count * sizeof(uint32_t), data, GL_STATIC_DRAW));
+
+		uint32_t newSize = count * sizeof(uint32_t);
+		uint32_t currentSize = m_Count * sizeof(uint32_t);
+
+        GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
+
+        if (newSize <= currentSize)
+        {
+			GLCALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_BufferID));
+            m_Count = count;
+            return; 
+        }
+
+		switch (m_Usage)
+		{
+		case BufferUsage::Static:   GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_STATIC_DRAW));  break;
+		case BufferUsage::Dynamic:  GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_DYNAMIC_DRAW)); break;
+		case BufferUsage::Stream:   GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, GL_STREAM_DRAW));  break;
+		}
 	}
 }
