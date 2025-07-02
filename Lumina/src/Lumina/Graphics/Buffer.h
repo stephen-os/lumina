@@ -33,6 +33,8 @@ namespace Lumina
         BufferUsage GetUsage() const { return m_Usage; }
         uint32_t GetSize() const { return m_Size; }
 
+		uint32_t GetID() const { return m_BufferID; }
+
     private:
         uint32_t m_BufferID;
         uint32_t m_Size;
@@ -54,6 +56,8 @@ namespace Lumina
 
         uint32_t GetCount() const { return m_Count; }
         BufferUsage GetUsage() const { return m_Usage; }
+
+		uint32_t GetID() const { return m_BufferID; }
 
     private:
         uint32_t m_BufferID;

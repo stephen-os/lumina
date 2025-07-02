@@ -89,12 +89,12 @@ namespace Lumina
             LUMINA_ASSERT(asteroid2Model, "Failed to load Asteroid 2 model");
             LUMINA_ASSERT(asteroid3Model, "Failed to load Asteroid 3 model");
 
-            const int asteroidCount = 50;
+            const int asteroidCount = 500;
             const float beltInnerRadius = 1900.0f;
             const float beltOuterRadius = 2100.0f;
             const float astriodScaleBase = 1.0f;
             const int astriodScaleRange = 30; 
-       
+
             for (int i = 0; i < asteroidCount; ++i)
             {
                 AsteroidData asteroid;
@@ -104,6 +104,7 @@ namespace Lumina
                 if (modelChoice == 0) asteroid.Model = asteroid1Model;
                 else if (modelChoice == 1) asteroid.Model = asteroid2Model;
                 else asteroid.Model = asteroid3Model;
+                
 
                 // Random position in belt
                 float angle = (float)i / asteroidCount * 2.0f * 3.14159f + (rand() % 100) * 0.01f;
@@ -118,6 +119,7 @@ namespace Lumina
                 asteroid.Attributes.Position.y = (rand() % 100 - 50) * 2.0f; // Random Y offset
                 asteroid.Attributes.Rotation = { 0.0f, 0.0f, 0.0f };
                 asteroid.Attributes.Scale = { astriodScaleBase + 0.1f * (rand() % astriodScaleRange), astriodScaleBase + 0.1f * (rand() % astriodScaleRange), astriodScaleBase + 0.1f * (rand() % astriodScaleRange) };
+                
                 asteroid.Attributes.TintColor = { 0.6f + (rand() % 20) * 0.01f, 0.6f + (rand() % 20) * 0.01f, 0.6f + (rand() % 20) * 0.01f, 1.0f };
 
                 m_Asteroids.push_back(asteroid);
@@ -387,7 +389,7 @@ namespace Lumina
             {
                 for (const auto& asteroid : m_Asteroids)
                 {
-                    Renderer3D::DrawModel(asteroid.Model, asteroid.Attributes);
+                    Renderer3D::SubmitModel(asteroid.Model, asteroid.Attributes);
                 }
             }
 

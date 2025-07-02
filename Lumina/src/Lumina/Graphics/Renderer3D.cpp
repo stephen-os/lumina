@@ -9,6 +9,7 @@
 
 #include <iostream>
 #include <vector>
+#include <unordered_map>
 
 #include <glad/glad.h>
 
@@ -25,6 +26,7 @@ namespace Lumina
 
         // Shaders
         Ref<ShaderProgram> PBRShader = nullptr;
+		Ref<ShaderProgram> PBRIShader = nullptr;
         Ref<ShaderProgram> SkyboxShader = nullptr;
 
         // Default textures
@@ -38,6 +40,9 @@ namespace Lumina
         // Environment
         Ref<Texture> EnvironmentMap = nullptr;
         // Note: No skybox data here anymore - it's in the Skybox class
+
+        // Instance map 
+        std::unordered_map<uint64_t, Ref<Instance>> m_ModelInstances;
 
         // Render settings
         RenderMode CurrentRenderMode = RenderMode::Normal;
@@ -81,6 +86,13 @@ namespace Lumina
             std::string vertexSource = ReadFile("res/shaders/PBR.vert");
             std::string fragmentSource = ReadFile("res/shaders/PBR.frag");
             s_Data.PBRShader = ShaderProgram::Create(vertexSource, fragmentSource);
+        }
+
+        // Load PBRI shader (for instance rendering)
+        {
+            std::string vertexSource = ReadFile("res/shaders/PBRI.vert");
+            std::string fragmentSource = ReadFile("res/shaders/PBRI.frag");
+            s_Data.PBRIShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
 
         // Load Skybox shader
@@ -145,6 +157,8 @@ namespace Lumina
 
     void Renderer3D::End()
     {
+        Flush(); 
+
         s_Data.RendererFrameBuffer->Unbind();
     }
 
@@ -173,8 +187,43 @@ namespace Lumina
         // Set render mode in shader
         s_Data.PBRShader->SetUniformInt("u_RenderMode", static_cast<int>(s_Data.CurrentRenderMode));
 
-        SetupLighting();
-        SetupRenderMode(attributes);
+        s_Data.PBRShader->SetUniformVec3("u_DirLight.Direction", s_Data.DirLight.Direction);
+        s_Data.PBRShader->SetUniformVec3("u_DirLight.Color", s_Data.DirLight.Color);
+        s_Data.PBRShader->SetUniformFloat("u_DirLight.Intensity", s_Data.DirLight.Intensity);
+
+        // Set point lights
+        s_Data.PBRShader->SetUniformInt("u_NumPointLights", static_cast<int>(s_Data.PointLights.size()));
+
+        for (size_t i = 0; i < s_Data.PointLights.size() && i < MaxPointLights; ++i)
+        {
+            std::string base = "u_PointLights[" + std::to_string(i) + "]";
+            s_Data.PBRShader->SetUniformVec3(base + ".Position", s_Data.PointLights[i].Position);
+            s_Data.PBRShader->SetUniformVec3(base + ".Color", s_Data.PointLights[i].Color);
+            s_Data.PBRShader->SetUniformFloat(base + ".Intensity", s_Data.PointLights[i].Intensity);
+            s_Data.PBRShader->SetUniformFloat(base + ".Constant", s_Data.PointLights[i].Constant);
+            s_Data.PBRShader->SetUniformFloat(base + ".Linear", s_Data.PointLights[i].Linear);
+            s_Data.PBRShader->SetUniformFloat(base + ".Quadratic", s_Data.PointLights[i].Quadratic);
+        }
+
+        // Set environment mapping if available
+        if (s_Data.EnvironmentMap)
+        {
+            s_Data.EnvironmentMap->Bind(5);
+            s_Data.PBRShader->SetUniformInt("u_EnvironmentMap", 5);
+            s_Data.PBRShader->SetUniformInt("u_HasEnvironmentMap", 1);
+        }
+        else
+        {
+            s_Data.PBRShader->SetUniformInt("u_HasEnvironmentMap", 0);
+        }
+
+		// Set point size if rendering points
+        if (s_Data.CurrentRenderMode == RenderMode::Points)
+        {
+            float pointSize = (attributes.PointSize > 0.0f) ? attributes.PointSize : s_Data.GlobalPointSize;
+            RenderCommands::SetPointSize(pointSize);
+            s_Data.PBRShader->SetUniformFloat("u_PointSize", pointSize);
+        }
 
         const auto& meshes = model->GetMeshes();
         for (const auto& mesh : meshes)
@@ -403,6 +452,351 @@ namespace Lumina
         s_Data.Stats.TriangleCount += 12; // 6 faces * 2 triangles per face
     }
 
+    void Renderer3D::SubmitModel(const Ref<Model>& model, const ModelAttributes& attributes)
+    {
+        if (!model || model->IsEmpty())
+            return;
+
+        // Get or create instance batch for this model
+        auto instance = GetInstance(model);
+
+        // Add this model's attributes to the batch
+        instance->AddInstance(attributes);
+
+        // If batch is full, flush it immediately
+        if (instance->IsFull())
+        {
+            // Bind the INSTANCED shader
+            s_Data.PBRIShader->Bind();
+
+            // Set common uniforms (no u_Model needed!)
+            s_Data.PBRIShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+            s_Data.PBRIShader->SetUniformVec3("u_CameraPos", s_Data.CameraPosition);
+            s_Data.PBRIShader->SetUniformInt("u_RenderMode", static_cast<int>(s_Data.CurrentRenderMode));
+
+            // Set fallback tint color (instances will override this)
+            s_Data.PBRIShader->SetUniformVec4("u_TintColor", glm::vec4(1.0f));
+
+            // Set lighting uniforms
+            s_Data.PBRIShader->SetUniformVec3("u_DirLight.Direction", s_Data.DirLight.Direction);
+            s_Data.PBRIShader->SetUniformVec3("u_DirLight.Color", s_Data.DirLight.Color);
+            s_Data.PBRIShader->SetUniformFloat("u_DirLight.Intensity", s_Data.DirLight.Intensity);
+
+            // Set point lights
+            s_Data.PBRIShader->SetUniformInt("u_NumPointLights", static_cast<int>(s_Data.PointLights.size()));
+            for (size_t i = 0; i < s_Data.PointLights.size() && i < MaxPointLights; ++i)
+            {
+                std::string base = "u_PointLights[" + std::to_string(i) + "]";
+                s_Data.PBRIShader->SetUniformVec3(base + ".Position", s_Data.PointLights[i].Position);
+                s_Data.PBRIShader->SetUniformVec3(base + ".Color", s_Data.PointLights[i].Color);
+                s_Data.PBRIShader->SetUniformFloat(base + ".Intensity", s_Data.PointLights[i].Intensity);
+                s_Data.PBRIShader->SetUniformFloat(base + ".Constant", s_Data.PointLights[i].Constant);
+                s_Data.PBRIShader->SetUniformFloat(base + ".Linear", s_Data.PointLights[i].Linear);
+                s_Data.PBRIShader->SetUniformFloat(base + ".Quadratic", s_Data.PointLights[i].Quadratic);
+            }
+
+            // Set environment mapping
+            if (s_Data.EnvironmentMap)
+            {
+                s_Data.EnvironmentMap->Bind(5);
+                s_Data.PBRIShader->SetUniformInt("u_EnvironmentMap", 5);
+                s_Data.PBRIShader->SetUniformInt("u_HasEnvironmentMap", 1);
+            }
+            else
+            {
+                s_Data.PBRIShader->SetUniformInt("u_HasEnvironmentMap", 0);
+            }
+
+            // Set point size for points mode
+            if (s_Data.CurrentRenderMode == RenderMode::Points)
+            {
+                s_Data.PBRIShader->SetUniformFloat("u_PointSize", s_Data.GlobalPointSize);
+            }
+
+            // Render all instance batches
+            
+            if (!instance->IsEmpty())
+            {
+                // For each model, we need to set up its material textures
+                auto model = instance->GetModel();
+                if (model && !model->GetMeshes().empty())
+                {
+                    // Use the first mesh's material for all instances of this model
+                    auto mesh = model->GetMeshes()[0];
+                    auto material = mesh->GetMaterial();
+
+                    // Bind material textures (same as in DrawMesh)
+                    if (material && material->GetAlbedoTexture())
+                    {
+                        material->GetAlbedoTexture()->Bind(0);
+                        s_Data.PBRIShader->SetUniformInt("u_AlbedoTexture", 0);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAlbedoTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(0);
+                        s_Data.PBRIShader->SetUniformInt("u_AlbedoTexture", 0);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAlbedoTexture", 0);
+                    }
+
+                    if (material && material->GetNormalTexture())
+                    {
+                        material->GetNormalTexture()->Bind(1);
+                        s_Data.PBRIShader->SetUniformInt("u_NormalTexture", 1);
+                        s_Data.PBRIShader->SetUniformInt("u_HasNormalTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.DefaultNormalMap->Bind(1);
+                        s_Data.PBRIShader->SetUniformInt("u_NormalTexture", 1);
+                        s_Data.PBRIShader->SetUniformInt("u_HasNormalTexture", 0);
+                    }
+
+                    if (material && material->GetMetallicTexture())
+                    {
+                        material->GetMetallicTexture()->Bind(2);
+                        s_Data.PBRIShader->SetUniformInt("u_MetallicTexture", 2);
+                        s_Data.PBRIShader->SetUniformInt("u_HasMetallicTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(2);
+                        s_Data.PBRIShader->SetUniformInt("u_MetallicTexture", 2);
+                        s_Data.PBRIShader->SetUniformInt("u_HasMetallicTexture", 0);
+                    }
+
+                    if (material && material->GetRoughnessTexture())
+                    {
+                        material->GetRoughnessTexture()->Bind(3);
+                        s_Data.PBRIShader->SetUniformInt("u_RoughnessTexture", 3);
+                        s_Data.PBRIShader->SetUniformInt("u_HasRoughnessTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(3);
+                        s_Data.PBRIShader->SetUniformInt("u_RoughnessTexture", 3);
+                        s_Data.PBRIShader->SetUniformInt("u_HasRoughnessTexture", 0);
+                    }
+
+                    if (material && material->GetAOTexture())
+                    {
+                        material->GetAOTexture()->Bind(4);
+                        s_Data.PBRIShader->SetUniformInt("u_AOTexture", 4);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAOTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(4);
+                        s_Data.PBRIShader->SetUniformInt("u_AOTexture", 4);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAOTexture", 0);
+                    }
+
+                    // Set material properties
+                    if (material)
+                    {
+                        s_Data.PBRIShader->SetUniformVec3("u_Material.Albedo", material->GetAlbedo());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Metallic", material->GetMetallic());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Roughness", material->GetRoughness());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.AO", material->GetAO());
+                    }
+                    else
+                    {
+                        // Default material properties
+                        s_Data.PBRIShader->SetUniformVec3("u_Material.Albedo", glm::vec3(1.0f));
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Metallic", 0.0f);
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Roughness", 0.5f);
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.AO", 1.0f);
+                    }
+                }
+
+                instance->Upload();
+                instance->Render();
+                instance->Clear();
+
+                // Update stats
+                s_Data.Stats.DrawCalls++;
+                s_Data.Stats.ModelCount += instance->GetInstanceCount();
+            }
+
+            s_Data.PBRIShader->Unbind();
+        }
+    }
+
+    Ref<Instance> Renderer3D::GetInstance(const Ref<Model>& model)
+    {
+        uint64_t modelUUID = model->GetUUID();
+        auto it = s_Data.m_ModelInstances.find(modelUUID);
+        if (it != s_Data.m_ModelInstances.end())
+            return it->second;
+
+        // Create new instance batch for this model
+        auto instance = Ref<Instance>::Create(model);
+        s_Data.m_ModelInstances[modelUUID] = instance;
+        return instance;
+    }
+
+    void Renderer3D::Flush()
+    {
+        if (s_Data.m_ModelInstances.empty())
+            return;
+
+        // Bind the INSTANCED shader
+        s_Data.PBRIShader->Bind();
+
+        // Set common uniforms (no u_Model needed!)
+        s_Data.PBRIShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+        s_Data.PBRIShader->SetUniformVec3("u_CameraPos", s_Data.CameraPosition);
+        s_Data.PBRIShader->SetUniformInt("u_RenderMode", static_cast<int>(s_Data.CurrentRenderMode));
+
+        // Set fallback tint color (instances will override this)
+        s_Data.PBRIShader->SetUniformVec4("u_TintColor", glm::vec4(1.0f));
+
+        // Set lighting uniforms
+        s_Data.PBRIShader->SetUniformVec3("u_DirLight.Direction", s_Data.DirLight.Direction);
+        s_Data.PBRIShader->SetUniformVec3("u_DirLight.Color", s_Data.DirLight.Color);
+        s_Data.PBRIShader->SetUniformFloat("u_DirLight.Intensity", s_Data.DirLight.Intensity);
+
+        // Set point lights
+        s_Data.PBRIShader->SetUniformInt("u_NumPointLights", static_cast<int>(s_Data.PointLights.size()));
+        for (size_t i = 0; i < s_Data.PointLights.size() && i < MaxPointLights; ++i)
+        {
+            std::string base = "u_PointLights[" + std::to_string(i) + "]";
+            s_Data.PBRIShader->SetUniformVec3(base + ".Position", s_Data.PointLights[i].Position);
+            s_Data.PBRIShader->SetUniformVec3(base + ".Color", s_Data.PointLights[i].Color);
+            s_Data.PBRIShader->SetUniformFloat(base + ".Intensity", s_Data.PointLights[i].Intensity);
+            s_Data.PBRIShader->SetUniformFloat(base + ".Constant", s_Data.PointLights[i].Constant);
+            s_Data.PBRIShader->SetUniformFloat(base + ".Linear", s_Data.PointLights[i].Linear);
+            s_Data.PBRIShader->SetUniformFloat(base + ".Quadratic", s_Data.PointLights[i].Quadratic);
+        }
+
+        // Set environment mapping
+        if (s_Data.EnvironmentMap)
+        {
+            s_Data.EnvironmentMap->Bind(5);
+            s_Data.PBRIShader->SetUniformInt("u_EnvironmentMap", 5);
+            s_Data.PBRIShader->SetUniformInt("u_HasEnvironmentMap", 1);
+        }
+        else
+        {
+            s_Data.PBRIShader->SetUniformInt("u_HasEnvironmentMap", 0);
+        }
+
+        // Set point size for points mode
+        if (s_Data.CurrentRenderMode == RenderMode::Points)
+        {
+            s_Data.PBRIShader->SetUniformFloat("u_PointSize", s_Data.GlobalPointSize);
+        }
+
+        // Render all instance batches
+        for (auto& [uuid, instance] : s_Data.m_ModelInstances)
+        {
+            if (!instance->IsEmpty())
+            {
+                // For each model, we need to set up its material textures
+                auto model = instance->GetModel();
+                if (model && !model->GetMeshes().empty())
+                {
+                    // Use the first mesh's material for all instances of this model
+                    auto mesh = model->GetMeshes()[0];
+                    auto material = mesh->GetMaterial();
+
+                    // Bind material textures (same as in DrawMesh)
+                    if (material && material->GetAlbedoTexture())
+                    {
+                        material->GetAlbedoTexture()->Bind(0);
+                        s_Data.PBRIShader->SetUniformInt("u_AlbedoTexture", 0);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAlbedoTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(0);
+                        s_Data.PBRIShader->SetUniformInt("u_AlbedoTexture", 0);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAlbedoTexture", 0);
+                    }
+
+                    if (material && material->GetNormalTexture())
+                    {
+                        material->GetNormalTexture()->Bind(1);
+                        s_Data.PBRIShader->SetUniformInt("u_NormalTexture", 1);
+                        s_Data.PBRIShader->SetUniformInt("u_HasNormalTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.DefaultNormalMap->Bind(1);
+                        s_Data.PBRIShader->SetUniformInt("u_NormalTexture", 1);
+                        s_Data.PBRIShader->SetUniformInt("u_HasNormalTexture", 0);
+                    }
+
+                    if (material && material->GetMetallicTexture())
+                    {
+                        material->GetMetallicTexture()->Bind(2);
+                        s_Data.PBRIShader->SetUniformInt("u_MetallicTexture", 2);
+                        s_Data.PBRIShader->SetUniformInt("u_HasMetallicTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(2);
+                        s_Data.PBRIShader->SetUniformInt("u_MetallicTexture", 2);
+                        s_Data.PBRIShader->SetUniformInt("u_HasMetallicTexture", 0);
+                    }
+
+                    if (material && material->GetRoughnessTexture())
+                    {
+                        material->GetRoughnessTexture()->Bind(3);
+                        s_Data.PBRIShader->SetUniformInt("u_RoughnessTexture", 3);
+                        s_Data.PBRIShader->SetUniformInt("u_HasRoughnessTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(3);
+                        s_Data.PBRIShader->SetUniformInt("u_RoughnessTexture", 3);
+                        s_Data.PBRIShader->SetUniformInt("u_HasRoughnessTexture", 0);
+                    }
+
+                    if (material && material->GetAOTexture())
+                    {
+                        material->GetAOTexture()->Bind(4);
+                        s_Data.PBRIShader->SetUniformInt("u_AOTexture", 4);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAOTexture", 1);
+                    }
+                    else
+                    {
+                        s_Data.WhiteTexture->Bind(4);
+                        s_Data.PBRIShader->SetUniformInt("u_AOTexture", 4);
+                        s_Data.PBRIShader->SetUniformInt("u_HasAOTexture", 0);
+                    }
+
+                    // Set material properties
+                    if (material)
+                    {
+                        s_Data.PBRIShader->SetUniformVec3("u_Material.Albedo", material->GetAlbedo());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Metallic", material->GetMetallic());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Roughness", material->GetRoughness());
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.AO", material->GetAO());
+                    }
+                    else
+                    {
+                        // Default material properties
+                        s_Data.PBRIShader->SetUniformVec3("u_Material.Albedo", glm::vec3(1.0f));
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Metallic", 0.0f);
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.Roughness", 0.5f);
+                        s_Data.PBRIShader->SetUniformFloat("u_Material.AO", 1.0f);
+                    }
+                }
+
+                instance->Upload();
+                instance->Render();
+                instance->Clear();
+
+                // Update stats
+                s_Data.Stats.DrawCalls++;
+                s_Data.Stats.ModelCount += instance->GetInstanceCount();
+            }
+        }
+
+        s_Data.PBRIShader->Unbind();
+    }
+
     void Renderer3D::SetResolution(uint32_t width, uint32_t height)
     {
         if (width == 0 || height == 0)
@@ -480,51 +874,6 @@ namespace Lumina
     void Renderer3D::ResetStats()
     {
         memset(&s_Data.Stats, 0, sizeof(Statistics));
-    }
-
-    void Renderer3D::SetupLighting()
-    {
-        // Set directional light
-        s_Data.PBRShader->SetUniformVec3("u_DirLight.Direction", s_Data.DirLight.Direction);
-        s_Data.PBRShader->SetUniformVec3("u_DirLight.Color", s_Data.DirLight.Color);
-        s_Data.PBRShader->SetUniformFloat("u_DirLight.Intensity", s_Data.DirLight.Intensity);
-
-        // Set point lights
-        s_Data.PBRShader->SetUniformInt("u_NumPointLights", static_cast<int>(s_Data.PointLights.size()));
-
-        for (size_t i = 0; i < s_Data.PointLights.size() && i < MaxPointLights; ++i)
-        {
-            std::string base = "u_PointLights[" + std::to_string(i) + "]";
-            s_Data.PBRShader->SetUniformVec3(base + ".Position", s_Data.PointLights[i].Position);
-            s_Data.PBRShader->SetUniformVec3(base + ".Color", s_Data.PointLights[i].Color);
-            s_Data.PBRShader->SetUniformFloat(base + ".Intensity", s_Data.PointLights[i].Intensity);
-            s_Data.PBRShader->SetUniformFloat(base + ".Constant", s_Data.PointLights[i].Constant);
-            s_Data.PBRShader->SetUniformFloat(base + ".Linear", s_Data.PointLights[i].Linear);
-            s_Data.PBRShader->SetUniformFloat(base + ".Quadratic", s_Data.PointLights[i].Quadratic);
-        }
-
-        // Set environment mapping if available
-        if (s_Data.EnvironmentMap)
-        {
-            s_Data.EnvironmentMap->Bind(5);
-            s_Data.PBRShader->SetUniformInt("u_EnvironmentMap", 5);
-            s_Data.PBRShader->SetUniformInt("u_HasEnvironmentMap", 1);
-        }
-        else
-        {
-            s_Data.PBRShader->SetUniformInt("u_HasEnvironmentMap", 0);
-        }
-    }
-
-    void Renderer3D::SetupRenderMode(const ModelAttributes& attributes)
-    {
-        if (s_Data.CurrentRenderMode == RenderMode::Points)
-        {
-            // Set point size - use per-object size if specified, otherwise global
-            float pointSize = (attributes.PointSize > 0.0f) ? attributes.PointSize : s_Data.GlobalPointSize;
-            RenderCommands::SetPointSize(pointSize);
-            s_Data.PBRShader->SetUniformFloat("u_PointSize", pointSize);
-        }
     }
 
     glm::mat4 Renderer3D::CalculateModelMatrix(const ModelAttributes& attributes)

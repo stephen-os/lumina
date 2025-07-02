@@ -44,7 +44,7 @@ namespace Lumina
 
             // Try to load cube model from file first
             // m_CubeModel = Model::Load("res/geometry/suzzan.gltf");
-            m_CubeModel = Model::Load("res/geometry/ufo.glb"); 
+            m_CubeModel = Model::Load("res/geometry/suzzan.gltf"); 
 
             if (!m_CubeModel || m_CubeModel->GetMeshCount() == 0)
             {

@@ -55,7 +55,8 @@ namespace Lumina
         m_VBO = VertexBuffer::Create(m_Vertices.size() * sizeof(Vertex3D));
 
         // Set buffer layout
-        BufferLayout layout = {
+        BufferLayout layout = 
+        {
             { BufferDataType::Float3, "a_Position" },
             { BufferDataType::Float3, "a_Normal" },
             { BufferDataType::Float2, "a_TexCoord" },

@@ -1,4 +1,7 @@
 #pragma once
+
+#include "Cameras/Camera.h"
+
 #include "VertexArray.h"
 #include "Texture.h"
 #include "ShaderProgram.h"
@@ -6,8 +9,10 @@
 #include "FrameBuffer.h"
 #include "Model.h"
 #include "Skybox.h"
-#include "Cameras/Camera.h"
+#include "Instance.h"
+
 #include <glm/glm.hpp>
+
 #include <string>
 #include <memory>
 
@@ -49,10 +54,14 @@ namespace Lumina
         static void Begin(const glm::mat4& viewProjection);
         static void End();
 
-        // Rendering Functions
+		// Immediate Mode Rendering
         static void DrawModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
         static void DrawMesh(const Ref<Mesh>& mesh, const ModelAttributes& attributes = {});
         static void DrawSkybox(const Ref<Skybox>& skybox);
+
+		// Instance Mode Rendering
+		static void SubmitModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
+		static void Flush(); 
 
         // Resolution Management
         static void SetResolution(uint32_t width, uint32_t height);
@@ -93,8 +102,8 @@ namespace Lumina
         static void ResetStats();
 
     private:
-        static void SetupLighting();
-        static void SetupRenderMode(const ModelAttributes& attributes);
         static glm::mat4 CalculateModelMatrix(const ModelAttributes& attributes);
+
+        static Ref<Instance> GetInstance(const Ref<Model>& model);
     };
 }
