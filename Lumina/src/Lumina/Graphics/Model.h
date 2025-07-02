@@ -4,6 +4,9 @@
 #include <string>
 
 #include "../Core/Ref.h"
+
+#include "../Utils/UUID.h"
+
 #include "Formats/ModelFormat.h"
 
 #include "Mesh.h"
@@ -64,7 +67,10 @@ namespace Lumina
         // Memory management
         void Clear();
 
+        uint64_t GetUUID() const { return m_UUID; }
+
     private:
+        uint64_t m_UUID = UUID::Generate();
         std::string m_Name = "Unnamed Model";
         std::string m_Directory;
         std::vector<Ref<Mesh>> m_Meshes;
