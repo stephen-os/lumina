@@ -1,8 +1,11 @@
 #pragma once
+
 #include <vector>
 #include <memory>
-#include "Buffer.h"
+
 #include "../Core/Ref.h"
+
+#include "Buffer.h"
 
 namespace Lumina
 {
@@ -29,7 +32,7 @@ namespace Lumina
 
     private:
         uint32_t m_BufferID = 0;
-        uint32_t m_VertexBufferIndex = 0;
+        uint32_t m_AttributeLocationPtr = 0;
 
         Ref<VertexBuffer> m_VertexBuffer = nullptr;
         Ref<VertexBuffer> m_InstanceBuffer = nullptr;

@@ -1,5 +1,4 @@
 #include "VertexArray.h"
-#include "RendererDebug.h"
 
 #include <glad/glad.h>
 
@@ -7,6 +6,7 @@
 #include "../Core/Log.h"
 
 #include "BufferLayout.h"
+#include "RendererDebug.h"
 
 namespace Lumina
 {
@@ -56,7 +56,6 @@ namespace Lumina
     {
         LUMINA_ASSERT(vertexBuffer != nullptr, "VertexBuffer passed to SetVertexBuffer is null.");
 
-        // Set up attributes with divisor = 0 (per-vertex)
         SetVertexAttributes(vertexBuffer, 0);
 
         m_VertexBuffer.Reset();
@@ -67,7 +66,6 @@ namespace Lumina
     {
         LUMINA_ASSERT(instanceBuffer != nullptr, "InstanceBuffer passed to SetInstanceBuffer is null.");
 
-        // Set up attributes with divisor = 1 (per-instance)
         SetVertexAttributes(instanceBuffer, 1);
 
         m_InstanceBuffer.Reset();
@@ -95,94 +93,178 @@ namespace Lumina
 
         for (const auto& element : layout)
         {
+            if (element.IsPadding())
+            {
+                continue;
+            }
+
             switch (element.Type)
             {
             case BufferDataType::Float:
             {
-                GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
                 GLCALL(glVertexAttribPointer(
-                    m_VertexBufferIndex,
+                    m_AttributeLocationPtr,
                     element.GetComponentCount(),
                     GL_FLOAT,
                     element.Normalized ? GL_TRUE : GL_FALSE,
                     layout.GetStride(),
-                    (const void*)element.Offset));
-                GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                m_VertexBufferIndex++;
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
                 break;
             }
             case BufferDataType::Float2:
             {
-                GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
                 GLCALL(glVertexAttribPointer(
-                    m_VertexBufferIndex,
+                    m_AttributeLocationPtr,
                     element.GetComponentCount(),
                     GL_FLOAT,
                     element.Normalized ? GL_TRUE : GL_FALSE,
                     layout.GetStride(),
-                    (const void*)element.Offset));
-                GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                m_VertexBufferIndex++;
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
                 break;
             }
             case BufferDataType::Float3:
             {
-                GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
                 GLCALL(glVertexAttribPointer(
-                    m_VertexBufferIndex,
+                    m_AttributeLocationPtr,
                     element.GetComponentCount(),
                     GL_FLOAT,
                     element.Normalized ? GL_TRUE : GL_FALSE,
                     layout.GetStride(),
-                    (const void*)element.Offset));
-                GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                m_VertexBufferIndex++;
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
                 break;
             }
             case BufferDataType::Float4:
             {
-                GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
-                GLCALL(glVertexAttribPointer(m_VertexBufferIndex,
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribPointer(
+                    m_AttributeLocationPtr,
                     element.GetComponentCount(),
                     GL_FLOAT,
                     element.Normalized ? GL_TRUE : GL_FALSE,
                     layout.GetStride(),
-                    (const void*)element.Offset));
-                GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                m_VertexBufferIndex++;
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
                 break;
             }
             case BufferDataType::Int:
+            {
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribIPointer(
+                    m_AttributeLocationPtr,
+                    element.GetComponentCount(),
+                    GL_INT,
+                    layout.GetStride(),
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
+                break;
+            }
             case BufferDataType::Int2:
+            {
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribIPointer(
+                    m_AttributeLocationPtr,
+                    element.GetComponentCount(),
+                    GL_INT,
+                    layout.GetStride(),
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
+                break;
+            }
             case BufferDataType::Int3:
+            {
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribIPointer(
+                    m_AttributeLocationPtr,
+                    element.GetComponentCount(),
+                    GL_INT,
+                    layout.GetStride(),
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
+                break;
+            }
             case BufferDataType::Int4:
+            {
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribIPointer(
+                    m_AttributeLocationPtr,
+                    element.GetComponentCount(),
+                    GL_INT,
+                    layout.GetStride(),
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
+                break;
+            }
             case BufferDataType::Bool:
             {
-                GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
-                GLCALL(glVertexAttribIPointer(m_VertexBufferIndex,
+                GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                GLCALL(glVertexAttribIPointer(
+                    m_AttributeLocationPtr,
                     element.GetComponentCount(),
-                    CalculateDataTypeSize(element.Type),
+                    GL_UNSIGNED_BYTE,
                     layout.GetStride(),
-                    (const void*)element.Offset));
-                GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                m_VertexBufferIndex++;
+                    (const void*)element.Offset)
+                );
+                GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                m_AttributeLocationPtr++;
                 break;
             }
             case BufferDataType::Mat3:
+            {
+                uint8_t count = element.GetComponentCount();
+                for (uint8_t i = 0; i < count; i++)
+                {
+                    GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                    GLCALL(glVertexAttribPointer(
+                        m_AttributeLocationPtr,
+                        count, 
+                        GL_FLOAT,
+                        element.Normalized ? GL_TRUE : GL_FALSE,
+                        layout.GetStride(),
+                        (const void*)(element.Offset + sizeof(float) * 3 * i))
+                    );
+                    GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                    m_AttributeLocationPtr++;
+                }
+                break;
+            }
             case BufferDataType::Mat4:
             {
                 uint8_t count = element.GetComponentCount();
                 for (uint8_t i = 0; i < count; i++)
                 {
-                    GLCALL(glEnableVertexAttribArray(m_VertexBufferIndex));
-                    GLCALL(glVertexAttribPointer(m_VertexBufferIndex,
+                    GLCALL(glEnableVertexAttribArray(m_AttributeLocationPtr));
+                    GLCALL(glVertexAttribPointer(
+                        m_AttributeLocationPtr,
                         count,
-                        GL_FLOAT, // Matrices are always float
+                        GL_FLOAT,
                         element.Normalized ? GL_TRUE : GL_FALSE,
                         layout.GetStride(),
-                        (const void*)(element.Offset + sizeof(float) * count * i)));
-                    GLCALL(glVertexAttribDivisor(m_VertexBufferIndex, divisor));
-                    m_VertexBufferIndex++;
+                        (const void*)(element.Offset + sizeof(float) * count * i))
+                    );
+                    GLCALL(glVertexAttribDivisor(m_AttributeLocationPtr, divisor));
+                    m_AttributeLocationPtr++;
                 }
                 break;
             }
