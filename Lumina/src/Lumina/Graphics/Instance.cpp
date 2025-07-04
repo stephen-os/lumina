@@ -1,25 +1,28 @@
 #include "Instance.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../Core/Log.h"
 #include "../Core/Assert.h"
 
 #include "BufferLayout.h"
-
-#include <glm/gtc/matrix_transform.hpp>
-#include <glad/glad.h>
+#include "RenderCommands.h"
 
 namespace Lumina
 {
+    Ref<Instance> Instance::Create(const Ref<Model>& model, uint32_t maxInstances)
+    {
+        return Ref<Instance>::Create(model, maxInstances);
+    }
+
     Instance::Instance(const Ref<Model>& model, uint32_t maxInstances)
         : m_Model(model), m_MaxInstances(maxInstances), m_InstanceCount(0), m_DataDirty(true), m_IsSetup(false)
     {
         LUMINA_ASSERT(model, "Model cannot be null for instance!");
+        LUMINA_ASSERT(maxInstances > 0, "Max instance must be greater than 0"); 
 
         m_InstanceData.reserve(maxInstances);
         SetupInstanceBuffer();
-
-        LUMINA_LOG_INFO("Created Instance for model '{}' with max {} instances",
-            model->GetName(), maxInstances);
     }
 
     void Instance::AddInstance(const InstanceData& instance)
@@ -30,7 +33,6 @@ namespace Lumina
             return;
         }
 
-        // Expand vector if needed
         if (m_InstanceCount >= m_InstanceData.size())
         {
             m_InstanceData.push_back(instance);
@@ -61,54 +63,9 @@ namespace Lumina
         if (!m_DataDirty || m_InstanceCount == 0)
             return;
 
-#if 0 
-        LUMINA_LOG_INFO("Uploading {} instances to GPU", m_InstanceCount);
-        for (uint32_t i = 0; i < std::min(m_InstanceCount, 3u); ++i)
-        {
-            auto& data = m_InstanceData[i];
-            LUMINA_LOG_INFO("Instance {}: Pos=({},{},{}), Color=({},{},{},{})",
-                i, data.ModelMatrix[3][0], data.ModelMatrix[3][1], data.ModelMatrix[3][2],
-                data.TintColor.r, data.TintColor.g, data.TintColor.b, data.TintColor.a);
-        }
-
-        // In Instance::Upload(), add this detailed debug:
-        LUMINA_LOG_INFO("=== RAW INSTANCE BUFFER DATA ===");
-        for (uint32_t i = 0; i < m_InstanceCount; ++i)
-        {
-            auto& data = m_InstanceData[i];
-            LUMINA_LOG_INFO("Instance {} Matrix:", i);
-            LUMINA_LOG_INFO("  [{:8.3f}, {:8.3f}, {:8.3f}, {:8.3f}]",
-                data.ModelMatrix[0][0], data.ModelMatrix[0][1], data.ModelMatrix[0][2], data.ModelMatrix[0][3]);
-            LUMINA_LOG_INFO("  [{:8.3f}, {:8.3f}, {:8.3f}, {:8.3f}]",
-                data.ModelMatrix[1][0], data.ModelMatrix[1][1], data.ModelMatrix[1][2], data.ModelMatrix[1][3]);
-            LUMINA_LOG_INFO("  [{:8.3f}, {:8.3f}, {:8.3f}, {:8.3f}]",
-                data.ModelMatrix[2][0], data.ModelMatrix[2][1], data.ModelMatrix[2][2], data.ModelMatrix[2][3]);
-            LUMINA_LOG_INFO("  [{:8.3f}, {:8.3f}, {:8.3f}, {:8.3f}]",
-                data.ModelMatrix[3][0], data.ModelMatrix[3][1], data.ModelMatrix[3][2], data.ModelMatrix[3][3]);
-            LUMINA_LOG_INFO("  Color: ({:.3f}, {:.3f}, {:.3f}, {:.3f})",
-                data.TintColor.r, data.TintColor.g, data.TintColor.b, data.TintColor.a);
-        }
-
-        // Add this debug to see the actual buffer layout being used:
-        LUMINA_LOG_INFO("=== BUFFER LAYOUT DEBUG ===");
-        LUMINA_LOG_INFO("InstanceData struct size: {}", sizeof(InstanceData));
-
-        const auto& layout = m_InstanceBuffer->GetLayout();
-        LUMINA_LOG_INFO("Buffer layout stride: {}", layout.GetStride());
-
-        for (const auto& element : layout.GetElements())
-        {
-            LUMINA_LOG_INFO("Element '{}': Type={}, Offset={}, Size={}",
-                element.Name, (int)element.Type, element.Offset, element.Size);
-        }
-#endif 
-
-        // Upload instance data to GPU
         size_t dataSize = m_InstanceCount * sizeof(InstanceData);
         m_InstanceBuffer->SetData(m_InstanceData.data(), dataSize);
         m_DataDirty = false;
-
-        LUMINA_LOG_INFO("Uploaded {} instances to GPU ({} bytes)", m_InstanceCount, dataSize);
     }
 
     void Instance::Render()
@@ -119,17 +76,14 @@ namespace Lumina
             return;
         }
 
-        // Upload data if needed
         Upload();
 
-        // Setup VAOs for instancing if not done yet
         if (!m_IsSetup)
         {
             UpdateVertexArrays();
             m_IsSetup = true;
         }
 
-        // Render each mesh with instancing
         const auto& meshes = m_Model->GetMeshes();
         for (const auto& mesh : meshes)
         {
@@ -146,7 +100,6 @@ namespace Lumina
                 continue;
             }
 
-            // Bind VAO and render instances
             vao->Bind();
 			
             bool hasIndices = mesh->HasIndices();
@@ -154,47 +107,36 @@ namespace Lumina
 
             if (hasIndices)
             {
-                // Use indexed drawing
-                glDrawElementsInstanced(GL_TRIANGLES, mesh->GetIndexCount(), GL_UNSIGNED_INT, nullptr, m_InstanceCount);
+                RenderCommands::DrawElementsInstanced(vao, PrimitiveType::Triangles, m_InstanceCount); 
             }
             else
             {
-                // Use array drawing
-                glDrawArraysInstanced(GL_TRIANGLES, 0, vertexCount, m_InstanceCount);
+                RenderCommands::DrawArraysInstanced(vao, PrimitiveType::Triangles, vertexCount, m_InstanceCount);
             }
 
 			vao->Unbind();
         }
-
-        LUMINA_LOG_INFO("Rendered {} instances of model '{}'", m_InstanceCount, m_Model->GetName());
     }
 
     void Instance::SetupInstanceBuffer()
     {
-        // Create instance buffer with dynamic usage for frequent updates
         size_t bufferSize = m_MaxInstances * sizeof(InstanceData);
         m_InstanceBuffer = VertexBuffer::Create(bufferSize, BufferUsage::Dynamic);
-
-        LUMINA_LOG_INFO("Created instance buffer of size {} bytes", bufferSize);
     }
 
     void Instance::UpdateVertexArrays()
     {
-        LUMINA_LOG_INFO("Setting up instance attributes for model '{}'", m_Model->GetName());
-
-        // Create layout for instance data
+        // (total: 96 bytes, aligned)
         BufferLayout instanceLayout = 
         {
-            { BufferDataType::Mat4,   "a_InstanceMatrix" },     // Model matrix
-            { BufferDataType::Float4, "a_InstanceColor" },      // Tint color
-            { BufferDataType::Float,  "a_InstancePointSize" },  // Point size
-            { BufferDataType::Float3,  "a_InstancePadding" },   // Padding (12 bytes)
+            { BufferDataType::Mat4,     "a_InstanceMatrix" },       // Model matrix (64 bytes)
+            { BufferDataType::Float4,   "a_InstanceColor" },        // Tint color   (16 bytes)
+            { BufferDataType::Float,    "a_InstancePointSize" },    // Point size   (4  bytes)
+            { BufferDataType::Padding3, "" },                       // Padding      (12 bytes)
         };
 
-        // Set the layout on our instance buffer
         m_InstanceBuffer->SetLayout(instanceLayout);
 
-        // Add instance buffer to all mesh VAOs
         const auto& meshes = m_Model->GetMeshes();
         for (const auto& mesh : meshes)
         {
@@ -205,12 +147,8 @@ namespace Lumina
                 continue;
             }
 
-            // Set the instance buffer on the VAO
-            // This will automatically set up all instance attributes with divisor = 1
             vao->SetInstanceBuffer(m_InstanceBuffer);
         }
-
-        LUMINA_LOG_INFO("Instance attributes setup complete for {} meshes", meshes.size());
     }
 
     InstanceData Instance::CreateInstanceData(const ModelAttributes& attributes)

@@ -630,7 +630,7 @@ namespace Lumina
             return it->second;
 
         // Create new instance batch for this model
-        auto instance = Ref<Instance>::Create(model);
+        auto instance = Instance::Create(model);
         s_Data.m_ModelInstances[modelUUID] = instance;
         return instance;
     }

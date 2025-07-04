@@ -9,7 +9,6 @@ layout (location = 4) in vec3 a_Bitangent;
 layout (location = 5) in mat4 a_InstanceMatrix;         // Takes locations 5, 6, 7, 8
 layout (location = 9) in vec4 a_InstanceColor;          // Location 9
 layout (location = 10) in float a_InstancePointSize;    // Location 10
-layout (location = 11) in vec3 a_InstancePadding;       // Location 11 (padding)
 
 uniform mat4 u_ViewProjection;
 uniform int u_RenderMode; // 0 = Fill, 1 = Wireframe, 2 = Points
@@ -25,11 +24,8 @@ out vec4 v_InstanceColor;
 
 void main()
 {
-    // Use padding to avoid unused attribute warning (multiply by 1.0 is no-op)
-    float paddingMultiplier = dot(a_InstancePadding, vec3(1.0)) * 0.0 + 1.0;
-
     // Use instance matrix for transformation
-    vec4 worldPos = a_InstanceMatrix * vec4(a_Position * paddingMultiplier, 1.0);
+    vec4 worldPos = a_InstanceMatrix * vec4(a_Position, 1.0);
     v_WorldPos = worldPos.xyz;
     
     // Transform normal, tangent, and bitangent to world space using instance matrix
