@@ -58,9 +58,11 @@ namespace Lumina
         s_Logger->flush_on(spdlog::level::err);
         spdlog::register_logger(s_Logger);
 
+        LUMINA_LOG_INFO("Log: Initializing...");
+
         s_Initialized = true;
 
-        LUMINA_LOG_INFO("Logging system initialized");
+        LUMINA_LOG_INFO("Log: Initialization complete");
     }
 
     void Log::Shutdown()
@@ -68,11 +70,15 @@ namespace Lumina
         if (!s_Initialized)
             return;
 
+        LUMINA_LOG_INFO("Log: Shutting down...");
+
         if (s_Logger)
             s_Logger->flush();
 
         spdlog::shutdown();
         s_Initialized = false;
+
+        LUMINA_LOG_INFO("Log: Shutdown complete");
     }
 
     void Log::SetLogLevel(spdlog::level::level_enum level)
