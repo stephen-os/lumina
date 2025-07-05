@@ -4,6 +4,8 @@
 
 #include "../Core/Assert.h"
 
+#include "../Utils/UUID.h"
+
 namespace Lumina
 {
     Ref<Model> Model::Load(const std::string& path, ModelFormat format)
@@ -32,7 +34,7 @@ namespace Lumina
         return Ref<Model>::Create(name);
     }
 
-    Model::Model(const std::string& name) : m_Name(name) 
+    Model::Model(const std::string& name) : m_UUID(UUID::Generate()), m_Name(name)
     {
         LUMINA_ASSERT(!name.empty(), "Model: Model name cannot be empty in constructor");
     }
