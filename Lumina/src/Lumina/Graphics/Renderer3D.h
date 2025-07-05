@@ -45,48 +45,37 @@ namespace Lumina
     class Renderer3D
     {
     public:
-        // Core Renderer Functions
         static void Init();
         static void Shutdown();
 
-        // Begin and End Rendering
         static void Begin(Camera& camera);
         static void Begin(const glm::mat4& viewProjection);
         static void End();
 
-		// Immediate Mode Rendering
-        static void DrawModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
-        static void DrawMesh(const Ref<Mesh>& mesh, const ModelAttributes& attributes = {});
-        static void DrawSkybox(const Ref<Skybox>& skybox);
+		static void Draw(const Ref<Model>& model, const ModelAttributes& attributes = {});
+        static void Draw(const Ref<Mesh>& mesh, const ModelAttributes& attributes = {});
+        static void Draw(const Ref<Skybox>& skybox, const SkyboxAttributes& attributes = {});
 
-		// Instance Mode Rendering
-		static void SubmitModel(const Ref<Model>& model, const ModelAttributes& attributes = {});
+		static void Submit(const Ref<Model>& model, const ModelAttributes& attributes = {});
 		static void Flush(); 
 
-        // Resolution Management
         static void SetResolution(uint32_t width, uint32_t height);
         static glm::vec2 GetResolution();
 
-        // Render Mode
-        static void SetRenderMode(RenderMode mode);
+         static void SetRenderMode(RenderMode mode);
         static RenderMode GetRenderMode();
 
-        // Point rendering settings
         static void SetGlobalPointSize(float size);
         static float GetGlobalPointSize();
 
-        // Framebuffer Access
         static uint32_t GetImage();
 
-        // Lighting
         static void SetDirectionalLight(const DirectionalLight& light);
         static void AddPointLight(const PointLight& light);
         static void ClearPointLights();
 
-        // Environment
         static void SetEnvironmentMap(const Ref<Texture>& envMap);
 
-        // Statistics
         struct Statistics
         {
             uint32_t DrawCalls = 0;
@@ -101,9 +90,5 @@ namespace Lumina
         static Statistics GetStats();
         static void ResetStats();
 
-    private:
-        static glm::mat4 CalculateModelMatrix(const ModelAttributes& attributes);
-
-        static Ref<Instance> GetInstance(const Ref<Model>& model);
     };
 }
