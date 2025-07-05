@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+#include <glm/glm.hpp>
+
 #include "../Core/Ref.h"
 
 #include "../Utils/UUID.h"
@@ -27,14 +29,12 @@ namespace Lumina
     public:
         static Ref<Model> Load(const std::string& path, ModelFormat format = ModelFormat::AUTO_DETECT);
 
-        static Ref<Model> Create(const std::string& name);
-        static Ref<Model> Create();
+        static Ref<Model> Create(const std::string& name = "Unnamed Model");
 
         Model() = default;
         Model(const std::string& name);
         ~Model() = default;
 
-        // Mesh Management
         void AddMesh(const Ref<Mesh>& mesh);
         void AddMesh(Ref<Mesh>&& mesh);
         void RemoveMesh(size_t index);
@@ -45,34 +45,29 @@ namespace Lumina
 
         Ref<Mesh> GetMesh(size_t index) const;
 
-        // Model Properties
         void SetName(const std::string& name) { m_Name = name; }
         const std::string& GetName() const { return m_Name; }
 
         void SetDirectory(const std::string& directory) { m_Directory = directory; }
         const std::string& GetDirectory() const { return m_Directory; }
 
-        // Utility
         size_t GetMeshCount() const { return m_Meshes.size(); }
         bool IsEmpty() const { return m_Meshes.empty(); }
+        
         void Reserve(size_t meshCount);
-
-        // Statistics
         size_t GetTotalVertexCount() const;
         size_t GetTotalTriangleCount() const;
-
-        // Validation
         bool IsValid() const;
-
-        // Memory management
-        void Clear();
 
         uint64_t GetUUID() const { return m_UUID; }
 
     private:
         uint64_t m_UUID = UUID::Generate();
         std::string m_Name = "Unnamed Model";
-        std::string m_Directory;
+        std::string m_Directory = "";
         std::vector<Ref<Mesh>> m_Meshes;
+
+        static constexpr size_t MAX_MESH_COUNT = 100000;
+        static constexpr size_t MIN_MESH_COUNT = 0; 
     };
 }
