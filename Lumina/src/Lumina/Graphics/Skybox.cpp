@@ -1,15 +1,17 @@
 #include "Skybox.h"
+
 #include "../Core/Log.h"
+#include "../Core/Assert.h"
+
 #include "BufferLayout.h"
+#include "TextureSlot.h"
 
 namespace Lumina
 {
-    // Static member definitions
     bool Skybox::s_GeometryInitialized = false;
     Ref<VertexArray> Skybox::s_SharedVAO = nullptr;
     Ref<VertexBuffer> Skybox::s_SharedVBO = nullptr;
 
-    // Skybox cube vertices (unit cube)
     static float s_SkyboxVertices[] = 
     {
         // Positions          
@@ -55,24 +57,77 @@ namespace Lumina
         -1.0f, -1.0f,  1.0f,
          1.0f, -1.0f,  1.0f
     };
-
-    // Factory methods
-    Ref<Skybox> Skybox::Create()
+    
+    void Skybox::BindAttributes(Ref<ShaderProgram> shader, const SkyboxAttributes& attributes)
     {
-        return Ref<Skybox>::Create();
+        shader->SetUniformFloat("u_Intensity", attributes.Intensity);
+        shader->SetUniformVec3("u_Tint", attributes.Tint);
+        shader->SetUniformInt("u_Skybox", TextureSlots::SKYBOX);
     }
 
-    Ref<Skybox> Skybox::Create(const std::vector<std::string>& faces)
+    Ref<Skybox> Skybox::Create(const std::string& name)
     {
+		auto skybox = Ref<Skybox>::Create();
+        skybox->SetName(name);
+
+        LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());
+        LUMINA_LOG_INFO("- Creation Type: {}", "Default");
+        LUMINA_LOG_INFO("- Valid: {}", skybox->IsValid() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Texture: {}", skybox->GetTexture() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Geometry: {}", skybox->GetVAO() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Shared Geometry: {}", s_GeometryInitialized ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Texture Type: Cubemap");
+        LUMINA_LOG_INFO("- Texture Slot: {}", TextureSlots::SKYBOX);
+
+        return skybox;
+    }
+
+    Ref<Skybox> Skybox::Create(const std::vector<std::string>& faces, const std::string& name)
+    {
+		LUMINA_ASSERT(faces.size() == 6, "Skybox: Creation requires exactly 6 face textures");
+
+		auto skybox = Ref<Skybox>::Create(faces);
+        skybox->SetName(name);
+
+        LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());
+        LUMINA_LOG_INFO("- Creation Type: {}", "Faces Array");
+        LUMINA_LOG_INFO("- Valid: {}", skybox->IsValid() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Texture: {}", skybox->GetTexture() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Geometry: {}", skybox->GetVAO() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Shared Geometry: {}", s_GeometryInitialized ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Face Count: {}", faces.size());
+		LUMINA_LOG_INFO("- Face Textures: ");
+        LUMINA_LOG_INFO("- - Face 0: {}", faces.at(0));
+        LUMINA_LOG_INFO("- - Face 1: {}", faces.at(1));
+        LUMINA_LOG_INFO("- - Face 2: {}", faces.at(2));
+        LUMINA_LOG_INFO("- - Face 3: {}", faces.at(3));
+        LUMINA_LOG_INFO("- - Face 4: {}", faces.at(4));
+        LUMINA_LOG_INFO("- - Face 5: {}", faces.at(5));
+        LUMINA_LOG_INFO("- Texture Type: Cubemap");
+        LUMINA_LOG_INFO("- Texture Slot: {}", TextureSlots::SKYBOX);
+
         return Ref<Skybox>::Create(faces);
     }
 
-    Ref<Skybox> Skybox::Create(const Ref<Texture>& cubemapTexture)
+    Ref<Skybox> Skybox::Create(const Ref<Texture>& cubemapTexture, const std::string& name)
     {
-        return Ref<Skybox>::Create(cubemapTexture);
+		LUMINA_ASSERT(cubemapTexture, "Skybox: Cannot create skybox with null texture");
+
+        auto skybox = Ref<Skybox>::Create(cubemapTexture);
+		skybox->SetName(name);
+
+        LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());
+        LUMINA_LOG_INFO("- Creation Type: {}", "Faces Array");
+        LUMINA_LOG_INFO("- Valid: {}", skybox->IsValid() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Texture: {}", skybox->GetTexture() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Has Geometry: {}", skybox->GetVAO() ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Shared Geometry: {}", s_GeometryInitialized ? "Yes" : "No");
+        LUMINA_LOG_INFO("- Texture Type: Cubemap");
+        LUMINA_LOG_INFO("- Texture Slot: {}", TextureSlots::SKYBOX);
+
+		return skybox;
     }
 
-    // Constructors
     Skybox::Skybox()
     {
         CreateGeometry();
@@ -91,7 +146,6 @@ namespace Lumina
         SetTexture(cubemapTexture);
     }
 
-    // Texture management
     void Skybox::SetTexture(const Ref<Texture>& cubemapTexture)
     {
         if (!cubemapTexture)
@@ -109,7 +163,6 @@ namespace Lumina
         }
 
         m_CubemapTexture = cubemapTexture;
-        LUMINA_LOG_INFO("Skybox texture set successfully");
     }
 
     void Skybox::SetTexture(const std::vector<std::string>& faces)
@@ -130,27 +183,21 @@ namespace Lumina
         }
 
         m_CubemapTexture = cubemapTexture;
-        LUMINA_LOG_INFO("Skybox created from {0} face textures", faces.size());
     }
 
-    // Private methods
     void Skybox::CreateGeometry()
     {
-        // Initialize shared geometry if not already done
         if (!s_GeometryInitialized)
         {
             InitializeSharedGeometry();
         }
 
-        // Use shared geometry for all skybox instances
         m_VAO = s_SharedVAO;
         m_VBO = s_SharedVBO;
     }
 
     void Skybox::CreateDefaultTexture()
     {
-        // Create a simple gradient skybox texture as default
-        // This creates a white cubemap that can be tinted
         std::vector<uint32_t> whiteData(6, 0xFFFFFFFF);
         m_CubemapTexture = Texture::CreateCubemap(1, 1, whiteData.data());
 
@@ -171,18 +218,17 @@ namespace Lumina
 
         LUMINA_LOG_INFO("Initializing shared skybox geometry...");
 
-        // Create shared VAO and VBO
         s_SharedVAO = VertexArray::Create();
         s_SharedVBO = VertexBuffer::Create(s_SkyboxVertices, sizeof(s_SkyboxVertices));
 
-        // Set up vertex attributes (position only)
-        BufferLayout layout = {
+        BufferLayout layout = 
+        {
             { BufferDataType::Float3, "a_Position" }
         };
+
         s_SharedVBO->SetLayout(layout);
         s_SharedVAO->SetVertexBuffer(s_SharedVBO);
 
         s_GeometryInitialized = true;
-        LUMINA_LOG_INFO("Shared skybox geometry initialized successfully");
     }
 }
