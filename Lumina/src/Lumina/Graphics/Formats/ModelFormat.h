@@ -4,8 +4,14 @@ namespace Lumina
 {
     enum class ModelFormat
     {
-        AUTO_DETECT,
+        AUTO_DETECT = 0,
         GLTF,
-        GLB
+        GLB,
+        OBJ,
+        FBX,
+        DAE,
+        BLEND,
+        X3D,
+        UNKNOWN
     };
 }
