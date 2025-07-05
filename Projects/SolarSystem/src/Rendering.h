@@ -75,20 +75,17 @@ namespace Lumina
                 "res/skybox/galexy/front.png",
                 "res/skybox/galexy/back.png"
             };
-            m_Skybox = Skybox::Create(faces);
+            m_Skybox = Skybox::Create(faces, "Galexy");
 
             // Load UFO model
             m_UFOModel = Model::Load("res/geometry/ufo.glb");
             LUMINA_ASSERT(m_UFOModel, "Failed to load UFO model");
 
             // Setup asteroid belt
-            auto asteroid1Model = Model::Load("res/geometry/asteroid1.glb");
-            auto asteroid2Model = Model::Load("res/geometry/asteroid2.glb");
-            auto asteroid3Model = Model::Load("res/geometry/asteroid3.glb");
-            LUMINA_ASSERT(asteroid1Model, "Failed to load Asteroid 1 model");
-            LUMINA_ASSERT(asteroid2Model, "Failed to load Asteroid 2 model");
-            LUMINA_ASSERT(asteroid3Model, "Failed to load Asteroid 3 model");
-
+            auto asteroid1Model = Model::Load("res/geometry/asteroid1.glb", "Small Astriod");
+            auto asteroid2Model = Model::Load("res/geometry/asteroid2.glb", "Large Astroid Cluster");
+            auto asteroid3Model = Model::Load("res/geometry/asteroid3.glb", "Small Astroid Cluster");
+            
             const int asteroidCount = 500;
             const float beltInnerRadius = 1900.0f;
             const float beltOuterRadius = 2100.0f;
@@ -128,8 +125,7 @@ namespace Lumina
             // Setup Sun (center of solar system)
             PlanetData sun;
             sun.Name = "Sun";
-            sun.Model = Model::Load("res/geometry/sun.glb");
-            LUMINA_ASSERT(sun.Model, "Failed to load Sun model");
+            sun.Model = Model::Load("res/geometry/sun.glb", "Sun");
             sun.OrbitRadius = 0.0f;
             sun.OrbitSpeed = 0.0f;
             sun.RotationSpeed = 0.5f;
@@ -142,8 +138,7 @@ namespace Lumina
 
             PlanetData mercury;
             mercury.Name = "Mercury";
-            mercury.Model = Model::Load("res/geometry/mercury.glb");
-            LUMINA_ASSERT(mercury.Model, "Failed to load Mercury model");
+            mercury.Model = Model::Load("res/geometry/mercury.glb", "Mercury");
             mercury.OrbitRadius = 750.0f;
             mercury.OrbitSpeed = 4.0f;
             mercury.RotationSpeed = 1.0f;
@@ -156,8 +151,7 @@ namespace Lumina
 
             PlanetData venus;
             venus.Name = "Venus";
-            venus.Model = Model::Load("res/geometry/venus.glb");
-            LUMINA_ASSERT(venus.Model, "Failed to load Venus model");
+            venus.Model = Model::Load("res/geometry/venus.glb", "Venus");
             venus.OrbitRadius = 1000.0f;
             venus.OrbitSpeed = 2.8f;
             venus.RotationSpeed = -0.5f; // Venus rotates backwards
@@ -170,8 +164,7 @@ namespace Lumina
 
             PlanetData earth;
             earth.Name = "Earth";
-            earth.Model = Model::Load("res/geometry/earth.glb");
-            LUMINA_ASSERT(earth.Model, "Failed to load Earth model");
+            earth.Model = Model::Load("res/geometry/earth.glb", "Earth");
             earth.OrbitRadius = 1250.0f;
             earth.OrbitSpeed = 2.0f;
             earth.RotationSpeed = 2.0f;
@@ -184,8 +177,7 @@ namespace Lumina
 
             PlanetData mars;
             mars.Name = "Mars";
-            mars.Model = Model::Load("res/geometry/mars.glb");
-            LUMINA_ASSERT(mars.Model, "Failed to load Mars model");
+            mars.Model = Model::Load("res/geometry/mars.glb", "Mars");
             mars.OrbitRadius = 1500.0f;
             mars.OrbitSpeed = 1.5f;
             mars.RotationSpeed = 1.8f;
@@ -198,8 +190,7 @@ namespace Lumina
 
             PlanetData jupiter;
             jupiter.Name = "Jupiter";
-            jupiter.Model = Model::Load("res/geometry/jupiter.glb");
-            LUMINA_ASSERT(jupiter.Model, "Failed to load Jupiter model");
+            jupiter.Model = Model::Load("res/geometry/jupiter.glb", "Jupiter");
             jupiter.OrbitRadius = 2300.0f;
             jupiter.OrbitSpeed = 0.8f;
             jupiter.RotationSpeed = 3.0f;
@@ -212,8 +203,7 @@ namespace Lumina
 
             PlanetData saturn;
             saturn.Name = "Saturn";
-            saturn.Model = Model::Load("res/geometry/saturn.glb");
-            LUMINA_ASSERT(saturn.Model, "Failed to load Saturn model");
+            saturn.Model = Model::Load("res/geometry/saturn.glb", "Saturn");
             saturn.OrbitRadius = 3000.0f;
             saturn.OrbitSpeed = 0.6f;
             saturn.RotationSpeed = 2.5f;
@@ -226,8 +216,7 @@ namespace Lumina
 
             PlanetData uranus;
             uranus.Name = "Uranus";
-            uranus.Model = Model::Load("res/geometry/uranus.glb");
-            LUMINA_ASSERT(uranus.Model, "Failed to load Uranus model");
+            uranus.Model = Model::Load("res/geometry/uranus.glb", "Uranus");
             uranus.OrbitRadius = 3600.0f;
             uranus.OrbitSpeed = 0.4f;
             uranus.RotationSpeed = 1.5f;
@@ -377,19 +366,19 @@ namespace Lumina
             
 
             // Draw skybox first
-            Renderer3D::DrawSkybox(m_Skybox);
+            Renderer3D::Draw(m_Skybox);
 
             // Draw all planets
             for (const auto& planet : m_Planets)
             {
-                Renderer3D::DrawModel(planet.Model, planet.Attributes);
+                Renderer3D::Draw(planet.Model, planet.Attributes);
             }
             // Draw asteroids
             if (m_ShowAsteroids)
             {
                 for (const auto& asteroid : m_Asteroids)
                 {
-                    Renderer3D::SubmitModel(asteroid.Model, asteroid.Attributes);
+                    Renderer3D::Submit(asteroid.Model, asteroid.Attributes);
                 }
             }
 
