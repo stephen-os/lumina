@@ -28,6 +28,28 @@ namespace Lumina
         return model; 
     }
 
+    Ref<Model> Model::Load(const std::string& path, const std::string& name, ModelFormat format)
+    {
+        LUMINA_ASSERT(!path.empty(), "Model: Model path cannot be empty");
+
+        auto model = ModelRegistry::LoadModel(path, format);
+        LUMINA_ASSERT(model, "Model: Failed to load model - ModelRegistry returned nullptr");
+
+        model->SetName(name); 
+
+        LUMINA_LOG_INFO("Model: Successfully loaded '{}'", model->GetName());
+        LUMINA_LOG_INFO("- Path: {}", path);
+        LUMINA_LOG_INFO("- Directory: {}", model->GetDirectory());
+        LUMINA_LOG_INFO("- UUID: {}", model->GetUUID());
+        LUMINA_LOG_INFO("- Meshes: {}", model->GetMeshCount());
+        LUMINA_LOG_INFO("- Total Vertices: {}", model->GetTotalVertexCount());
+        LUMINA_LOG_INFO("- Total Triangles: {}", model->GetTotalTriangleCount());
+        LUMINA_LOG_INFO("- Format: {}", ModelRegistry::ModelFormatToString(format));
+        LUMINA_LOG_INFO("- Valid: {}", model->IsValid() ? "Yes" : "No");
+
+        return model;
+    }
+
     Ref<Model> Model::Create(const std::string& name)
     {
         LUMINA_ASSERT(!name.empty(), "Model: Model name cannot be empty");

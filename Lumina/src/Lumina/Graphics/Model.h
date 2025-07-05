@@ -4,6 +4,7 @@
 #include <string>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "../Core/Ref.h"
 
@@ -20,12 +21,27 @@ namespace Lumina
         glm::vec3 Scale = { 1.0f, 1.0f, 1.0f };
         glm::vec4 TintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         float PointSize = 1.0f;
+
+		glm::mat4 GetModelMatrix() const
+        {
+            glm::mat4 translation = glm::translate(glm::mat4(1.0f), Position);
+
+            glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+            glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+            glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+            glm::mat4 rotation = rotationZ * rotationY * rotationX;
+
+            glm::mat4 scale = glm::scale(glm::mat4(1.0f), Scale);
+
+            return translation * rotation * scale;
+        }
     };
 
     class Model : public Referencable
     {
     public:
         static Ref<Model> Load(const std::string& path, ModelFormat format = ModelFormat::AUTO_DETECT);
+        static Ref<Model> Load(const std::string& path, const std::string& name, ModelFormat format = ModelFormat::AUTO_DETECT);
 
         static Ref<Model> Create(const std::string& name = "Unnamed Model");
 
