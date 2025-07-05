@@ -1,17 +1,21 @@
 #pragma once
 
-#include <glm/glm.hpp>
 #include <string>
+
+#include <glm/glm.hpp>
 
 #include "../Core/Ref.h"
 
 #include "Texture.h"
+#include "ShaderProgram.h"
 
 namespace Lumina
 {
     class Material : public Referencable
     {
     public:
+        static void BindMaterial(Ref<ShaderProgram> shader, Ref<Material> material, Ref<Texture> whiteTexture, Ref<Texture> normalMap);
+
         static Ref<Material> Create();
         static Ref<Material> Create(const std::string& name);
 
@@ -19,7 +23,6 @@ namespace Lumina
         Material(const std::string& name);
         ~Material() = default;
 
-        // PBR Properties
         void SetAlbedo(const glm::vec3& albedo) { m_Albedo = albedo; }
         const glm::vec3& GetAlbedo() const { return m_Albedo; }
 
@@ -32,7 +35,6 @@ namespace Lumina
         void SetAO(float ao) { m_AO = ao; }
         float GetAO() const { return m_AO; }
 
-        // Texture Properties
         void SetAlbedoTexture(const Ref<Texture>& texture) { m_AlbedoTexture = texture; }
         Ref<Texture> GetAlbedoTexture() const { return m_AlbedoTexture; }
 
@@ -48,23 +50,19 @@ namespace Lumina
         void SetAOTexture(const Ref<Texture>& texture) { m_AOTexture = texture; }
         Ref<Texture> GetAOTexture() const { return m_AOTexture; }
 
-        // Material Properties
         void SetName(const std::string& name) { m_Name = name; }
         const std::string& GetName() const { return m_Name; }
 
-        // Validation
         bool IsValid() const;
 
     private:
         std::string m_Name = "Unnamed Material";
 
-        // PBR Properties
         glm::vec3 m_Albedo = glm::vec3(1.0f, 1.0f, 1.0f);
         float m_Metallic = 0.0f;
         float m_Roughness = 0.5f;
         float m_AO = 1.0f;
 
-        // Texture Maps
         Ref<Texture> m_AlbedoTexture = nullptr;
         Ref<Texture> m_NormalTexture = nullptr;
         Ref<Texture> m_MetallicTexture = nullptr;
