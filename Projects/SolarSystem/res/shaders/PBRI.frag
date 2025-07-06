@@ -10,24 +10,33 @@ in vec3 v_Bitangent;
 in mat3 v_TBN;
 in vec4 v_InstanceColor;
 
-// Material uniforms
-struct Material {
+// Enhanced Material uniforms
+struct Material 
+{
     vec3 Albedo;
     float Metallic;
     float Roughness;
     float AO;
+    vec3 Emission;
+    float EmissionIntensity;
+    float HeightScale;
+    float Alpha;
+    float NormalIntensity;
 };
 
 uniform Material u_Material;
 uniform vec4 u_TintColor;
 uniform int u_RenderMode; // 0 = Fill, 1 = Wireframe, 2 = Points
 
-// Texture uniforms
+// Texture uniforms - all 8 material slots
 uniform sampler2D u_AlbedoTexture;
 uniform sampler2D u_NormalTexture;
 uniform sampler2D u_MetallicTexture;
 uniform sampler2D u_RoughnessTexture;
 uniform sampler2D u_AOTexture;
+uniform sampler2D u_EmissionTexture;
+uniform sampler2D u_HeightTexture;
+uniform sampler2D u_AlphaTexture;
 uniform samplerCube u_EnvironmentMap;
 
 uniform int u_HasAlbedoTexture;
@@ -35,6 +44,9 @@ uniform int u_HasNormalTexture;
 uniform int u_HasMetallicTexture;
 uniform int u_HasRoughnessTexture;
 uniform int u_HasAOTexture;
+uniform int u_HasEmissionTexture;
+uniform int u_HasHeightTexture;
+uniform int u_HasAlphaTexture;
 uniform int u_HasEnvironmentMap;
 
 // Lighting uniforms
@@ -63,12 +75,27 @@ uniform vec3 u_CameraPos;
 const float PI = 3.14159265359;
 const vec3 GREEN = vec3(0.0, 1.0, 0.3);
 
-// PBR Functions
-vec3 getNormalFromMap()
+// Enhanced Functions
+vec2 parallaxMapping(vec2 texCoords, vec3 viewDir)
+{
+    if (u_HasHeightTexture == 0) return texCoords;
+    
+    // Simple parallax mapping
+    float height = texture(u_HeightTexture, texCoords).r;
+    vec2 p = viewDir.xy / viewDir.z * (height * u_Material.HeightScale);
+    return texCoords - p;
+}
+
+vec3 getNormalFromMap(vec2 texCoords)
 {
     if (u_HasNormalTexture == 1 && u_RenderMode != 2) // Don't use normal maps for points
     {
-        vec3 tangentNormal = texture(u_NormalTexture, v_TexCoord).xyz * 2.0 - 1.0;
+        vec3 tangentNormal = texture(u_NormalTexture, texCoords).xyz * 2.0 - 1.0;
+        
+        // Apply normal intensity
+        tangentNormal.xy *= u_Material.NormalIntensity;
+        tangentNormal = normalize(tangentNormal);
+        
         return normalize(v_TBN * tangentNormal);
     }
     else
@@ -77,6 +104,7 @@ vec3 getNormalFromMap()
     }
 }
 
+// PBR Functions
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness * roughness;
@@ -143,10 +171,24 @@ void main()
     }
     
     // Standard PBR rendering for Fill mode
-    // Sample material properties
+    vec3 V = normalize(u_CameraPos - v_WorldPos);
+    
+    // Apply parallax mapping if height texture is available
+    vec2 texCoords = v_TexCoord;
+    if (u_HasHeightTexture == 1)
+    {
+        vec3 viewDirTangent = normalize(transpose(v_TBN) * V);
+        texCoords = parallaxMapping(v_TexCoord, viewDirTangent);
+        
+        // Discard fragments outside [0,1] range to avoid texture wrapping artifacts
+        if(texCoords.x > 1.0 || texCoords.y > 1.0 || texCoords.x < 0.0 || texCoords.y < 0.0)
+            discard;
+    }
+    
+    // Sample material properties with updated texture coordinates
     vec3 albedo = u_Material.Albedo;
     if (u_HasAlbedoTexture == 1)
-        albedo *= texture(u_AlbedoTexture, v_TexCoord).rgb;
+        albedo *= texture(u_AlbedoTexture, texCoords).rgb;
     
     // Use instance color if available, otherwise use uniform tint color
     vec3 tintColor = v_InstanceColor.a > 0.0 ? v_InstanceColor.rgb : u_TintColor.rgb;
@@ -154,18 +196,35 @@ void main()
     
     float metallic = u_Material.Metallic;
     if (u_HasMetallicTexture == 1)
-        metallic *= texture(u_MetallicTexture, v_TexCoord).r;
+        metallic *= texture(u_MetallicTexture, texCoords).r;
     
     float roughness = u_Material.Roughness;
     if (u_HasRoughnessTexture == 1)
-        roughness *= texture(u_RoughnessTexture, v_TexCoord).r;
+        roughness *= texture(u_RoughnessTexture, texCoords).r;
     
     float ao = u_Material.AO;
     if (u_HasAOTexture == 1)
-        ao *= texture(u_AOTexture, v_TexCoord).r;
+        ao *= texture(u_AOTexture, texCoords).r;
 
-    vec3 N = getNormalFromMap();
-    vec3 V = normalize(u_CameraPos - v_WorldPos);
+    // Sample emission
+    vec3 emission = u_Material.Emission * u_Material.EmissionIntensity;
+    if (u_HasEmissionTexture == 1)
+        emission *= texture(u_EmissionTexture, texCoords).rgb;
+
+    // Sample alpha
+    float alpha = u_Material.Alpha;
+    if (u_HasAlphaTexture == 1)
+        alpha *= texture(u_AlphaTexture, texCoords).r;
+
+    // Use instance alpha if available, otherwise use uniform tint alpha
+    float finalAlpha = v_InstanceColor.a > 0.0 ? v_InstanceColor.a : u_TintColor.a;
+    alpha *= finalAlpha;
+
+    // Early discard for fully transparent fragments
+    if (alpha < 0.01)
+        discard;
+
+    vec3 N = getNormalFromMap(texCoords);
 
     // Calculate reflectance at normal incidence
     vec3 F0 = vec3(0.04);
@@ -246,12 +305,13 @@ void main()
 
     vec3 color = ambient + Lo;
 
+    // Add emission (emissive materials glow regardless of lighting)
+    color += emission;
+
     // HDR tonemapping
     color = color / (color + vec3(1.0));
     // Gamma correction
     color = pow(color, vec3(1.0/2.2));
 
-    // Use instance alpha if available, otherwise use uniform tint alpha
-    float alpha = v_InstanceColor.a > 0.0 ? v_InstanceColor.a : u_TintColor.a;
     FragColor = vec4(color, alpha);
 }
