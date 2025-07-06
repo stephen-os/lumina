@@ -1,5 +1,7 @@
 #include "Skybox.h"
 
+#include <glm/gtc/matrix_transform.hpp>
+
 #include "../Core/Log.h"
 #include "../Core/Assert.h"
 
@@ -60,9 +62,38 @@ namespace Lumina
     
     void Skybox::BindAttributes(Ref<ShaderProgram> shader, const SkyboxAttributes& attributes)
     {
+        LUMINA_ASSERT(shader, "Skybox: Shader cannot be null");
+
         shader->SetUniformFloat("u_Intensity", attributes.Intensity);
         shader->SetUniformVec3("u_Tint", attributes.Tint);
         shader->SetUniformInt("u_Skybox", TextureSlots::SKYBOX);
+
+        shader->SetUniformFloat("u_Exposure", attributes.Exposure);
+        shader->SetUniformFloat("u_Saturation", attributes.Saturation);
+        shader->SetUniformFloat("u_Contrast", attributes.Contrast);
+
+        if (attributes.Rotation != 0.0f)
+        {
+            glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), attributes.Rotation, attributes.RotationAxis);
+            shader->SetUniformMat4("u_RotationMatrix", rotationMatrix);
+            shader->SetUniformInt("u_HasRotation", 1);
+        }
+        else
+        {
+            shader->SetUniformInt("u_HasRotation", 0);
+        }
+
+        shader->SetUniformFloat("u_Alpha", attributes.Alpha);
+
+        if (attributes.UseTimeOfDay)
+        {
+            shader->SetUniformFloat("u_TimeOfDay", attributes.TimeOfDay);
+            shader->SetUniformInt("u_UseTimeOfDay", 1);
+        }
+        else
+        {
+            shader->SetUniformInt("u_UseTimeOfDay", 0);
+        }
     }
 
     Ref<Skybox> Skybox::Create(const std::string& name)

@@ -16,11 +16,32 @@ namespace Lumina
 {
     struct SkyboxAttributes
     {
+        // Basic properties
         float Intensity = 1.0f;                                 // Brightness multiplier
         glm::vec3 Tint = glm::vec3(1.0f);                       // Color tint (RGB)
         float Rotation = 0.0f;                                  // Rotation around Y-axis (radians)
         glm::vec3 RotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);   // Custom rotation axis
-    }; 
+        float Exposure = 1.0f;                                  // HDR exposure adjustment
+        float Saturation = 1.0f;                                // Color saturation (0.0 = grayscale, 1.0 = normal)
+        float Contrast = 1.0f;                                  // Contrast adjustment
+        bool EnableRotation = false;                            // Auto-rotate the skybox
+        float RotationSpeed = 0.1f;                             // Rotation speed (radians per second)
+        float Alpha = 1.0f;                                     // Transparency (for blending with previous skybox)
+        float TimeOfDay = 0.5f;                                 // 0.0 = midnight, 0.5 = noon, 1.0 = midnight
+        bool UseTimeOfDay = false;                              // Whether to apply time-based modifications
+
+        // Default constructor
+        SkyboxAttributes() = default;
+
+        // Convenience constructors
+        SkyboxAttributes(float intensity, const glm::vec3& tint = glm::vec3(1.0f))
+            : Intensity(intensity), Tint(tint) {
+        }
+
+        SkyboxAttributes(const glm::vec3& tint, float intensity = 1.0f)
+            : Intensity(intensity), Tint(tint) {
+        }
+    };
 
     class Skybox : public Referencable
     {
