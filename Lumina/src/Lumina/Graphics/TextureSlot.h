@@ -14,7 +14,7 @@ namespace Lumina
         constexpr uint32_t MATERIAL_AO = 4;
         constexpr uint32_t MATERIAL_EMISSION = 5;
         constexpr uint32_t MATERIAL_HEIGHT = 6;
-        constexpr uint32_t MATERIAL_SUBSURFACE = 7;
+        constexpr uint32_t MATERIAL_ALPHA = 7;
 
         // Environment texture slots (8-15)
         constexpr uint32_t SKYBOX = 8;
