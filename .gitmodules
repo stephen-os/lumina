@@ -1,21 +1,21 @@
 [submodule "dependencies/glfw"]
-	path = Dependencies/glfw
-	url = https://github.com/Resetss/glfw.git
+	path = dependencies/glfw
+	url = https://github.com/stephen-os/glfw.git
 [submodule "dependencies/glad"]
-	path = Dependencies/glad
-	url = https://github.com/Resetss/glad.git
+	path = dependencies/glad
+	url = https://github.com/stephen-os/glad.git
 [submodule "dependencies/glm"]
-	path = Dependencies/glm
+	path = dependencies/glm
 	url = https://github.com/g-truc/glm.git
 [submodule "dependencies/tinygltf"]
-	path = Dependencies/tinygltf
-	url = https://github.com/Resetss/tinygltf.git
+	path = dependencies/tinygltf
+	url = https://github.com/stephen-os/tinygltf.git
 [submodule "dependencies/imgui"]
-	path = Dependencies/imgui
-	url = https://github.com/Resetss/imgui.git
+	path = dependencies/imgui
+	url = https://github.com/stephen-os/imgui.git
 [submodule "dependencies/imguifd"]
-	path = Dependencies/imguifd
-	url = https://github.com/Resetss/ImGuiFileDialog.git
+	path = dependencies/imguifd
+	url = https://github.com/stephen-os/ImGuiFileDialog.git
 [submodule "dependencies/spdlog"]
-	path = Dependencies/spdlog
-	url = https://github.com/Resetss/spdlog.git
+	path = dependencies/spdlog
+	url = https://github.com/stephen-os/spdlog.git
