@@ -1,21 +1,21 @@
-[submodule "Dependencies/glfw"]
+[submodule "dependencies/glfw"]
 	path = Dependencies/glfw
 	url = https://github.com/Resetss/glfw.git
-[submodule "Dependencies/glad"]
+[submodule "dependencies/glad"]
 	path = Dependencies/glad
 	url = https://github.com/Resetss/glad.git
-[submodule "Dependencies/glm"]
+[submodule "dependencies/glm"]
 	path = Dependencies/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "Dependencies/tinygltf"]
+[submodule "dependencies/tinygltf"]
 	path = Dependencies/tinygltf
 	url = https://github.com/Resetss/tinygltf.git
-[submodule "Dependencies/imgui"]
+[submodule "dependencies/imgui"]
 	path = Dependencies/imgui
 	url = https://github.com/Resetss/imgui.git
-[submodule "Dependencies/imguifd"]
+[submodule "dependencies/imguifd"]
 	path = Dependencies/imguifd
 	url = https://github.com/Resetss/ImGuiFileDialog.git
-[submodule "Dependencies/spdlog"]
+[submodule "dependencies/spdlog"]
 	path = Dependencies/spdlog
 	url = https://github.com/Resetss/spdlog.git
