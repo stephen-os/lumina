@@ -279,7 +279,7 @@ namespace Lumina
         }
         case RenderMode::Points:
         {
-            RenderCommands::SetPolygonMode(PolygonMode::Fill);
+            RenderCommands::SetPolygonMode(PolygonMode::Point);
             if (hasIndices)
             {
                 RenderCommands::DrawPointsIndexed(vao);
@@ -315,6 +315,7 @@ namespace Lumina
         glm::mat4 skyboxViewProjection = s_Data.ProjectionMatrix * skyboxView;
 
         s_Data.SkyboxShader->SetUniformMat4("u_ViewProjection", skyboxViewProjection);
+        s_Data.SkyboxShader->SetUniformInt("u_RenderMode", static_cast<int>(s_Data.CurrentRenderMode));
 
 		Skybox::BindAttributes(s_Data.SkyboxShader, attributes);
 
@@ -322,6 +323,25 @@ namespace Lumina
         if (texture)
         {
             texture->Bind(TextureSlots::SKYBOX);
+        }
+
+        switch (s_Data.CurrentRenderMode)
+        {
+        case RenderMode::Normal:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Fill);
+            break;
+        }
+        case RenderMode::Wireframe:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Line);
+            break;
+        }
+        case RenderMode::Points:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Point);
+            break;
+        }
         }
 
         auto vao = skybox->GetVAO();
@@ -403,6 +423,25 @@ namespace Lumina
         if (s_Data.CurrentRenderMode == RenderMode::Points)
         {
             s_Data.PBRIShader->SetUniformFloat("u_PointSize", s_Data.GlobalPointSize);
+        }
+
+        switch (s_Data.CurrentRenderMode)
+        {
+        case RenderMode::Normal:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Fill);
+            break;
+        }
+        case RenderMode::Wireframe:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Line);
+            break;
+        }
+        case RenderMode::Points:
+        {
+            RenderCommands::SetPolygonMode(PolygonMode::Point);
+            break;
+        }
         }
 
         for (auto& [uuid, instance] : s_Data.m_ModelInstances)
