@@ -14,13 +14,13 @@ namespace Lumina
 
     struct TextureFormatInfo
     {
-        uint32_t internalFormat;
-        uint32_t dataFormat;
-        uint32_t dataType;
-        uint8_t componentCount;
-        uint8_t bytesPerPixel;
-        const char* name;
-        bool isFloat;
+        uint32_t InternalFormat;
+        uint32_t DataFormat;
+        uint32_t DataType;
+        uint8_t ComponentCount;
+        uint8_t BytesPerPixel;
+        const char* Name;
+        bool IsFloat;
     };
 
     class TextureFormats
@@ -28,16 +28,14 @@ namespace Lumina
     public:
         static const TextureFormatInfo& GetInfo(TextureFormat format);
 
-        // Convenience accessors
-        static uint32_t GetInternalFormat(TextureFormat format) { return GetInfo(format).internalFormat; }
-        static uint32_t GetDataFormat(TextureFormat format) { return GetInfo(format).dataFormat; }
-        static uint32_t GetDataType(TextureFormat format) { return GetInfo(format).dataType; }
-        static uint8_t GetComponentCount(TextureFormat format) { return GetInfo(format).componentCount; }
-        static uint8_t GetBytesPerPixel(TextureFormat format) { return GetInfo(format).bytesPerPixel; }
-        static const char* GetName(TextureFormat format) { return GetInfo(format).name; }
-        static bool IsFloat(TextureFormat format) { return GetInfo(format).isFloat; }
+        static uint32_t GetInternalFormat(TextureFormat format) { return GetInfo(format).InternalFormat; }
+        static uint32_t GetDataFormat(TextureFormat format) { return GetInfo(format).DataFormat; }
+        static uint32_t GetDataType(TextureFormat format) { return GetInfo(format).DataType; }
+        static uint8_t GetComponentCount(TextureFormat format) { return GetInfo(format).ComponentCount; }
+        static uint8_t GetBytesPerPixel(TextureFormat format) { return GetInfo(format).BytesPerPixel; }
+        static const char* GetName(TextureFormat format) { return GetInfo(format).Name; }
+        static bool IsFloat(TextureFormat format) { return GetInfo(format).IsFloat; }
 
-        // Utility functions
         static TextureFormat FromComponentCount(int components);
         static bool IsValidFormat(TextureFormat format);
         static size_t CalculateImageSize(TextureFormat format, uint32_t width, uint32_t height);

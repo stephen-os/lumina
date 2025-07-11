@@ -3,14 +3,12 @@
 
 #include <glad/glad.h>
 #include <stb_image.h>
-#include <iostream>
 
 #include "../Core/Assert.h"
 #include "../Core/Log.h"
 
 namespace Lumina
 {
-    // Static factory methods
     Ref<Texture> Texture::Create(const std::string& source)
     {
         return Ref<Texture>::Create(source);
@@ -59,10 +57,8 @@ namespace Lumina
         auto texture = Ref<Texture>::Create(1, 1, TextureFormat::RGBA8);
         texture->m_IsCubemap = true;
 
-        // Create cubemap texture using DSA
         GLCALL(glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &texture->m_BufferID));
 
-        // Load each face
         int width = 0, height = 0;
         for (int i = 0; i < 6; ++i)
         {
@@ -73,10 +69,13 @@ namespace Lumina
             if (!data)
             {
                 LUMINA_LOG_ERROR("Failed to load cubemap face: {0}", faces[i]);
+                
+				GLCALL(glDeleteTextures(1, &texture->m_BufferID));
+				texture->m_BufferID = 0;
+
                 return nullptr;
             }
 
-            // Set dimensions from first face
             if (i == 0)
             {
                 width = faceWidth;
@@ -84,34 +83,33 @@ namespace Lumina
                 texture->m_Width = width;
                 texture->m_Height = height;
 
-                // Determine format from first face
                 texture->m_Format = TextureFormats::FromComponentCount(channels);
                 auto formatInfo = TextureFormats::GetInfo(texture->m_Format);
 
-                // Allocate storage for the entire cubemap
-                GLCALL(glTextureStorage2D(texture->m_BufferID, 1, formatInfo.internalFormat, width, height));
+                GLCALL(glTextureStorage2D(texture->m_BufferID, 1, formatInfo.InternalFormat, width, height));
             }
             else if (faceWidth != width || faceHeight != height)
             {
                 LUMINA_LOG_ERROR("All cubemap faces must have the same dimensions");
+                
                 stbi_image_free(data);
+				GLCALL(glDeleteTextures(1, &texture->m_BufferID));
+				texture->m_BufferID = 0;
+
                 return nullptr;
             }
 
-            // Get format info for uploading
             TextureFormat faceFormat = TextureFormats::FromComponentCount(channels);
             auto formatInfo = TextureFormats::GetInfo(faceFormat);
 
-            // Upload face data
-            GLCALL(glTextureSubImage3D(texture->m_BufferID, 0, 0, 0, i, width, height, 1,
-                formatInfo.dataFormat, formatInfo.dataType, data));
+            GLCALL(glTextureSubImage3D(texture->m_BufferID, 0, 0, 0, i, width, height, 1, formatInfo.DataFormat, formatInfo.DataType, data));
 
             stbi_image_free(data);
         }
 
         // Set cubemap parameters
-        GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
         GLCALL(glTextureParameteri(texture->m_BufferID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));
@@ -168,7 +166,6 @@ namespace Lumina
         m_Width = width;
         m_Height = height;
 
-        // Reallocate texture storage using DSA
         GLCALL(glDeleteTextures(1, &m_BufferID));
         CreateTexture(width, height, m_Format);
 
@@ -183,8 +180,7 @@ namespace Lumina
         LUMINA_ASSERT(size == expectedSize, "Texture::SetData - Data size mismatch. Expected: {0}, got: {1}", expectedSize, size);
 
         auto formatInfo = TextureFormats::GetInfo(m_Format);
-        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, m_Width, m_Height,
-            formatInfo.dataFormat, formatInfo.dataType, data));
+        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, m_Width, m_Height, formatInfo.DataFormat, formatInfo.DataType, data));
     }
 
     void Texture::SetData(const void* data, uint32_t width, uint32_t height, int components)
@@ -207,18 +203,15 @@ namespace Lumina
 
         auto formatInfo = TextureFormats::GetInfo(format);
 
-        // Reallocate if needed
         GLCALL(glDeleteTextures(1, &m_BufferID));
         GLCALL(glCreateTextures(GL_TEXTURE_2D, 1, &m_BufferID));
-        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.internalFormat, width, height));
-        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, width, height,
-            formatInfo.dataFormat, formatInfo.dataType, data));
+        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.InternalFormat, width, height));
+        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, width, height, formatInfo.DataFormat, formatInfo.DataType, data));
 
-        // Set texture parameters
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_S, GL_REPEAT));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_T, GL_REPEAT));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
         GLCALL(glGenerateTextureMipmap(m_BufferID));
     }
@@ -228,11 +221,10 @@ namespace Lumina
         return TextureFormats::GetComponentCount(m_Format);
     }
 
-    // Private helper methods
     void Texture::LoadFromFile(const std::string& path)
     {
-        // Create texture using DSA
         GLCALL(glCreateTextures(GL_TEXTURE_2D, 1, &m_BufferID));
+
 
         int channels;
         int width, height;
@@ -247,18 +239,14 @@ namespace Lumina
 
         auto formatInfo = TextureFormats::GetInfo(m_Format);
 
-        // Set texture parameters using DSA
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_S, GL_REPEAT));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_T, GL_REPEAT));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
 
-        // Allocate and upload texture data using DSA
-        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.internalFormat, m_Width, m_Height));
-        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, m_Width, m_Height,
-            formatInfo.dataFormat, GL_UNSIGNED_BYTE, data));
+        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.InternalFormat, m_Width, m_Height));
+        GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, m_Width, m_Height, formatInfo.DataFormat, GL_UNSIGNED_BYTE, data));
 
-        // Generate mipmaps using DSA
         GLCALL(glGenerateTextureMipmap(m_BufferID));
 
         stbi_image_free(data);
@@ -272,21 +260,17 @@ namespace Lumina
 
         auto formatInfo = TextureFormats::GetInfo(format);
 
-        // Allocate texture storage using DSA
-        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.internalFormat, width, height));
+        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.InternalFormat, width, height));
 
-        // Upload data if provided
         if (data)
         {
-            GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, width, height,
-                formatInfo.dataFormat, formatInfo.dataType, data));
+            GLCALL(glTextureSubImage2D(m_BufferID, 0, 0, 0, width, height, formatInfo.DataFormat, formatInfo.DataType, data));
         }
 
-        // Set texture parameters using DSA
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_S, GL_REPEAT));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_T, GL_REPEAT));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
     }
 
     void Texture::CreateCubemapTexture(uint32_t width, uint32_t height, const void* data)
@@ -297,10 +281,8 @@ namespace Lumina
 
         auto formatInfo = TextureFormats::GetInfo(m_Format);
 
-        // Allocate storage for cubemap
-        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.internalFormat, width, height));
+        GLCALL(glTextureStorage2D(m_BufferID, 1, formatInfo.InternalFormat, width, height));
 
-        // If data is provided, it should contain 6 faces worth of data
         if (data)
         {
             const uint8_t* faceData = static_cast<const uint8_t*>(data);
@@ -309,13 +291,12 @@ namespace Lumina
             for (uint32_t i = 0; i < 6; ++i)
             {
                 const void* currentFaceData = faceData + i * faceSize;
-                GLCALL(glTextureSubImage3D(m_BufferID, 0, 0, 0, i, width, height, 1,
-                    formatInfo.dataFormat, formatInfo.dataType, currentFaceData));
+                GLCALL(glTextureSubImage3D(m_BufferID, 0, 0, 0, i, width, height, 1, formatInfo.DataFormat, formatInfo.DataType, currentFaceData));
             }
         }
 
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
-        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+        GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
         GLCALL(glTextureParameteri(m_BufferID, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE));

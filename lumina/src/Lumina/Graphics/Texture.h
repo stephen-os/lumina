@@ -12,17 +12,12 @@ namespace Lumina
     class Texture : public Referencable
     {
     public:
-        // Create from file
         static Ref<Texture> Create(const std::string& source);
-
-        // Create empty texture
         static Ref<Texture> Create(uint32_t width, uint32_t height, TextureFormat format = TextureFormat::RGBA8);
 
-        // Create from raw data
         static Ref<Texture> CreateFromData(const void* data, uint32_t width, uint32_t height, int components);
         static Ref<Texture> CreateFromData(const void* data, uint32_t width, uint32_t height, TextureFormat format);
 
-        // Create cubemap (for your model loading system)
         static Ref<Texture> CreateCubemap(const std::vector<std::string>& faces);
         static Ref<Texture> CreateCubemap(uint32_t width, uint32_t height, const void* data);
 
@@ -53,7 +48,7 @@ namespace Lumina
         void CreateCubemapTexture(uint32_t width, uint32_t height, const void* data = nullptr);
 
     private:
-        std::string m_Path;
+        std::string m_Path = "";
         uint32_t m_Width = 0;
         uint32_t m_Height = 0;
         uint32_t m_BufferID = 0;
