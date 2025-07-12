@@ -43,8 +43,7 @@ namespace Lumina
             ModelRegistry::Init();
 
             // Try to load cube model from file first
-            // m_CubeModel = Model::Load("res/geometry/suzzan.gltf");
-            m_CubeModel = Model::Load("res/geometry/suzzan.gltf"); 
+            m_CubeModel = Model::Load("res/geometry/cube.gltf"); 
 
             if (!m_CubeModel || m_CubeModel->GetMeshCount() == 0)
             {
@@ -93,9 +92,10 @@ namespace Lumina
             m_PerspectiveCamera.SetFOV(90.0f);
             m_PerspectiveCamera.SetClippingPlanes(0.1f, 1000.0f);
 
-            m_OrthographicCamera.SetPosition(glm::vec3(0.0f, 0.0f, 0.0f));
+            m_OrthographicCamera.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
             m_OrthographicCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
             m_OrthographicCamera.SetZoom(2.0f);
+            m_OrthographicCamera.SetClippingPlanes(0.1f, 1000.0f);
 
             // Setup lighting
             m_DirectionalLight.Direction = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f));
@@ -174,13 +174,13 @@ namespace Lumina
             else
                 Renderer3D::Begin(m_OrthographicCamera);
 
+            Renderer3D::Draw(m_Skybox);
+
             // Draw the cube model
             if (m_CubeModel && m_CubeModel->GetMeshCount() > 0)
             {
-                Renderer3D::DrawModel(m_CubeModel, m_ModelAttribs);
+                Renderer3D::Draw(m_CubeModel, m_ModelAttribs);
             }
-
-            Renderer3D::DrawSkybox(m_Skybox);
 
             // End rendering
             Renderer3D::End();
@@ -235,14 +235,14 @@ namespace Lumina
             {
                 ImGui::Begin("Perspective Camera");
                 glm::vec3 position = m_PerspectiveCamera.GetPosition();
-                glm::quat rotation = m_PerspectiveCamera.GetRotation();
+                glm::vec3 rotation = m_PerspectiveCamera.GetRotation();
                 float fov = m_PerspectiveCamera.GetFOV();
                 float nearPlane = m_PerspectiveCamera.GetNearPlane();
                 float farPlane = m_PerspectiveCamera.GetFarPlane();
 
                 bool updated = false;
                 updated |= ImGui::DragFloat3("Position", glm::value_ptr(position), 0.1f);
-                updated |= ImGui::DragFloat4("Rotation", glm::value_ptr(rotation), 0.01f);
+                updated |= ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.01f);
                 updated |= ImGui::DragFloat("FOV", &fov, 1.0f, 1.0f, 179.0f);
                 updated |= ImGui::DragFloat("Near Plane", &nearPlane, 0.01f, 0.01f, 10.0f);
                 updated |= ImGui::DragFloat("Far Plane", &farPlane, 1.0f, 1.0f, 1000.0f);
@@ -266,12 +266,12 @@ namespace Lumina
             {
                 ImGui::Begin("Orthographic Camera");
                 glm::vec3 position = m_OrthographicCamera.GetPosition();
-                glm::quat rotation = m_OrthographicCamera.GetRotation();
+                glm::vec3 rotation = m_OrthographicCamera.GetRotation();
                 float zoom = m_OrthographicCamera.GetZoom();
 
                 bool updated = false;
                 updated |= ImGui::DragFloat3("Position", glm::value_ptr(position), 0.1f);
-                updated |= ImGui::DragFloat4("Rotation", glm::value_ptr(rotation), 0.01f);
+                updated |= ImGui::DragFloat3("Rotation", glm::value_ptr(rotation), 0.01f);
                 updated |= ImGui::DragFloat("Zoom", &zoom, 0.01f, 0.1f, 10.0f);
 
                 if (updated)

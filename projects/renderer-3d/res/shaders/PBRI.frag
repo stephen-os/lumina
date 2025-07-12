@@ -1,4 +1,4 @@
-#version 450 core
+#version 330 core
 
 out vec4 FragColor;
 
@@ -8,6 +8,7 @@ in vec2 v_TexCoord;
 in vec3 v_Tangent;
 in vec3 v_Bitangent;
 in mat3 v_TBN;
+in vec4 v_InstanceColor;
 
 struct Material 
 {
@@ -48,13 +49,15 @@ uniform int u_HasAlphaTexture;
 uniform int u_HasEnvironmentMap;
 
 // Lighting uniforms
-struct DirectionalLight {
+struct DirectionalLight 
+{
     vec3 Direction;
     vec3 Color;
     float Intensity;
 };
 
-struct PointLight {
+struct PointLight 
+{
     vec3 Position;
     vec3 Color;
     float Intensity;
@@ -102,7 +105,7 @@ vec3 getNormalFromMap(vec2 texCoords)
     }
 }
 
-// PBR Functions (unchanged)
+// PBR Functions
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a = roughness * roughness;
@@ -184,7 +187,9 @@ void main()
     if (u_HasAlbedoTexture == 1)
         albedo *= texture(u_AlbedoTexture, texCoords).rgb;
     
-    albedo *= u_TintColor.rgb;
+    // Use instance color if available, otherwise use uniform tint color
+    vec3 tintColor = v_InstanceColor.a > 0.0 ? v_InstanceColor.rgb : u_TintColor.rgb;
+    albedo *= tintColor;
     
     float metallic = u_Material.Metallic;
     if (u_HasMetallicTexture == 1)
@@ -208,8 +213,9 @@ void main()
     if (u_HasAlphaTexture == 1)
         alpha *= texture(u_AlphaTexture, texCoords).r;
 
-    // Apply alpha from tint color as well
-    alpha *= u_TintColor.a;
+    // Use instance alpha if available, otherwise use uniform tint alpha
+    float finalAlpha = v_InstanceColor.a > 0.0 ? v_InstanceColor.a : u_TintColor.a;
+    alpha *= finalAlpha;
 
     // Early discard for fully transparent fragments
     if (alpha < 0.01)
