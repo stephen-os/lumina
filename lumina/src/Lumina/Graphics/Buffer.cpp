@@ -22,7 +22,6 @@ namespace Lumina
         }
     }
 
-
      Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)
     { 
         return Ref<VertexBuffer>::Create(size, usage);
@@ -76,13 +75,14 @@ namespace Lumina
 
 		if (size <= m_Size)
 		{
-			GLCALL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data));
-            return; 
+			GLCALL(glBufferSubData(GL_ARRAY_BUFFER, 0, size, data)); 
 		}
+        else
+        {
+            GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, Utils::UsageToEnum(m_Usage)));
+        }
 
         m_Size = size;
-
-        GLCALL(glBufferData(GL_ARRAY_BUFFER, size, data, Utils::UsageToEnum(m_Usage)));
     }
 
     // Index Buffer
