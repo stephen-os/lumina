@@ -148,6 +148,9 @@ namespace Lumina
         static void DrawArraysInstanced(const Ref<VertexArray>& vao, PrimitiveType primitive, uint32_t count, uint32_t instanceCount, uint32_t offset = 0);
         static void DrawElementsInstanced(const Ref<VertexArray>& vao, PrimitiveType primitive, uint32_t instanceCount);
 
+        // With Count 
+        static void DrawElementsWithCount(const Ref<VertexArray>& vao, PrimitiveType primitive, uint32_t indexCount);
+
         // Multi-draw Commands
         static void MultiDrawArrays(const Ref<VertexArray>& vao, PrimitiveType primitive, const int* first, const int* count, int drawCount);
 

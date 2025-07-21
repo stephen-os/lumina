@@ -273,6 +273,16 @@ namespace Lumina
         vao->Unbind();
     }
 
+    void RenderCommands::DrawElementsWithCount(const Ref<VertexArray>& vao, PrimitiveType primitive, uint32_t indexCount)
+    {
+        LUMINA_ASSERT(vao, "VertexArray cannot be null!");
+        LUMINA_ASSERT(indexCount > 0, "Index count must be greater than zero!");
+
+        vao->Bind();
+        GLCALL(glDrawElements(ToGLEnum(primitive), indexCount, GL_UNSIGNED_INT, nullptr));
+        vao->Unbind();
+    }
+
     // Multi-draw Commands
     void RenderCommands::MultiDrawArrays(const Ref<VertexArray>& vao, PrimitiveType primitive, const int* first, const int* count, int drawCount)
     {
