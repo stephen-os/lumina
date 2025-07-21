@@ -4,6 +4,7 @@
 #include "Texture.h"
 #include "ShaderProgram.h"
 #include "RenderCommands.h"
+#include "RenderTarget.h"
 
 #include <glm/glm.hpp>
 
@@ -90,6 +91,12 @@ namespace Lumina
         static void DrawLine(const LineAttributes& attributes);
         static void DrawText(const TextAttributes& attributes); 
        
+        // Render Target
+        static void SetRenderTarget(Ref<RenderTarget> target);
+        static void SetRenderTarget(std::nullptr_t);
+        static Ref<RenderTarget> GetCurrentRenderTarget();
+        static Ref<RenderTarget> CreateRenderTarget(uint32_t width, uint32_t height);
+
         // Statistics Tracking
         struct Statistics
         {

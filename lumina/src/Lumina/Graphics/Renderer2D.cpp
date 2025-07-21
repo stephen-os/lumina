@@ -60,8 +60,9 @@ namespace Lumina
     // Renderer data storage
     struct RendererData
     {
-        // Core framebuffer
-        Ref<FrameBuffer> RendererFrameBuffer;
+        // Targets
+        Ref<RenderTarget> DefaultRenderTarget;
+        Ref<RenderTarget> CurrentRenderTarget;
 
         // Quad
         Ref<VertexArray> QuadVertexArray;
@@ -129,9 +130,10 @@ namespace Lumina
     static RendererData s_Data;
 
     void Renderer2D::Init()
-    {
-        // Create framebuffer
-        s_Data.RendererFrameBuffer = FrameBuffer::Create();
+    {   
+		// Create default render target
+        s_Data.DefaultRenderTarget = RenderTarget::Create(800, 600);
+        s_Data.CurrentRenderTarget = s_Data.DefaultRenderTarget;
 
         // Create vertex arrays and buffers
         s_Data.QuadVertexArray = VertexArray::Create();
@@ -258,6 +260,17 @@ namespace Lumina
     void Renderer2D::Begin(Camera& camera)
     {
         s_Data.ViewProjectionMatrix = camera.GetProjectionMatrix() * camera.GetViewMatrix();
+        
+        // We moved this up here because we want the screen to only be cleared when all things have been drawn
+		// Since we bind on begin, we need to add checks to ensure that the user cant switch targets in the middle of a batch
+        s_Data.CurrentRenderTarget->Bind();
+        s_Data.CurrentRenderTarget->Resize(s_Data.Width, s_Data.Height);
+
+        RenderCommands::Clear();
+        RenderCommands::SetViewport(0, 0, s_Data.Width, s_Data.Height);
+        RenderCommands::EnableDepthTest();
+        RenderCommands::SetPolygonMode(s_Data.PolygonMode);
+
         StartBatch(); 
     }
 
@@ -270,6 +283,8 @@ namespace Lumina
     void Renderer2D::End()
     {
 		EndBatch();
+
+        s_Data.CurrentRenderTarget->Unbind();
     }
 
 	void Renderer2D::StartBatch()
@@ -323,18 +338,8 @@ namespace Lumina
         }
     }
 
-
     void Renderer2D::Flush()
     {
-        s_Data.RendererFrameBuffer->Bind();
-
-        RenderCommands::Clear();
-        RenderCommands::SetViewport(0, 0, s_Data.Width, s_Data.Height);
-        s_Data.RendererFrameBuffer->Resize(s_Data.Width, s_Data.Height);
-
-        RenderCommands::EnableDepthTest();
-        RenderCommands::SetPolygonMode(s_Data.PolygonMode); 
-
         // Bind all textures
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
             s_Data.TextureSlots[i]->Bind(i);
@@ -348,7 +353,7 @@ namespace Lumina
             s_Data.QuadShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
 
             s_Data.QuadVertexArray->Bind();
-            RenderCommands::DrawTriangles(s_Data.QuadVertexArray);
+			RenderCommands::DrawElementsWithCount(s_Data.QuadVertexArray, PrimitiveType::Triangles, s_Data.QuadIndexCount);
             s_Data.QuadVertexArray->Unbind();
 
             s_Data.QuadShader->Unbind();
@@ -365,7 +370,7 @@ namespace Lumina
             s_Data.CircleShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
 
             s_Data.CircleVertexArray->Bind();
-            RenderCommands::DrawTriangles(s_Data.CircleVertexArray);
+			RenderCommands::DrawElementsWithCount(s_Data.CircleVertexArray, PrimitiveType::Triangles, s_Data.CircleIndexCount);
             s_Data.CircleVertexArray->Unbind();
 
             s_Data.CircleShader->Unbind();
@@ -390,8 +395,6 @@ namespace Lumina
             
             s_Data.Stats.DrawCalls++;
         }
-
-        s_Data.RendererFrameBuffer->Unbind();
 
         // Unbind all textures
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
@@ -421,7 +424,7 @@ namespace Lumina
 
     uint32_t Renderer2D::GetImage()
     {
-        return s_Data.RendererFrameBuffer->GetColorAttachment();
+        return s_Data.CurrentRenderTarget->GetTexture();
     }
 
     void Renderer2D::SetRenderMode(PolygonMode mode)
@@ -474,9 +477,9 @@ namespace Lumina
         glm::mat4 translation = glm::translate(glm::mat4(1.0f), attributes.Position);
         
 		// Compute rotation
-        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), attributes.Rotation.x, glm::vec3(1.0f, 0.0f, 0.0f));
-        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), attributes.Rotation.y, glm::vec3(0.0f, 1.0f, 0.0f));
-        glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), attributes.Rotation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
 
         glm::mat4 rotation = rotationZ * rotationY * rotationX;
         
@@ -601,6 +604,32 @@ namespace Lumina
         s_Data.Stats.LineCount++;
     }
 
+    void Renderer2D::SetRenderTarget(Ref<RenderTarget> target)
+    {
+        if (target)
+        {
+            s_Data.CurrentRenderTarget = target;
+        }
+        else
+        {
+            s_Data.CurrentRenderTarget = s_Data.DefaultRenderTarget;
+        }
+    }
+
+    void Renderer2D::SetRenderTarget(std::nullptr_t)
+    {
+        s_Data.CurrentRenderTarget = s_Data.DefaultRenderTarget;
+    }
+
+    Ref<RenderTarget> Renderer2D::GetCurrentRenderTarget()
+    {
+        return s_Data.CurrentRenderTarget;
+    }
+
+    Ref<RenderTarget> Renderer2D::CreateRenderTarget(uint32_t width, uint32_t height)
+    {
+        return RenderTarget::Create(width, height);
+    }
 
 	Renderer2D::Statistics Renderer2D::GetStats()
 	{
