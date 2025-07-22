@@ -31,7 +31,7 @@ namespace Lumina
         Camera();
         virtual ~Camera() = default;
 
-        void SetPosition(const glm::vec3& position);
+        virtual void SetPosition(const glm::vec3& position) = 0;
 		void Translate(const glm::vec3& translation);
         void TranslateLocal(const glm::vec3& translation); 
 

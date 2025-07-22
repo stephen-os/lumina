@@ -17,6 +17,7 @@ namespace Lumina
         void SetSize(float width, float height);
         void SetZoom(float zoom);
         void SetOrthoParams(float left, float right, float bottom, float top, float nearPlane, float farPlane);
+		void SetPosition(const glm::vec3& position) override;
 
         float GetLeft() const { return m_Left; }
         float GetRight() const { return m_Right; }

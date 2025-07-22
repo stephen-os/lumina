@@ -10,12 +10,6 @@ namespace Lumina
         UpdateViewMatrix();
     }
 
-    void Camera::SetPosition(const glm::vec3& position)
-    {
-        m_Position = position;
-        UpdateViewMatrix();
-    }
-
     void Camera::Translate(const glm::vec3& translation)
     {
         m_Position += translation;

@@ -8,6 +8,12 @@ namespace Lumina
         UpdateProjectionMatrix();
     }
 
+    void Camera::SetPosition(const glm::vec3& position)
+    {
+        m_Position = position;
+        UpdateViewMatrix();
+    }
+
     void PerspectiveCamera::SetFOV(float fov)
     {
         m_FOV = fov;
