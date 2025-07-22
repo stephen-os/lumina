@@ -55,6 +55,19 @@ namespace Lumina
         Ref<Texture> FontTexture = nullptr;
     };
 
+    struct GridAttributes
+    {
+        glm::vec3 Position = { 0.0f, 0.0f, 0.0f };              // Grid center position
+        glm::vec3 Rotation = { 0.0f, 0.0f, 0.0f };              // Grid rotation (for flexibility)
+        glm::vec2 Size = { 1000.0f, 1000.0f };                    // Grid coverage area in world units
+        float GridSize = 1.0f;                                  // Size of each grid cell in world units
+        glm::vec4 Color = { 0.3f, 0.3f, 0.3f, 0.8f };           // Grid line color with alpha
+        float LineWidth = 1.0f;                                 // Grid line thickness
+        bool ShowCheckerboard = true;                           // Whether to show alternating squares
+        glm::vec4 CheckerColor1 = { 0.9f, 0.9f, 0.9f, 0.2f };   // Light checker squares
+        glm::vec4 CheckerColor2 = { 0.8f, 0.8f, 0.8f, 0.2f };   // Dark checker squares
+    };
+
     class Renderer2D
     {
     public:
@@ -89,7 +102,8 @@ namespace Lumina
         static void DrawQuad(const QuadAttributes& attributes);
         static void DrawCircle(const CircleAttributes& attributes);
         static void DrawLine(const LineAttributes& attributes);
-        static void DrawText(const TextAttributes& attributes); 
+        static void DrawText(const TextAttributes& attributes);
+        static void DrawGrid(const GridAttributes& attributes);
        
         // Render Target
         static void SetRenderTarget(Ref<RenderTarget> target);

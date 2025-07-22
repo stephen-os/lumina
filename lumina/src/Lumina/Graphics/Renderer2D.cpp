@@ -57,6 +57,23 @@ namespace Lumina
         glm::vec4 Color;
     };
 
+    struct GridVertex
+    {
+        glm::vec3 Position;
+        glm::vec4 Color;
+        glm::vec2 TexCoord;
+        float TexIndex;
+        // Grid-specific data
+        glm::vec3 GridPosition;
+        glm::vec2 GridSize;
+        float CellSize;
+        glm::vec4 GridColor;
+        float LineWidth;
+        float ShowCheckerboard;
+        glm::vec4 CheckerColor1;
+        glm::vec4 CheckerColor2;
+    };
+
     // Renderer data storage
     struct RendererData
     {
@@ -99,6 +116,16 @@ namespace Lumina
         Ref<ShaderProgram> CubeShader = nullptr;
         Ref<ShaderProgram> CircleShader = nullptr;
         Ref<ShaderProgram> LineShader = nullptr;
+
+        // Grid
+        Ref<ShaderProgram> GridShader = nullptr;
+        Ref<VertexArray> GridVertexArray;
+        Ref<VertexBuffer> GridVertexBuffer;
+        Ref<IndexBuffer> GridIndexBuffer;
+
+        uint32_t GridIndexCount = 0;
+        GridVertex* GridVertexBufferBase = nullptr;
+        GridVertex* GridVertexBufferPtr = nullptr;
 
         // Texture Management
         std::array<Ref<Texture>, MaxTextureSlots> TextureSlots;
@@ -249,6 +276,38 @@ namespace Lumina
             std::string fragmentSource = ReadFile("res/shaders/Line.frag");
             s_Data.LineShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
+
+        // Grid
+        s_Data.GridVertexArray = VertexArray::Create();
+        s_Data.GridVertexBuffer = VertexBuffer::Create(MaxVertices * sizeof(GridVertex));
+
+        s_Data.GridVertexBuffer->SetLayout({
+            { BufferDataType::Float3, "a_Position" },
+            { BufferDataType::Float4, "a_Color" },
+            { BufferDataType::Float2, "a_TexCoord" },
+            { BufferDataType::Float,  "a_TexIndex" },
+            { BufferDataType::Float3, "a_GridPosition" },
+            { BufferDataType::Float2, "a_GridSize" },
+            { BufferDataType::Float,  "a_CellSize" },
+            { BufferDataType::Float4, "a_GridColor" },
+            { BufferDataType::Float,  "a_LineWidth" },
+            { BufferDataType::Float,  "a_ShowCheckerboard" },
+            { BufferDataType::Float4, "a_CheckerColor1" },
+            { BufferDataType::Float4, "a_CheckerColor2" }
+            });
+
+        s_Data.GridVertexArray->SetVertexBuffer(s_Data.GridVertexBuffer);
+        s_Data.GridIndexBuffer = IndexBuffer::Create(quadIndices.data(), MaxIndices);
+        s_Data.GridVertexArray->SetIndexBuffer(s_Data.GridIndexBuffer);
+
+        s_Data.GridVertexBufferBase = new GridVertex[MaxVertices];
+
+        // Load grid shader
+        {
+            std::string vertexSource = ReadFile("res/shaders/Grid.vert");
+            std::string fragmentSource = ReadFile("res/shaders/Grid.frag");
+            s_Data.GridShader = ShaderProgram::Create(vertexSource, fragmentSource);
+        }
     }
 
     void Renderer2D::Shutdown()
@@ -287,19 +346,22 @@ namespace Lumina
         s_Data.CurrentRenderTarget->Unbind();
     }
 
-	void Renderer2D::StartBatch()
-	{
-		s_Data.QuadIndexCount = 0;
-		s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
+    void Renderer2D::StartBatch()
+    {
+        s_Data.QuadIndexCount = 0;
+        s_Data.QuadVertexBufferPtr = s_Data.QuadVertexBufferBase;
 
-		s_Data.CircleIndexCount = 0;
-		s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
+        s_Data.CircleIndexCount = 0;
+        s_Data.CircleVertexBufferPtr = s_Data.CircleVertexBufferBase;
 
-		s_Data.LineVertexCount = 0;
-		s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
+        s_Data.LineVertexCount = 0;
+        s_Data.LineVertexBufferPtr = s_Data.LineVertexBufferBase;
 
-		s_Data.TextureSlotIndex = 1;
-	}
+        s_Data.GridIndexCount = 0;
+        s_Data.GridVertexBufferPtr = s_Data.GridVertexBufferBase;
+
+        s_Data.TextureSlotIndex = 1;
+    }
 
     void Renderer2D::EndBatch()
     {
@@ -329,6 +391,15 @@ namespace Lumina
         {
             s_Data.Stats.DataSize += lineDataSize;
             s_Data.LineVertexBuffer->SetData(s_Data.LineVertexBufferBase, lineDataSize);
+            issueDraw = true;
+        }
+
+        // --- GRIDS ---
+        uint32_t gridDataSize = (uint8_t*)s_Data.GridVertexBufferPtr - (uint8_t*)s_Data.GridVertexBufferBase;
+        if (gridDataSize > 0)
+        {
+            s_Data.Stats.DataSize += gridDataSize;
+            s_Data.GridVertexBuffer->SetData(s_Data.GridVertexBufferBase, gridDataSize);
             issueDraw = true;
         }
 
@@ -396,6 +467,19 @@ namespace Lumina
             s_Data.Stats.DrawCalls++;
         }
 
+        if (s_Data.GridIndexCount > 0)
+        {
+            s_Data.GridShader->Bind();
+            s_Data.GridShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+
+            s_Data.GridVertexArray->Bind();
+            RenderCommands::DrawElementsWithCount(s_Data.GridVertexArray, PrimitiveType::Triangles, s_Data.GridIndexCount);
+            s_Data.GridVertexArray->Unbind();
+
+            s_Data.GridShader->Unbind();
+            s_Data.Stats.DrawCalls++;
+        }
+
         // Unbind all textures
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
             s_Data.TextureSlots[i]->Unbind();
@@ -407,6 +491,7 @@ namespace Lumina
         s_Data.QuadIndexCount = 0;
         s_Data.CircleIndexCount = 0;
         s_Data.LineVertexCount = 0;
+		s_Data.GridIndexCount = 0;
     }
 
 
@@ -602,6 +687,55 @@ namespace Lumina
         s_Data.LineVertexCount++;
 
         s_Data.Stats.LineCount++;
+    }
+
+    void Renderer2D::DrawGrid(const GridAttributes& attributes)
+    {
+        if (s_Data.GridIndexCount >= MaxIndices)
+        {
+            EndBatch();
+            StartBatch();
+        }
+
+        // Calculate transform matrix
+        glm::mat4 translation = glm::translate(glm::mat4(1.0f), attributes.Position);
+        glm::mat4 rotationX = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
+        glm::mat4 rotationY = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
+        glm::mat4 rotationZ = glm::rotate(glm::mat4(1.0f), glm::radians(attributes.Rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
+        glm::mat4 rotation = rotationZ * rotationY * rotationX;
+        glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(attributes.Size, 1.0f));
+        glm::mat4 transform = translation * rotation * scale;
+
+        // Create vertices for the grid quad
+        glm::vec2 texCoords[4] = {
+            { 0.0f, 0.0f }, // Bottom left
+            { 1.0f, 0.0f }, // Bottom right
+            { 1.0f, 1.0f }, // Top right
+            { 0.0f, 1.0f }  // Top left
+        };
+
+        for (size_t i = 0; i < 4; i++)
+        {
+            s_Data.GridVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
+            s_Data.GridVertexBufferPtr->Color = attributes.Color;
+            s_Data.GridVertexBufferPtr->TexCoord = texCoords[i];
+            s_Data.GridVertexBufferPtr->TexIndex = 0.0f;
+
+            // Grid-specific data (same for all vertices of this grid)
+            s_Data.GridVertexBufferPtr->GridPosition = attributes.Position;
+            s_Data.GridVertexBufferPtr->GridSize = attributes.Size;
+            s_Data.GridVertexBufferPtr->CellSize = attributes.GridSize;
+            s_Data.GridVertexBufferPtr->GridColor = attributes.Color;
+            s_Data.GridVertexBufferPtr->LineWidth = attributes.LineWidth;
+            s_Data.GridVertexBufferPtr->ShowCheckerboard = attributes.ShowCheckerboard ? 1.0f : 0.0f;
+            s_Data.GridVertexBufferPtr->CheckerColor1 = attributes.CheckerColor1;
+            s_Data.GridVertexBufferPtr->CheckerColor2 = attributes.CheckerColor2;
+
+            s_Data.GridVertexBufferPtr++;
+        }
+
+        s_Data.GridIndexCount += 6;
+        s_Data.Stats.QuadCount++; // Or add GridCount to stats
     }
 
     void Renderer2D::SetRenderTarget(Ref<RenderTarget> target)
