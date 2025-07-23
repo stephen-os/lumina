@@ -211,10 +211,10 @@ namespace Lumina
         s_Data.TextureSlots[0]->SetData(&whiteTextureData, sizeof(uint32_t));
 
         // Set up default quad vertex positions in object space
-        s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.5f };   // Bottom left
-        s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.5f };   // Bottom right
-        s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.5f };   // Top right
-        s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.5f };   // Top left
+        s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };   // Bottom left
+        s_Data.QuadVertexPositions[1] = {  0.5f, -0.5f, 0.0f, 1.0f };   // Bottom right
+        s_Data.QuadVertexPositions[2] = {  0.5f,  0.5f, 0.0f, 1.0f };   // Top right
+        s_Data.QuadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };   // Top left
 
 		// Set up default local position for circles
         s_Data.CircleVertexPositions[0] = { -1.0f, -1.0f, 0.0f },       // Bottom left
