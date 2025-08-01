@@ -15,6 +15,9 @@
 #include "Log.h"
 #include "Assert.h"
 
+#include "../Graphics/Renderer2D.h"
+#include "../Graphics/Renderer3D.h"
+
 #include <glad/glad.h>
 
 namespace Lumina
@@ -61,6 +64,12 @@ namespace Lumina
         const char* version = (const char*)glGetString(GL_VERSION);
         LUMINA_ASSERT(version, "[OpenGL Context] Failed to retrieve OpenGL version.");
         LUMINA_LOG_INFO("OpenGL Version: {}", version);
+
+        if (m_Specifications.Use2DRenderer)
+            Renderer2D::Init();
+
+		if (m_Specifications.Use3DRenderer)
+			Renderer3D::Init();
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -115,6 +124,12 @@ namespace Lumina
 
         for (auto& layer : m_LayerStack)
             layer->OnDetach();
+
+        if (m_Specifications.Use2DRenderer)
+			Renderer2D::Shutdown();
+
+		if (m_Specifications.Use3DRenderer)
+			Renderer3D::Shutdown();
 
         m_LayerStack.clear(); 
         

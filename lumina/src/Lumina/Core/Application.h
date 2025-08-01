@@ -19,6 +19,10 @@ namespace Lumina
 		std::string Name = "Lumina App";
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
+
+		bool Use2DRenderer = false;
+		bool Use3DRenderer = false;
+
 		bool Fullscreen = false;
 		bool Dock = false;
 		bool Theme = true; 

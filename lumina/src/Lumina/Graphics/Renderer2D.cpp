@@ -158,6 +158,8 @@ namespace Lumina
 
     void Renderer2D::Init()
     {   
+        LUMINA_LOG_INFO("Renderer2D: Initializing...");
+
 		// Create default render target
         s_Data.DefaultRenderTarget = RenderTarget::Create(800, 600);
         s_Data.CurrentRenderTarget = s_Data.DefaultRenderTarget;
@@ -308,12 +310,17 @@ namespace Lumina
             std::string fragmentSource = ReadFile("res/shaders/Grid.frag");
             s_Data.GridShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
+
+        LUMINA_LOG_INFO("Renderer2D: Initialization complete");
     }
 
     void Renderer2D::Shutdown()
     {
+        LUMINA_LOG_INFO("Renderer2D: Shutting down...");
         // Free allocated memory
         delete[] s_Data.QuadVertexBufferBase;
+
+        LUMINA_LOG_INFO("Renderer2D: Shutdown complete");
     }
 
     void Renderer2D::Begin(Camera& camera)
