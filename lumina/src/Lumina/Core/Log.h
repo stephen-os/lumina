@@ -37,7 +37,7 @@ namespace Lumina
     class Log
     {
     public:
-        static void Init();
+        static void Init(std::string& name);
         static void Shutdown();
         static std::shared_ptr<spdlog::logger>& GetLogger() { return s_Logger; }
         static void SetLogLevel(spdlog::level::level_enum level);

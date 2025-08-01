@@ -44,7 +44,7 @@ namespace Lumina
         }
     }
 
-    void Log::Init()
+    void Log::Init(std::string& name)
     {
         if (s_Initialized)
             return;
@@ -53,7 +53,7 @@ namespace Lumina
         console_sink->set_formatter(std::make_unique<LogFormatter>());
         s_Sinks.push_back(console_sink);
 
-        s_Logger = std::make_shared<spdlog::logger>("Lumina", s_Sinks.begin(), s_Sinks.end());
+        s_Logger = std::make_shared<spdlog::logger>(name, s_Sinks.begin(), s_Sinks.end());
         s_Logger->set_level(spdlog::level::trace);
         s_Logger->flush_on(spdlog::level::err);
         spdlog::register_logger(s_Logger);

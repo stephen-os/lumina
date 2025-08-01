@@ -33,7 +33,7 @@ namespace Lumina
 		s_Instance = this;
         m_Specifications = applicationSpecification;
 
-        Log::Init();
+        Log::Init(m_Specifications.Name);
         LUMINA_LOG_INFO("Starting Lumina Application: {}", m_Specifications.Name);
         
         glfwSetErrorCallback(GLFWErrorCallback);
