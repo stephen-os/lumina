@@ -9,7 +9,7 @@ project "Lumina"
 
    includedirs
    {
-      "Lumina/src",
+      "src/Lumina",
       "../Dependencies/imgui",
       "../Dependencies/glfw/include",
       "../Dependencies/glm",
