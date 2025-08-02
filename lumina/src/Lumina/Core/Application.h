@@ -19,6 +19,8 @@ namespace Lumina
 		std::string Name = "Lumina App";
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
+		int32_t PositionX = 100; 
+		int32_t PositionY = 100;
 
 		bool Use2DRenderer = false;
 		bool Use3DRenderer = false;
@@ -52,6 +54,11 @@ namespace Lumina
 
 		static Application& GetInstance();
 		GLFWwindow* GetWindowHandle() const { return m_Window; };
+	
+	private: 
+		void RenderCustomTitleBar();
+		void ToggleDock();
+
 	private:
 		GLFWwindow* m_Window = nullptr;
 
@@ -62,6 +69,9 @@ namespace Lumina
 
 		float m_TimeStep = 0.0f;
 		Timer m_FrameTimer;
+
+		bool m_IsDragging = false;
+		ImVec2 m_DragOffset = { 0.0f, 0.0f };
 	};
 
 	// Implemented by CLIENT

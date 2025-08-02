@@ -1,4 +1,4 @@
-#include "Application.h"
+﻿#include "Application.h"
 
 #include <iostream>
 #include <vector> 
@@ -47,6 +47,8 @@ namespace Lumina
             return;
         }
 
+        glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
+
         m_Window = glfwCreateWindow(m_Specifications.Width, m_Specifications.Height, m_Specifications.Name.c_str(), NULL, NULL);
         if (!m_Window)
         {
@@ -56,7 +58,7 @@ namespace Lumina
         }
 
         glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(1);
+        glfwSwapInterval(0);
 
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         LUMINA_ASSERT(status, "[OpenGL Context] Failed to initialize GLAD.");
@@ -90,7 +92,7 @@ namespace Lumina
         ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
         const char* glsl_version = "#version 130";
         ImGui_ImplOpenGL3_Init(glsl_version);
-
+ 
         // Fullscreen with taskbar
         if (m_Specifications.Dock)
         {
@@ -144,7 +146,6 @@ namespace Lumina
 
     void Application::Run()
     {
-        // Main loop
         while (!glfwWindowShouldClose(m_Window) && m_Running)
         {
             m_TimeStep = m_FrameTimer.Elapsed();
@@ -156,35 +157,42 @@ namespace Lumina
             glfwPollEvents();
 
             ImGui_ImplOpenGL3_NewFrame();
-
-            // ImGui new frame
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
-            ImGui::DockSpaceOverViewport();
 
-            // Main window docking
-            ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDocking;
+            RenderCustomTitleBar();
 
-            const ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImVec2 dockspace_pos = viewport->WorkPos;
+            ImVec2 dockspace_size = viewport->WorkSize;
+
+            dockspace_pos.y += 30.0f;
+            dockspace_size.y -= 30.0f;
+
+            ImGui::SetNextWindowPos(dockspace_pos);
+            ImGui::SetNextWindowSize(dockspace_size);
             ImGui::SetNextWindowViewport(viewport->ID);
-        
+
+            ImGuiWindowFlags dockspace_flags =
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoNavFocus |
+                ImGuiWindowFlags_NoBackground;
+
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-            window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-            window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
+            ImGui::Begin("DockSpace", nullptr, dockspace_flags);
 
-            static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-        
-            if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-                window_flags |= ImGuiWindowFlags_NoBackground;
-        
-            ImGui::Begin("Lumina", nullptr, window_flags);
+            // Create the dockspace
+            ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
             ImGui::End();
-
             ImGui::PopStyleVar(3);
 
             // Layer from LuminaApp 
@@ -220,16 +228,146 @@ namespace Lumina
 
     void Application::SetWindowFullscreen()
     {
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        LUMINA_ASSERT(monitor, "Failed to get primary monitor.");
-        if (!monitor) return;
+        if (m_Specifications.Fullscreen)
+        {
+            glfwGetWindowPos(m_Window, &m_Specifications.PositionX, &m_Specifications.PositionY);
+            glfwGetWindowSize(m_Window, (int*)&m_Specifications.Width, (int*)&m_Specifications.Height);
 
-        // Get the monitor's video mode
-        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-        LUMINA_ASSERT(mode, "Failed to get monitor video mode.");
+            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+            LUMINA_ASSERT(monitor, "Failed to get primary monitor.");
+            if (!monitor) return;
 
-        // Set the window to fullscreen
-        glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+            LUMINA_ASSERT(mode, "Failed to get monitor video mode.");
+
+            glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
+        }
+        else
+        {
+            glfwSetWindowMonitor(m_Window, nullptr, m_Specifications.PositionX, m_Specifications.PositionY,
+                m_Specifications.Width, m_Specifications.Height, 0);
+        }
+    }
+
+    void Application::RenderCustomTitleBar()
+    {
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+
+        ImGui::SetNextWindowPos(viewport->WorkPos);
+        ImGui::SetNextWindowSize(ImVec2(viewport->WorkSize.x, 30.0f));
+
+        ImGuiWindowFlags flags =
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoResize |
+            ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoDocking |
+            ImGuiWindowFlags_NoScrollbar |
+            ImGuiWindowFlags_NoScrollWithMouse;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 0.0f)); // Remove vertical padding
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.0f, 0.0f));   // Reduce item spacing
+		ImGui::PushStyleVar(ImGuiStyleVar_ButtonTextAlign, ImVec2(0.5f, 0.5f)); // Center text in buttons
+
+        if (ImGui::Begin("TopBox", nullptr, flags))
+        {
+            float windowHeight = ImGui::GetWindowHeight();
+            float buttonHeight = 20.0f;
+            float buttonVerticalOffset = (windowHeight - buttonHeight) * 0.5f;
+
+            ImVec2 textSize = ImGui::CalcTextSize(m_Specifications.Name.c_str());
+            float verticalOffset = (windowHeight - textSize.y) * 0.5f;
+
+            ImGui::SetCursorPosY(verticalOffset);
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.6f, 0.2f, 1.0f));
+            ImGui::Text("%s", m_Specifications.Name.c_str());
+            ImGui::PopStyleColor();
+
+            ImGui::SetCursorPos(ImVec2(0, 0));
+            ImGui::InvisibleButton("##titlebar_drag", ImVec2(ImGui::GetWindowWidth() - 90.0f, 30.0f));
+
+            if (ImGui::IsItemHovered())
+            {
+                if (ImGui::IsMouseClicked(ImGuiMouseButton_Left))
+                {
+                    m_IsDragging = true;
+                    ImVec2 mousePos = ImGui::GetMousePos();
+                    int windowX, windowY;
+                    glfwGetWindowPos(m_Window, &windowX, &windowY);
+                    m_DragOffset = ImVec2(mousePos.x - windowX, mousePos.y - windowY);
+                }
+            }
+
+            if (m_IsDragging)
+            {
+                if (ImGui::IsMouseDown(ImGuiMouseButton_Left))
+                {
+                    ImVec2 mousePos = ImGui::GetMousePos();
+                    ImVec2 newWindowPos = ImVec2(mousePos.x - m_DragOffset.x, mousePos.y - m_DragOffset.y);
+                    glfwSetWindowPos(m_Window, (int)newWindowPos.x, (int)newWindowPos.y);
+                }
+                else
+                {
+                    m_IsDragging = false;
+                }
+            }
+
+            float buttonsStartX = ImGui::GetWindowWidth() - 90.0f;
+            ImGui::SetCursorPos(ImVec2(buttonsStartX, buttonVerticalOffset));
+
+            if (ImGui::Button("_", ImVec2(25, 20)))
+            {
+                glfwIconifyWindow(m_Window);
+            }
+
+            ImGui::SameLine();
+
+            if (ImGui::Button(m_Specifications.Dock ? "#" : "*", ImVec2(25, 20)))
+            {
+                ToggleDock();
+            }
+
+            ImGui::SameLine();
+
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.8f, 0.2f, 0.2f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 0.3f, 0.3f, 1.0f));
+            if (ImGui::Button("X", ImVec2(25, 20)))
+            {
+                m_Running = false;
+            }
+            ImGui::PopStyleColor(2);
+        }
+
+        ImGui::End();
+        ImGui::PopStyleVar(3);
+    }
+
+    void Application::ToggleDock()
+    {
+        m_Specifications.Dock = !m_Specifications.Dock;
+
+        if (m_Specifications.Dock)
+        {
+            if (!m_Specifications.Fullscreen)
+            {
+                glfwGetWindowPos(m_Window, &m_Specifications.PositionX, &m_Specifications.PositionY);
+                glfwGetWindowSize(m_Window, (int*)&m_Specifications.Width, (int*)&m_Specifications.Height);
+            }
+
+            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
+            if (primaryMonitor)
+            {
+                int xpos, ypos, width, height;
+                glfwGetMonitorWorkarea(primaryMonitor, &xpos, &ypos, &width, &height);
+                glfwSetWindowPos(m_Window, xpos, ypos);
+                glfwSetWindowSize(m_Window, width, height);
+            }
+        }
+        else
+        {
+            glfwSetWindowSize(m_Window, m_Specifications.Width, m_Specifications.Height);
+            glfwSetWindowPos(m_Window, m_Specifications.PositionX, m_Specifications.PositionY);
+        }
     }
 
     void Application::ApplyLuminaTheme()
