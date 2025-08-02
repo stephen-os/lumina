@@ -4,7 +4,7 @@ namespace Lumina
 {
     Ref<RenderTarget> RenderTarget::Create(uint32_t width, uint32_t height)
     {
-        return Ref<RenderTarget>::Create(width, height);
+        return CreateRef<RenderTarget>(width, height);
     }
 
     RenderTarget::RenderTarget(uint32_t width, uint32_t height)

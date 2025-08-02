@@ -6,12 +6,12 @@ namespace Lumina
 {
     Ref<TextureAtlas> TextureAtlas::Create(std::string& source, int width, int height)
 	{
-		return Ref<TextureAtlas>::Create(source, width, height); 
+		return CreateRef<TextureAtlas>(source, width, height); 
 	}
 
     Ref<TextureAtlas> TextureAtlas::Create(int width, int height)
 	{
-		return Ref<TextureAtlas>::Create(width, height); 
+		return CreateRef<TextureAtlas>(width, height); 
 	}
 
     TextureAtlas::TextureAtlas(int width, int height)
@@ -59,7 +59,7 @@ namespace Lumina
 
     void TextureAtlas::RemoveTexture()
     {
-        m_Texture.Reset();
+        m_Texture.reset();
         m_HasTexture = false; 
     }
 

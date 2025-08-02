@@ -2,6 +2,8 @@
 
 #include "Cameras/Camera.h"
 
+#include "Core/Base.h"
+
 #include "VertexArray.h"
 #include "Texture.h"
 #include "ShaderProgram.h"
@@ -14,7 +16,6 @@
 #include <glm/glm.hpp>
 
 #include <string>
-#include <memory>
 
 namespace Lumina
 {

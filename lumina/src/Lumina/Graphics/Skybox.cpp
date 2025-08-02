@@ -2,9 +2,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
-
 #include "BufferLayout.h"
 #include "TextureSlot.h"
 
@@ -98,7 +95,7 @@ namespace Lumina
 
     Ref<Skybox> Skybox::Create(const std::string& name)
     {
-		auto skybox = Ref<Skybox>::Create();
+		auto skybox = CreateRef<Skybox>();
         skybox->SetName(name);
 
         LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());
@@ -117,7 +114,7 @@ namespace Lumina
     {
 		LUMINA_ASSERT(faces.size() == 6, "Skybox: Creation requires exactly 6 face textures");
 
-		auto skybox = Ref<Skybox>::Create(faces);
+		auto skybox = CreateRef<Skybox>(faces);
         skybox->SetName(name);
 
         LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());
@@ -137,14 +134,14 @@ namespace Lumina
         LUMINA_LOG_INFO("- Texture Type: Cubemap");
         LUMINA_LOG_INFO("- Texture Slot: {}", TextureSlots::SKYBOX);
 
-        return Ref<Skybox>::Create(faces);
+        return CreateRef<Skybox>(faces);
     }
 
     Ref<Skybox> Skybox::Create(const Ref<Texture>& cubemapTexture, const std::string& name)
     {
 		LUMINA_ASSERT(cubemapTexture, "Skybox: Cannot create skybox with null texture");
 
-        auto skybox = Ref<Skybox>::Create(cubemapTexture);
+        auto skybox = CreateRef<Skybox>(cubemapTexture);
 		skybox->SetName(name);
 
         LUMINA_LOG_INFO("Skybox: Successfully created '{}'", skybox->GetName());

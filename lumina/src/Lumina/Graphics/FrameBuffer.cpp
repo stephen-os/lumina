@@ -11,7 +11,7 @@ namespace Lumina
 {
     Ref<FrameBuffer> FrameBuffer::Create()
 	{
-		return Ref<FrameBuffer>::Create();
+		return CreateRef<FrameBuffer>();
 	}
 
     FrameBuffer::FrameBuffer()

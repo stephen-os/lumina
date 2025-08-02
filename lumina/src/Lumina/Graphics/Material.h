@@ -4,14 +4,14 @@
 
 #include <glm/glm.hpp>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 #include "Texture.h"
 #include "ShaderProgram.h"
 
 namespace Lumina
 {
-    class Material : public Referencable
+    class Material
     {
     public:
         static void BindMaterial(Ref<ShaderProgram> shader, Ref<Material> material, Ref<Texture> whiteTexture, Ref<Texture> normalMap);

@@ -3,13 +3,13 @@
 #include <string>
 #include <vector>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 #include "Formats/TextureFormat.h"
 
 namespace Lumina
 {
-    class Texture : public Referencable
+    class Texture
     {
     public:
         static Ref<Texture> Create(const std::string& source);

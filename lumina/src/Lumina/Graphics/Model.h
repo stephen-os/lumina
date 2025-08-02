@@ -6,11 +6,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Core/Ref.h"
-
 #include "Formats/ModelFormat.h"
 
 #include "Mesh.h"
+
+#include "Core/Base.h"  
 
 namespace Lumina
 {
@@ -37,7 +37,7 @@ namespace Lumina
         }
     };
 
-    class Model : public Referencable
+    class Model
     {
     public:
         static Ref<Model> Load(const std::string& path, ModelFormat format = ModelFormat::AUTO_DETECT);

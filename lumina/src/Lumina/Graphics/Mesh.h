@@ -1,8 +1,10 @@
-// Mesh.h
 #pragma once
+
 #include <vector>
 #include <string>
-#include "../Core/Ref.h"
+
+#include "Core/Base.h"
+
 #include "Vertex3D.h"
 #include "Material.h"
 #include "VertexArray.h"
@@ -10,7 +12,7 @@
 
 namespace Lumina
 {
-    class Mesh : public Referencable
+    class Mesh
     {
     public:
         static Ref<Mesh> Create();

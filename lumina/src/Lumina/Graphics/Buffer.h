@@ -1,8 +1,10 @@
 #pragma once
+
 #include <cstdint>
-#include <memory>
+
+#include "Core/Base.h"
+
 #include "BufferLayout.h"
-#include "../Core/Ref.h"
 
 namespace Lumina
 {
@@ -13,7 +15,7 @@ namespace Lumina
         Stream          // Data modified every frame (GL_STREAM_DRAW)
     };
 
-    class VertexBuffer : public Referencable
+    class VertexBuffer
     {
     public:
         static Ref<VertexBuffer> Create(uint32_t size, BufferUsage usage = BufferUsage::Static);
@@ -42,7 +44,7 @@ namespace Lumina
         BufferLayout m_Layout;
     };
 
-    class IndexBuffer : public Referencable
+    class IndexBuffer
     {
     public:
         static Ref<IndexBuffer> Create(uint32_t* data, uint32_t count, BufferUsage usage = BufferUsage::Static);

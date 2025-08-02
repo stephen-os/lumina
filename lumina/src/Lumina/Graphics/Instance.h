@@ -1,9 +1,11 @@
 #pragma once
 #include <vector>
 #include <glm/glm.hpp>
+
 #include "Model.h"
 #include "Buffer.h"
-#include "../Core/Ref.h"
+
+#include "Core/Base.h"
 
 namespace Lumina
 {
@@ -16,7 +18,7 @@ namespace Lumina
         glm::vec3 Padding = { 0.0f, 0.0f, 0.0f };                   // 12 bytes
     };
 
-	class Instance : public Referencable
+	class Instance
     {
     public:
         static Ref<Instance> Create(const Ref<Model>& model, uint32_t maxInstances = 1000); 

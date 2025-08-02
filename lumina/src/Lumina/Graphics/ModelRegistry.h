@@ -5,8 +5,6 @@
 #include <unordered_map>
 #include <vector>
 
-#include "../Core/Ref.h"
-
 #include "Model.h"
 
 #include "Formats/ModelFormat.h"

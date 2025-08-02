@@ -9,15 +9,11 @@
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Core/Assert.h"
-#include "../Core/Log.h"
-
-
 namespace Lumina
 {
     Ref<ShaderProgram> ShaderProgram::Create(const std::string& vertexSource, const std::string& fragmentSource)
 	{
-		return Ref<ShaderProgram>::Create(vertexSource, fragmentSource);
+		return CreateRef<ShaderProgram>(vertexSource, fragmentSource);
 	}
 
     ShaderProgram::ShaderProgram(const std::string& vertexSource, const std::string& fragmentSource)

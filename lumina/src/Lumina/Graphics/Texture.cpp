@@ -4,19 +4,16 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-#include "../Core/Assert.h"
-#include "../Core/Log.h"
-
 namespace Lumina
 {
     Ref<Texture> Texture::Create(const std::string& source)
     {
-        return Ref<Texture>::Create(source);
+        return CreateRef<Texture>(source);
     }
 
     Ref<Texture> Texture::Create(uint32_t width, uint32_t height, TextureFormat format)
     {
-        return Ref<Texture>::Create(width, height, format);
+        return CreateRef<Texture>(width, height, format);
     }
 
     Ref<Texture> Texture::CreateFromData(const void* data, uint32_t width, uint32_t height, int components)
@@ -28,7 +25,7 @@ namespace Lumina
             return nullptr;
         }
 
-        auto texture = Ref<Texture>::Create(width, height, format);
+        auto texture = Texture::Create(width, height, format);
         if (data)
         {
             texture->SetData(data, width, height, format);
@@ -38,7 +35,7 @@ namespace Lumina
 
     Ref<Texture> Texture::CreateFromData(const void* data, uint32_t width, uint32_t height, TextureFormat format)
     {
-        auto texture = Ref<Texture>::Create(width, height, format);
+        auto texture = Texture::Create(width, height, format);
         if (data)
         {
             texture->SetData(data, width, height, format);
@@ -54,7 +51,7 @@ namespace Lumina
             return nullptr;
         }
 
-        auto texture = Ref<Texture>::Create(1, 1, TextureFormat::RGBA8);
+        auto texture = Texture::Create(1, 1, TextureFormat::RGBA8);
         texture->m_IsCubemap = true;
 
         GLCALL(glCreateTextures(GL_TEXTURE_CUBE_MAP, 1, &texture->m_BufferID));
@@ -119,7 +116,7 @@ namespace Lumina
 
     Ref<Texture> Texture::CreateCubemap(uint32_t width, uint32_t height, const void* data)
     {
-        auto texture = Ref<Texture>::Create(width, height, TextureFormat::RGBA8);
+        auto texture = Texture::Create(width, height, TextureFormat::RGBA8);
         texture->CreateCubemapTexture(width, height, data);
         return texture;
     }

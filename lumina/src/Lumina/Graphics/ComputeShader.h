@@ -5,25 +5,22 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 namespace Lumina 
 {
-    class ComputeShader : public Referencable
+    class ComputeShader
     {
     public:
         static Ref<ComputeShader> Create(const std::string& source); 
 
-
         ComputeShader(const std::string& source);
         ~ComputeShader();
 
-        // Bind and dispatch
         void Bind() const;
         void Unbind() const;
         void Dispatch(uint32_t groupX, uint32_t groupY, uint32_t groupZ) const;
 
-        // Uniform setters
         void SetUniformInt(const std::string& name, int value);
         void SetUniformFloat(const std::string& name, float value);
 
@@ -38,13 +35,10 @@ namespace Lumina
 
 		void SetStorageBuffer(const std::string& name, const void* data, size_t size);
 
-        // Bind texture to image unit
         void BindImageTexture(uint32_t unit, uint32_t textureID, bool read, bool write, int mipLevel = 0);
 
-        // Optional: memory barrier to synchronize
         void InsertMemoryBarrier() const;
 
-        // Debugging
         const std::string& GetName() const { return m_Name; }
 
         uint32_t CompileShader(const std::string& source);

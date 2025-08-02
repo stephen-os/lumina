@@ -1,11 +1,11 @@
-// ModelRegistry.cpp
 #include "ModelRegistry.h"
-#include "Loaders/GLTFLoader.h"
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
 
 #include <filesystem>
 #include <algorithm>
+
+#include "Core/Base.h"
+
+#include "Loaders/GLTFLoader.h"
 
 namespace Lumina
 {

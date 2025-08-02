@@ -14,7 +14,7 @@ namespace Lumina
 {
     Ref<ComputeShader> Create(const std::string& source) 
     { 
-        return Ref<ComputeShader>::Create(source); 
+        return CreateRef<ComputeShader>(source); 
     }
 
     ComputeShader::ComputeShader(const std::string& source)
@@ -189,14 +189,12 @@ namespace Lumina
         GLenum props[] = { GL_BUFFER_BINDING };
         glGetProgramResourceiv(m_ShaderProgramID, GL_SHADER_STORAGE_BLOCK, blockIndex, 1, props, 1, nullptr, &binding);
 
-        // If the binding wasn't set in GLSL explicitly, assign one
         if (binding == -1)
         {
             binding = static_cast<GLint>(m_SSBOs.size()); // Next available
             glShaderStorageBlockBinding(m_ShaderProgramID, blockIndex, binding);
         }
 
-        // Create and upload buffer
         GLuint ssbo = 0;
         glGenBuffers(1, &ssbo);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo);

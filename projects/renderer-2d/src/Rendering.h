@@ -6,13 +6,7 @@
 
 #include "imgui.h"
 
-#include "Lumina/Core/Layer.h"
-#include "Lumina/Utils/Timer.h"
-#include "Lumina/Graphics/Renderer2D.h"
-#include "Lumina/Graphics/TextureAtlas.h"
-
-#include "Lumina/Graphics/Cameras/OrthographicCamera.h"
-#include "Lumina/Graphics/Cameras/PerspectiveCamera.h"
+#include "Lumina/Lumina.h"
 
 #include <glm/glm.hpp>
 
@@ -201,7 +195,7 @@ namespace Lumina
                 if (updated)
                 {
                     m_PerspectiveCamera.SetPosition(position);
-                    m_PerspectiveCamera.SetRotation(rotation);
+                    // m_PerspectiveCamera.SetRotation(rotation);
                 }
                 ImGui::End();
             }
@@ -220,7 +214,7 @@ namespace Lumina
                 if (updated)
                 {
                     m_OrthographicCamera.SetPosition(position);
-                    m_OrthographicCamera.SetRotation(rotation);
+                    // m_OrthographicCamera.SetRotation(rotation);
                     m_OrthographicCamera.SetZoom(zoom);
                 }
                 ImGui::End();

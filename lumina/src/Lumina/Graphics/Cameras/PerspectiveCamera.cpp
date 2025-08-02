@@ -8,7 +8,7 @@ namespace Lumina
         UpdateProjectionMatrix();
     }
 
-    void Camera::SetPosition(const glm::vec3& position)
+    void PerspectiveCamera::SetPosition(const glm::vec3& position)
     {
         m_Position = position;
         UpdateViewMatrix();

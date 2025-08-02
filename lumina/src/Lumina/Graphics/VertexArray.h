@@ -3,13 +3,13 @@
 #include <vector>
 #include <memory>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 #include "Buffer.h"
 
 namespace Lumina
 {
-    class VertexArray : public Referencable
+    class VertexArray
     {
     public:
         static Ref<VertexArray> Create();

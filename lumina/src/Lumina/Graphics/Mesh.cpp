@@ -1,14 +1,12 @@
-// Mesh.cpp
 #include "Mesh.h"
+
 #include "BufferLayout.h"
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
 
 namespace Lumina
 {
     Ref<Mesh> Mesh::Create()
     {
-        return Ref<Mesh>::Create();
+        return CreateRef<Mesh>();
     }
 
     Ref<Mesh> Mesh::Create(const std::vector<Vertex3D>& vertices,
@@ -17,7 +15,7 @@ namespace Lumina
     {
         LUMINA_ASSERT(!vertices.empty(), "Mesh: Cannot create mesh with empty vertices");
 
-        auto mesh = Ref<Mesh>::Create();
+        auto mesh = Mesh::Create();
         mesh->SetVertices(vertices);
         if (!indices.empty())
             mesh->SetIndices(indices);

@@ -7,8 +7,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
 #include "../Utils/FileReader.h"
 
 #include "TextureSlot.h"

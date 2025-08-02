@@ -1,12 +1,9 @@
 #include "Material.h"
 
-#include "../Core/Assert.h"
-
 #include "TextureSlot.h"
 
 namespace Lumina
 {
-
     void Material::BindMaterial(Ref<ShaderProgram> shader, Ref<Material> material, Ref<Texture> whiteTexture, Ref<Texture> normalMap)
     {
         LUMINA_ASSERT(shader, "Material: Shader cannot be null");
@@ -161,12 +158,12 @@ namespace Lumina
 
     Ref<Material> Material::Create()
     {
-        return Ref<Material>::Create();
+        return CreateRef<Material>();
     }
 
     Ref<Material> Material::Create(const std::string& name)
     {
-        return Ref<Material>::Create(name);
+        return CreateRef<Material>(name);
     }
 
     Material::Material(const std::string& name) : m_Name(name) {}

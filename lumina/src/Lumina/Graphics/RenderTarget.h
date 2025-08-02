@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 #include "FrameBuffer.h"
 
 namespace Lumina
 {
-    class RenderTarget : public Referencable
+    class RenderTarget
     {
     public:
         static Ref<RenderTarget> Create(uint32_t width, uint32_t height);

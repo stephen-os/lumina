@@ -12,7 +12,7 @@ namespace Lumina
 {
     Ref<Instance> Instance::Create(const Ref<Model>& model, uint32_t maxInstances)
     {
-        return Ref<Instance>::Create(model, maxInstances);
+        return CreateRef<Instance>(model, maxInstances);
     }
 
     Instance::Instance(const Ref<Model>& model, uint32_t maxInstances)

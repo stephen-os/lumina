@@ -4,9 +4,6 @@
 
 #include <stb_image_write.h>
 
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
-
 #include "../Utils/FileReader.h"
 
 #include "VertexArray.h"
@@ -317,8 +314,49 @@ namespace Lumina
     void Renderer2D::Shutdown()
     {
         LUMINA_LOG_INFO("Renderer2D: Shutting down...");
-        // Free allocated memory
+        
+        // Explicitly reset all OpenGL resources while context is valid
+        s_Data.DefaultRenderTarget.reset();
+        s_Data.CurrentRenderTarget.reset();
+
+        s_Data.QuadVertexArray.reset();
+        s_Data.QuadVertexBuffer.reset();
+        s_Data.QuadIndexBuffer.reset();
+
+        s_Data.CircleVertexArray.reset();
+        s_Data.CircleVertexBuffer.reset();
+        s_Data.CircleIndexBuffer.reset();
+
+        s_Data.LineVertexArray.reset();
+        s_Data.LineVertexBuffer.reset();
+        s_Data.LineIndexBuffer.reset();
+
+        s_Data.GridVertexArray.reset();
+        s_Data.GridVertexBuffer.reset();
+        s_Data.GridIndexBuffer.reset();
+
+        s_Data.QuadShader.reset();
+        s_Data.CubeShader.reset();
+        s_Data.CircleShader.reset();
+        s_Data.LineShader.reset();
+        s_Data.GridShader.reset();
+
+        // Reset texture slots
+        for (auto& texture : s_Data.TextureSlots) {
+            texture.reset();
+        }
+
+        // Free ALL allocated memory
         delete[] s_Data.QuadVertexBufferBase;
+        delete[] s_Data.CircleVertexBufferBase;  // Missing!
+        delete[] s_Data.LineVertexBufferBase;    // Missing!
+        delete[] s_Data.GridVertexBufferBase;    // Missing!
+
+        // Set pointers to null for safety
+        s_Data.QuadVertexBufferBase = nullptr;
+        s_Data.CircleVertexBufferBase = nullptr;
+        s_Data.LineVertexBufferBase = nullptr;
+        s_Data.GridVertexBufferBase = nullptr;
 
         LUMINA_LOG_INFO("Renderer2D: Shutdown complete");
     }

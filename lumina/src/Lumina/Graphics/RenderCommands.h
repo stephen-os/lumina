@@ -1,7 +1,8 @@
 #pragma once
-#include <memory>
+
 #include "VertexArray.h"
-#include "../Core/Ref.h"
+
+#include "Core/Base.h"
 
 namespace Lumina
 {

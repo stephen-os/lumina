@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../../Core/Ref.h"
+#include "Core/Base.h"
 
-#include "../Model.h"
+#include "Graphics/Model.h"
 
 namespace Lumina
 {

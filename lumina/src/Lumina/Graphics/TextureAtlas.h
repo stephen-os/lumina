@@ -8,11 +8,11 @@
 
 #include <glm/glm.hpp>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 namespace Lumina
 {
-	class TextureAtlas : public Referencable
+	class TextureAtlas
 	{
 	public:
 		static Ref<TextureAtlas> Create(std::string& source, int width, int height);

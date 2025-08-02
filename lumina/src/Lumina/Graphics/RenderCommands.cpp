@@ -1,7 +1,8 @@
 #include "RenderCommands.h"
+
 #include <glad/glad.h>
+
 #include "RendererDebug.h"
-#include "../Core/Assert.h"
 
 namespace Lumina
 {

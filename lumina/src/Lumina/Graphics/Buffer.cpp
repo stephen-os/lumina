@@ -24,12 +24,12 @@ namespace Lumina
 
      Ref<VertexBuffer> VertexBuffer::Create(uint32_t size, BufferUsage usage)
     { 
-        return Ref<VertexBuffer>::Create(size, usage);
+        return CreateRef<VertexBuffer>(size, usage);
     }
 
     Ref<VertexBuffer> VertexBuffer::Create(const void* data, uint32_t size, BufferUsage usage)
     { 
-        return Ref<VertexBuffer>::Create(data, size, usage);
+        return CreateRef<VertexBuffer>(data, size, usage);
     }
 
     VertexBuffer::VertexBuffer(uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
@@ -86,10 +86,10 @@ namespace Lumina
     }
 
     // Index Buffer
-
+     
     Ref<IndexBuffer> IndexBuffer::Create(uint32_t * data, uint32_t count, BufferUsage usage)
     { 
-        return Ref<IndexBuffer>::Create(data, count, usage);
+        return CreateRef<IndexBuffer>(data, count, usage);
     }
 
 	IndexBuffer::IndexBuffer(uint32_t* data, uint32_t count, BufferUsage usage) : m_Count(count), m_Usage(usage)

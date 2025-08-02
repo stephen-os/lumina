@@ -2,9 +2,6 @@
 
 #include <glad/glad.h>
 
-#include "../Core/Assert.h"
-#include "../Core/Log.h"
-
 #include "BufferLayout.h"
 #include "RendererDebug.h"
 
@@ -12,7 +9,7 @@ namespace Lumina
 {
     Ref<VertexArray> VertexArray::Create()
     {
-        return Ref<VertexArray>::Create();
+        return CreateRef<VertexArray>();
     }
 
     VertexArray::VertexArray()
@@ -58,7 +55,7 @@ namespace Lumina
 
         SetVertexAttributes(vertexBuffer, 0);
 
-        m_VertexBuffer.Reset();
+        m_VertexBuffer.reset();
         m_VertexBuffer = vertexBuffer;
     }
 
@@ -68,7 +65,7 @@ namespace Lumina
 
         SetVertexAttributes(instanceBuffer, 1);
 
-        m_InstanceBuffer.Reset();
+        m_InstanceBuffer.reset();
         m_InstanceBuffer = instanceBuffer;
     }
 

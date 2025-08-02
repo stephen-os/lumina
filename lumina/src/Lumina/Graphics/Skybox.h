@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 #include "Texture.h"
 #include "ShaderProgram.h"
@@ -43,7 +43,7 @@ namespace Lumina
         }
     };
 
-    class Skybox : public Referencable
+    class Skybox
     {
     public:
         static void BindAttributes(Ref<ShaderProgram> shader, const SkyboxAttributes& attributes);

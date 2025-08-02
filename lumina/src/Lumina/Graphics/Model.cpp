@@ -2,8 +2,6 @@
 
 #include "ModelRegistry.h"
 
-#include "../Core/Assert.h"
-
 #include "../Utils/UUID.h"
 
 namespace Lumina
@@ -53,7 +51,7 @@ namespace Lumina
     Ref<Model> Model::Create(const std::string& name)
     {
         LUMINA_ASSERT(!name.empty(), "Model: Model name cannot be empty");
-        return Ref<Model>::Create(name);
+        return CreateRef<Model>(name);
     }
 
     Model::Model(const std::string& name) : m_UUID(UUID::Generate()), m_Name(name)

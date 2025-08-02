@@ -2,11 +2,11 @@
 
 #include <cstdint>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 namespace Lumina
 {
-    class FrameBuffer : public Referencable
+    class FrameBuffer
     {
     public:
         static Ref<FrameBuffer> Create();

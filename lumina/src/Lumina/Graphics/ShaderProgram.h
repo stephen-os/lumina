@@ -7,11 +7,11 @@
 
 #include <glm/glm.hpp>
 
-#include "../Core/Ref.h"
+#include "Core/Base.h"
 
 namespace Lumina
 {
-    class ShaderProgram : public Referencable
+    class ShaderProgram
     {
     public:
         static Ref<ShaderProgram> Create(const std::string& vertexSource, const std::string& fragmentSource);

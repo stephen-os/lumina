@@ -9,7 +9,8 @@
 #include <glm/glm.hpp>
 
 #include <string>
-#include <memory>
+
+#include "Core/Base.h"
 
 #include "Cameras/Camera.h"
 
