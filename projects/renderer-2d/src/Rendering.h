@@ -23,8 +23,6 @@ namespace Lumina
 
         virtual void OnAttach() override
         {
-            Renderer2D::Init();
-
             std::string source = "res/texture/factory_atlas.png";
             m_Atlas = TextureAtlas::Create(source, 16, 16);
 
@@ -53,7 +51,6 @@ namespace Lumina
 
         virtual void OnDetach() override
         {
-            Renderer2D::Shutdown();
         }
 
         virtual void OnUpdate(float ts) override
