@@ -54,10 +54,6 @@ namespace Lumina
 
 		static Application& GetInstance();
 		GLFWwindow* GetWindowHandle() const { return m_Window; };
-	
-	private: 
-		void RenderCustomTitleBar();
-		void ToggleDock();
 
 	private:
 		GLFWwindow* m_Window = nullptr;
