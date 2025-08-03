@@ -96,19 +96,10 @@ namespace Lumina
         const char* glsl_version = "#version 130";
         ImGui_ImplOpenGL3_Init(glsl_version);
  
-        // Fullscreen with taskbar
-        if (m_Specifications.Dock)
+		// Maximize Window
+        if (m_Specifications.Maximized)
         {
-            GLFWmonitor* primaryMonitor = glfwGetPrimaryMonitor();
-            LUMINA_ASSERT(primaryMonitor, "Failed to get primary monitor.");
-            if (primaryMonitor)
-            {
-                int xpos, ypos, width, height;
-                glfwGetMonitorWorkarea(primaryMonitor, &xpos, &ypos, &width, &height);
-
-                glfwSetWindowPos(m_Window, xpos, ypos);
-                glfwSetWindowSize(m_Window, width, height);
-            }
+            glfwMaximizeWindow(m_Window);
         }
 
         // Fullscreen

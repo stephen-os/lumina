@@ -26,7 +26,7 @@ namespace Lumina
 		bool Use3DRenderer = false;
 
 		bool Fullscreen = false;
-		bool Dock = false;
+		bool Maximized = false;
 		bool Theme = true; 
 	};
 
