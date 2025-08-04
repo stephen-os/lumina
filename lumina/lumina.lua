@@ -39,7 +39,7 @@ project "Lumina"
 
    buildoptions { "/utf-8" }
 
-   targetdir ("bin/" .. outputdir .. "/%{prj.name}")
+   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
 
    filter "system:windows"
