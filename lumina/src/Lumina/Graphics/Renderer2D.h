@@ -58,12 +58,12 @@ namespace Lumina
         static void SetLineColor(const glm::vec4& color);
         static void ResetLineState();
 
-        static void SetTextContent(const std::string& text);
-        static void SetTextPosition(const glm::vec3& position);
-        static void SetTextColor(const glm::vec4& color);
-        static void SetTextSize(float size);
-        static void SetTextFont(const Ref<Texture>& fontTexture);
-        static void ResetTextState();
+        static void SetStringContent(const std::string& text);
+        static void SetStringPosition(const glm::vec3& position);
+        static void SetStringColor(const glm::vec4& color);
+        static void SetStringSize(float size);
+        static void SetStringFont(const Ref<Texture>& fontTexture);
+        static void ResetStringState();
 
         static void SetPixelPosition(const glm::vec3& position);
         static void SetPixelColor(const glm::vec4& color);
@@ -91,7 +91,7 @@ namespace Lumina
         static void DrawQuad();
         static void DrawCircle();
         static void DrawLine();
-        static void DrawText();
+        static void DrawString();
         static void DrawPixel();
         static void DrawTriangle();
         static void DrawGrid(); 

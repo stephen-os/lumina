@@ -82,11 +82,11 @@ namespace Lumina
 
             if (m_TextEnabled)
             {
-                Renderer2D::SetTextContent(std::string(m_TextContent));
-                Renderer2D::SetTextPosition(m_TextPosition);
-                Renderer2D::SetTextColor(glm::vec4(m_TextColor[0], m_TextColor[1], m_TextColor[2], m_TextColor[3]));
-                Renderer2D::SetTextSize(m_TextSize);
-                Renderer2D::DrawText();
+                Renderer2D::SetStringContent(std::string(m_TextContent));
+                Renderer2D::SetStringPosition(m_TextPosition);
+                Renderer2D::SetStringColor(glm::vec4(m_TextColor[0], m_TextColor[1], m_TextColor[2], m_TextColor[3]));
+                Renderer2D::SetStringSize(m_TextSize);
+                Renderer2D::DrawString();
             }
 
             if (m_PixelEnabled)

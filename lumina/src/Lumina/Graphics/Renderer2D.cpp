@@ -880,32 +880,32 @@ namespace Lumina
         s_Data.LineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     }
 
-    void Renderer2D::SetTextContent(const std::string& text)
+    void Renderer2D::SetStringContent(const std::string& text)
     {
         s_Data.TextContent = text;
     }
 
-    void Renderer2D::SetTextPosition(const glm::vec3& position)
+    void Renderer2D::SetStringPosition(const glm::vec3& position)
     {
         s_Data.TextPosition = position;
     }
 
-    void Renderer2D::SetTextColor(const glm::vec4& color)
+    void Renderer2D::SetStringColor(const glm::vec4& color)
     {
         s_Data.TextColor = color;
     }
 
-    void Renderer2D::SetTextSize(float size)
+    void Renderer2D::SetStringSize(float size)
     {
         s_Data.TextSize = size;
     }
 
-    void Renderer2D::SetTextFont(const Ref<Texture>& fontTexture)
+    void Renderer2D::SetStringFont(const Ref<Texture>& fontTexture)
     {
         s_Data.TextFont = fontTexture;
     }
 
-    void Renderer2D::ResetTextState()
+    void Renderer2D::ResetStringState()
     {
         s_Data.TextContent = "";
         s_Data.TextPosition = { 0.0f, 0.0f, 0.0f };
@@ -1155,7 +1155,7 @@ namespace Lumina
         s_Data.Stats.LineCount++;
     }
 
-    void Renderer2D::DrawText()
+    void Renderer2D::DrawString()
     {
         if (s_Data.TextContent.empty())
             return;
