@@ -3,11 +3,8 @@
 #include <string>
 #include <memory>
 #include <algorithm>
-
 #include "imgui.h"
-
 #include "Lumina/Lumina.h"
-
 #include <glm/glm.hpp>
 
 namespace Lumina
@@ -15,245 +12,452 @@ namespace Lumina
     class Rendering : public Layer
     {
     public:
-        enum class SceneCamera
-        {
-            Perspective = 0,
-            Orthographic = 1
-        };
-
         virtual void OnAttach() override
         {
-            std::string source = "res/texture/factory_atlas.png";
-            m_Atlas = TextureAtlas::Create(source, 16, 16);
-
-            // Initialize quad with texture enabled by default
-            m_Quad.Texture = m_Atlas->GetTexture();
-            m_Quad.TextureCoords = m_Atlas->GetTextureCoords(m_QuadTextureIndex);
-            m_Quad.Position = { -0.5f, -0.5f, 0.0f };
-
-            // Initialize circle with texture enabled by default
-            m_Circle.Texture = m_Atlas->GetTexture();
-            m_Circle.TextureCoords = m_Atlas->GetTextureCoords(m_CircleTextureIndex);
-            m_Circle.Position = { 0.5f, -0.5f, 0.0f };
-
-            // Initialize line
-            m_Line.Start = { -0.5f, 0.5f, 0.0f };
-            m_Line.End = { 0.5f, 0.5f, 0.0f };
-
-            // Setup cameras
-            m_PerspectiveCamera.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
-            m_PerspectiveCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-
             m_OrthographicCamera.SetPosition(glm::vec3(0.0f, 0.0f, 10.0f));
             m_OrthographicCamera.LookAt(glm::vec3(0.0f, 0.0f, 0.0f));
-            m_OrthographicCamera.SetZoom(4.0f);
+            m_OrthographicCamera.SetZoom(150.0f);
+
+			std::string atlasPath = "res/texture/factory_atlas.png";
+			m_TextureAtlas = TextureAtlas::Create(atlasPath, 16, 16);
         }
 
         virtual void OnDetach() override
         {
+            
         }
 
         virtual void OnUpdate(float ts) override
         {
             Renderer2D::ResetStats();
+
+			m_FPS = 1.0f / m_FrameTimer.Elapsed();
+            m_FrameTimer.Reset(); 
         }
 
         virtual void OnUIRender() override
         {
-            // Main scene viewer
+            // Main rendering viewport
             ImGui::Begin("Scene Viewer");
             ImGui::SetCursorPos({ 0.0f, 0.0f });
-
             ImVec2 size = ImGui::GetContentRegionAvail();
 
-            m_PerspectiveCamera.SetAspectRatio(size.x / size.y);
+            m_OrthographicCamera.SetSize(size.x, size.y);
+
             Renderer2D::SetResolution(size.x, size.y);
+            Renderer2D::SetRenderMode(PolygonMode::Fill);
+            Renderer2D::Begin(m_OrthographicCamera);
 
-            Renderer2D::SetRenderMode(m_Mode);
+            // Draw all objects based on enabled states
+            if (m_QuadEnabled)
+            {
+				Renderer2D::SetQuadTexture(m_TextureAtlas->GetTexture());
+				Renderer2D::SetQuadTextureCoords(m_TextureAtlas->GetTextureCoords(0));
+                Renderer2D::SetQuadPosition(m_QuadPosition);
+                Renderer2D::SetQuadRotation(m_QuadRotation);
+                Renderer2D::SetQuadSize(m_QuadSize);
+                Renderer2D::SetQuadTintColor(glm::vec4(m_QuadColor[0], m_QuadColor[1], m_QuadColor[2], m_QuadColor[3]));
+                Renderer2D::DrawQuad();
+            }
 
-            if (m_SceneCamera == SceneCamera::Perspective)
-                Renderer2D::Begin(m_PerspectiveCamera);
-            else
-                Renderer2D::Begin(m_OrthographicCamera);
+            if (m_CircleEnabled)
+            {
+                Renderer2D::SetCirclePosition(m_CirclePosition);
+                Renderer2D::SetCircleRotation(m_CircleRotation);
+                Renderer2D::SetCircleRadius(m_CircleRadius);
+                Renderer2D::SetCircleColor(glm::vec4(m_CircleColor[0], m_CircleColor[1], m_CircleColor[2], m_CircleColor[3]));
+                Renderer2D::SetCircleThickness(m_CircleThickness);
+                Renderer2D::SetCircleFade(m_CircleFade);
+                Renderer2D::DrawCircle();
+            }
 
-            Renderer2D::DrawQuad(m_Quad);
-            Renderer2D::DrawCircle(m_Circle);
-            Renderer2D::DrawLine(m_Line);
+            if (m_LineEnabled)
+            {
+                Renderer2D::SetLineStart(m_LineStart);
+                Renderer2D::SetLineEnd(m_LineEnd);
+                Renderer2D::SetLineThickness(m_LineThickness);
+                Renderer2D::SetLineColor(glm::vec4(m_LineColor[0], m_LineColor[1], m_LineColor[2], m_LineColor[3]));
+                Renderer2D::DrawLine();
+            }
+
+            if (m_TextEnabled)
+            {
+                Renderer2D::SetTextContent(std::string(m_TextContent));
+                Renderer2D::SetTextPosition(m_TextPosition);
+                Renderer2D::SetTextColor(glm::vec4(m_TextColor[0], m_TextColor[1], m_TextColor[2], m_TextColor[3]));
+                Renderer2D::SetTextSize(m_TextSize);
+                Renderer2D::DrawText();
+            }
+
+            if (m_PixelEnabled)
+            {
+
+                Renderer2D::SetPixelSize(m_PixelSize);
+                Renderer2D::SetPixelColor(glm::vec4(m_PixelColor[0], m_PixelColor[1], m_PixelColor[2], m_PixelColor[3]));
+                for (int i = 0; i < m_PixelCount; ++i)
+                {
+                    glm::vec3 pixelPos = m_PixelPosition + glm::vec3(
+                        (rand() % 200 - 100) * 0.1f,
+                        (rand() % 200 - 100) * 0.1f,
+                        0.0f
+                    );
+                    Renderer2D::SetPixelPosition(pixelPos);
+                    Renderer2D::DrawPixel();
+                }
+            }
+
+            if (m_TriangleEnabled)
+            {
+                Renderer2D::SetTrianglePoint1(m_TrianglePoint1);
+                Renderer2D::SetTrianglePoint2(m_TrianglePoint2);
+                Renderer2D::SetTrianglePoint3(m_TrianglePoint3);
+                Renderer2D::SetTriangleColor(glm::vec4(m_TriangleColor[0], m_TriangleColor[1], m_TriangleColor[2], m_TriangleColor[3]));
+                Renderer2D::DrawTriangle();
+            }
+
+            if (m_GridEnabled)
+            {
+                Renderer2D::SetGridPosition(m_GridPosition);
+                Renderer2D::SetGridRotation(m_GridRotation);
+                Renderer2D::SetGridSize(m_GridSize);
+                Renderer2D::SetGridCellSize(m_GridCellSize);
+                Renderer2D::SetGridColor(glm::vec4(m_GridColor[0], m_GridColor[1], m_GridColor[2], m_GridColor[3]));
+                Renderer2D::SetGridLineWidth(m_GridLineWidth);
+                Renderer2D::SetGridShowCheckerboard(m_GridShowCheckerboard);
+                Renderer2D::SetGridCheckerColor1(glm::vec4(m_GridCheckerColor1[0], m_GridCheckerColor1[1], m_GridCheckerColor1[2], m_GridCheckerColor1[3]));
+                Renderer2D::SetGridCheckerColor2(glm::vec4(m_GridCheckerColor2[0], m_GridCheckerColor2[1], m_GridCheckerColor2[2], m_GridCheckerColor2[3]));
+                Renderer2D::DrawGrid();
+            }
 
             Renderer2D::End();
 
             ImGui::Image((void*)(intptr_t)Renderer2D::GetImage(), { size.x, size.y });
             ImGui::End();
 
-            // Quad Controls
-            ImGui::Begin("Quad Controls");
-            ImGui::DragFloat3("Position", glm::value_ptr(m_Quad.Position), 0.01f);
-            ImGui::DragFloat3("Rotation", glm::value_ptr(m_Quad.Rotation), 0.01f);
-            ImGui::DragFloat2("Size", glm::value_ptr(m_Quad.Size), 0.01f, 0.01f, 10.0f);
-            ImGui::ColorEdit4("Tint Color", glm::value_ptr(m_Quad.TintColor));
+            // Controls panel
+            RenderControlsPanel();
 
-            // Texture controls for quad
-            ImGui::Separator();
-            ImGui::Text("Texture Settings");
-            ImGui::Checkbox("Enable Texture##Quad", &m_QuadTextureEnabled);
-
-            if (m_QuadTextureEnabled)
-            {
-                int maxIndex = std::max(0, m_Atlas->GetWidth() * m_Atlas->GetHeight() - 1);
-                if (ImGui::DragInt("Texture Index##Quad", &m_QuadTextureIndex, 1.0f, 0, maxIndex))
-                {
-                    m_QuadTextureIndex = std::clamp(m_QuadTextureIndex, 0, maxIndex);
-                    m_Quad.TextureCoords = m_Atlas->GetTextureCoords(m_QuadTextureIndex);
-                }
-                ImGui::DragFloat4("Texture Coords##Quad", glm::value_ptr(m_Quad.TextureCoords), 0.01f, 0.0f, 1.0f);
-                m_Quad.Texture = m_Atlas->GetTexture();
-            }
-            else
-            {
-                m_Quad.Texture = nullptr;
-            }
-            ImGui::End();
-
-            // Circle Controls
-            ImGui::Begin("Circle Controls");
-            ImGui::DragFloat3("Position", glm::value_ptr(m_Circle.Position), 0.01f);
-            ImGui::DragFloat3("Rotation", glm::value_ptr(m_Circle.Rotation), 0.01f);
-            ImGui::DragFloat2("Radius", glm::value_ptr(m_Circle.Radius), 0.01f, 0.01f, 10.0f);
-            ImGui::ColorEdit4("Color", glm::value_ptr(m_Circle.Color));
-            ImGui::DragFloat("Thickness", &m_Circle.Thickness, 0.01f, 0.01f, 10.0f);
-            ImGui::DragFloat("Fade", &m_Circle.Fade, 0.01f, 0.0f, 1.0f);
-
-            // Texture controls for circle
-            ImGui::Separator();
-            ImGui::Text("Texture Settings");
-            ImGui::Checkbox("Enable Texture##Circle", &m_CircleTextureEnabled);
-
-            if (m_CircleTextureEnabled)
-            {
-                int maxIndex = std::max(0, m_Atlas->GetWidth() * m_Atlas->GetHeight() - 1);
-                if (ImGui::DragInt("Texture Index##Circle", &m_CircleTextureIndex, 1.0f, 0, maxIndex))
-                {
-                    m_CircleTextureIndex = std::clamp(m_CircleTextureIndex, 0, maxIndex);
-                    m_Circle.TextureCoords = m_Atlas->GetTextureCoords(m_CircleTextureIndex);
-                }
-                ImGui::DragFloat4("Texture Coords##Circle", glm::value_ptr(m_Circle.TextureCoords), 0.01f, 0.0f, 1.0f);
-                m_Circle.Texture = m_Atlas->GetTexture();
-            }
-            else
-            {
-                m_Circle.Texture = nullptr;
-            }
-            ImGui::End();
-
-            // Line Controls
-            ImGui::Begin("Line Controls");
-            ImGui::DragFloat3("Start Position", glm::value_ptr(m_Line.Start), 0.01f);
-            ImGui::DragFloat3("End Position", glm::value_ptr(m_Line.End), 0.01f);
-            ImGui::DragFloat("Thickness", &m_Line.Thickness, 0.1f, 0.1f, 20.0f);
-            ImGui::ColorEdit4("Color", glm::value_ptr(m_Line.Color));
-            ImGui::End();
-
-            // Scene Controls
-            ImGui::Begin("Scene Controls");
-            static int cameraMode = 0;
-            const char* items[] = { "Perspective", "Orthographic" };
-            if (ImGui::Combo("Camera Mode", &cameraMode, items, IM_ARRAYSIZE(items)))
-                m_SceneCamera = static_cast<SceneCamera>(cameraMode);
-            ImGui::End();
-
-            ImGui::Begin("Draw Controls");
-            if (ImGui::BeginCombo("Polygon Mode",
-                m_Mode == PolygonMode::Fill ? "Fill" :
-                m_Mode == PolygonMode::Line ? "Line" : "Point"))
-            {
-                if (ImGui::Selectable("Fill", m_Mode == PolygonMode::Fill))
-                    m_Mode = PolygonMode::Fill;
-
-                if (ImGui::Selectable("Line", m_Mode == PolygonMode::Line))
-                    m_Mode = PolygonMode::Line;
-
-                if (ImGui::Selectable("Point", m_Mode == PolygonMode::Point))
-                    m_Mode = PolygonMode::Point;
-
-                ImGui::EndCombo();
-            }
-            ImGui::End(); 
-
-            // Camera Controls
-            {
-                ImGui::Begin("Perspective Camera");
-                glm::vec3 position = m_PerspectiveCamera.GetPosition();
-                glm::quat rotation = m_PerspectiveCamera.GetRotation();
-
-                bool updated = false;
-                updated |= ImGui::DragFloat3("Position", glm::value_ptr(position), 0.01f);
-                updated |= ImGui::DragFloat4("Rotation", glm::value_ptr(rotation), 0.01f);
-
-                if (updated)
-                {
-                    m_PerspectiveCamera.SetPosition(position);
-                    // m_PerspectiveCamera.SetRotation(rotation);
-                }
-                ImGui::End();
-            }
-
-            {
-                ImGui::Begin("Orthographic Camera");
-                glm::vec3 position = m_OrthographicCamera.GetPosition();
-                glm::quat rotation = m_OrthographicCamera.GetRotation();
-                float zoom = m_OrthographicCamera.GetZoom();
-
-                bool updated = false;
-                updated |= ImGui::DragFloat3("Position", glm::value_ptr(position), 0.01f);
-                updated |= ImGui::DragFloat4("Rotation", glm::value_ptr(rotation), 0.01f);
-                updated |= ImGui::DragFloat("Zoom", &zoom, 0.01f, 0.1f, 10.0f);
-
-                if (updated)
-                {
-                    m_OrthographicCamera.SetPosition(position);
-                    // m_OrthographicCamera.SetRotation(rotation);
-                    m_OrthographicCamera.SetZoom(zoom);
-                }
-                ImGui::End();
-            }
-
-            // Render Statistics
-            ImGui::Begin("Render Statistics");
-            Renderer2D::Statistics stats = Renderer2D::GetStats();
-            ImGui::Text("Draw Calls: %d", stats.DrawCalls);
-            ImGui::Text("Quad Count: %d", stats.QuadCount);
-            ImGui::Text("Circle Count: %d", stats.CircleCount);
-            ImGui::Text("Line Count: %d", stats.LineCount);
-            ImGui::Text("Shaders Used: %d", stats.ShadersUsed);
-            ImGui::Text("Textures Used: %d", stats.TexturesUsed);
-            ImGui::Text("Data Size (Bytes): %d", stats.DataSize);
-            ImGui::End();
-
-            // Texture Atlas Preview
-            ImGui::Begin("Texture Atlas");
-            ImGui::Image((void*)m_Atlas->GetTexture()->GetID(), { 200, 200 });
-            ImGui::End();
+            // Statistics panel
+            RenderStatsPanel();
         }
 
     private:
-        QuadAttributes m_Quad;
-        CircleAttributes m_Circle;
-        LineAttributes m_Line;
+        void RenderControlsPanel()
+        {
+            ImGui::Begin("Renderer Controls");
 
-        PerspectiveCamera m_PerspectiveCamera;
+            if (ImGui::CollapsingHeader("Quad", ImGuiTreeNodeFlags_DefaultOpen))
+            {
+                ImGui::Checkbox("Enable Quad", &m_QuadEnabled);
+                if (m_QuadEnabled)
+                {
+                    ImGui::SliderFloat3("Position##Quad", &m_QuadPosition.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("Rotation##Quad", &m_QuadRotation.x, -180.0f, 180.0f);
+                    ImGui::SliderFloat2("Size##Quad", &m_QuadSize.x, 0.1f, 5.0f);
+                    ImGui::ColorEdit4("Color##Quad", m_QuadColor);
+
+                    if (ImGui::Button("Reset Quad"))
+                    {
+                        m_QuadPosition = { 0.0f, 0.0f, 0.0f };
+                        m_QuadRotation = { 0.0f, 0.0f, 0.0f };
+                        m_QuadSize = { 1.0f, 1.0f };
+                        m_QuadColor[0] = 1.0f; m_QuadColor[1] = 0.0f; m_QuadColor[2] = 0.0f; m_QuadColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Circle"))
+            {
+                ImGui::Checkbox("Enable Circle", &m_CircleEnabled);
+                if (m_CircleEnabled)
+                {
+                    ImGui::SliderFloat3("Position##Circle", &m_CirclePosition.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("Rotation##Circle", &m_CircleRotation.x, -180.0f, 180.0f);
+                    ImGui::SliderFloat2("Radius##Circle", &m_CircleRadius.x, 0.1f, 5.0f);
+                    ImGui::SliderFloat("Thickness##Circle", &m_CircleThickness, 0.0f, 1.0f);
+                    ImGui::SliderFloat("Fade##Circle", &m_CircleFade, 0.0f, 1.0f);
+                    ImGui::ColorEdit4("Color##Circle", m_CircleColor);
+
+                    if (ImGui::Button("Reset Circle"))
+                    {
+                        m_CirclePosition = { 2.0f, 0.0f, 0.0f };
+                        m_CircleRotation = { 0.0f, 0.0f, 0.0f };
+                        m_CircleRadius = { 1.0f, 1.0f };
+                        m_CircleThickness = 1.0f;
+                        m_CircleFade = 0.0f;
+                        m_CircleColor[0] = 0.0f; m_CircleColor[1] = 1.0f; m_CircleColor[2] = 0.0f; m_CircleColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Line"))
+            {
+                ImGui::Checkbox("Enable Line", &m_LineEnabled);
+                if (m_LineEnabled)
+                {
+                    ImGui::SliderFloat3("Start##Line", &m_LineStart.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("End##Line", &m_LineEnd.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat("Thickness##Line", &m_LineThickness, 1.0f, 10.0f);
+                    ImGui::ColorEdit4("Color##Line", m_LineColor);
+
+                    if (ImGui::Button("Reset Line"))
+                    {
+                        m_LineStart = { -2.0f, -2.0f, 0.0f };
+                        m_LineEnd = { 2.0f, 2.0f, 0.0f };
+                        m_LineThickness = 2.0f;
+                        m_LineColor[0] = 1.0f; m_LineColor[1] = 1.0f; m_LineColor[2] = 0.0f; m_LineColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Text"))
+            {
+                ImGui::Checkbox("Enable Text", &m_TextEnabled);
+                if (m_TextEnabled)
+                {
+                    ImGui::InputText("Content##Text", m_TextContent, sizeof(m_TextContent));
+                    ImGui::SliderFloat3("Position##Text", &m_TextPosition.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat("Size##Text", &m_TextSize, 0.1f, 2.0f);
+                    ImGui::ColorEdit4("Color##Text", m_TextColor);
+
+                    if (ImGui::Button("Reset Text"))
+                    {
+                        m_TextContent[0] = '\0';
+                        m_TextPosition = { -3.0f, 3.0f, 0.0f };
+                        m_TextSize = 0.5f;
+                        m_TextColor[0] = 1.0f; m_TextColor[1] = 1.0f; m_TextColor[2] = 1.0f; m_TextColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Pixels"))
+            {
+                ImGui::Checkbox("Enable Pixels", &m_PixelEnabled);
+                if (m_PixelEnabled)
+                {
+                    ImGui::SliderFloat3("Center Position##Pixel", &m_PixelPosition.x, -10.0f, 10.0f);
+					ImGui::SliderFloat("Size##Pixel", &m_PixelSize, 0.1f, 5.0f);
+                    ImGui::SliderInt("Count##Pixel", &m_PixelCount, 1, 1000);
+                    ImGui::ColorEdit4("Color##Pixel", m_PixelColor);
+
+                    if (ImGui::Button("Reset Pixels"))
+                    {
+                        m_PixelPosition = { 0.0f, -3.0f, 0.0f };
+                        m_PixelCount = 100;
+                        m_PixelColor[0] = 1.0f; m_PixelColor[1] = 0.0f; m_PixelColor[2] = 1.0f; m_PixelColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Triangle"))
+            {
+                ImGui::Checkbox("Enable Triangle", &m_TriangleEnabled);
+                if (m_TriangleEnabled)
+                {
+                    ImGui::SliderFloat3("Point 1##Triangle", &m_TrianglePoint1.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("Point 2##Triangle", &m_TrianglePoint2.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("Point 3##Triangle", &m_TrianglePoint3.x, -10.0f, 10.0f);
+                    ImGui::ColorEdit4("Color##Triangle", m_TriangleColor);
+
+                    if (ImGui::Button("Reset Triangle"))
+                    {
+                        m_TrianglePoint1 = { -1.0f, -1.0f, 0.0f };
+                        m_TrianglePoint2 = { 1.0f, -1.0f, 0.0f };
+                        m_TrianglePoint3 = { 0.0f, 1.0f, 0.0f };
+                        m_TriangleColor[0] = 0.0f; m_TriangleColor[1] = 0.0f; m_TriangleColor[2] = 1.0f; m_TriangleColor[3] = 1.0f;
+                    }
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Grid"))
+            {
+                ImGui::Checkbox("Enable Grid", &m_GridEnabled);
+                if (m_GridEnabled)
+                {
+                    ImGui::SliderFloat3("Position##Grid", &m_GridPosition.x, -10.0f, 10.0f);
+                    ImGui::SliderFloat3("Rotation##Grid", &m_GridRotation.x, -180.0f, 180.0f);
+                    ImGui::SliderFloat2("Size##Grid", &m_GridSize.x, 1.0f, 40.0f);
+                    ImGui::SliderFloat("Cell Size##Grid", &m_GridCellSize, 0.1f, 2.0f);
+                    ImGui::SliderFloat("Line Width##Grid", &m_GridLineWidth, 0.5f, 5.0f);
+                    ImGui::Checkbox("Show Checkerboard##Grid", &m_GridShowCheckerboard);
+                    ImGui::ColorEdit4("Grid Color##Grid", m_GridColor);
+                    if (m_GridShowCheckerboard)
+                    {
+                        ImGui::ColorEdit4("Checker Color 1##Grid", m_GridCheckerColor1);
+                        ImGui::ColorEdit4("Checker Color 2##Grid", m_GridCheckerColor2);
+                    }
+
+                    if (ImGui::Button("Reset Grid"))
+                    {
+                        m_GridPosition = { 0.0f, 0.0f, -1.0f };
+                        m_GridRotation = { 0.0f, 0.0f, 0.0f };
+                        m_GridSize = { 10.0f, 10.0f };
+                        m_GridCellSize = 1.0f;
+                        m_GridLineWidth = 1.0f;
+                        m_GridShowCheckerboard = true;
+                        m_GridColor[0] = 0.3f; m_GridColor[1] = 0.3f; m_GridColor[2] = 0.3f; m_GridColor[3] = 0.8f;
+                        m_GridCheckerColor1[0] = 0.9f; m_GridCheckerColor1[1] = 0.9f; m_GridCheckerColor1[2] = 0.9f; m_GridCheckerColor1[3] = 0.2f;
+                        m_GridCheckerColor2[0] = 0.8f; m_GridCheckerColor2[1] = 0.8f; m_GridCheckerColor2[2] = 0.8f; m_GridCheckerColor2[3] = 0.2f;
+                    }
+                }
+            }
+
+            ImGui::Separator();
+            if (ImGui::Button("Reset All"))
+            {
+                ResetAllObjects();
+            }
+
+            if (ImGui::Button("Enable All"))
+            {
+                m_QuadEnabled = m_CircleEnabled = m_LineEnabled = m_TextEnabled =
+                    m_PixelEnabled = m_TriangleEnabled = m_GridEnabled = true;
+            }
+
+            if (ImGui::Button("Disable All"))
+            {
+                m_QuadEnabled = m_CircleEnabled = m_LineEnabled = m_TextEnabled =
+                    m_PixelEnabled = m_TriangleEnabled = m_GridEnabled = false;
+            }
+
+            ImGui::End();
+        }
+
+        void RenderStatsPanel()
+        {
+            ImGui::Begin("Renderer Statistics");
+
+            auto stats = Renderer2D::GetStats();
+
+            ImGui::Text("Performance:");
+            ImGui::Text("FPS: %.2f", m_FPS);
+            ImGui::Text("Draw Calls: %u", stats.DrawCalls);
+            ImGui::Text("Data Size: %u bytes", stats.DataSize);
+            ImGui::Text("Textures Used: %u", stats.TexturesUsed);
+
+            ImGui::Separator();
+            ImGui::Text("Geometry Count:");
+            ImGui::Text("Quads: %u", stats.QuadCount);
+            ImGui::Text("Circles: %u", stats.CircleCount);
+            ImGui::Text("Lines: %u", stats.LineCount);
+            ImGui::Text("Text: %u", stats.TextCount);
+            ImGui::Text("Pixels: %u", stats.PixelCount);
+            ImGui::Text("Triangles: %u", stats.TriangleCount);
+            ImGui::Text("Grids: %u", stats.GridCount);
+
+            ImGui::Separator();
+            ImGui::Text("Total Vertices: %u", stats.GetTotalVertexCount());
+            ImGui::Text("Total Indices: %u", stats.GetTotalIndexCount());
+
+            ImGui::End();
+        }
+
+        void ResetAllObjects()
+        {
+            m_QuadPosition = { 0.0f, 0.0f, 0.0f };
+            m_QuadRotation = { 0.0f, 0.0f, 0.0f };
+            m_QuadSize = { 1.0f, 1.0f };
+            m_QuadColor[0] = 1.0f; m_QuadColor[1] = 0.0f; m_QuadColor[2] = 0.0f; m_QuadColor[3] = 1.0f;
+
+            m_CirclePosition = { 2.0f, 0.0f, 0.0f };
+            m_CircleRotation = { 0.0f, 0.0f, 0.0f };
+            m_CircleRadius = { 1.0f, 1.0f };
+            m_CircleThickness = 1.0f;
+            m_CircleFade = 0.0f;
+            m_CircleColor[0] = 0.0f; m_CircleColor[1] = 1.0f; m_CircleColor[2] = 0.0f; m_CircleColor[3] = 1.0f;
+
+            m_LineStart = { -2.0f, -2.0f, 0.0f };
+            m_LineEnd = { 2.0f, 2.0f, 0.0f };
+            m_LineThickness = 2.0f;
+            m_LineColor[0] = 1.0f; m_LineColor[1] = 1.0f; m_LineColor[2] = 0.0f; m_LineColor[3] = 1.0f;
+
+            m_TextContent[0] = '\0';
+            m_TextPosition = { -3.0f, 3.0f, 0.0f };
+            m_TextSize = 0.5f;
+            m_TextColor[0] = 1.0f; m_TextColor[1] = 1.0f; m_TextColor[2] = 1.0f; m_TextColor[3] = 1.0f;
+
+            m_PixelPosition = { 0.0f, -3.0f, 0.0f };
+			m_PixelSize = 1.0f;
+            m_PixelCount = 100;
+            m_PixelColor[0] = 1.0f; m_PixelColor[1] = 0.0f; m_PixelColor[2] = 1.0f; m_PixelColor[3] = 1.0f;
+
+            m_TrianglePoint1 = { -1.0f, -1.0f, 0.0f };
+            m_TrianglePoint2 = { 1.0f, -1.0f, 0.0f };
+            m_TrianglePoint3 = { 0.0f, 1.0f, 0.0f };
+            m_TriangleColor[0] = 0.0f; m_TriangleColor[1] = 0.0f; m_TriangleColor[2] = 1.0f; m_TriangleColor[3] = 1.0f;
+
+            m_GridPosition = { 0.0f, 0.0f, -1.0f };
+            m_GridRotation = { 0.0f, 0.0f, 0.0f };
+            m_GridSize = { 20.0f, 20.0f };
+            m_GridCellSize = 1.0f;
+            m_GridLineWidth = 1.0f;
+            m_GridShowCheckerboard = true;
+            m_GridColor[0] = 0.3f; m_GridColor[1] = 0.3f; m_GridColor[2] = 0.3f; m_GridColor[3] = 0.8f;
+            m_GridCheckerColor1[0] = 0.9f; m_GridCheckerColor1[1] = 0.9f; m_GridCheckerColor1[2] = 0.9f; m_GridCheckerColor1[3] = 0.2f;
+            m_GridCheckerColor2[0] = 0.8f; m_GridCheckerColor2[1] = 0.8f; m_GridCheckerColor2[2] = 0.8f; m_GridCheckerColor2[3] = 0.2f;
+        }
+
+    private:
         OrthographicCamera m_OrthographicCamera;
-        SceneCamera m_SceneCamera = SceneCamera::Perspective;
-
-        Ref<TextureAtlas> m_Atlas;
         Timer m_FrameTimer;
         float m_FPS = 0.0f;
 
-        PolygonMode m_Mode = PolygonMode::Fill; 
+		Ref<TextureAtlas> m_TextureAtlas;
 
-        // Texture control variables
-        int m_QuadTextureIndex = 121;
-        int m_CircleTextureIndex = 160;
-        bool m_QuadTextureEnabled = true;
-        bool m_CircleTextureEnabled = true;
+        // Quad properties
+        bool m_QuadEnabled = true;
+        glm::vec3 m_QuadPosition = { 0.0f, 0.0f, 0.0f };
+        glm::vec3 m_QuadRotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec2 m_QuadSize = { 1.0f, 1.0f };
+        float m_QuadColor[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        // Circle properties
+        bool m_CircleEnabled = true;
+        glm::vec3 m_CirclePosition = { 2.0f, 0.0f, 0.0f };
+        glm::vec3 m_CircleRotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec2 m_CircleRadius = { 1.0f, 1.0f };
+        float m_CircleThickness = 1.0f;
+        float m_CircleFade = 0.0f;
+        float m_CircleColor[4] = { 0.0f, 1.0f, 0.0f, 1.0f };
+
+        // Line properties
+        bool m_LineEnabled = true;
+        glm::vec3 m_LineStart = { -2.0f, -2.0f, 0.0f };
+        glm::vec3 m_LineEnd = { 2.0f, 2.0f, 0.0f };
+        float m_LineThickness = 2.0f;
+        float m_LineColor[4] = { 1.0f, 1.0f, 0.0f, 1.0f };
+
+        // Text properties
+        bool m_TextEnabled = true;
+        char m_TextContent[256] = "Hello World!";
+        glm::vec3 m_TextPosition = { -3.0f, 3.0f, 0.0f };
+        float m_TextSize = 0.5f;
+        float m_TextColor[4] = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+        // Pixel properties
+        bool m_PixelEnabled = true;
+        glm::vec3 m_PixelPosition = { 0.0f, -3.0f, 0.0f };
+		float m_PixelSize = 1.0f;
+        int m_PixelCount = 100;
+        float m_PixelColor[4] = { 1.0f, 0.0f, 1.0f, 1.0f };
+
+        // Triangle properties
+        bool m_TriangleEnabled = true;
+        glm::vec3 m_TrianglePoint1 = { -1.0f, -1.0f, 0.0f };
+        glm::vec3 m_TrianglePoint2 = { 1.0f, -1.0f, 0.0f };
+        glm::vec3 m_TrianglePoint3 = { 0.0f, 1.0f, 0.0f };
+        float m_TriangleColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+        // Grid properties
+        bool m_GridEnabled = true;
+        glm::vec3 m_GridPosition = { 0.0f, 0.0f, -1.0f };
+        glm::vec3 m_GridRotation = { 0.0f, 0.0f, 0.0f };
+        glm::vec2 m_GridSize = { 20.0f, 20.0f };
+        float m_GridCellSize = 1.0f;
+        float m_GridLineWidth = 1.0f;
+        bool m_GridShowCheckerboard = true;
+        float m_GridColor[4] = { 0.3f, 0.3f, 0.3f, 0.8f };
+        float m_GridCheckerColor1[4] = { 0.9f, 0.9f, 0.9f, 0.2f };
+        float m_GridCheckerColor2[4] = { 0.8f, 0.8f, 0.8f, 0.2f };
     };
 }

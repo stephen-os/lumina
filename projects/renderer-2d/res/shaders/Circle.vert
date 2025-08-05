@@ -1,4 +1,4 @@
-#version 430 core
+#version 460 core
 
 layout(location = 0) in vec3 a_WorldPosition;
 layout(location = 1) in vec3 a_LocalPosition;
@@ -21,11 +21,11 @@ uniform vec3 u_WireframeColor;
 
 void main()
 {
-	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 	v_LocalPosition = a_LocalPosition;
 	v_Color = (u_WireframeMode == 1) ? vec4(u_WireframeColor, 1.0f) : a_Color;
 	v_TexCoord = a_TexCoord;
 	v_TexIndex = a_TexIndex;
 	v_Thickness = a_Thickness;
 	v_Fade = a_Fade;
+	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 }

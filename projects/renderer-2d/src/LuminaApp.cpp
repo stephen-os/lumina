@@ -7,9 +7,10 @@ Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
     Lumina::ApplicationSpecification spec;
     spec.Name = "Lumina Application";
-    spec.Width = 900;
-    spec.Height = 900;
+    spec.Width = 1200;
+    spec.Height = 1200;
 	spec.Use2DRenderer = true;
+    spec.Maximized = true; 
 
     Lumina::Application* app = new Lumina::Application(spec);
     app->PushLayer<Rendering>();

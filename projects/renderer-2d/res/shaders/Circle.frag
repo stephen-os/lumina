@@ -1,4 +1,5 @@
-#version 430 core
+#version 460 core
+
 layout(location = 0) out vec4 o_Color;
 
 in vec3 v_LocalPosition;
@@ -20,37 +21,29 @@ void main()
 		return; 
 	}
 
-    // Calculate distance from center
     float dist = length(v_LocalPosition.xy);
     
-    // Simple circle rendering
     if (dist > 1.0) {
         discard;
     }
     
-    // Handle thickness (for hollow circles)
     float innerRadius = max(0.0, 1.0 - v_Thickness);
-    if (dist < innerRadius) {
+    if (dist < innerRadius)
         discard;
-    }
     
-    // Calculate alpha for soft edges
     float alpha = 1.0;
-    if (v_Fade > 0.0) {
-        // Soft outer edge
+    if (v_Fade > 0.0) 
+    {
         alpha *= 1.0 - smoothstep(1.0 - v_Fade, 1.0, dist);
-        // Soft inner edge (for hollow circles)
-        if (v_Thickness < 1.0) {
+        if (v_Thickness < 1.0)
             alpha *= smoothstep(innerRadius, innerRadius + v_Fade, dist);
-        }
     }
     
     vec4 texColor = vec4(1.0);
-    int texIndex = int(v_TexIndex + 0.5); // Round to nearest int to avoid precision issues
+    int texIndex = int(v_TexIndex + 0.5);
     
-    if (texIndex >= 0 && texIndex < 32) {
+    if (texIndex >= 0 && texIndex < 32)
         texColor = texture(u_Textures[texIndex], v_TexCoord);
-    }
     
     o_Color = texColor * v_Color;
     o_Color.a *= alpha;
