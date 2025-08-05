@@ -18,6 +18,7 @@ project "Lumina"
       "../Dependencies/tinygltf",
       "../Dependencies/imguifd",
       "../Dependencies/spdlog/include",
+      "../Dependencies/box2d/include"
    }
 
    links
@@ -27,6 +28,7 @@ project "Lumina"
        "Glad",
        "TinyGLTF",
        "ImGuiFD",
+       "Box2D",
 
        "opengl32.lib"
    }

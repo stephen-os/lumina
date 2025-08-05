@@ -13,6 +13,7 @@ group "Dependencies"
    include "dependencies/glad"
    include "dependencies/tinygltf"
    include "dependencies/imguifd"
+   include "dependencies/box2d"
 group ""
 
 group "Core"

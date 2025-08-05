@@ -19,3 +19,6 @@
 [submodule "dependencies/spdlog"]
 	path = dependencies/spdlog
 	url = https://github.com/stephen-os/spdlog.git
+[submodule "dependencies/box2d"]
+	path = dependencies/box2d
+	url = https://github.com/stephen-os/box2d.git
