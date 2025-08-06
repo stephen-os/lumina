@@ -1,9 +1,6 @@
 [submodule "dependencies/glfw"]
 	path = dependencies/glfw
 	url = https://github.com/stephen-os/glfw.git
-[submodule "dependencies/glad"]
-	path = dependencies/glad
-	url = https://github.com/stephen-os/glad.git
 [submodule "dependencies/glm"]
 	path = dependencies/glm
 	url = https://github.com/g-truc/glm.git
@@ -22,3 +19,6 @@
 [submodule "dependencies/box2d"]
 	path = dependencies/box2d
 	url = https://github.com/stephen-os/box2d.git
+[submodule "dependencies/glad"]
+	path = dependencies/glad
+	url = https://github.com/stephen-os/glad.git
