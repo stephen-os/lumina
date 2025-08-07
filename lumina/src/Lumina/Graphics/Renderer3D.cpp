@@ -251,12 +251,12 @@ namespace Lumina
             if (hasIndices)
             {
                 RenderCommands::DrawTrianglesIndexed(vao);
-                s_Data.Stats.TriangleCount += indexCount / 3;
+                s_Data.Stats.TriangleCount += static_cast<uint32_t>(indexCount / 3);
             }
             else
             {
-                RenderCommands::DrawTriangles(vao, vertexCount);
-                s_Data.Stats.TriangleCount += vertexCount / 3;
+                RenderCommands::DrawTriangles(vao, static_cast<uint32_t>(vertexCount));
+                s_Data.Stats.TriangleCount += static_cast<uint32_t>(indexCount / 3);
             }
             break;
         }
@@ -266,12 +266,12 @@ namespace Lumina
             if (hasIndices)
             {
                 RenderCommands::DrawTrianglesIndexed(vao);
-                s_Data.Stats.TriangleCount += indexCount / 3;
+                s_Data.Stats.TriangleCount += static_cast<uint32_t>(indexCount / 3);
             }
             else
             {
-                RenderCommands::DrawTriangles(vao, vertexCount);
-                s_Data.Stats.TriangleCount += vertexCount / 3;
+                RenderCommands::DrawTriangles(vao, static_cast<uint32_t>(vertexCount));
+                s_Data.Stats.TriangleCount += static_cast<uint32_t>(indexCount / 3);
             }
             break;
         }
@@ -284,7 +284,7 @@ namespace Lumina
             }
             else
             {
-                RenderCommands::DrawPoints(vao, vertexCount);
+                RenderCommands::DrawPoints(vao, static_cast<uint32_t>(vertexCount));
             }
             break;
         }
@@ -293,7 +293,7 @@ namespace Lumina
         vao->Unbind();
 
         s_Data.Stats.MeshCount++;
-        s_Data.Stats.VertexCount += vertexCount;
+        s_Data.Stats.VertexCount += static_cast<uint32_t>(vertexCount);
         s_Data.Stats.TexturesUsed += 5;
     }
 

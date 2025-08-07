@@ -529,7 +529,7 @@ namespace Lumina
     {
         bool issueDraw = false;
 
-        uint32_t quadDataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
+        uint32_t quadDataSize = static_cast<uint32_t>(s_Data.QuadVertexBufferPtr - s_Data.QuadVertexBufferBase);
         if (quadDataSize > 0)
         {
             s_Data.Stats.DataSize += quadDataSize;
@@ -537,7 +537,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t circleDataSize = (uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase;
+        uint32_t circleDataSize = static_cast<uint32_t>(s_Data.CircleVertexBufferPtr - s_Data.CircleVertexBufferBase);
         if (circleDataSize > 0)
         {
             s_Data.Stats.DataSize += circleDataSize;
@@ -545,7 +545,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t lineDataSize = (uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase;
+        uint32_t lineDataSize = static_cast<uint32_t>(s_Data.LineVertexBufferPtr - s_Data.LineVertexBufferBase);
         if (lineDataSize > 0)
         {
             s_Data.Stats.DataSize += lineDataSize;
@@ -553,7 +553,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t textDataSize = (uint8_t*)s_Data.TextVertexBufferPtr - (uint8_t*)s_Data.TextVertexBufferBase;
+        uint32_t textDataSize = static_cast<uint32_t>(s_Data.TextVertexBufferPtr - s_Data.TextVertexBufferBase);
         if (textDataSize > 0)
         {
             s_Data.Stats.DataSize += textDataSize;
@@ -561,7 +561,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t pixelDataSize = (uint8_t*)s_Data.PixelVertexBufferPtr - (uint8_t*)s_Data.PixelVertexBufferBase;
+        uint32_t pixelDataSize = static_cast<uint32_t>(s_Data.PixelVertexBufferPtr - s_Data.PixelVertexBufferBase);
         if (pixelDataSize > 0)
         {
             s_Data.Stats.DataSize += pixelDataSize;
@@ -569,7 +569,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t triangleDataSize = (uint8_t*)s_Data.TriangleVertexBufferPtr - (uint8_t*)s_Data.TriangleVertexBufferBase;
+        uint32_t triangleDataSize = static_cast<uint32_t>(s_Data.TriangleVertexBufferPtr - s_Data.TriangleVertexBufferBase);
         if (triangleDataSize > 0)
         {
             s_Data.Stats.DataSize += triangleDataSize;
@@ -577,7 +577,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t gridDataSize = (uint8_t*)s_Data.GridVertexBufferPtr - (uint8_t*)s_Data.GridVertexBufferBase;
+        uint32_t gridDataSize = static_cast<uint32_t>(s_Data.GridVertexBufferPtr - s_Data.GridVertexBufferBase);
         if (gridDataSize > 0)
         {
             s_Data.Stats.DataSize += gridDataSize;

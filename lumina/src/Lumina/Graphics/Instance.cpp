@@ -64,7 +64,7 @@ namespace Lumina
             return;
 
         size_t dataSize = m_InstanceCount * sizeof(InstanceData);
-        m_InstanceBuffer->SetData(m_InstanceData.data(), dataSize);
+        m_InstanceBuffer->SetData(m_InstanceData.data(), static_cast<uint32_t>(dataSize));
         m_DataDirty = false;
     }
 
@@ -103,7 +103,7 @@ namespace Lumina
             vao->Bind();
 			
             bool hasIndices = mesh->HasIndices();
-            uint32_t vertexCount = mesh->GetVertexCount();
+            uint32_t vertexCount = static_cast<uint32_t>(mesh->GetVertexCount());
 
             if (hasIndices)
             {
@@ -120,7 +120,7 @@ namespace Lumina
 
     void Instance::SetupInstanceBuffer()
     {
-        size_t bufferSize = m_MaxInstances * sizeof(InstanceData);
+        uint32_t bufferSize = static_cast<uint32_t>(m_MaxInstances * sizeof(InstanceData));
         m_InstanceBuffer = VertexBuffer::Create(bufferSize, BufferUsage::Dynamic);
     }
 
