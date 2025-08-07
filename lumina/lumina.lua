@@ -5,6 +5,9 @@ project "Lumina"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
+   -- Enable multi-core compilation
+   flags { "MultiProcessorCompile" }
+
    files { "src/**.h", "src/**.cpp" }
 
    includedirs
