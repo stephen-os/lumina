@@ -141,4 +141,86 @@ namespace Lumina
 
         GLCALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newSize, data, Utils::UsageToEnum(m_Usage)));
 	}
+
+	// Uniform Buffer
+    Ref<UniformBuffer> UniformBuffer::Create(uint32_t size, BufferUsage usage)
+    {
+        return CreateRef<UniformBuffer>(size, usage);
+    }
+
+    Ref<UniformBuffer> UniformBuffer::Create(const void* data, uint32_t size, BufferUsage usage)
+    {
+        return CreateRef<UniformBuffer>(data, size, usage);
+    }
+
+    UniformBuffer::UniformBuffer(uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
+    {
+        GLCALL(glCreateBuffers(1, &m_BufferID));
+        LUMINA_ASSERT(m_BufferID != 0, "Failed to create uniform buffer!");
+
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_UNIFORM_BUFFER, size, nullptr, Utils::UsageToEnum(m_Usage)));
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+    }
+
+    UniformBuffer::UniformBuffer(const void* data, uint32_t size, BufferUsage usage) : m_Size(size), m_Usage(usage)
+    {
+        LUMINA_ASSERT(data != nullptr, "Null data passed to UniformBuffer constructor!");
+        LUMINA_ASSERT(size > 0, "Uniform buffer size is zero!");
+
+        GLCALL(glCreateBuffers(1, &m_BufferID));
+        LUMINA_ASSERT(m_BufferID != 0, "Failed to create uniform buffer!");
+
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, m_BufferID));
+        GLCALL(glBufferData(GL_UNIFORM_BUFFER, size, data, Utils::UsageToEnum(m_Usage)));
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+    }
+
+    UniformBuffer::~UniformBuffer()
+    {
+        GLCALL(glDeleteBuffers(1, &m_BufferID));
+    }
+
+    void UniformBuffer::Bind(uint32_t bindingPoint) const
+    {
+        LUMINA_ASSERT(m_BufferID != 0, "Trying to bind an invalid uniform buffer!");
+        GLCALL(glBindBufferBase(GL_UNIFORM_BUFFER, bindingPoint, m_BufferID));
+        m_CurrentBindingPoint = bindingPoint;
+    }
+
+    void UniformBuffer::Unbind() const
+    {
+        GLCALL(glBindBufferBase(GL_UNIFORM_BUFFER, m_CurrentBindingPoint, 0));
+    }
+
+    void UniformBuffer::SetData(const void* data, uint32_t size)
+    {
+        LUMINA_ASSERT(data != nullptr, "UniformBuffer::SetData called with null data!");
+        LUMINA_ASSERT(size > 0, "UniformBuffer::SetData called with zero size!");
+
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, m_BufferID));
+
+        if (size <= m_Size)
+        {
+            GLCALL(glBufferSubData(GL_UNIFORM_BUFFER, 0, size, data));
+        }
+        else
+        {
+            GLCALL(glBufferData(GL_UNIFORM_BUFFER, size, data, Utils::UsageToEnum(m_Usage)));
+            m_Size = size;
+        }
+
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+    }
+
+    void UniformBuffer::SetSubData(const void* data, uint32_t size, uint32_t offset)
+    {
+        LUMINA_ASSERT(data != nullptr, "UniformBuffer::SetSubData called with null data!");
+        LUMINA_ASSERT(size > 0, "UniformBuffer::SetSubData called with zero size!");
+        LUMINA_ASSERT(offset + size <= m_Size, "UniformBuffer::SetSubData: offset + size exceeds buffer size!");
+
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, m_BufferID));
+        GLCALL(glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data));
+        GLCALL(glBindBuffer(GL_UNIFORM_BUFFER, 0));
+    }
 }

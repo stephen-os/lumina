@@ -66,4 +66,31 @@ namespace Lumina
         uint32_t m_Count;
         BufferUsage m_Usage;
     };
+
+    class UniformBuffer
+    {
+    public:
+        static Ref<UniformBuffer> Create(uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+        static Ref<UniformBuffer> Create(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+
+        UniformBuffer(uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+        UniformBuffer(const void* data, uint32_t size, BufferUsage usage = BufferUsage::Dynamic);
+        ~UniformBuffer();
+
+        void Bind(uint32_t bindingPoint) const;
+        void Unbind() const;
+
+        void SetData(const void* data, uint32_t size);
+        void SetSubData(const void* data, uint32_t size, uint32_t offset);
+
+        uint32_t GetSize() const { return m_Size; }
+        BufferUsage GetUsage() const { return m_Usage; }
+        uint32_t GetID() const { return m_BufferID; }
+
+    private:
+        uint32_t m_BufferID;
+        uint32_t m_Size;
+        BufferUsage m_Usage;
+        mutable uint32_t m_CurrentBindingPoint = 0;
+    };
 }
