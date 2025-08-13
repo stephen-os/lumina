@@ -40,6 +40,8 @@ namespace Lumina
     
         unsigned int CompileSource(unsigned int type, const std::string& source);
         void AssertUniform(const std::string& name);
+
+		uint32_t GetID() const { return m_ShaderProgramID; }
     private:
         unsigned int m_VertexShaderID = 0;
         unsigned int m_FragmentShaderID = 0;
