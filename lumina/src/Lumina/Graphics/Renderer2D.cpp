@@ -24,10 +24,13 @@ namespace Lumina
     constexpr uint32_t MaxPixels = 50000;
     constexpr uint32_t MaxTriangles = 10000;
     constexpr uint32_t MaxGrids = 1000;
+	constexpr uint32_t MaxPointLights = 32;
 
     constexpr uint32_t MaxVertices = MaxQuads * 4;
     constexpr uint32_t MaxIndices = MaxQuads * 6;
     constexpr uint32_t MaxTextureSlots = 32;
+
+	constexpr uint32_t BindingLocationPointLight = 1;
 
     struct QuadVertex
     {
@@ -92,6 +95,18 @@ namespace Lumina
         glm::vec4 CheckerColor2;
     };
 
+    struct PointLight
+    {
+        glm::vec3 Position;
+		float Intensity;
+		glm::vec3 Color;
+		float Radius;
+        float BlendingMode;
+        float Falloff;
+		float Unused0;
+		float Unused1;
+    };
+
     struct RendererData
     {
         Ref<RenderTarget> DefaultRenderTarget;
@@ -122,6 +137,8 @@ namespace Lumina
         Ref<VertexBuffer> GridVertexBuffer;
         Ref<IndexBuffer> GridIndexBuffer;
 
+		Ref<UniformBuffer> PointLightUniformBuffer;
+
         uint32_t QuadIndexCount = 0;
         QuadVertex* QuadVertexBufferBase = nullptr;
         QuadVertex* QuadVertexBufferPtr = nullptr;
@@ -150,6 +167,10 @@ namespace Lumina
         GridVertex* GridVertexBufferBase = nullptr;
         GridVertex* GridVertexBufferPtr = nullptr;
 
+        uint32_t PointLightCount = 0;
+		PointLight* PointLightUniformBufferBase = nullptr;
+		PointLight* PointLightUniformBufferPtr = nullptr;
+
         Ref<ShaderProgram> QuadShader = nullptr;
         Ref<ShaderProgram> CircleShader = nullptr;
         Ref<ShaderProgram> LineShader = nullptr;
@@ -177,6 +198,10 @@ namespace Lumina
         uint32_t Height = 600;
 
         Renderer2D::Statistics Stats;
+
+        bool UseLighting = false;
+		glm::vec3 AmbientColor = { 0.1f, 0.1f, 0.1f };
+		float AmbientIntensity = 0.5f;
 
         glm::vec3 QuadPosition = { 0.0f, 0.0f, 0.0f };
         glm::vec3 QuadRotation = { 0.0f, 0.0f, 0.0f };
@@ -224,6 +249,13 @@ namespace Lumina
         bool GridShowCheckerboard = true;
         glm::vec4 GridCheckerColor1 = { 0.9f, 0.9f, 0.9f, 0.2f };
         glm::vec4 GridCheckerColor2 = { 0.8f, 0.8f, 0.8f, 0.2f };
+
+		glm::vec3 PointLightPosition = { 0.0f, 0.0f, 0.0f };
+		float PointLightIntensity = 1.0f;
+		glm::vec3 PointLightColor = { 1.0f, 1.0f, 1.0f };
+		float PointLightRadius = 5.0f;
+		LightBlendMode PointLightBlendMode = LightBlendMode::Additive;
+		float PointLightFalloff = 1.0f;
     };
 
     static RendererData s_Data;
@@ -390,6 +422,10 @@ namespace Lumina
             s_Data.GridShader = ShaderProgram::Create(vertexSource, fragmentSource);
         }
 
+        s_Data.PointLightUniformBuffer = UniformBuffer::Create(sizeof(PointLight) * MaxPointLights, BufferUsage::Dynamic);
+        s_Data.PointLightUniformBufferBase = new PointLight[MaxPointLights];
+        s_Data.PointLightUniformBufferPtr = s_Data.PointLightUniformBufferBase;
+
         uint32_t whiteTextureData = 0xffffffff;
         s_Data.TextureSlots[0] = Texture::Create(1, 1);
         s_Data.TextureSlots[0]->SetData(&whiteTextureData, sizeof(uint32_t));
@@ -440,6 +476,7 @@ namespace Lumina
         s_Data.GridVertexArray.reset();
         s_Data.GridVertexBuffer.reset();
         s_Data.GridIndexBuffer.reset();
+        s_Data.PointLightUniformBuffer.reset();
 
         s_Data.QuadShader.reset();
         s_Data.CircleShader.reset();
@@ -460,6 +497,7 @@ namespace Lumina
         delete[] s_Data.PixelVertexBufferBase;
         delete[] s_Data.TriangleVertexBufferBase;
         delete[] s_Data.GridVertexBufferBase;
+        delete[] s_Data.PointLightUniformBufferBase;
 
         s_Data.QuadVertexBufferBase = nullptr;
         s_Data.CircleVertexBufferBase = nullptr;
@@ -468,7 +506,8 @@ namespace Lumina
         s_Data.PixelVertexBufferBase = nullptr;
         s_Data.TriangleVertexBufferBase = nullptr;
         s_Data.GridVertexBufferBase = nullptr;
-
+		s_Data.PointLightUniformBufferBase = nullptr;
+		
         LUMINA_LOG_INFO("Renderer2D: Shutdown complete");
     }
 
@@ -521,6 +560,9 @@ namespace Lumina
 
         s_Data.GridIndexCount = 0;
         s_Data.GridVertexBufferPtr = s_Data.GridVertexBufferBase;
+
+		s_Data.PointLightCount = 0;
+		s_Data.PointLightUniformBufferPtr = s_Data.PointLightUniformBufferBase;
 
         s_Data.TextureSlotIndex = 1;
     }
@@ -585,6 +627,12 @@ namespace Lumina
             issueDraw = true;
         }
 
+        if (s_Data.PointLightCount > 0)
+        {
+            uint32_t lightDataSize = s_Data.PointLightCount * sizeof(PointLight);
+            s_Data.PointLightUniformBuffer->SetData(s_Data.PointLightUniformBufferBase, lightDataSize);
+        }
+
         if (issueDraw)
         {
             Flush();
@@ -596,12 +644,19 @@ namespace Lumina
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
             s_Data.TextureSlots[i]->Bind(i);
 
+        if (s_Data.PointLightCount > 0 && s_Data.UseLighting)
+            s_Data.PointLightUniformBuffer->Bind(BindingLocationPointLight);
+        
         if (s_Data.QuadIndexCount > 0)
         {
             s_Data.QuadShader->Bind();
             s_Data.QuadShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
             s_Data.QuadShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
             s_Data.QuadShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
+			s_Data.QuadShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+			s_Data.QuadShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.QuadShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.QuadShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.QuadVertexArray->Bind();
             RenderCommands::DrawElementsWithCount(s_Data.QuadVertexArray, PrimitiveType::Triangles, s_Data.QuadIndexCount);
@@ -696,6 +751,9 @@ namespace Lumina
         for (uint32_t i = 0; i < s_Data.TextureSlotIndex; i++)
             s_Data.TextureSlots[i]->Unbind();
 
+        if (s_Data.PointLightCount > 0 && s_Data.UseLighting) 
+            s_Data.PointLightUniformBuffer->Unbind();
+
         s_Data.Stats.TexturesUsed = s_Data.TextureSlotIndex - 1;
 
         s_Data.QuadIndexCount = 0;
@@ -758,6 +816,27 @@ namespace Lumina
         s_Data.TextureSlotIndex++;
 
         return texIndex;
+    }
+
+    void Renderer2D::UseLighting(bool enabled)
+    {
+        s_Data.UseLighting = enabled;
+        s_Data.Stats.LightingUsed = enabled;
+    }
+
+    bool Renderer2D::IsLightingUsed()
+    {
+        return s_Data.UseLighting;
+    }
+
+    void Renderer2D::SetAmbientLightColor(const glm::vec3& color)
+    {
+        s_Data.AmbientColor = color;
+    }
+
+    void Renderer2D::SetAmbientLightIntensity(float intensity)
+    {
+        s_Data.AmbientIntensity = intensity;
     }
 
     void Renderer2D::SetQuadPosition(const glm::vec3& position)
@@ -1036,6 +1115,48 @@ namespace Lumina
         s_Data.GridCheckerColor2 = { 0.8f, 0.8f, 0.8f, 0.2f };
     }
 
+    void Renderer2D::SetPointLightPosition(const glm::vec3& position)
+    {
+        s_Data.PointLightPosition = position;
+    }
+
+    void Renderer2D::SetPointLightIntensity(float intensity)
+    {
+        s_Data.PointLightIntensity = intensity;
+    }
+
+    void Renderer2D::SetPointLightColor(const glm::vec4& color)
+    {
+        s_Data.PointLightColor = glm::vec3(color.r, color.g, color.b);
+    }
+
+    void Renderer2D::SetPointLightRadius(float radius)
+    {
+        s_Data.PointLightRadius = radius;
+    }
+
+    void Renderer2D::SetPointLightBlendMode(LightBlendMode blendMode)
+    {
+        s_Data.PointLightBlendMode = blendMode;
+	}
+
+    void Renderer2D::SetPointLightFalloff(float falloff)
+    {
+        s_Data.PointLightFalloff = falloff;
+	}
+
+    void Renderer2D::ResetPointLightState()
+    {
+        s_Data.PointLightPosition = { 0.0f, 0.0f, 0.0f };
+        s_Data.PointLightIntensity = 1.0f;
+        s_Data.PointLightColor = { 1.0f, 1.0f, 1.0f };
+        s_Data.PointLightRadius = 5.0f;
+        s_Data.PointLightBlendMode = LightBlendMode::Additive;
+        s_Data.PointLightFalloff = 1.0f;
+	}
+
+    
+
     void Renderer2D::DrawQuad()
     {
         LUMINA_ASSERT(s_Data.QuadVertexBufferPtr >= s_Data.QuadVertexBufferBase, "Vertex buffer pointer underflow");
@@ -1302,6 +1423,26 @@ namespace Lumina
 
         s_Data.GridIndexCount += 6;
         s_Data.Stats.GridCount++;
+    }
+
+    void Renderer2D::DrawPointLight()
+    {
+        if (s_Data.PointLightCount >= MaxPointLights)
+        {
+            LUMINA_LOG_WARN("Maximum number of point lights ({}) exceeded", MaxPointLights);
+            return;
+        }
+
+		s_Data.PointLightUniformBufferPtr->Position = s_Data.PointLightPosition;
+		s_Data.PointLightUniformBufferPtr->Intensity = s_Data.PointLightIntensity;
+		s_Data.PointLightUniformBufferPtr->Color = s_Data.PointLightColor;
+		s_Data.PointLightUniformBufferPtr->Radius = s_Data.PointLightRadius;
+        s_Data.PointLightUniformBufferPtr->BlendingMode = (int)s_Data.PointLightBlendMode;
+		s_Data.PointLightUniformBufferPtr->Falloff = s_Data.PointLightFalloff;
+        s_Data.PointLightUniformBufferPtr++;
+
+        s_Data.PointLightCount++;
+        s_Data.Stats.PointLightCount++;
     }
 
     void Renderer2D::SetRenderTarget(Ref<RenderTarget> target)

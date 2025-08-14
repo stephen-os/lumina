@@ -15,6 +15,12 @@
 
 namespace Lumina
 {
+    enum class LightBlendMode : int
+    {
+        Additive = 0,    // Standard light blending (light adds to scene)
+        Multiply = 1     // Darkens areas (good for shadows/ambient occlusion)
+    };
+
     class Renderer2D
     {
     public:
@@ -88,6 +94,19 @@ namespace Lumina
         static void SetGridCheckerColor2(const glm::vec4& checkerColor2);
         static void ResetGridState();
 
+        static void UseLighting(bool enabled);
+		static bool IsLightingUsed();
+		static void SetAmbientLightColor(const glm::vec3& color);
+		static void SetAmbientLightIntensity(float intensity);
+
+		static void SetPointLightPosition(const glm::vec3& position);
+		static void SetPointLightIntensity(float intensity);
+		static void SetPointLightColor(const glm::vec4& color);
+		static void SetPointLightRadius(float radius);
+		static void SetPointLightBlendMode(LightBlendMode blendMode);
+		static void SetPointLightFalloff(float falloff);
+		static void ResetPointLightState();
+
         static void DrawQuad();
         static void DrawCircle();
         static void DrawLine();
@@ -95,6 +114,7 @@ namespace Lumina
         static void DrawPixel();
         static void DrawTriangle();
         static void DrawGrid(); 
+		static void DrawPointLight();
 
         static void SetRenderTarget(Ref<RenderTarget> target);
         static void SetRenderTarget(std::nullptr_t);
@@ -111,6 +131,8 @@ namespace Lumina
             uint32_t PixelCount = 0;
             uint32_t TriangleCount = 0;
             uint32_t GridCount = 0;
+			uint32_t PointLightCount = 0;
+			bool LightingUsed = false;
             uint32_t TexturesUsed = 0;
             uint32_t ShadersUsed = 0;
             uint32_t DataSize = 0;
