@@ -102,9 +102,9 @@ namespace Lumina
 		glm::vec3 Color;
 		float Radius;
         float BlendingMode;
+		float BlendingAlpha;
+		float FalloffType;
         float Falloff;
-		float Unused0;
-		float Unused1;
     };
 
     struct RendererData
@@ -254,7 +254,9 @@ namespace Lumina
 		float PointLightIntensity = 1.0f;
 		glm::vec3 PointLightColor = { 1.0f, 1.0f, 1.0f };
 		float PointLightRadius = 5.0f;
-		LightBlendMode PointLightBlendMode = LightBlendMode::Additive;
+		BlendMode PointLightBlendMode = BlendMode::Additive;
+		float PointLightBlendAlpha = 1.0f;
+		AttenuationModel PointLightFalloffType = AttenuationModel::Quadratic;
 		float PointLightFalloff = 1.0f;
     };
 
@@ -1135,10 +1137,20 @@ namespace Lumina
         s_Data.PointLightRadius = radius;
     }
 
-    void Renderer2D::SetPointLightBlendMode(LightBlendMode blendMode)
+    void Renderer2D::SetPointLightBlendMode(BlendMode blendMode)
     {
         s_Data.PointLightBlendMode = blendMode;
 	}
+
+    void Renderer2D::SetPointLightBlendAlpha(float alpha)
+    {
+        s_Data.PointLightBlendAlpha = alpha;
+    }
+
+    void Renderer2D::SetPointLightFalloffType(AttenuationModel falloffType)
+    {
+        s_Data.PointLightFalloffType = falloffType;
+    }
 
     void Renderer2D::SetPointLightFalloff(float falloff)
     {
@@ -1151,11 +1163,11 @@ namespace Lumina
         s_Data.PointLightIntensity = 1.0f;
         s_Data.PointLightColor = { 1.0f, 1.0f, 1.0f };
         s_Data.PointLightRadius = 5.0f;
-        s_Data.PointLightBlendMode = LightBlendMode::Additive;
+        s_Data.PointLightBlendMode = BlendMode::Additive;
+		s_Data.PointLightBlendAlpha = 1.0f;
+		s_Data.PointLightFalloffType = AttenuationModel::Linear;
         s_Data.PointLightFalloff = 1.0f;
 	}
-
-    
 
     void Renderer2D::DrawQuad()
     {
@@ -1438,6 +1450,8 @@ namespace Lumina
 		s_Data.PointLightUniformBufferPtr->Color = s_Data.PointLightColor;
 		s_Data.PointLightUniformBufferPtr->Radius = s_Data.PointLightRadius;
         s_Data.PointLightUniformBufferPtr->BlendingMode = (int)s_Data.PointLightBlendMode;
+		s_Data.PointLightUniformBufferPtr->BlendingAlpha = s_Data.PointLightBlendAlpha;
+		s_Data.PointLightUniformBufferPtr->FalloffType = (int)s_Data.PointLightFalloffType;
 		s_Data.PointLightUniformBufferPtr->Falloff = s_Data.PointLightFalloff;
         s_Data.PointLightUniformBufferPtr++;
 

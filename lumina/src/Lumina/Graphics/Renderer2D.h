@@ -15,10 +15,29 @@
 
 namespace Lumina
 {
-    enum class LightBlendMode : int
+    enum class BlendMode : int
     {
-        Additive = 0,    // Standard light blending (light adds to scene)
-        Multiply = 1     // Darkens areas (good for shadows/ambient occlusion)
+        Additive = 0,        // Standard light blending (light adds to scene)
+        Multiply = 1,        // Darkens areas (shadows/ambient occlusion)
+        Screen = 2,          // Brightens without harsh highlights
+        Overlay = 3,         // Combines multiply and screen
+        SoftLight = 4,       // Subtle lighting effect
+        LinearBurn = 5,      // Darker than multiply
+        ColorDodge = 6,      // Creates bright highlights
+        Subtract = 7,        // Subtracts light (negative lighting)
+        Alpha = 8            // Standard alpha blending
+    };
+
+    enum class AttenuationModel : int
+    {
+        None = 0,            // No falloff (constant intensity)
+        Linear = 1,          // Linear falloff
+        Quadratic = 2,       // Quadratic falloff (physically accurate)
+        InverseSquare = 3,   // 1/distance² (realistic)
+        Exponential = 4,     // Exponential decay
+        Smoothstep = 5,      // Smooth transition with ease-in/out
+        Custom = 6,          // User-defined curve
+        Realistic = 7        // Physically-based (constant + linear + quadratic)
     };
 
     class Renderer2D
@@ -103,7 +122,9 @@ namespace Lumina
 		static void SetPointLightIntensity(float intensity);
 		static void SetPointLightColor(const glm::vec4& color);
 		static void SetPointLightRadius(float radius);
-		static void SetPointLightBlendMode(LightBlendMode blendMode);
+		static void SetPointLightBlendMode(BlendMode blendMode);
+		static void SetPointLightBlendAlpha(float alpha);
+		static void SetPointLightFalloffType(AttenuationModel type);
 		static void SetPointLightFalloff(float falloff);
 		static void ResetPointLightState();
 
