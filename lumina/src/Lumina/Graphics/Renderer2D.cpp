@@ -820,7 +820,7 @@ namespace Lumina
 
     void* Renderer2D::GetImage()
     {
-        return (void*)s_Data.CurrentRenderTarget->GetTexture();
+        return reinterpret_cast<void*>(static_cast<uintptr_t>(s_Data.CurrentRenderTarget->GetTexture()));
     }
 
     float Renderer2D::ComputeTextureIndex(const Ref<Texture>& texture)
