@@ -53,7 +53,7 @@ namespace Lumina
         static void Init();
         static void Shutdown();
 
-        static void Begin(Camera& camera);
+        static void Begin(Ref<Camera> camera);
         static void Begin(glm::mat4& viewProjection);
         static void End();
 
