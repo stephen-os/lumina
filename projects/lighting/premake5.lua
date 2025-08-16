@@ -1,4 +1,4 @@
-project "Lighting"
+project "DemoPointLights"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++17"

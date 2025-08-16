@@ -8,6 +8,7 @@ layout(location = 4) in float a_TexIndex;
 layout(location = 5) in float a_Thickness;
 layout(location = 6) in float a_Fade;
 
+out vec3 v_WorldPos;
 out vec3 v_LocalPosition;
 out vec4 v_Color;
 out vec2 v_TexCoord;
@@ -21,11 +22,12 @@ uniform vec3 u_WireframeColor;
 
 void main()
 {
-	v_LocalPosition = a_LocalPosition;
-	v_Color = (u_WireframeMode == 1) ? vec4(u_WireframeColor, 1.0f) : a_Color;
-	v_TexCoord = a_TexCoord;
-	v_TexIndex = a_TexIndex;
-	v_Thickness = a_Thickness;
-	v_Fade = a_Fade;
-	gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
+    v_WorldPos = a_WorldPosition;
+    v_LocalPosition = a_LocalPosition;
+    v_Color = (u_WireframeMode == 1) ? vec4(u_WireframeColor, 1.0f) : a_Color;
+    v_TexCoord = a_TexCoord;
+    v_TexIndex = a_TexIndex;
+    v_Thickness = a_Thickness;
+    v_Fade = a_Fade;
+    gl_Position = u_ViewProjection * vec4(a_WorldPosition, 1.0);
 }
