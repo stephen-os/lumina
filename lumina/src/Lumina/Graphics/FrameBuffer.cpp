@@ -76,10 +76,8 @@ namespace Lumina
 
     void FrameBuffer::Resize(uint32_t width, uint32_t height)
     {
-        LUMINA_ASSERT(width > 0 && height > 0, "Framebuffer resize dimensions must be positive");
-
-        m_Width = width;
-        m_Height = height;
+        m_Width = std::max(width, 1u);
+        m_Height = std::max(height, 1u);
 
         // Resize the color attachment (texture)
         GLCALL(glBindTexture(GL_TEXTURE_2D, m_ColorAttachment));
