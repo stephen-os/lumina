@@ -798,15 +798,19 @@ namespace Lumina
 
     void Renderer2D::SetResolution(uint32_t width, uint32_t height)
     {
-        if (width == 0 || height == 0)
-        {
-            std::cerr << "Invalid resolution: " << width << "x" << height << std::endl;
-            return;
-        }
-
         s_Data.Width = width;
         s_Data.Height = height;
     }
+
+    void Renderer2D::SetResolution(float width, float height)
+    {
+		SetResolution(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+	}
+
+    void Renderer2D::SetResolution(const glm::vec2& resolution)
+    {
+        SetResolution(static_cast<uint32_t>(resolution.x), static_cast<uint32_t>(resolution.y));
+	}
 
     glm::vec2 Renderer2D::GetResolution()
     {

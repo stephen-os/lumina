@@ -62,7 +62,10 @@ namespace Lumina
         static void Flush();
 
         static void SetResolution(uint32_t width, uint32_t height);
+		static void SetResolution(float width, float height);
+		static void SetResolution(const glm::vec2& resolution);
         static glm::vec2 GetResolution();
+
         static void SetRenderMode(PolygonMode mode);
         static void* GetImage();
 

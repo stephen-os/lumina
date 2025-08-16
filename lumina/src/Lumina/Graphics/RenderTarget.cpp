@@ -33,4 +33,14 @@ namespace Lumina
             m_FrameBuffer->Resize(width, height);
         }
     }
+
+	void RenderTarget::Resize(float width, float height)
+    {
+        Resize(static_cast<uint32_t>(width), static_cast<uint32_t>(height));
+	}
+
+    void RenderTarget::Resize(const glm::vec2& size)
+    {
+        Resize(static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
+	}
 }

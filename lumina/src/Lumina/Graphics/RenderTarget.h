@@ -4,6 +4,8 @@
 
 #include "FrameBuffer.h"
 
+#include <glm/glm.hpp>
+
 namespace Lumina
 {
     class RenderTarget
@@ -15,7 +17,10 @@ namespace Lumina
 
         void Bind();
         void Unbind();
+
         void Resize(uint32_t width, uint32_t height);
+		void Resize(float width, float height);
+        void Resize(const glm::vec2& size);
 
         uint32_t GetTexture() const { return m_FrameBuffer->GetColorAttachment(); }
         uint32_t GetWidth() const { return m_Width; }
