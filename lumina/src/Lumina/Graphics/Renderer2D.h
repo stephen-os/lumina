@@ -40,6 +40,13 @@ namespace Lumina
         Realistic = 7        // Physically-based (constant + linear + quadratic)
     };
 
+    enum class StringAlignment : int
+    {
+        Left = 0,
+        Right = 1,
+        Center = 2
+    };
+
     class Renderer2D
     {
     public:
@@ -88,6 +95,7 @@ namespace Lumina
         static void SetStringColor(const glm::vec4& color);
         static void SetStringSize(float size);
         static void SetStringFont(const Ref<Texture>& fontTexture);
+        static void SetStringAlignment(StringAlignment alignment);
         static void ResetStringState();
 
         static void SetPixelPosition(const glm::vec3& position);

@@ -117,6 +117,6 @@ namespace Lumina
 
     void OrthographicCamera::UpdateProjectionMatrix()
     {
-        m_ProjectionMatrix = glm::ortho(m_Left, m_Right, m_Bottom, m_Top, m_NearPlane, m_FarPlane);
+        m_ProjectionMatrix = glm::ortho(m_Left, m_Right, m_Top, m_Bottom, m_NearPlane, m_FarPlane);
     }
 }

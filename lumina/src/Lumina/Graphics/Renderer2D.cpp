@@ -224,11 +224,12 @@ namespace Lumina
         float LineThickness = 2.0f;
         glm::vec4 LineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-        std::string TextContent = "";
-        glm::vec3 TextPosition = { 0.0f, 0.0f, 0.0f };
-        glm::vec4 TextColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        float TextSize = 1.0f;
-        Ref<Texture> TextFont = nullptr;
+        std::string StringContent = "";
+        glm::vec3 StringPosition = { 0.0f, 0.0f, 0.0f };
+        glm::vec4 StringColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        float StringSize = 1.0f;
+        Ref<Texture> StringFont = nullptr;
+        StringAlignment StringAlignment = StringAlignment::Left;
 
         glm::vec3 PixelPosition = { 0.0f, 0.0f, 0.0f };
         glm::vec4 PixelColor = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -673,6 +674,10 @@ namespace Lumina
             s_Data.CircleShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
             s_Data.CircleShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
             s_Data.CircleShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
+            s_Data.CircleShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+            s_Data.CircleShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.CircleShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.CircleShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.CircleVertexArray->Bind();
             RenderCommands::DrawElementsWithCount(s_Data.CircleVertexArray, PrimitiveType::Triangles, s_Data.CircleIndexCount);
@@ -687,6 +692,10 @@ namespace Lumina
             s_Data.LineShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
             s_Data.LineShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
             s_Data.LineShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
+            s_Data.LineShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+            s_Data.LineShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.LineShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.LineShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.LineVertexArray->Bind();
             RenderCommands::SetLineWidth(s_Data.LineWidth);
@@ -702,6 +711,10 @@ namespace Lumina
             s_Data.TextShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
             s_Data.TextShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
             s_Data.TextShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
+            s_Data.TextShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+            s_Data.TextShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.TextShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.TextShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.TextVertexArray->Bind();
             RenderCommands::DrawElementsWithCount(s_Data.TextVertexArray, PrimitiveType::Triangles, s_Data.TextIndexCount);
@@ -714,6 +727,10 @@ namespace Lumina
         {
             s_Data.PixelShader->Bind();
             s_Data.PixelShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
+            s_Data.PixelShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+            s_Data.PixelShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.PixelShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.PixelShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.PixelVertexArray->Bind();
 			RenderCommands::SetPointSize(s_Data.PixelSize);
@@ -730,6 +747,10 @@ namespace Lumina
             s_Data.TriangleShader->SetUniformMat4("u_ViewProjection", s_Data.ViewProjectionMatrix);
             s_Data.TriangleShader->SetUniformInt("u_WireframeMode", (int)s_Data.PolygonMode);
             s_Data.TriangleShader->SetUniformVec3("u_WireframeColor", s_Data.WireFrameColor);
+            s_Data.TriangleShader->SetUniformInt("u_EnableLighting", (int)s_Data.UseLighting);
+            s_Data.TriangleShader->SetUniformVec3("u_AmbientColor", s_Data.AmbientColor);
+            s_Data.TriangleShader->SetUniformFloat("u_AmbientIntensity", s_Data.AmbientIntensity);
+            s_Data.TriangleShader->SetUniformInt("u_PointLightCount", (int)s_Data.PointLightCount);
 
             s_Data.TriangleVertexArray->Bind();
             RenderCommands::DrawArrays(s_Data.TriangleVertexArray, PrimitiveType::Triangles, s_Data.TriangleVertexCount);
@@ -963,36 +984,42 @@ namespace Lumina
 
     void Renderer2D::SetStringContent(const std::string& text)
     {
-        s_Data.TextContent = text;
+        s_Data.StringContent = text;
     }
 
     void Renderer2D::SetStringPosition(const glm::vec3& position)
     {
-        s_Data.TextPosition = position;
+        s_Data.StringPosition = position;
     }
 
     void Renderer2D::SetStringColor(const glm::vec4& color)
     {
-        s_Data.TextColor = color;
+        s_Data.StringColor = color;
     }
 
     void Renderer2D::SetStringSize(float size)
     {
-        s_Data.TextSize = size;
+        s_Data.StringSize = size;
     }
 
     void Renderer2D::SetStringFont(const Ref<Texture>& fontTexture)
     {
-        s_Data.TextFont = fontTexture;
+        s_Data.StringFont = fontTexture;
+    }
+
+    void Renderer2D::SetStringAlignment(StringAlignment alignment)
+    {
+        s_Data.StringAlignment = alignment;
     }
 
     void Renderer2D::ResetStringState()
     {
-        s_Data.TextContent = "";
-        s_Data.TextPosition = { 0.0f, 0.0f, 0.0f };
-        s_Data.TextColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-        s_Data.TextSize = 1.0f;
-        s_Data.TextFont = nullptr;
+        s_Data.StringContent = "";
+        s_Data.StringPosition = { 0.0f, 0.0f, 0.0f };
+        s_Data.StringColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.StringSize = 1.0f;
+        s_Data.StringFont = nullptr;
+        s_Data.StringAlignment = StringAlignment::Left; 
     }
 
     void Renderer2D::SetPixelPosition(const glm::vec3& position)
@@ -1194,10 +1221,10 @@ namespace Lumina
 
         glm::vec2 uvs[4] =
         {
-            { uvMin.x, uvMin.y },
-            { uvMax.x, uvMin.y },
-            { uvMax.x, uvMax.y },
-            { uvMin.x, uvMax.y }
+            { uvMin.x, uvMax.y },  // Top-left  
+            { uvMax.x, uvMax.y },  // Top-right
+            { uvMax.x, uvMin.y },  // Bottom-right
+            { uvMin.x, uvMin.y }   // Bottom-left
         };
 
         for (size_t i = 0; i < 4; i++)
@@ -1238,10 +1265,10 @@ namespace Lumina
 
         glm::vec2 uvs[4] =
         {
-            { uvMin.x, uvMin.y },
-            { uvMax.x, uvMin.y },
-            { uvMax.x, uvMax.y },
-            { uvMin.x, uvMax.y }
+            { uvMin.x, uvMax.y },  // Top-left  
+            { uvMax.x, uvMax.y },  // Top-right
+            { uvMax.x, uvMin.y },  // Bottom-right
+            { uvMin.x, uvMin.y }   // Bottom-left
         };
 
         for (size_t i = 0; i < 4; i++)
@@ -1290,7 +1317,7 @@ namespace Lumina
 
     void Renderer2D::DrawString()
     {
-        if (s_Data.TextContent.empty())
+        if (s_Data.StringContent.empty())
             return;
 
         if (s_Data.TextIndexCount >= MaxIndices)
@@ -1299,16 +1326,35 @@ namespace Lumina
             StartBatch();
         }
 
-        Ref<Texture> fontToUse = s_Data.TextFont ? s_Data.TextFont : s_Data.DefaultFont;
+        Ref<Texture> fontToUse = s_Data.StringFont ? s_Data.StringFont : s_Data.DefaultFont;
         float texIndex = ComputeTextureIndex(fontToUse);
 
-        float xOffset = 0.0f;
-        float charWidth = s_Data.TextSize;
-        float charHeight = s_Data.TextSize;
+        float charWidth = s_Data.StringSize;
+        float charHeight = s_Data.StringSize;
 
-        for (char c : s_Data.TextContent)
+        // Calculate total text width for alignment
+        float totalWidth = s_Data.StringContent.length() * charWidth;
+
+        // Calculate starting X offset based on alignment
+        float startXOffset = 0.0f;
+        switch (s_Data.StringAlignment)
         {
-            glm::vec3 charPos = s_Data.TextPosition + glm::vec3(xOffset, 0.0f, 0.0f);
+        case StringAlignment::Left:
+            startXOffset = 0.0f;
+            break;
+        case StringAlignment::Right:
+            startXOffset = -totalWidth;
+            break;
+        case StringAlignment::Center:
+            startXOffset = -totalWidth * 0.5f;
+            break;
+        }
+
+        float xOffset = startXOffset;
+
+        for (char c : s_Data.StringContent)
+        {
+            glm::vec3 charPos = s_Data.StringPosition + glm::vec3(xOffset, 0.0f, 0.0f);
 
             glm::mat4 translation = glm::translate(glm::mat4(1.0f), charPos);
             glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(charWidth, charHeight, 1.0f));
@@ -1321,16 +1367,16 @@ namespace Lumina
 
             glm::vec2 uvs[4] =
             {
-                { uvX, uvY },
-                { uvX + uvWidth, uvY },
-                { uvX + uvWidth, uvY + uvHeight },
-                { uvX, uvY + uvHeight }
+                { uvX, uvY + uvHeight },           // Top-left
+                { uvX + uvWidth, uvY + uvHeight }, // Top-right  
+                { uvX + uvWidth, uvY },            // Bottom-right
+                { uvX, uvY }                       // Bottom-left
             };
 
             for (size_t i = 0; i < 4; i++)
             {
                 s_Data.TextVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-                s_Data.TextVertexBufferPtr->Color = s_Data.TextColor;
+                s_Data.TextVertexBufferPtr->Color = s_Data.StringColor;
                 s_Data.TextVertexBufferPtr->TexCoord = uvs[i];
                 s_Data.TextVertexBufferPtr->TexIndex = texIndex;
                 s_Data.TextVertexBufferPtr++;
@@ -1371,19 +1417,19 @@ namespace Lumina
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint1;
         s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
-        s_Data.TriangleVertexBufferPtr->TexCoord = { 0.0f, 0.0f };
+        s_Data.TriangleVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint2;
         s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
-        s_Data.TriangleVertexBufferPtr->TexCoord = { 1.0f, 0.0f };
+        s_Data.TriangleVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint3;
         s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
-        s_Data.TriangleVertexBufferPtr->TexCoord = { 0.5f, 1.0f };
+        s_Data.TriangleVertexBufferPtr->TexCoord = { 0.5f, 0.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
 
@@ -1407,11 +1453,12 @@ namespace Lumina
         glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(s_Data.GridSize, 1.0f));
         glm::mat4 transform = translation * rotation * scale;
 
-        glm::vec2 texCoords[4] = {
-            { 0.0f, 0.0f },
-            { 1.0f, 0.0f },
+        glm::vec2 texCoords[4] = 
+        {
+            { 0.0f, 1.0f },
             { 1.0f, 1.0f },
-            { 0.0f, 1.0f }
+            { 1.0f, 0.0f },
+            { 0.0f, 0.0f }
         };
 
         for (size_t i = 0; i < 4; i++)
