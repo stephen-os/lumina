@@ -818,9 +818,9 @@ namespace Lumina
         s_Data.PolygonMode = mode;
     }
 
-    uint32_t Renderer2D::GetImage()
+    void* Renderer2D::GetImage()
     {
-        return s_Data.CurrentRenderTarget->GetTexture();
+        return (void*)s_Data.CurrentRenderTarget->GetTexture();
     }
 
     float Renderer2D::ComputeTextureIndex(const Ref<Texture>& texture)

@@ -64,7 +64,7 @@ namespace Lumina
         static void SetResolution(uint32_t width, uint32_t height);
         static glm::vec2 GetResolution();
         static void SetRenderMode(PolygonMode mode);
-        static uint32_t GetImage();
+        static void* GetImage();
 
         static void SetQuadPosition(const glm::vec3& position);
         static void SetQuadRotation(const glm::vec3& rotation);
