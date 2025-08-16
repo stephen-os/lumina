@@ -3,7 +3,11 @@
 // Core
 #include "Core/Base.h"
 
-// Graphics
+// Renderers
+#include "Graphics/Renderer2D.h"
+#include "Graphics/Renderer3D.h"
+
+// Graphics Support
 #include "Graphics/Buffer.h"
 #include "Graphics/ComputeShader.h"
 #include "Graphics/FrameBuffer.h"
@@ -19,11 +23,14 @@
 #include "Graphics/RenderCommands.h"
 #include "Graphics/TextureSlot.h"
 #include "Graphics/BufferLayout.h"
+#include "Graphics/TextureAtlas.h"
+
+// Formats
 #include "Graphics/Formats/ModelFormat.h"
+
+// Loaders
 #include "Graphics/Loaders/ModelLoader.h"
 #include "Graphics/Loaders/GLTFLoader.h"
-#include "Graphics/Renderer2D.h"
-#include "Graphics/TextureAtlas.h"
 
 // Graphics/Cameras
 #include "Graphics/Cameras/Camera.h"
