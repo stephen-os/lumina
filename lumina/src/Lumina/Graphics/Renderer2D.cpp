@@ -574,7 +574,15 @@ namespace Lumina
     {
         bool issueDraw = false;
 
-        uint32_t quadDataSize = (uint8_t*)s_Data.QuadVertexBufferPtr - (uint8_t*)s_Data.QuadVertexBufferBase;
+        auto CalculateBufferSize = [](const void* ptr, const void* base) -> uint32_t 
+        {
+            ptrdiff_t diff = static_cast<const uint8_t*>(ptr) - static_cast<const uint8_t*>(base);
+            LUMINA_ASSERT(diff >= 0, "Renderer2D: Buffer pointer is before base pointer!");
+            LUMINA_ASSERT(diff <= UINT32_MAX, "Renderer2D: Buffer size exceeds uint32_t limit!");
+            return static_cast<uint32_t>(diff);
+        };
+
+        uint32_t quadDataSize = CalculateBufferSize(s_Data.QuadVertexBufferPtr, s_Data.QuadVertexBufferBase);
         if (quadDataSize > 0)
         {
             s_Data.Stats.DataSize += quadDataSize;
@@ -582,7 +590,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t circleDataSize = (uint8_t*)s_Data.CircleVertexBufferPtr - (uint8_t*)s_Data.CircleVertexBufferBase;
+        uint32_t circleDataSize = CalculateBufferSize(s_Data.CircleVertexBufferPtr, s_Data.CircleVertexBufferBase);
         if (circleDataSize > 0)
         {
             s_Data.Stats.DataSize += circleDataSize;
@@ -590,7 +598,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t lineDataSize = (uint8_t*)s_Data.LineVertexBufferPtr - (uint8_t*)s_Data.LineVertexBufferBase;
+        uint32_t lineDataSize = CalculateBufferSize(s_Data.LineVertexBufferPtr, s_Data.LineVertexBufferBase);
         if (lineDataSize > 0)
         {
             s_Data.Stats.DataSize += lineDataSize;
@@ -598,7 +606,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t textDataSize = (uint8_t*)s_Data.TextVertexBufferPtr - (uint8_t*)s_Data.TextVertexBufferBase;
+        uint32_t textDataSize = CalculateBufferSize(s_Data.TextVertexBufferPtr, s_Data.TextVertexBufferBase);
         if (textDataSize > 0)
         {
             s_Data.Stats.DataSize += textDataSize;
@@ -606,7 +614,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t pixelDataSize = (uint8_t*)s_Data.PixelVertexBufferPtr - (uint8_t*)s_Data.PixelVertexBufferBase;
+        uint32_t pixelDataSize = CalculateBufferSize(s_Data.PixelVertexBufferPtr, s_Data.PixelVertexBufferBase);
         if (pixelDataSize > 0)
         {
             s_Data.Stats.DataSize += pixelDataSize;
@@ -614,7 +622,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t triangleDataSize = (uint8_t*)s_Data.TriangleVertexBufferPtr - (uint8_t*)s_Data.TriangleVertexBufferBase;
+        uint32_t triangleDataSize = CalculateBufferSize(s_Data.TriangleVertexBufferPtr, s_Data.TriangleVertexBufferBase);
         if (triangleDataSize > 0)
         {
             s_Data.Stats.DataSize += triangleDataSize;
@@ -622,7 +630,7 @@ namespace Lumina
             issueDraw = true;
         }
 
-        uint32_t gridDataSize = (uint8_t*)s_Data.GridVertexBufferPtr - (uint8_t*)s_Data.GridVertexBufferBase;
+        uint32_t gridDataSize = CalculateBufferSize(s_Data.GridVertexBufferPtr, s_Data.GridVertexBufferBase);
         if (gridDataSize > 0)
         {
             s_Data.Stats.DataSize += gridDataSize;
@@ -1496,9 +1504,9 @@ namespace Lumina
 		s_Data.PointLightUniformBufferPtr->Intensity = s_Data.PointLightIntensity;
 		s_Data.PointLightUniformBufferPtr->Color = s_Data.PointLightColor;
 		s_Data.PointLightUniformBufferPtr->Radius = s_Data.PointLightRadius;
-        s_Data.PointLightUniformBufferPtr->BlendingMode = (int)s_Data.PointLightBlendMode;
+        s_Data.PointLightUniformBufferPtr->BlendingMode = (float)s_Data.PointLightBlendMode;
 		s_Data.PointLightUniformBufferPtr->BlendingAlpha = s_Data.PointLightBlendAlpha;
-		s_Data.PointLightUniformBufferPtr->FalloffType = (int)s_Data.PointLightFalloffType;
+		s_Data.PointLightUniformBufferPtr->FalloffType = (float)s_Data.PointLightFalloffType;
 		s_Data.PointLightUniformBufferPtr->Falloff = s_Data.PointLightFalloff;
         s_Data.PointLightUniformBufferPtr++;
 

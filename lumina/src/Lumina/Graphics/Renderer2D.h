@@ -33,7 +33,7 @@ namespace Lumina
         None = 0,            // No falloff (constant intensity)
         Linear = 1,          // Linear falloff
         Quadratic = 2,       // Quadratic falloff (physically accurate)
-        InverseSquare = 3,   // 1/distance² (realistic)
+        InverseSquare = 3,   // 1/distance^2 (realistic)
         Exponential = 4,     // Exponential decay
         Smoothstep = 5,      // Smooth transition with ease-in/out
         Custom = 6,          // User-defined curve
