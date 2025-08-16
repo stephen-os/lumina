@@ -11,3 +11,6 @@ bin-int/
 
 # Exclude
 !Directories/premake
+
+# imgui
+**/imgui.ini
