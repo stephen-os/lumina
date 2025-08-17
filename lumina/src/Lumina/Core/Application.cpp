@@ -58,7 +58,7 @@ namespace Lumina
         }
 
         glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(0);
+        glfwSwapInterval(1);
 
         glfwSetWindowTitleBarColor(m_Window, 45, 45, 45);
         glfwSetWindowTitleBarTextColor(m_Window, 255, 153, 51);
