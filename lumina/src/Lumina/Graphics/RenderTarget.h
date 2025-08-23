@@ -22,6 +22,8 @@ namespace Lumina
 		void Resize(float width, float height);
         void Resize(const glm::vec2& size);
 
+        bool SaveToFile(const std::string& path);
+
         uint32_t GetTexture() const { return m_FrameBuffer->GetColorAttachment(); }
         uint32_t GetWidth() const { return m_Width; }
         uint32_t GetHeight() const { return m_Height; }

@@ -1,5 +1,8 @@
 #include "RenderTarget.h"
 
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "stb_image_write.h"
+
 namespace Lumina
 {
     Ref<RenderTarget> RenderTarget::Create(uint32_t width, uint32_t height)
@@ -43,4 +46,62 @@ namespace Lumina
     {
         Resize(static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
 	}
+
+    bool RenderTarget::SaveToFile(const std::string& path)
+    {
+        std::vector<unsigned char> pixels(m_Width * m_Height * 4);
+
+        m_FrameBuffer->Bind();
+        m_FrameBuffer->ReadPixels(0, 0, m_Width, m_Height, pixels.data());
+        m_FrameBuffer->Unbind();
+
+        for (int y = 0; y < m_Height / 2; ++y)
+        {
+            for (int x = 0; x < m_Width; ++x)
+            {
+                int top = (y * m_Width + x) * 4;
+                int bottom = ((m_Height - 1 - y) * m_Width + x) * 4;
+
+                std::swap(pixels[top], pixels[bottom]);
+                std::swap(pixels[top + 1], pixels[bottom + 1]);
+                std::swap(pixels[top + 2], pixels[bottom + 2]);
+                std::swap(pixels[top + 3], pixels[bottom + 3]);
+            }
+        }
+
+        std::string extension = path.substr(path.find_last_of("."));
+        std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
+
+        int result = 0;
+        if (extension == ".png")
+        {
+            result = stbi_write_png(path.c_str(), m_Width, m_Height, 4, pixels.data(), m_Width * 4);
+        }
+        else if (extension == ".jpg" || extension == ".jpeg")
+        {
+            result = stbi_write_jpg(path.c_str(), m_Width, m_Height, 4, pixels.data(), 90);
+        }
+        else if (extension == ".bmp")
+        {
+            result = stbi_write_bmp(path.c_str(), m_Width, m_Height, 4, pixels.data());
+        }
+        else if (extension == ".tga")
+        {
+            result = stbi_write_tga(path.c_str(), m_Width, m_Height, 4, pixels.data());
+        }
+        else
+        {
+            LUMINA_LOG_ERROR("Unsupported file format: {}", extension);
+            return false;
+        }
+
+        if (result == 0)
+        {
+            LUMINA_LOG_ERROR("Failed to save render target to file: {}", path);
+            return false;
+        }
+
+        LUMINA_LOG_INFO("Successfully saved render target to: {}", path);
+        return true;
+    }
 }
