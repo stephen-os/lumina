@@ -5,6 +5,8 @@
 
 #include <spdlog/spdlog.h>
 
+#include <stb/stb_image.h>
+
 #include <fstream>
 #include <filesystem>
 #include <stdlib.h>
@@ -62,6 +64,21 @@ namespace Lumina
 
         glfwSetWindowTitleBarColor(m_Window, 45, 45, 45);
         glfwSetWindowTitleBarTextColor(m_Window, 255, 153, 51);
+
+        if (!m_Specifications.Icon.empty())
+        {
+            GLFWimage icon;
+            icon.pixels = stbi_load(m_Specifications.Icon.c_str(), &icon.width, &icon.height, 0, 4);
+            if (icon.pixels)
+            {
+                glfwSetWindowIcon(m_Window, 1, &icon);
+                stbi_image_free(icon.pixels);
+            }
+            else
+            {
+                LUMINA_LOG_WARN("Failed to load window icon: {}", m_Specifications.Icon);
+            }
+        }
 
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         LUMINA_ASSERT(status, "[OpenGL Context] Failed to initialize GLAD.");

@@ -17,6 +17,8 @@ namespace Lumina
 	struct ApplicationSpecification
 	{
 		std::string Name = "Lumina App";
+		std::string Icon = "";
+
 		uint32_t Width = 1600;
 		uint32_t Height = 900;
 		int32_t PositionX = 100; 
