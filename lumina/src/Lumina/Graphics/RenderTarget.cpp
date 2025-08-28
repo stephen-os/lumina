@@ -49,25 +49,11 @@ namespace Lumina
 
     bool RenderTarget::SaveToFile(const std::string& path)
     {
-        std::vector<unsigned char> pixels(m_Width * m_Height * 4);
+        std::vector<uint8_t> pixels(m_Width * m_Height * 4);
 
         m_FrameBuffer->Bind();
         m_FrameBuffer->ReadPixels(0, 0, m_Width, m_Height, pixels.data());
         m_FrameBuffer->Unbind();
-
-        for (int y = 0; y < m_Height / 2; ++y)
-        {
-            for (int x = 0; x < m_Width; ++x)
-            {
-                int top = (y * m_Width + x) * 4;
-                int bottom = ((m_Height - 1 - y) * m_Width + x) * 4;
-
-                std::swap(pixels[top], pixels[bottom]);
-                std::swap(pixels[top + 1], pixels[bottom + 1]);
-                std::swap(pixels[top + 2], pixels[bottom + 2]);
-                std::swap(pixels[top + 3], pixels[bottom + 3]);
-            }
-        }
 
         std::string extension = path.substr(path.find_last_of("."));
         std::transform(extension.begin(), extension.end(), extension.begin(), ::tolower);
