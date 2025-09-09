@@ -192,8 +192,8 @@ namespace Lumina
             ImGui::Begin("DockSpace", nullptr, dockspace_flags);
 
             // Create the dockspace
-            ImGuiID dockspace_id = ImGui::GetID("MainDockSpace");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+            m_DockspaceID = ImGui::GetID("MainDockSpace");
+            ImGui::DockSpace(m_DockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
             ImGui::End();
             ImGui::PopStyleVar(3);

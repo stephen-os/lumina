@@ -54,11 +54,14 @@ namespace Lumina
 
 		void Shutdown() { m_Running = false; };
 
+		ImGuiID GetDockspaceID() { return m_DockspaceID; }
+
 		static Application& GetInstance();
 		GLFWwindow* GetWindowHandle() const { return m_Window; };
 
 	private:
 		GLFWwindow* m_Window = nullptr;
+		ImGuiID m_DockspaceID = 0;
 
 		bool m_Running = true;
 
