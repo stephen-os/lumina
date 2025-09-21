@@ -143,6 +143,12 @@ namespace Lumina
 
             ImVec2 size = ImGui::GetContentRegionAvail();
 
+            if (size.x < 1.0f || size.y < 1.0f)
+            {
+                ImGui::End();
+                return;
+			}
+
             // Update camera aspect ratio and renderer resolution
             m_PerspectiveCamera.SetAspectRatio(size.x / size.y);
             Renderer3D::SetResolution(static_cast<uint32_t>(size.x), static_cast<uint32_t>(size.y));
