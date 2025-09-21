@@ -41,7 +41,7 @@ namespace Lumina
         Mixed = 6
     };
 
-    class DemoPointLights : public Layer
+    class PointLights : public Layer
     {
     public:
         virtual void OnAttach() override
@@ -508,6 +508,13 @@ namespace Lumina
         {
             ImGui::Begin("Viewport");
             ImVec2 size = ImGui::GetContentRegionAvail();
+
+            if (size.x <= 0.0f || size.y <= 0.0f)
+            {
+                ImGui::End();
+                return;
+            }
+
             m_Camera->SetSize(size.x, size.y);
             Renderer2D::SetResolution((uint32_t)size.x, (uint32_t)size.y);
             ImGui::Image((void*)(intptr_t)Renderer2D::GetImage(), size);
