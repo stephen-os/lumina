@@ -3,172 +3,120 @@
 #include <string>
 #include <chrono>
 #include <sstream>
+#include <vector>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
 namespace Lumina
 {
-    namespace LogColors
+    namespace Log
     {
-        constexpr const char* RESET = "\033[0m";
-        constexpr const char* WHITE = "\033[37m";
-        constexpr const char* GRAY = "\033[90m";
-        constexpr const char* GREEN = "\033[32m";
-        constexpr const char* YELLOW = "\033[33m";
-        constexpr const char* RED = "\033[31m";
-        constexpr const char* CYAN = "\033[36m";
-        constexpr const char* ORANGE = "\033[38;5;208m";
-        constexpr const char* BOLD_RED = "\033[1;31m";
-    }
-
-    // C++20 compatible colored string formatter
-    class Formatter
-    {
-    public:
-        Formatter(const std::string& format_str) : m_format(format_str) {}
-
-        template<typename T>
-        Formatter& operator<<(T&& value)
+        namespace Colors
         {
-            ReplaceNextPlaceholder(ToString(std::forward<T>(value)));
-            return *this;
+            constexpr const char* Default = "\033[0m";
+            constexpr const char* Gray = "\033[90m";
+            constexpr const char* Green = "\033[32m";
+            constexpr const char* Yellow = "\033[33m";
+            constexpr const char* Red = "\033[31m";
+            constexpr const char* Cyan = "\033[36m";
+            constexpr const char* Orange = "\033[38;5;208m";
+            constexpr const char* BoldRed = "\033[1;31m";
         }
 
-        std::string Build() const
+        class LoggerFormatter : public spdlog::formatter
         {
-            return m_result.empty() ? m_format : m_result;
-        }
+        public:
+            LoggerFormatter() = default;
+            void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& dest) override;
+            std::unique_ptr<spdlog::formatter> clone() const override;
+        private:
+            std::string GetLevelColor(spdlog::level::level_enum level);
+        };
 
-    private:
-        std::string m_format;
-        std::string m_result;
-        size_t m_current_pos = 0;
-
-        template<typename T>
-        std::string ToString(T&& value)
+        class Logger
         {
-            if constexpr (std::is_same_v<std::decay_t<T>, std::string>)
-                return value;
-            else if constexpr (std::is_arithmetic_v<std::decay_t<T>>)
-                return std::to_string(value);
-            else
+        public:
+            static void Init(const std::string& name);
+            static void Shutdown();
+            static std::shared_ptr<spdlog::logger>& GetLogger() { return s_Logger; }
+            static void SetLogLevel(spdlog::level::level_enum level);
+            static void EnableFileLogging(const std::string& filename);
+
+            template<typename... Args>
+            static void LogTrace(const std::string& format, Args&&... args)
             {
-                std::ostringstream oss;
-                oss << value;
-                return oss.str();
+                if (s_Logger) s_Logger->trace(fmt::runtime(format), std::forward<Args>(args)...);
             }
-        }
 
-        void ReplaceNextPlaceholder(const std::string& value)
-        {
-            if (m_result.empty())
-                m_result = m_format;
-
-            size_t pos = m_result.find("{}", m_current_pos);
-            if (pos != std::string::npos)
+            template<typename... Args>
+            static void LogInfo(const std::string& format, Args&&... args)
             {
-                std::string colored_value = std::string(LogColors::YELLOW) + value + LogColors::WHITE;
-                m_result.replace(pos, 2, colored_value);
-                m_current_pos = pos + colored_value.length();
+                if (s_Logger) s_Logger->info(fmt::runtime(format), std::forward<Args>(args)...);
             }
-        }
-    };
 
-    // Helper function to create colored formatted strings
-    template<typename... Args>
-    std::string Format(const std::string& format_str, Args&&... args)
-    {
-        Formatter formatter(format_str);
-        ((formatter << std::forward<Args>(args)), ...);
-        return std::string(LogColors::WHITE) + formatter.Build() + LogColors::RESET;
+            template<typename... Args>
+            static void LogWarn(const std::string& format, Args&&... args)
+            {
+                if (s_Logger) s_Logger->warn(fmt::runtime(format), std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            static void LogError(const std::string& format, Args&&... args)
+            {
+                if (s_Logger) s_Logger->error(fmt::runtime(format), std::forward<Args>(args)...);
+            }
+
+            template<typename... Args>
+            static void LogCritical(const std::string& format, Args&&... args)
+            {
+                if (s_Logger) s_Logger->critical(fmt::runtime(format), std::forward<Args>(args)...);
+            }
+
+            static void LogTrace(const std::string& message)
+            {
+                if (s_Logger) s_Logger->trace(message);
+            }
+
+            static void LogInfo(const std::string& message)
+            {
+                if (s_Logger) s_Logger->info(message);
+            }
+
+            static void LogWarn(const std::string& message)
+            {
+                if (s_Logger) s_Logger->warn(message);
+            }
+
+            static void LogError(const std::string& message)
+            {
+                if (s_Logger) s_Logger->error(message);
+            }
+
+            static void LogCritical(const std::string& message)
+            {
+                if (s_Logger) s_Logger->critical(message);
+            }
+
+        private:
+            static std::shared_ptr<spdlog::logger> s_Logger;
+            static std::vector<spdlog::sink_ptr> s_Sinks;
+            static bool s_Initialized;
+        };
+
+        inline void Init(const std::string& name) { Logger::Init(name); }
+        inline void Shutdown() { Logger::Shutdown(); }
+        inline void SetLogLevel(spdlog::level::level_enum level) { Logger::SetLogLevel(level); }
+        inline void EnableFileLogging(const std::string& filename) { Logger::EnableFileLogging(filename); }
     }
-
-    class LogFormatter : public spdlog::formatter
-    {
-    public:
-        LogFormatter() = default;
-        void format(const spdlog::details::log_msg& msg, spdlog::memory_buf_t& dest) override;
-        std::unique_ptr<spdlog::formatter> clone() const override;
-    private:
-        std::string GetLevelColor(spdlog::level::level_enum level);
-    };
-
-    class Log
-    {
-    public:
-        static void Init(const std::string& name);
-        static void Shutdown();
-        static std::shared_ptr<spdlog::logger>& GetLogger() { return s_Logger; }
-        static void SetLogLevel(spdlog::level::level_enum level);
-        static void EnableFileLogging(const std::string& filename);
-
-        // Internal logging functions that handle colored formatting
-        template<typename... Args>
-        static void LogTrace(const std::string& format, Args&&... args)
-        {
-            if (s_Logger) {
-                std::string colored_msg = Format(format, std::forward<Args>(args)...);
-                s_Logger->trace(colored_msg);
-            }
-        }
-
-        template<typename... Args>
-        static void LogInfo(const std::string& format, Args&&... args)
-        {
-            if (s_Logger) {
-                std::string colored_msg = Format(format, std::forward<Args>(args)...);
-                s_Logger->info(colored_msg);
-            }
-        }
-
-        template<typename... Args>
-        static void LogWarn(const std::string& format, Args&&... args)
-        {
-            if (s_Logger) {
-                std::string colored_msg = Format(format, std::forward<Args>(args)...);
-                s_Logger->warn(colored_msg);
-            }
-        }
-
-        template<typename... Args>
-        static void LogError(const std::string& format, Args&&... args)
-        {
-            if (s_Logger) {
-                std::string colored_msg = Format(format, std::forward<Args>(args)...);
-                s_Logger->error(colored_msg);
-            }
-        }
-
-        template<typename... Args>
-        static void LogCritical(const std::string& format, Args&&... args)
-        {
-            if (s_Logger) {
-                std::string colored_msg = Format(format, std::forward<Args>(args)...);
-                s_Logger->critical(colored_msg);
-            }
-        }
-
-        // Overloads for simple string messages (no formatting)
-        static void LogTrace(const std::string& message) { if (s_Logger) s_Logger->trace(LogColors::WHITE + message + LogColors::RESET); }
-        static void LogInfo(const std::string& message) { if (s_Logger) s_Logger->info(LogColors::WHITE + message + LogColors::RESET); }
-        static void LogWarn(const std::string& message) { if (s_Logger) s_Logger->warn(LogColors::WHITE + message + LogColors::RESET); }
-        static void LogError(const std::string& message) { if (s_Logger) s_Logger->error(LogColors::WHITE + message + LogColors::RESET); }
-        static void LogCritical(const std::string& message) { if (s_Logger) s_Logger->critical(LogColors::WHITE + message + LogColors::RESET); }
-
-    private:
-        static std::shared_ptr<spdlog::logger> s_Logger;
-        static std::vector<spdlog::sink_ptr> s_Sinks;
-        static bool s_Initialized;
-    };
 }
 
 #ifdef LUMINA_DEBUG
-    #define LUMINA_LOG_TRACE(...) ::Lumina::Log::LogTrace(__VA_ARGS__)
-    #define LUMINA_LOG_INFO(...) ::Lumina::Log::LogInfo(__VA_ARGS__)
-    #define LUMINA_LOG_WARN(...) ::Lumina::Log::LogWarn(__VA_ARGS__)
-    #define LUMINA_LOG_ERROR(...) ::Lumina::Log::LogError(__VA_ARGS__)
-    #define LUMINA_LOG_CRITICAL(...) ::Lumina::Log::LogCritical(__VA_ARGS__)
+    #define LUMINA_LOG_TRACE(...) ::Lumina::Log::Logger::LogTrace(__VA_ARGS__)
+    #define LUMINA_LOG_INFO(...) ::Lumina::Log::Logger::LogInfo(__VA_ARGS__)
+    #define LUMINA_LOG_WARN(...) ::Lumina::Log::Logger::LogWarn(__VA_ARGS__)
+    #define LUMINA_LOG_ERROR(...) ::Lumina::Log::Logger::LogError(__VA_ARGS__)
+    #define LUMINA_LOG_CRITICAL(...) ::Lumina::Log::Logger::LogCritical(__VA_ARGS__)
 #else
     #define LUMINA_LOG_TRACE(...) ((void)0)
     #define LUMINA_LOG_INFO(...) ((void)0)
