@@ -1,7 +1,7 @@
-project "DemoPointLights"
+project "SimpleApp"
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -21,20 +21,20 @@ project "DemoPointLights"
       "../../Dependencies/spdlog/include"
    }
 
-    links
-    {
-        "Lumina",
+   links
+   {
+      "Lumina",
 
-        "ImGui",
-        "GLFW",
-        "Glad",
-        "TinyGLTF",
-        "ImGuiFD", 
+      "ImGui",
+      "GLFW",
+      "Glad",
+      "TinyGLTF",
+      "ImGuiFD", 
 
-        "opengl32.lib"
-    }
-
-    buildoptions { "/utf-8" }
+      "opengl32.lib"
+   }
+   
+   buildoptions { "/utf-8" }
 
    targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../../bin-int/" .. outputdir .. "/%{prj.name}")

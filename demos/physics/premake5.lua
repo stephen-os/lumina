@@ -1,7 +1,7 @@
-project "DemoSimpleApp"
+project "Physics"
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -18,21 +18,25 @@ project "DemoSimpleApp"
       "../../Dependencies/glad/include",
       "../../Dependencies/tinygltf",
       "../../Dependencies/imguifd",
-      "../../Dependencies/spdlog/include"
+      "../../Dependencies/spdlog/include",
+      "../../Dependencies/box2d/include"
    }
 
-    links
-    {
-        "Lumina",
+   links
+   {
+      "Lumina",
 
-        "ImGui",
-        "GLFW",
-        "Glad",
-        "TinyGLTF",
-        "ImGuiFD", 
+      "ImGui",
+      "GLFW",
+      "Glad",
+      "TinyGLTF",
+      "ImGuiFD",
+      "Box2D",
 
-        "opengl32.lib"
-    }
+      "opengl32.lib"
+   }
+
+   buildoptions { "/utf-8" }
 
    targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../../bin-int/" .. outputdir .. "/%{prj.name}")

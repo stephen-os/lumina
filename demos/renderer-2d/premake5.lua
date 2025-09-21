@@ -1,7 +1,7 @@
-project "DemoRenderer3D"
+project "Renderer2D"
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -17,31 +17,24 @@ project "DemoRenderer3D"
       "../../Dependencies/glm",
       "../../Dependencies/glad/include",
       "../../Dependencies/tinygltf",
-      "../../Dependencies/stb_image",
       "../../Dependencies/imguifd",
       "../../Dependencies/spdlog/include"
    }
 
-    links
-    {
-        "Lumina",
+   links
+   {
+      "Lumina",
 
-        "ImGui",
-        "GLFW",
-        "Glad",
-        "TinyGLTF",
-        "ImGuiFD",
+      "ImGui",
+      "GLFW",
+      "Glad",
+      "TinyGLTF",
+      "ImGuiFD",
 
-        "opengl32.lib"
-    }
+      "opengl32.lib"
+   }
 
-    defines
-    {
-       "TINYGLTF_NO_STB_IMAGE_IMPLEMENTATION",
-       "TINYGLTF_NO_STB_IMAGE_WRITE_IMPLEMENTATION"
-    }
-
-    buildoptions { "/utf-8" }
+   buildoptions { "/utf-8" }
 
    targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../../bin-int/" .. outputdir .. "/%{prj.name}")
@@ -49,7 +42,6 @@ project "DemoRenderer3D"
    filter "system:windows"
       systemversion "latest"
       defines { "LUMINA_PLATFORM_WINDOWS" }
-      linkoptions { "/FORCE:MULTIPLE" }
 
    filter "configurations:Debug"
       defines { "LUMINA_DEBUG" }

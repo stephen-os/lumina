@@ -10,13 +10,13 @@ outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 include "lumina-external.lua"
 
 -- Projects
-group "Projects"
-   include "projects/demo-simple-app"
-   include "projects/demo-basic-rendering"
-   include "projects/demo-renderer-2d"
-   include "projects/demo-renderer-3d"
-   include "projects/demo-box-2d"
-   include "projects/demo-point-lights"
+group "Demos"
+   include "demos/simple-app"
+   include "demos/basic-rendering"
+   include "demos/renderer-2d"
+   include "demos/renderer-3d"
+   include "demos/physics"
+   include "demos/point-lights"
 group ""
 
 -- App

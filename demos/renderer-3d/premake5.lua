@@ -1,7 +1,7 @@
-project "DemoBox2D"
+project "Renderer3D"
    kind "ConsoleApp"
    language "C++"
-   cppdialect "C++17"
+   cppdialect "C++20"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
@@ -17,26 +17,31 @@ project "DemoBox2D"
       "../../Dependencies/glm",
       "../../Dependencies/glad/include",
       "../../Dependencies/tinygltf",
+      "../../Dependencies/stb_image",
       "../../Dependencies/imguifd",
-      "../../Dependencies/spdlog/include",
-      "../../Dependencies/box2d/include"
+      "../../Dependencies/spdlog/include"
    }
 
-    links
-    {
-        "Lumina",
+   links
+   {
+      "Lumina",
 
-        "ImGui",
-        "GLFW",
-        "Glad",
-        "TinyGLTF",
-        "ImGuiFD",
-        "Box2D",
+      "ImGui",
+      "GLFW",
+      "Glad",
+      "TinyGLTF",
+      "ImGuiFD",
 
-        "opengl32.lib"
-    }
+      "opengl32.lib"
+   }
 
-    buildoptions { "/utf-8" }
+   defines
+   {
+      "TINYGLTF_NO_STB_IMAGE_IMPLEMENTATION",
+      "TINYGLTF_NO_STB_IMAGE_WRITE_IMPLEMENTATION"
+   }
+
+   buildoptions { "/utf-8" }
 
    targetdir ("../../bin/" .. outputdir .. "/%{prj.name}")
    objdir ("../../bin-int/" .. outputdir .. "/%{prj.name}")
@@ -44,6 +49,7 @@ project "DemoBox2D"
    filter "system:windows"
       systemversion "latest"
       defines { "LUMINA_PLATFORM_WINDOWS" }
+      linkoptions { "/FORCE:MULTIPLE" }
 
    filter "configurations:Debug"
       defines { "LUMINA_DEBUG" }
