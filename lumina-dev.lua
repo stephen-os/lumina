@@ -11,7 +11,6 @@ include "lumina-external.lua"
 
 -- Projects
 group "Demos"
-   include "demos/simple-app"
    include "demos/basic-rendering"
    include "demos/advanced-rendering"
    include "demos/spacial-rendering"
