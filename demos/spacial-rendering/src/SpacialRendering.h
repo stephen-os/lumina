@@ -15,7 +15,7 @@
 
 namespace Lumina
 {
-    class DemoRenderer3D : public Layer
+    class SpacialRendering : public Layer
     {
     public:
         enum class SceneCamera

@@ -1,7 +1,7 @@
 #include "Lumina/Core/Application.h"
 #include "Lumina/Core/EntryPoint.h"
 
-#include "DemoRenderer3D.h"
+#include "SpacialRendering.h"
 
 Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
@@ -11,7 +11,7 @@ Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
     spec.Height = 1080;
 
     Lumina::Application* app = new Lumina::Application(spec);
-    app->PushLayer<DemoRenderer3D>();
+    app->PushLayer<SpacialRendering>();
 
     return app;
 }
