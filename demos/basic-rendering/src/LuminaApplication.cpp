@@ -1,7 +1,7 @@
 #include "Lumina/Core/Application.h"
 #include "Lumina/Core/EntryPoint.h"
 
-#include "DemoBasicRendering.h"
+#include "BasicRendering.h"
 
 Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
@@ -12,7 +12,7 @@ Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 	spec.Use2DRenderer = true;
 
     Lumina::Application* app = new Lumina::Application(spec);
-    app->PushLayer<DemoBasicRendering>();
+    app->PushLayer<BasicRendering>();
 
     return app;
 }

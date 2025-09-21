@@ -12,7 +12,7 @@
 
 namespace Lumina
 {
-    class DemoBasicRendering : public Layer
+    class BasicRendering : public Layer
     {
     public:
         virtual void OnAttach() override
@@ -53,6 +53,12 @@ namespace Lumina
         {
             ImGui::Begin("Perspective Camera");
             ImVec2 size = ImGui::GetContentRegionAvail();
+
+            if (size.x <= 0.0f || size.y <= 0.0f)
+            {
+                ImGui::End();
+                return;
+			}
             
             m_PerspectiveRenderTarget->Resize(size.x, size.y);
 
@@ -98,6 +104,12 @@ namespace Lumina
         {
             ImGui::Begin("Orthographic Camera");
             ImVec2 size = ImGui::GetContentRegionAvail();
+
+            if (size.x <= 0.0f || size.y <= 0.0f)
+            {
+                ImGui::End();
+                return;
+            }
 
             m_OrthographicRenderTarget->Resize(size.x, size.y);
 
