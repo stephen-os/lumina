@@ -9,7 +9,7 @@
 
 namespace Lumina
 {
-    class DemoAdvancedRendering : public Layer
+    class AdvancedRendering : public Layer
     {
     public:
         virtual void OnAttach() override

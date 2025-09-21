@@ -1,4 +1,4 @@
-project "Renderer2D"
+project "AdvancedRendering"
    kind "ConsoleApp"
    language "C++"
    cppdialect "C++20"
