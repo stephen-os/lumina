@@ -19,15 +19,16 @@ namespace Lumina
         auto time_t = std::chrono::system_clock::to_time_t(msg.time);
         auto tm = spdlog::details::os::localtime(time_t);
 
+        // Format exactly as specified - note that variables are already yellow in msg.payload
         fmt::format_to(std::back_inserter(dest),
             "{}[{}{:02d}:{:02d}:{:02d}{}] "         // [TIME] - brackets white, time gray
-            "{}[{}{}{}] "                           // [LOGGER] - brackets white, logger green
+            "{}[{}{}{}] "                           // [LOGGER] - brackets white, logger orange
             "{}[{}{}{}] "                           // [LEVEL] - brackets white, level colored
-            "{}{}{}\n",                             // MESSAGE - white text + newline
-            LogColors::WHITE, LogColors::GRAY, tm.tm_hour, tm.tm_min, tm.tm_sec, LogColors::WHITE,
-            LogColors::WHITE, LogColors::ORANGE, logger_name, LogColors::WHITE,
-            LogColors::WHITE, level_color, spdlog::level::to_string_view(msg.level).data(), LogColors::WHITE,
-            LogColors::WHITE, fmt::to_string(msg.payload), LogColors::RESET);
+            "{}{}\n",                               // MESSAGE - already colored with yellow variables
+            LogColors::RESET, LogColors::GRAY, tm.tm_hour, tm.tm_min, tm.tm_sec, LogColors::WHITE,
+            LogColors::RESET, LogColors::ORANGE, logger_name, LogColors::WHITE,
+            LogColors::RESET, level_color, spdlog::level::to_string_view(msg.level), LogColors::WHITE,
+            LogColors::RESET, msg.payload);
     }
 
     std::string LogFormatter::GetLevelColor(spdlog::level::level_enum level)
@@ -44,7 +45,7 @@ namespace Lumina
         }
     }
 
-    void Log::Init(std::string& name)
+    void Log::Init(const std::string& name)
     {
         if (s_Initialized)
             return;
@@ -57,8 +58,6 @@ namespace Lumina
         s_Logger->set_level(spdlog::level::trace);
         s_Logger->flush_on(spdlog::level::err);
         spdlog::register_logger(s_Logger);
-
-        LUMINA_LOG_INFO("Log: Initializing...");
 
         s_Initialized = true;
 
@@ -77,8 +76,6 @@ namespace Lumina
 
         spdlog::shutdown();
         s_Initialized = false;
-
-        LUMINA_LOG_INFO("Log: Shutdown complete");
     }
 
     void Log::SetLogLevel(spdlog::level::level_enum level)
@@ -108,44 +105,5 @@ namespace Lumina
         {
             LUMINA_LOG_ERROR("Failed to enable file logging: {}", ex.what());
         }
-    }
-
-    std::string Log::Format(const std::string& format)
-    {
-        std::string result = format;
-        size_t pos = 0;
-
-        while ((pos = result.find("{}", pos)) != std::string::npos) 
-        {
-            std::string replacement = std::string(LogColors::YELLOW) + "{}" + LogColors::WHITE;
-            result.replace(pos, 2, replacement);
-            pos += replacement.length();
-        }
-
-        pos = 0;
-        while ((pos = result.find("{", pos)) != std::string::npos) 
-        {
-            size_t end_pos = result.find("}", pos);
-            if (end_pos != std::string::npos) 
-            {
-                std::string placeholder = result.substr(pos, end_pos - pos + 1);
-                if (placeholder.find("\033[") == std::string::npos) 
-                {
-                    std::string replacement = std::string(LogColors::YELLOW) + placeholder + LogColors::WHITE;
-                    result.replace(pos, end_pos - pos + 1, replacement);
-                    pos += replacement.length();
-                }
-                else 
-                {
-                    pos = end_pos + 1;
-                }
-            }
-            else 
-            {
-                break;
-            }
-        }
-
-        return result;
     }
 }

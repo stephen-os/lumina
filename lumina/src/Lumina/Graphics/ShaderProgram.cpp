@@ -40,7 +40,7 @@ namespace Lumina
             GLCALL(glDeleteProgram(m_ShaderProgramID));
             m_ShaderProgramID = 0;
 
-            LUMINA_LOG_ERROR("Shader program linking error:\n{0}", message);
+            LUMINA_LOG_ERROR("Shader program linking error:\n{}", message);
         }
 
         // Query uniforms
@@ -98,7 +98,7 @@ namespace Lumina
             GLCALL(glDeleteShader(shader));
 
 
-            LUMINA_LOG_ERROR("Shader compilation error: {}\n{0}", (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"), message);
+            LUMINA_LOG_ERROR("Shader compilation error: {}\n{}", (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"), message);
         }
 
         return shader;
@@ -110,7 +110,7 @@ namespace Lumina
         location = glGetAttribLocation(m_ShaderProgramID, name.c_str());
         if (location == -1)
         {
-            LUMINA_LOG_ERROR("Attribute location for {0} is not found", name);
+            LUMINA_LOG_ERROR("Attribute location for {} is not found", name);
             return -1;
         }
         return location;
@@ -131,7 +131,7 @@ namespace Lumina
     {
         if (m_Uniforms.find(name) == m_Uniforms.end())
         {
-            LUMINA_LOG_ERROR("{0} isn't a valid uniform.", name);
+            LUMINA_LOG_ERROR("{} isn't a valid uniform.", name);
         }
     }
 
