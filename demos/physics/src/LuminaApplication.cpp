@@ -1,7 +1,7 @@
 #include "Lumina/Core/Application.h"
 #include "Lumina/Core/EntryPoint.h"
 
-#include "DemoBox2D.h"
+#include "Physics.h"
 
 Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
@@ -13,7 +13,7 @@ Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
     spec.Maximized = true; 
 
     Lumina::Application* app = new Lumina::Application(spec);
-    app->PushLayer<DemoBox2D>();
+    app->PushLayer<Physics>();
 
     return app;
 }

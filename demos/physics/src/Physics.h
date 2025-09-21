@@ -96,7 +96,7 @@ namespace Lumina
         }
     };
 
-    class DemoBox2D : public Layer
+    class Physics : public Layer
     {
     public:
         virtual void OnAttach() override
@@ -167,6 +167,12 @@ namespace Lumina
             ImGui::Begin("Physics Demo");
             ImGui::SetCursorPos({ 0.0f, 0.0f });
             ImVec2 size = ImGui::GetContentRegionAvail();
+
+            if (size.x <= 0.0f || size.y <= 0.0f)
+            {
+                ImGui::End();
+                return;
+			}
 
             m_OrthographicCamera->SetSize(size.x, size.y);
 
