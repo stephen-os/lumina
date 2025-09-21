@@ -2,7 +2,7 @@
 workspace "Lumina"
    architecture "x64"
    configurations { "Debug", "Release", "Dist" }
-   startproject "Example"
+   startproject "LuminaApplication"
 
 outputdir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
@@ -15,6 +15,11 @@ group "Projects"
    include "projects/demo-basic-rendering"
    include "projects/demo-renderer-2d"
    include "projects/demo-renderer-3d"
-   include "projects/demo-box-2d/"
+   include "projects/demo-box-2d"
    include "projects/demo-point-lights"
+group ""
+
+-- App
+group "Application"
+   include "applications/lumina-application"
 group ""
