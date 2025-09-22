@@ -28,70 +28,32 @@ namespace Lumina
 
     Application& Application::GetInstance() { return *s_Instance; }
 
-    static void GLFWErrorCallback(int error, const char* description)
-    {
-        LUMINA_LOG_ERROR("[GLFW ERROR] {}: {}", error, description);
-    }
-
     Application::Application(const ApplicationSpecification& applicationSpecification)
     {
-		s_Instance = this;
+        s_Instance = this;
         m_Specifications = applicationSpecification;
 
         Log::Init(m_Specifications.Name);
         LUMINA_LOG_INFO("Starting Lumina Application: {}", m_Specifications.Name);
-        
-        glfwSetErrorCallback(GLFWErrorCallback);
 
-        if (!glfwInit())
-        {
-            LUMINA_LOG_ERROR("GLFW failed to initialize.");
-            return;
-        }
+        // Create window
+        WindowSpecification windowSpec;
+        windowSpec.Title = m_Specifications.Name;
+        windowSpec.IconPath = m_Specifications.Icon;
+        windowSpec.Width = m_Specifications.Width;
+        windowSpec.Height = m_Specifications.Height;
+        windowSpec.PositionX = m_Specifications.PositionX;
+        windowSpec.PositionY = m_Specifications.PositionY;
+        windowSpec.Fullscreen = m_Specifications.Fullscreen;
+        windowSpec.Maximized = m_Specifications.Maximized;
 
-        // glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
-
-        m_Window = glfwCreateWindow(m_Specifications.Width, m_Specifications.Height, m_Specifications.Name.c_str(), NULL, NULL);
-        if (!m_Window)
-        {
-            LUMINA_LOG_ERROR("Failed to create GLFW window.");
-            glfwTerminate();
-            return;
-        }
-
-        glfwMakeContextCurrent(m_Window);
-        glfwSwapInterval(1);
-
-        glfwSetWindowTitleBarColor(m_Window, 45, 45, 45);
-        glfwSetWindowTitleBarTextColor(m_Window, 255, 153, 51);
-
-        if (!m_Specifications.Icon.empty())
-        {
-            GLFWimage icon;
-            icon.pixels = stbi_load(m_Specifications.Icon.c_str(), &icon.width, &icon.height, 0, 4);
-            if (icon.pixels)
-            {
-                glfwSetWindowIcon(m_Window, 1, &icon);
-                stbi_image_free(icon.pixels);
-            }
-            else
-            {
-                LUMINA_LOG_WARN("Failed to load window icon: {}", m_Specifications.Icon);
-            }
-        }
-
-        int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        LUMINA_ASSERT(status, "[OpenGL Context] Failed to initialize GLAD.");
-
-        const char* version = (const char*)glGetString(GL_VERSION);
-        LUMINA_ASSERT(version, "[OpenGL Context] Failed to retrieve OpenGL version.");
-        LUMINA_LOG_INFO("OpenGL Version: {}", version);
+        m_Window = std::make_unique<Window>(windowSpec);
 
         if (m_Specifications.Use2DRenderer)
             Renderer2D::Init();
 
-		if (m_Specifications.Use3DRenderer)
-			Renderer3D::Init();
+        if (m_Specifications.Use3DRenderer)
+            Renderer3D::Init();
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -109,63 +71,54 @@ namespace Lumina
             style.Colors[ImGuiCol_WindowBg].w = 1.0f;
         }
 
-        ImGui_ImplGlfw_InitForOpenGL(m_Window, true);
+        ImGui_ImplGlfw_InitForOpenGL(m_Window->GetNativeWindow(), true);
         const char* glsl_version = "#version 130";
         ImGui_ImplOpenGL3_Init(glsl_version);
- 
-		// Maximize Window
-        if (m_Specifications.Maximized)
-        {
-            glfwMaximizeWindow(m_Window);
-        }
-
-        // Fullscreen
-        if (m_Specifications.Fullscreen)
-        {
-            SetWindowFullscreen();
-        }
 
         // Apply Theme
         if (m_Specifications.Theme)
-            ApplyLuminaTheme(); 
+            ApplyLuminaTheme();
     }
 
 
     Application::~Application()
     {
-		s_Instance = nullptr;
+        s_Instance = nullptr;
 
         for (auto& layer : m_LayerStack)
             layer->OnDetach();
 
         if (m_Specifications.Use2DRenderer)
-			Renderer2D::Shutdown();
+            Renderer2D::Shutdown();
 
-		if (m_Specifications.Use3DRenderer)
-			Renderer3D::Shutdown();
+        if (m_Specifications.Use3DRenderer)
+            Renderer3D::Shutdown();
 
-        m_LayerStack.clear(); 
-        
+        m_LayerStack.clear();
+
         ImGui_ImplOpenGL3_Shutdown();
 
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
-
-        glfwDestroyWindow(m_Window);
-        glfwTerminate();
     }
 
     void Application::Run()
     {
-        while (!glfwWindowShouldClose(m_Window) && m_Running)
+        while (m_Running)
         {
+            m_Window->Update();
+
+            if (m_Window->ShouldClose())
+            {
+                Shutdown();
+                break;
+            }
+
             m_TimeStep = m_FrameTimer.Elapsed();
             m_FrameTimer.Reset();
 
             for (auto& layer : m_LayerStack)
                 layer->OnUpdate(m_TimeStep);
-
-            glfwPollEvents();
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
@@ -225,31 +178,14 @@ namespace Lumina
             }
 
             if (!main_is_minimized)
-                glfwSwapBuffers(m_Window);
+                m_Window->SwapBuffers();
         }
     }
 
     void Application::SetWindowFullscreen()
     {
-        if (m_Specifications.Fullscreen)
-        {
-            glfwGetWindowPos(m_Window, &m_Specifications.PositionX, &m_Specifications.PositionY);
-            glfwGetWindowSize(m_Window, (int*)&m_Specifications.Width, (int*)&m_Specifications.Height);
-
-            GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-            LUMINA_ASSERT(monitor, "Failed to get primary monitor.");
-            if (!monitor) return;
-
-            const GLFWvidmode* mode = glfwGetVideoMode(monitor);
-            LUMINA_ASSERT(mode, "Failed to get monitor video mode.");
-
-            glfwSetWindowMonitor(m_Window, monitor, 0, 0, mode->width, mode->height, mode->refreshRate);
-        }
-        else
-        {
-            glfwSetWindowMonitor(m_Window, nullptr, m_Specifications.PositionX, m_Specifications.PositionY,
-                m_Specifications.Width, m_Specifications.Height, 0);
-        }
+        m_Specifications.Fullscreen = !m_Specifications.Fullscreen;
+        m_Window->SetFullscreen(m_Specifications.Fullscreen);
     }
 
     void Application::ApplyLuminaTheme()
