@@ -127,38 +127,38 @@ namespace Lumina
             ImGui_ImplGlfw_NewFrame();
             ImGui::NewFrame();
 
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-            ImGui::SetNextWindowViewport(viewport->ID);
+            if (m_Specifications.EnableDocking)
+            {
+                ImGuiViewport* viewport = ImGui::GetMainViewport();
+                ImGui::SetNextWindowPos(viewport->WorkPos);
+                ImGui::SetNextWindowSize(viewport->WorkSize);
+                ImGui::SetNextWindowViewport(viewport->ID);
 
-            ImGuiWindowFlags dockspace_flags =
-                ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoBringToFrontOnFocus |
-                ImGuiWindowFlags_NoNavFocus |
-                ImGuiWindowFlags_NoBackground;
+                ImGuiWindowFlags dockspace_flags =
+                    ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoCollapse |
+                    ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoBringToFrontOnFocus |
+                    ImGuiWindowFlags_NoNavFocus |
+                    ImGuiWindowFlags_NoBackground;
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-            ImGui::Begin("DockSpace", nullptr, dockspace_flags);
+                ImGui::Begin("DockSpace", nullptr, dockspace_flags);
 
-            // Create the dockspace
-            m_DockspaceID = ImGui::GetID("MainDockSpace");
-            ImGui::DockSpace(m_DockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+                m_DockspaceID = ImGui::GetID("MainDockSpace");
+                ImGui::DockSpace(m_DockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
-            ImGui::End();
-            ImGui::PopStyleVar(3);
+                ImGui::End();
+                ImGui::PopStyleVar(3);
+            }
 
-            // Layer from LuminaApp 
             for (auto& layer : m_LayerStack)
                 layer->OnUIRender();
 
-            // Render ImGui
             ImGui::Render();
 
             ImDrawData* main_draw_data = ImGui::GetDrawData();

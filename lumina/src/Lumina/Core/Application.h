@@ -19,6 +19,7 @@ namespace Lumina
         uint32_t Height = 900;
         int32_t PositionX = 100;
         int32_t PositionY = 100;
+		bool EnableDocking = true;
         bool Use2DRenderer = false;
         bool Use3DRenderer = false;
         bool Fullscreen = false;
