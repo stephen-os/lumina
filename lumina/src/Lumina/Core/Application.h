@@ -43,7 +43,6 @@ namespace Lumina
         }
 
         void SetWindowFullscreen();
-        void ApplyLuminaTheme();
         void Shutdown() { m_Running = false; }
 
         ImGuiID GetDockspaceID() { return m_DockspaceID; }
