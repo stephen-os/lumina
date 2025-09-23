@@ -104,6 +104,8 @@ namespace Lumina
 
     void Application::Run()
     {
+        float lastTime = GetTime();
+
         while (m_Running)
         {
             m_Window->Update();
@@ -114,11 +116,12 @@ namespace Lumina
                 break;
             }
 
-            m_TimeStep = m_FrameTimer.Elapsed();
-            m_FrameTimer.Reset();
+            float currentTime = GetTime();
+            float timestep = glm::clamp(currentTime - lastTime, 0.001f, 0.1f);
+            lastTime = currentTime;
 
             for (auto& layer : m_LayerStack)
-                layer->OnUpdate(m_TimeStep);
+                layer->OnUpdate(timestep);
 
             ImGui_ImplOpenGL3_NewFrame();
             ImGui_ImplGlfw_NewFrame();
@@ -187,6 +190,11 @@ namespace Lumina
         m_Specifications.Fullscreen = !m_Specifications.Fullscreen;
         m_Window->SetFullscreen(m_Specifications.Fullscreen);
     }
+
+    float Application::GetTime()
+    {
+        return (float)glfwGetTime();
+	}
 
     void Application::ApplyLuminaTheme()
     {

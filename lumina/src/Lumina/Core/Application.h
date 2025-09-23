@@ -49,15 +49,17 @@ namespace Lumina
         GLFWwindow* GetWindowHandle() const { return m_Window->GetNativeWindow(); }
 
         static Application& GetInstance();
+        static float GetTime(); 
 
     private:
         ApplicationSpecification m_Specifications;
+        
         std::unique_ptr<Window> m_Window;
+
         ImGuiID m_DockspaceID = 0;
+        
         bool m_Running = true;
         std::vector<std::shared_ptr<Layer>> m_LayerStack;
-        float m_TimeStep = 0.0f;
-        Timer m_FrameTimer;
     };
 
     Application* CreateApplication(int argc, char** argv);
