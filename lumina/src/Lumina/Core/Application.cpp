@@ -154,6 +154,12 @@ namespace Lumina
             {
                 m_DockspaceID = ImGui::GetID("LuminaDockspace");
                 ImGui::DockSpace(m_DockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+
+                for (auto& layer : m_LayerStack)
+                {
+                    if (layer->HasDockingRequests())
+                        layer->ProcessDockingRequests(m_DockspaceID);
+				}
             }
 
             for (auto& layer : m_LayerStack)
