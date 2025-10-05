@@ -52,6 +52,19 @@ namespace Lumina
             m_Camera->SetZoom(m_CameraZoom);
 
             AddTestLights();
+
+            DockWindowSplit("Viewport", DockPosition::Center);
+
+            DockWindowSplit("Scene Selection", DockPosition::Left, 0.20f);
+            DockWindowSubSplit("Camera", "Scene Selection", DockPosition::Bottom, 0.50f);
+            DockWindowSubSplit("Scene Controls", "Camera", DockPosition::Bottom, 0.50f);
+
+            DockWindowSplit("Light Controls", DockPosition::Right, 0.25f);
+            DockWindowSubSplit("Global Lighting", "Light Controls", DockPosition::Bottom, 0.35f);
+            DockWindowSubSplit("Quick Tests", "Global Lighting", DockPosition::Bottom, 0.50f);
+
+            DockWindowSplit("Performance", DockPosition::Bottom, 0.15f);
+            DockWindowTabbed("Debug Info", "Performance");
         }
 
         virtual void OnUpdate(float timestep) override

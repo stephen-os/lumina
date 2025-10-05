@@ -136,6 +136,10 @@ namespace Lumina
                 float x = (i - 1) * 3.0f;
                 m_Circles.emplace_back(m_WorldId, glm::vec2(x, 8.0f + i * 2.0f), 0.5f);
             }
+
+            DockWindowSplit("Physics Demo", DockPosition::Center);
+            DockWindowSplit("Physics Controls", DockPosition::Left, 0.25f);
+            DockWindowSplit("Renderer Statistics", DockPosition::Right, 0.25f);
         }
 
         virtual void OnDetach() override

@@ -28,6 +28,15 @@ namespace Lumina
 
             m_PerspectiveRenderTarget = Renderer2D::CreateRenderTarget(900, 900);
             m_OrthographicRenderTarget = Renderer2D::CreateRenderTarget(900, 900);
+
+            DockWindowSplit("Perspective Camera", DockPosition::Left, 0.40f);
+            DockWindowSubSplit("Perspective Controls", "Perspective Camera", DockPosition::Bottom, 0.30f);
+
+            DockWindowSplit("Orthographic Camera", DockPosition::Center);
+            DockWindowSubSplit("Orthographic Controls", "Orthographic Camera", DockPosition::Bottom, 0.30f);
+
+            DockWindowSplit("Performance", DockPosition::Right, 0.20f);
+            DockWindowTabbed("Camera Debug", "Performance");
         }
 
         virtual void OnDetach() override

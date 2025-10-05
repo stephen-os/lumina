@@ -22,6 +22,10 @@ namespace Lumina
 
 			std::string atlasPath = "res/texture/factory_atlas.png";
 			m_TextureAtlas = TextureAtlas::Create(atlasPath, 16, 16);
+			            
+			DockWindowSplit("Scene Viewer", DockPosition::Center);
+            DockWindowSplit("Renderer Controls", DockPosition::Left, 0.25);
+            DockWindowSplit("Renderer Statistics", DockPosition::Right, 0.25);
         }
 
         virtual void OnDetach() override

@@ -107,6 +107,20 @@ namespace Lumina
             // Setup default point lights for UI
             m_PointLights.push_back(pointLight1);
             m_PointLights.push_back(pointLight2);
+
+            DockWindowSplit("3D Scene Viewer", DockPosition::Center);
+
+            DockWindowSplit("Scene Controls", DockPosition::Left, 0.20f);
+            DockWindowSubSplit("Render Controls", "Scene Controls", DockPosition::Bottom, 0.50f);
+            DockWindowSubSplit("Cube Model Controls", "Render Controls", DockPosition::Bottom, 0.50f);
+
+            DockWindowSplit("Perspective Camera", DockPosition::Right, 0.25f);
+            DockWindowSubSplit("Orthographic Camera", "Perspective Camera", DockPosition::Bottom, 0.50f);
+            DockWindowSubSplit("Lighting Controls", "Orthographic Camera", DockPosition::Bottom, 0.50f);
+
+            DockWindowSplit("3D Render Statistics", DockPosition::Bottom, 0.20f);
+            DockWindowTabbed("Model Information", "3D Render Statistics");
+            DockWindowTabbed("FPS", "3D Render Statistics");
         }
 
         virtual void OnDetach() override
