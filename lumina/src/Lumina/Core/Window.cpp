@@ -2,6 +2,10 @@
 #include "Log.h"
 #include "Assert.h"
 
+#include "../Events/ApplicationEvent.h"
+#include "../Events/MouseEvent.h"
+#include "../Events/KeyEvent.h"
+
 #include <stb/stb_image.h>
 #include <glad/glad.h>
 
@@ -59,6 +63,8 @@ namespace Lumina
         LUMINA_ASSERT(version, "[OpenGL Context] Failed to retrieve OpenGL version.");
         LUMINA_LOG_INFO("OpenGL Version: {}", version);
 
+		SetupCallbacks();
+
         // Apply fullscreen or maximized state
         if (specification.Fullscreen)
         {
@@ -79,6 +85,143 @@ namespace Lumina
         }
     }
 
+    void Window::SetupCallbacks()
+    {
+        glfwSetWindowUserPointer(m_Window, this);
+
+        glfwSetWindowSizeCallback(m_Window, [](GLFWwindow* window, int width, int height)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                win->m_WindowSpecifications.Width = width;
+                win->m_WindowSpecifications.Height = height;
+
+                if (win->m_WindowEventCallback)
+                {
+                    WindowResizeEvent event(width, height);
+                    win->m_WindowEventCallback(event);
+                }
+            });
+
+        glfwSetWindowCloseCallback(m_Window, [](GLFWwindow* window)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    WindowCloseEvent event;
+                    win->m_WindowEventCallback(event);
+                }
+            });
+
+        glfwSetWindowFocusCallback(m_Window, [](GLFWwindow* window, int focused)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    if (focused)
+                    {
+                        WindowFocusEvent event;
+                        win->m_WindowEventCallback(event);
+                    }
+                    else
+                    {
+                        WindowLostFocusEvent event;
+                        win->m_WindowEventCallback(event);
+                    }
+                }
+            });
+
+        glfwSetWindowPosCallback(m_Window, [](GLFWwindow* window, int xpos, int ypos)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    WindowMovedEvent event(xpos, ypos);
+                    win->m_WindowEventCallback(event);
+                }
+            });
+
+        glfwSetKeyCallback(m_Window, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    switch (action)
+                    {
+                    case GLFW_PRESS:
+                    {
+                        KeyPressedEvent event(key, false);
+                        win->m_WindowEventCallback(event);
+                        break;
+                    }
+                    case GLFW_RELEASE:
+                    {
+                        KeyReleasedEvent event(key);
+                        win->m_WindowEventCallback(event);
+                        break;
+                    }
+                    case GLFW_REPEAT:
+                    {
+                        KeyPressedEvent event(key, true);
+                        win->m_WindowEventCallback(event);
+                        break;
+                    }
+                    }
+                }
+            });
+
+        glfwSetCharCallback(m_Window, [](GLFWwindow* window, unsigned int codepoint)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    KeyTypedEvent event(codepoint);
+                    win->m_WindowEventCallback(event);
+                }
+            });
+
+        glfwSetMouseButtonCallback(m_Window, [](GLFWwindow* window, int button, int action, int mods)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    switch (action)
+                    {
+                    case GLFW_PRESS:
+                    {
+                        MouseButtonPressedEvent event(button);
+                        win->m_WindowEventCallback(event);
+                        break;
+                    }
+                    case GLFW_RELEASE:
+                    {
+                        MouseButtonReleasedEvent event(button);
+                        win->m_WindowEventCallback(event);
+                        break;
+                    }
+                    }
+                }
+            });
+
+        glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    MouseScrolledEvent event((float)xOffset, (float)yOffset);
+                    win->m_WindowEventCallback(event);
+                }
+            });
+
+        glfwSetCursorPosCallback(m_Window, [](GLFWwindow* window, double xPos, double yPos)
+            {
+                Window* win = (Window*)glfwGetWindowUserPointer(window);
+                if (win->m_WindowEventCallback)
+                {
+                    MouseMovedEvent event((float)xPos, (float)yPos);
+                    win->m_WindowEventCallback(event);
+                }
+            });
+    }
 
     void Window::Update()
     {

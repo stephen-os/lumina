@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Event.h"
+
 #include <string>
 #include <functional>
 #include <GLFW/glfw3.h>
@@ -39,10 +41,12 @@ namespace Lumina
         uint32_t GetHeight() const { return m_WindowSpecifications.Height; }
         GLFWwindow* GetNativeWindow() const { return m_Window; }
 
-        void SetEventCallback(const std::function<void()>& callback) { m_WindowEventCallback = callback; }
+        void SetEventCallback(const std::function<void(class Event&)>& callback) { m_WindowEventCallback = callback; }
+    private: 
+        void SetupCallbacks();
 
     private: 
-        std::function<void()> m_WindowEventCallback;
+        std::function<void(class Event&)> m_WindowEventCallback;
         WindowSpecification m_WindowSpecifications;
 
         GLFWwindow* m_Window = nullptr;

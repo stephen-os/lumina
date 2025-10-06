@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Event.h"
+
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -32,6 +34,7 @@ namespace Lumina
         virtual void OnDetach() {}
         
         virtual void OnUpdate(float ts) {}
+        virtual void OnEvent(Event& e) {}
         virtual void OnUIRender() {}
 
         void ProcessDockingRequests(ImGuiID dockspaceID);

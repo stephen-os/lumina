@@ -4,7 +4,6 @@
 #include <vector> 
 
 #include <spdlog/spdlog.h>
-
 #include <stb/stb_image.h>
 
 #include <fstream>
@@ -17,6 +16,11 @@
 #include "Log.h"
 #include "Assert.h"
 #include "Theme.h"
+
+#include "Event.h"
+#include "Events/ApplicationEvent.h"
+#include "Events/KeyEvent.h"
+#include "Events/MouseEvent.h"
 
 #include "../Graphics/Renderer2D.h"
 #include "../Graphics/Renderer3D.h"
@@ -50,6 +54,9 @@ namespace Lumina
 
         m_Window = std::make_unique<Window>(windowSpec);
 
+        // Set event callback for window
+        m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
+
         if (m_Specifications.Use2DRenderer)
             Renderer2D::Init();
 
@@ -60,10 +67,10 @@ namespace Lumina
         ImGui::CreateContext();
 
         ImGuiIO& io = ImGui::GetIO(); (void)io;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;       // Enable Multi-Viewport / Platform Windows
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGuiStyle& style = ImGui::GetStyle();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -76,11 +83,9 @@ namespace Lumina
         const char* glsl_version = "#version 130";
         ImGui_ImplOpenGL3_Init(glsl_version);
 
-        // Apply Theme
         if (m_Specifications.Theme)
             Theme::ApplyLuminaTheme();
     }
-
 
     Application::~Application()
     {
@@ -98,9 +103,43 @@ namespace Lumina
         m_LayerStack.clear();
 
         ImGui_ImplOpenGL3_Shutdown();
-
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+    }
+
+    void Application::OnEvent(Event& e)
+    {
+        EventDispatcher dispatcher(e);
+
+        // Handle application-level events
+        dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) {
+            m_Running = false;
+            return true;
+            });
+
+        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {
+            LUMINA_LOG_INFO("Window resized: {}x{}", e.GetWidth(), e.GetHeight());
+            return false;
+            });
+
+        // Propagate to layers in reverse order (top to bottom)
+        // This allows UI layers to handle events before game layers
+        for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+        {
+            if (e.Handled)
+                break;
+            (*it)->OnEvent(e);
+        }
+    }
+
+    void Application::PostEvent(Event& e)
+    {
+        OnEvent(e);
+    }
+
+    void Application::QueueEvent(std::unique_ptr<Event> e)
+    {
+        m_EventQueue.push_back(std::move(e));
     }
 
     void Application::Run()
@@ -116,6 +155,11 @@ namespace Lumina
                 Shutdown();
                 break;
             }
+
+            // Process queued events
+            for (auto& event : m_EventQueue)
+                OnEvent(*event);
+            m_EventQueue.clear();
 
             float currentTime = GetTime();
             float timestep = glm::clamp(currentTime - lastTime, 0.001f, 0.1f);
@@ -147,7 +191,7 @@ namespace Lumina
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
             ImGui::Begin("LuminaWindow", nullptr, window_flags);
-            
+
             ImGui::PopStyleVar(3);
 
             if (m_Specifications.EnableDocking)
@@ -159,7 +203,7 @@ namespace Lumina
                 {
                     if (layer->HasDockingRequests())
                         layer->ProcessDockingRequests(m_DockspaceID);
-				}
+                }
             }
 
             for (auto& layer : m_LayerStack)
@@ -178,7 +222,6 @@ namespace Lumina
                 ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
             }
 
-            // Handle ImGui viewport if enabled
             ImGuiIO& io = ImGui::GetIO();
             if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
             {
@@ -202,5 +245,5 @@ namespace Lumina
     float Application::GetTime()
     {
         return (float)glfwGetTime();
-	}
+    }
 }

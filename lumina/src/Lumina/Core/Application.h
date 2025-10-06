@@ -1,8 +1,11 @@
 #pragma once
 
 #include "imgui.h"
+
 #include "Layer.h"
 #include "Window.h"
+#include "Event.h"
+
 #include "../Utils/Timer.h"
 
 #include <string>
@@ -42,6 +45,10 @@ namespace Lumina
             m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
         }
 
+        void OnEvent(Event& e);
+        void PostEvent(Event& e);
+        void QueueEvent(std::unique_ptr<Event> e);
+
         void SetWindowFullscreen();
         void Shutdown() { m_Running = false; }
 
@@ -60,6 +67,8 @@ namespace Lumina
         
         bool m_Running = true;
         std::vector<std::shared_ptr<Layer>> m_LayerStack;
+
+        std::vector<std::unique_ptr<Event>> m_EventQueue;
     };
 
     Application* CreateApplication(int argc, char** argv);
