@@ -11,17 +11,17 @@
 
 namespace Lumina
 {
-    Ref<ShaderProgram> ShaderProgram::Create(const std::string& vertexSource, const std::string& fragmentSource)
+    Ref<ShaderProgram> ShaderProgram::Create(std::string_view vertexSource, std::string_view fragmentSource)
 	{
 		return CreateRef<ShaderProgram>(vertexSource, fragmentSource);
 	}
 
-    ShaderProgram::ShaderProgram(const std::string& vertexSource, const std::string& fragmentSource)
+    ShaderProgram::ShaderProgram(std::string_view vertexSource, std::string_view fragmentSource)
     {
-        m_VertexShaderID = CompileSource(GL_VERTEX_SHADER, vertexSource);
+        m_VertexShaderID = CompileSource(GL_VERTEX_SHADER, vertexSource.data());
         LUMINA_ASSERT(m_VertexShaderID != 0, "Vertex shader compilation failed!");
 
-        m_FragmentShaderID = CompileSource(GL_FRAGMENT_SHADER, fragmentSource);
+        m_FragmentShaderID = CompileSource(GL_FRAGMENT_SHADER, fragmentSource.data());
         LUMINA_ASSERT(m_FragmentShaderID != 0, "Fragment shader compilation failed!");
 
         m_ShaderProgramID = glCreateProgram();

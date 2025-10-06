@@ -14,9 +14,9 @@ namespace Lumina
     class ShaderProgram
     {
     public:
-        static Ref<ShaderProgram> Create(const std::string& vertexSource, const std::string& fragmentSource);
+        static Ref<ShaderProgram> Create(std::string_view vertexSource, std::string_view fragmentSource);
 
-        ShaderProgram(const std::string& vertexSource, const std::string& fragmentSource);
+        ShaderProgram(std::string_view vertexSource, std::string_view fragmentSource);
         ~ShaderProgram();
 
         void Bind() const ;

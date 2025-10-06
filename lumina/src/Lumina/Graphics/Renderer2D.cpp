@@ -10,6 +10,14 @@
 
 #include "Fonts/DefaultFont.h"
 
+#include "Shaders/Quad2D.h"
+#include "Shaders/Circle2D.h"
+#include "Shaders/Line2D.h"
+#include "Shaders/Text2D.h"
+#include "Shaders/Pixel2D.h"
+#include "Shaders/Triangle2D.h"
+#include "Shaders/Grid2D.h"
+
 #include <iostream>
 #include <fstream>
 #include <filesystem>
@@ -298,11 +306,7 @@ namespace Lumina
         s_Data.QuadVertexArray->SetIndexBuffer(s_Data.QuadIndexBuffer);
         s_Data.QuadVertexBufferBase = new QuadVertex[MaxVertices];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Quad.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Quad.frag");
-            s_Data.QuadShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.QuadShader = ShaderProgram::Create(Shaders::Quad2D::Vertex, Shaders::Quad2D::Fragment);
 
         // Circle setup
         s_Data.CircleVertexArray = VertexArray::Create();
@@ -321,11 +325,7 @@ namespace Lumina
         s_Data.CircleVertexArray->SetIndexBuffer(s_Data.CircleIndexBuffer);
         s_Data.CircleVertexBufferBase = new CircleVertex[MaxVertices];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Circle.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Circle.frag");
-            s_Data.CircleShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.CircleShader = ShaderProgram::Create(Shaders::Circle2D::Vertex, Shaders::Circle2D::Fragment);
 
         // Line setup
         s_Data.LineVertexArray = VertexArray::Create();
@@ -337,11 +337,7 @@ namespace Lumina
         s_Data.LineVertexArray->SetVertexBuffer(s_Data.LineVertexBuffer);
         s_Data.LineVertexBufferBase = new LineVertex[MaxVertices];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Line.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Line.frag");
-            s_Data.LineShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.LineShader = ShaderProgram::Create(Shaders::Line2D::Vertex, Shaders::Line2D::Fragment);
 
         // Text setup
         s_Data.TextVertexArray = VertexArray::Create();
@@ -357,11 +353,7 @@ namespace Lumina
         s_Data.TextVertexArray->SetIndexBuffer(s_Data.TextIndexBuffer);
         s_Data.TextVertexBufferBase = new TextVertex[MaxVertices];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Text.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Text.frag");
-            s_Data.TextShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.TextShader = ShaderProgram::Create(Shaders::Text2D::Vertex, Shaders::Text2D::Fragment);
 
         // Pixel setup
         s_Data.PixelVertexArray = VertexArray::Create();
@@ -373,11 +365,7 @@ namespace Lumina
         s_Data.PixelVertexArray->SetVertexBuffer(s_Data.PixelVertexBuffer);
         s_Data.PixelVertexBufferBase = new PixelVertex[MaxPixels];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Pixel.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Pixel.frag");
-            s_Data.PixelShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.PixelShader = ShaderProgram::Create(Shaders::Pixel2D::Vertex, Shaders::Pixel2D::Fragment);
 
         // Triangle setup
         s_Data.TriangleVertexArray = VertexArray::Create();
@@ -391,11 +379,7 @@ namespace Lumina
         s_Data.TriangleVertexArray->SetVertexBuffer(s_Data.TriangleVertexBuffer);
         s_Data.TriangleVertexBufferBase = new TriangleVertex[MaxTriangles * 3];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Triangle.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Triangle.frag");
-            s_Data.TriangleShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.TriangleShader = ShaderProgram::Create(Shaders::Triangle2D::Vertex, Shaders::Triangle2D::Fragment);
 
         // Grid setup
         s_Data.GridVertexArray = VertexArray::Create();
@@ -419,11 +403,7 @@ namespace Lumina
         s_Data.GridVertexArray->SetIndexBuffer(s_Data.GridIndexBuffer);
         s_Data.GridVertexBufferBase = new GridVertex[MaxGrids * 4];
 
-        {
-            std::string vertexSource = ReadFile("res/shaders/Grid.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Grid.frag");
-            s_Data.GridShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.GridShader = ShaderProgram::Create(Shaders::Grid2D::Vertex, Shaders::Grid2D::Fragment);
 
         s_Data.PointLightUniformBuffer = UniformBuffer::Create(sizeof(PointLight) * MaxPointLights, BufferUsage::Dynamic);
         s_Data.PointLightUniformBufferBase = new PointLight[MaxPointLights];
@@ -434,7 +414,6 @@ namespace Lumina
         s_Data.TextureSlots[0]->SetData(&whiteTextureData, sizeof(uint32_t));
 
 		s_Data.DefaultFont = DefaultFont::Create();
-
 
         s_Data.QuadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
         s_Data.QuadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };

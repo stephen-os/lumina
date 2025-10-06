@@ -7,7 +7,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../Utils/FileReader.h"
+#include "Shaders/PBR3D.h"
+#include "Shaders/PBRI3D.h"
+#include "Shaders/Skybox3D.h"
 
 #include "TextureSlot.h"
 
@@ -80,25 +82,13 @@ namespace Lumina
         s_Data.DefaultNormalMap->SetData(&normalData, sizeof(uint32_t));
 
         // Load PBR shader
-        {
-            std::string vertexSource = ReadFile("res/shaders/PBR.vert");
-            std::string fragmentSource = ReadFile("res/shaders/PBR.frag");
-            s_Data.PBRShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
-
+        s_Data.PBRShader = ShaderProgram::Create(Shaders::PBR3D::Vertex, Shaders::PBR3D::Fragment);
+        
         // Load PBRI shader (for instance rendering)
-        {
-            std::string vertexSource = ReadFile("res/shaders/PBRI.vert");
-            std::string fragmentSource = ReadFile("res/shaders/PBRI.frag");
-            s_Data.PBRIShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.PBRIShader = ShaderProgram::Create(Shaders::PBRI3D::Vertex, Shaders::PBRI3D::Fragment);
 
         // Load Skybox shader
-        {
-            std::string vertexSource = ReadFile("res/shaders/Skybox.vert");
-            std::string fragmentSource = ReadFile("res/shaders/Skybox.frag");
-            s_Data.SkyboxShader = ShaderProgram::Create(vertexSource, fragmentSource);
-        }
+        s_Data.SkyboxShader = ShaderProgram::Create(Shaders::Skybox3D::Vertex, Shaders::Skybox3D::Fragment);
 
         // Set default lighting
         s_Data.DirLight.Direction = glm::normalize(glm::vec3(-0.2f, -1.0f, -0.3f));
