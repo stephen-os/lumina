@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Core/Event.h"
+#include "Event.h"
+
 #include <sstream>
 
 namespace Lumina
@@ -8,9 +9,7 @@ namespace Lumina
     class WindowResizeEvent : public Event
     {
     public:
-        WindowResizeEvent(uint32_t width, uint32_t height)
-            : m_Width(width), m_Height(height) {
-        }
+        WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) { }
 
         uint32_t GetWidth() const { return m_Width; }
         uint32_t GetHeight() const { return m_Height; }
@@ -23,7 +22,7 @@ namespace Lumina
         }
 
         EVENT_CLASS_TYPE(WindowResize)
-            EVENT_CLASS_CATEGORY(EventCategoryApplication)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
     private:
         uint32_t m_Width;
@@ -36,7 +35,7 @@ namespace Lumina
         WindowCloseEvent() = default;
 
         EVENT_CLASS_TYPE(WindowClose)
-            EVENT_CLASS_CATEGORY(EventCategoryApplication)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
     };
 
     class WindowFocusEvent : public Event
@@ -45,7 +44,7 @@ namespace Lumina
         WindowFocusEvent() = default;
 
         EVENT_CLASS_TYPE(WindowFocus)
-            EVENT_CLASS_CATEGORY(EventCategoryApplication)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
     };
 
     class WindowLostFocusEvent : public Event
@@ -54,7 +53,7 @@ namespace Lumina
         WindowLostFocusEvent() = default;
 
         EVENT_CLASS_TYPE(WindowLostFocus)
-            EVENT_CLASS_CATEGORY(EventCategoryApplication)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
     };
 
     class WindowMovedEvent : public Event
@@ -75,7 +74,7 @@ namespace Lumina
         }
 
         EVENT_CLASS_TYPE(WindowMoved)
-            EVENT_CLASS_CATEGORY(EventCategoryApplication)
+        EVENT_CLASS_CATEGORY(EventCategoryApplication)
 
     private:
         int m_X;

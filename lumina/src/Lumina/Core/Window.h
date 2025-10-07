@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Event.h"
+#include "Events/Event.h"
 
 #include <string>
 #include <functional>
+
 #include <GLFW/glfw3.h>
 
 namespace Lumina
@@ -42,6 +43,7 @@ namespace Lumina
         GLFWwindow* GetNativeWindow() const { return m_Window; }
 
         void SetEventCallback(const std::function<void(class Event&)>& callback) { m_WindowEventCallback = callback; }
+
     private: 
         void SetupCallbacks();
 

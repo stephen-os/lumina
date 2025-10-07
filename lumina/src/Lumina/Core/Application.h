@@ -4,9 +4,8 @@
 
 #include "Layer.h"
 #include "Window.h"
-#include "Event.h"
 
-#include "../Utils/Timer.h"
+#include "Events/Event.h"
 
 #include <string>
 #include <vector>

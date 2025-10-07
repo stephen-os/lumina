@@ -17,13 +17,12 @@
 #include "Assert.h"
 #include "Theme.h"
 
-#include "Event.h"
 #include "Events/ApplicationEvent.h"
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
-#include "../Graphics/Renderer2D.h"
-#include "../Graphics/Renderer3D.h"
+#include "Graphics/Renderer2D.h"
+#include "Graphics/Renderer3D.h"
 
 #include <glad/glad.h>
 

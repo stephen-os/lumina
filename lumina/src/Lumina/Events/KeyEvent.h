@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../Core/Event.h"
+#include "Event.h"
+
 #include <sstream>
 
 namespace Lumina
@@ -13,9 +14,7 @@ namespace Lumina
         EVENT_CLASS_CATEGORY(EventCategoryKeyboard | EventCategoryInput)
 
     protected:
-        KeyEvent(int keycode)
-            : m_KeyCode(keycode) {
-        }
+        KeyEvent(int keycode) : m_KeyCode(keycode) { }
 
         int m_KeyCode;
     };
@@ -23,9 +22,7 @@ namespace Lumina
     class KeyPressedEvent : public KeyEvent
     {
     public:
-        KeyPressedEvent(int keycode, bool repeat = false)
-            : KeyEvent(keycode), m_Repeat(repeat) {
-        }
+        KeyPressedEvent(int keycode, bool repeat = false) : KeyEvent(keycode), m_Repeat(repeat) { }
 
         bool IsRepeat() const { return m_Repeat; }
 
@@ -45,9 +42,7 @@ namespace Lumina
     class KeyReleasedEvent : public KeyEvent
     {
     public:
-        KeyReleasedEvent(int keycode)
-            : KeyEvent(keycode) {
-        }
+        KeyReleasedEvent(int keycode) : KeyEvent(keycode) { }
 
         std::string ToString() const override
         {
@@ -62,9 +57,7 @@ namespace Lumina
     class KeyTypedEvent : public KeyEvent
     {
     public:
-        KeyTypedEvent(int keycode)
-            : KeyEvent(keycode) {
-        }
+        KeyTypedEvent(int keycode) : KeyEvent(keycode) { }
 
         std::string ToString() const override
         {
