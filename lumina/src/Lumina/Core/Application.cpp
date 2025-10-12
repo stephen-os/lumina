@@ -21,10 +21,8 @@
 #include "Events/KeyEvent.h"
 #include "Events/MouseEvent.h"
 
-#include "Graphics/Renderer2D.h"
-#include "Graphics/Renderer3D.h"
-
 #include <glad/glad.h>
+#include <glm/glm.hpp>
 
 namespace Lumina
 {
@@ -56,12 +54,6 @@ namespace Lumina
         // Set event callback for window
         m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
 
-        if (m_Specifications.Use2DRenderer)
-            Renderer2D::Init();
-
-        if (m_Specifications.Use3DRenderer)
-            Renderer3D::Init();
-
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -92,12 +84,6 @@ namespace Lumina
 
         for (auto& layer : m_LayerStack)
             layer->OnDetach();
-
-        if (m_Specifications.Use2DRenderer)
-            Renderer2D::Shutdown();
-
-        if (m_Specifications.Use3DRenderer)
-            Renderer3D::Shutdown();
 
         m_LayerStack.clear();
 

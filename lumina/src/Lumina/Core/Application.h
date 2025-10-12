@@ -22,8 +22,6 @@ namespace Lumina
         int32_t PositionX = 100;
         int32_t PositionY = 100;
 		bool EnableDocking = true;
-        bool Use2DRenderer = false;
-        bool Use3DRenderer = false;
         bool Fullscreen = false;
         bool Maximized = false;
         bool Theme = true;
