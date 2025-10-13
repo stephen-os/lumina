@@ -13,6 +13,8 @@
 
 #include "TextureSlot.h"
 
+#include "RenderTarget.h"
+
 namespace Lumina
 {
     // Constants
@@ -22,7 +24,7 @@ namespace Lumina
     struct Renderer3DData
     {
         // Core framebuffer
-        Ref<FrameBuffer> RendererFrameBuffer;
+        Ref<RenderTarget> RendererFrameBuffer;
 
         // Shaders
         Ref<ShaderProgram> PBRShader = nullptr;
@@ -69,7 +71,8 @@ namespace Lumina
         LUMINA_LOG_INFO("Renderer3D: Initializing...");
 
         // Create framebuffer
-        s_Data.RendererFrameBuffer = FrameBuffer::Create();
+        // default parames? 
+        s_Data.RendererFrameBuffer = RenderTarget::Create(800, 800);
 
         // Create default white texture
         uint32_t whiteTextureData = 0xffffffff;
