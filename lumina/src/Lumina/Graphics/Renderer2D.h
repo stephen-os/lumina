@@ -10,7 +10,8 @@
 #include <unordered_map>
 #include <string>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
+
 #include "Cameras/Camera.h"
 
 namespace Lumina

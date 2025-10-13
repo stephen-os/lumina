@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "Formats/TextureFormat.h"
 

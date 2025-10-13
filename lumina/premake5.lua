@@ -12,7 +12,8 @@ project "Lumina"
 
    includedirs
    {
-      "src/Lumina",
+      "src",
+
       "../Dependencies/imgui",
       "../Dependencies/glfw/include",
       "../Dependencies/glm",

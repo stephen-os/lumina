@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Core/Base.h"
-#include "Graphics/Texture.h"
+#include "Lumina/Core/Base.h"
+#include "Lumina/Graphics/Texture.h"
 
 namespace Lumina
 {

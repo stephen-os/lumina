@@ -17,5 +17,5 @@ group "Dependencies"
 group ""
 
 group "Core"
-   include "lumina/lumina.lua"
+   include "lumina"
 group ""

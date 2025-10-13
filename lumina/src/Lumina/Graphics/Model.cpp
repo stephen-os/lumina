@@ -2,7 +2,7 @@
 
 #include "ModelRegistry.h"
 
-#include "../Utils/UUID.h"
+#include "Lumina/Utils/UUID.h"
 
 namespace Lumina
 {

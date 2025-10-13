@@ -2,8 +2,8 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
+#include "Lumina/Core/Log.h"
+#include "Lumina/Core/Assert.h"
 
 #include "BufferLayout.h"
 #include "RenderCommands.h"

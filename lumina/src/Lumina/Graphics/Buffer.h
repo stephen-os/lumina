@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "BufferLayout.h"
 

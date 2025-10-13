@@ -2,7 +2,7 @@
 
 #include "Cameras/Camera.h"
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "VertexArray.h"
 #include "Texture.h"

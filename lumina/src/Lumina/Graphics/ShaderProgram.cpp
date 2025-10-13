@@ -1,6 +1,6 @@
 #include "ShaderProgram.h"
 
-#include "../Utils/FileReader.h"
+#include "Lumina/Utils/FileReader.h"
 
 #include "RendererDebug.h"
 

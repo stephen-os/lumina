@@ -1,11 +1,14 @@
 #include "RenderTarget.h"
 #include "RendererDebug.h"
-#include "../Core/Assert.h"
-#include "../Core/Log.h"
+
+#include "Lumina/Core/Assert.h"
+#include "Lumina/Core/Log.h"
 
 #include <glad/glad.h>
+
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb_image_write.h>
+
 #include <algorithm>
 
 namespace Lumina

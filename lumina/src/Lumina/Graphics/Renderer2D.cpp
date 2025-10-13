@@ -2,7 +2,6 @@
 
 #include <glm/gtc/matrix_transform.hpp>
 #include <stb_image_write.h>
-#include "../Utils/FileReader.h"
 #include "VertexArray.h"
 #include "Buffer.h"
 #include "BufferLayout.h"

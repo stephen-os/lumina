@@ -3,7 +3,7 @@
 #include <filesystem>
 #include <algorithm>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "Loaders/GLTFLoader.h"
 

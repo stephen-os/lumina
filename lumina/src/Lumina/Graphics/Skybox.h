@@ -5,7 +5,7 @@
 
 #include <glm/glm.hpp>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "Texture.h"
 #include "ShaderProgram.h"

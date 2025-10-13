@@ -3,7 +3,8 @@
 #include <glad/glad.h>
 
 #include "RendererDebug.h"
-#include "../Core/Assert.h"
+
+#include "Lumina/Core/Assert.h"
 
 namespace Lumina
 {

@@ -1,7 +1,9 @@
 #pragma once
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
+
 #include <glm/glm.hpp>
+
 #include <vector>
 #include <cstdint>
 

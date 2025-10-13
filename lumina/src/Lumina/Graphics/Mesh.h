@@ -3,7 +3,7 @@
 #include <vector>
 #include <string>
 
-#include "Core/Base.h"
+#include "Lumina/Core/Base.h"
 
 #include "Vertex3D.h"
 #include "Material.h"

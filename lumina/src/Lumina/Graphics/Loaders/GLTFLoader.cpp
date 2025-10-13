@@ -3,12 +3,12 @@
 #include <tiny_gltf.h>
 #include <filesystem>
 
-#include "../../Core/Log.h"
-#include "../../Core/Assert.h"
+#include "Lumina/Core/Log.h"
+#include "Lumina/Core/Assert.h"
 
-#include "../Material.h"
-#include "../Mesh.h"
-#include "../Model.h"
+#include "Lumina/Graphics/Material.h"
+#include "Lumina/Graphics/Mesh.h"
+#include "Lumina/Graphics/Model.h"
 
 namespace Lumina
 {

@@ -1,8 +1,9 @@
 #include "ComputeShader.h"
 
-#include "../Core/Log.h"
-#include "../Core/Assert.h"
-#include "../Utils/FileReader.h"
+#include "Lumina/Core/Log.h"
+#include "Lumina/Core/Assert.h"
+
+#include "Lumina/Utils/FileReader.h"
 
 #include <glad/glad.h>
 
