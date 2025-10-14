@@ -1,21 +1,36 @@
-#include "OrthographicCamera.h"
+﻿#include "OrthographicCamera.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 namespace Lumina
 {
-    OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float nearPlane, float farPlane)
-        : m_Left(left), m_Right(right), m_Bottom(bottom), m_Top(top), m_NearPlane(nearPlane), m_FarPlane(farPlane)
+    Ref<OrthographicCamera> OrthographicCamera::Create(float left, float right, float bottom, float top, float nearPlane, float farPlane)
     {
-        m_BaseWidth = right - left;
-        m_BaseHeight = top - bottom;
-        m_Zoom = 1.0f;
-        UpdateProjectionMatrix();
+        return CreateRef<OrthographicCamera>(left, right, bottom, top, nearPlane, farPlane);
     }
 
-    OrthographicCamera OrthographicCamera::Create2D(float width, float height)
+    OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float nearPlane, float farPlane)
     {
-        float halfWidth = width / 2.0f;
-        float halfHeight = height / 2.0f;
-        return OrthographicCamera(-halfWidth, halfWidth, -halfHeight, halfHeight, -1.0f, 1.0f);
+        m_Left = left;
+		m_Right = right;
+		m_Bottom = bottom;
+		m_Top = top;
+		
+        m_BaseLeft = left;
+		m_BaseRight = right;
+		m_BaseBottom = bottom;
+		m_BaseTop = top;
+
+		m_NearPlane = nearPlane;
+        m_FarPlane = farPlane; 
+
+        UpdateProjectionMatrix();
+        UpdateViewMatrix();
+    }
+
+    void OrthographicCamera::SetPosition(const glm::vec3& position)
+    {
+        m_Position = position;
+        UpdateViewMatrix();
     }
 
     void OrthographicCamera::SetBounds(float left, float right, float bottom, float top)
@@ -24,13 +39,10 @@ namespace Lumina
         m_Right = right;
         m_Bottom = bottom;
         m_Top = top;
-
-        m_BaseWidth = right - left;
-        m_BaseHeight = top - bottom;
-
-        float currentZoom = m_Zoom;
-        SetZoom(currentZoom);
-
+        m_BaseLeft = left;
+        m_BaseRight = right;
+        m_BaseBottom = bottom;
+        m_BaseTop = top;
         UpdateProjectionMatrix();
     }
 
@@ -38,85 +50,55 @@ namespace Lumina
     {
         m_NearPlane = nearPlane;
         m_FarPlane = farPlane;
-
         UpdateProjectionMatrix();
     }
 
-    void OrthographicCamera::SetPosition(const glm::vec3& position)
+    void OrthographicCamera::SetViewportSize(float width, float height)
     {
-        glm::vec3 delta = position - m_Position;
-        m_Position = position; 
+        float aspectRatio = width / height;
 
-        m_Left += delta.x;
-        m_Right += delta.x;
-        m_Bottom += delta.y;
-        m_Top += delta.y;
+        float baseHeight = m_Top - m_Bottom;
+        float viewHeight = baseHeight / m_Zoom;
+        float viewWidth = viewHeight * aspectRatio;
 
-        UpdateViewMatrix(); 
-        UpdateProjectionMatrix();
-    }
+        m_Left = -viewWidth * 0.5f;
+        m_Right = viewWidth * 0.5f;
+        m_Bottom = -viewHeight * 0.5f;
+        m_Top = viewHeight * 0.5f;
 
-    void OrthographicCamera::SetSize(float width, float height)
-    {
-        m_BaseWidth = width;
-        m_BaseHeight = height;
-
-        float newWidth = m_BaseWidth / m_Zoom;
-        float newHeight = m_BaseHeight / m_Zoom;
-        float halfWidth = newWidth / 2.0f;
-        float halfHeight = newHeight / 2.0f;
-
-        glm::vec3 center = GetPosition();
-
-        m_Left = center.x - halfWidth;
-        m_Right = center.x + halfWidth;
-        m_Bottom = center.y - halfHeight;
-        m_Top = center.y + halfHeight;
+        m_BaseLeft = m_Left * m_Zoom;
+        m_BaseRight = m_Right * m_Zoom;
+        m_BaseBottom = m_Bottom * m_Zoom;
+        m_BaseTop = m_Top * m_Zoom;
 
         UpdateProjectionMatrix();
     }
 
     void OrthographicCamera::SetZoom(float zoom)
     {
-        if (zoom <= 0.0f) 
-            zoom = 0.001f;
-        m_Zoom = zoom;
+        m_Zoom = std::max(zoom, 0.001f);
 
-        float newWidth = m_BaseWidth / zoom;
-        float newHeight = m_BaseHeight / zoom;
-        float halfWidth = newWidth / 2.0f;
-        float halfHeight = newHeight / 2.0f;
+        float width = (m_BaseRight - m_BaseLeft) / m_Zoom;
+        float height = (m_BaseTop - m_BaseBottom) / m_Zoom;
 
-        glm::vec3 center = GetPosition();
+        float centerX = (m_BaseLeft + m_BaseRight) * 0.5f;
+        float centerY = (m_BaseBottom + m_BaseTop) * 0.5f;
 
-        m_Left = center.x - halfWidth;
-        m_Right = center.x + halfWidth;
-        m_Bottom = center.y - halfHeight;
-        m_Top = center.y + halfHeight;
+        m_Left = centerX - width * 0.5f;
+        m_Right = centerX + width * 0.5f;
+        m_Bottom = centerY - height * 0.5f;
+        m_Top = centerY + height * 0.5f;
 
         UpdateProjectionMatrix();
     }
 
-    void OrthographicCamera::SetOrthoParams(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+    void OrthographicCamera::UpdateViewMatrix()
     {
-        m_Left = left;
-        m_Right = right;
-        m_Bottom = bottom;
-        m_Top = top;
-        m_NearPlane = nearPlane;
-        m_FarPlane = farPlane;
-
-        m_BaseWidth = right - left;
-        m_BaseHeight = top - bottom;
-        
-        float currentZoom = m_Zoom;
-        SetZoom(currentZoom);
-
-        UpdateProjectionMatrix();
+        m_ViewMatrix = glm::lookAt(m_Position, m_Position + glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
     }
 
     void OrthographicCamera::UpdateProjectionMatrix()
     {
-        m_ProjectionMatrix = glm::ortho(m_Left, m_Right, m_Top, m_Bottom, m_NearPlane, m_FarPlane);
+        m_ProjectionMatrix = glm::ortho(m_Left, m_Right, m_Bottom, m_Top, m_NearPlane, m_FarPlane);
     }
 }

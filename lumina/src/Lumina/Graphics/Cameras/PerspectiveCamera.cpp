@@ -44,7 +44,7 @@ namespace Lumina
 
     void PerspectiveCamera::UpdateProjectionMatrix()
     {
-        m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
+        // m_ProjectionMatrix = glm::perspective(glm::radians(m_FOV), m_AspectRatio, m_NearPlane, m_FarPlane);
         m_ProjectionMatrix[1][1] *= -1.0f;
         UpdateViewMatrix(); 
     }

@@ -18,6 +18,10 @@ group "Demos"
    include "demos/point-lights"
 group ""
 
+group "Tests"
+   include "tests/renderer2d"
+group ""
+
 -- App
 group "Application"
    include "applications/lumina-application"

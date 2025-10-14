@@ -493,7 +493,7 @@ namespace Lumina
 
     void Renderer2D::Begin(Ref<Camera> camera)
     {
-        s_Data.ViewProjectionMatrix = camera->GetProjectionMatrix() * camera->GetViewMatrix();
+        s_Data.ViewProjectionMatrix = camera->GetViewProjectionMatrix();
 
         s_Data.CurrentRenderTarget->Bind();
         s_Data.CurrentRenderTarget->Resize(s_Data.Width, s_Data.Height);
