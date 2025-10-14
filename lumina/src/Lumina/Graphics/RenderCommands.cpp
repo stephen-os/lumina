@@ -11,7 +11,6 @@ namespace Lumina
     // Viewport and Clearing
     void RenderCommands::SetViewport(int x, int y, int width, int height)
     {
-        LUMINA_ASSERT(width > 0 && height > 0, "Viewport dimensions must be greater than zero!");
         GLCALL(glViewport(x, y, width, height));
     }
 
