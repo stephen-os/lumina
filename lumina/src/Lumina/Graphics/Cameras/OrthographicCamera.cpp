@@ -1,22 +1,20 @@
 ﻿#include "OrthographicCamera.h"
+
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace Lumina
 {
-    Ref<OrthographicCamera> OrthographicCamera::Create(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+    Ref<OrthographicCamera> OrthographicCamera::Create(float viewHeight, float nearPlane, float farPlane)
     {
-        return CreateRef<OrthographicCamera>(left, right, bottom, top, nearPlane, farPlane);
+        return CreateRef<OrthographicCamera>(viewHeight, nearPlane, farPlane);
     }
 
-    OrthographicCamera::OrthographicCamera(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+    OrthographicCamera::OrthographicCamera(float viewHeight, float nearPlane, float farPlane)
+        : m_ViewHeight(viewHeight)
+        , m_NearPlane(nearPlane)
+        , m_FarPlane(farPlane)
     {
-        m_Left = left;
-		m_Right = right;
-		m_Bottom = bottom;
-		m_Top = top;
-		m_NearPlane = nearPlane;
-        m_FarPlane = farPlane; 
-
+        RecalculateBounds();
         UpdateProjectionMatrix();
         UpdateViewMatrix();
     }
@@ -27,13 +25,24 @@ namespace Lumina
         UpdateViewMatrix();
     }
 
-    void OrthographicCamera::SetBounds(float left, float right, float bottom, float top)
+    void OrthographicCamera::SetViewHeight(float height)
     {
-        m_Left = left;
-        m_Right = right;
-        m_Bottom = bottom;
-        m_Top = top;
+        m_ViewHeight = height;
+        RecalculateBounds();
+        UpdateProjectionMatrix();
+    }
 
+    void OrthographicCamera::SetZoom(float zoom)
+    {
+        m_Zoom = std::max(zoom, 0.001f);
+        RecalculateBounds();
+        UpdateProjectionMatrix();
+    }
+
+    void OrthographicCamera::SetAspectRatio(float aspectRatio)
+    {
+        m_AspectRatio = aspectRatio;
+        RecalculateBounds();
         UpdateProjectionMatrix();
     }
 
@@ -42,6 +51,17 @@ namespace Lumina
         m_NearPlane = nearPlane;
         m_FarPlane = farPlane;
         UpdateProjectionMatrix();
+    }
+
+    void OrthographicCamera::RecalculateBounds()
+    {
+        float actualHeight = m_ViewHeight / m_Zoom;
+        float actualWidth = actualHeight * m_AspectRatio;
+
+        m_Left = -actualWidth * 0.5f;
+        m_Right = actualWidth * 0.5f;
+        m_Bottom = -actualHeight * 0.5f;
+        m_Top = actualHeight * 0.5f;
     }
 
     void OrthographicCamera::UpdateViewMatrix()
