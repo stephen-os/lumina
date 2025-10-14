@@ -83,7 +83,7 @@ namespace Lumina
         static void SetCircleRadius(const glm::vec2& radius);
         static void SetCircleTexture(const Ref<Texture>& texture);
         static void SetCircleTextureCoords(const glm::vec4& textureCoords);
-        static void SetCircleColor(const glm::vec4& color);
+        static void SetCircleTintColor(const glm::vec4& tintColor);
         static void SetCircleThickness(float thickness);
         static void SetCircleFade(float fade);
         static void ResetCircleState();
@@ -91,19 +91,19 @@ namespace Lumina
         static void SetLineStart(const glm::vec3& start);
         static void SetLineEnd(const glm::vec3& end);
         static void SetLineThickness(float thickness);
-        static void SetLineColor(const glm::vec4& color);
+        static void SetLineTintColor(const glm::vec4& tintColor);
         static void ResetLineState();
 
         static void SetStringContent(const std::string& text);
         static void SetStringPosition(const glm::vec3& position);
-        static void SetStringColor(const glm::vec4& color);
+        static void SetStringTintColor(const glm::vec4& tintColor);
         static void SetStringSize(float size);
         static void SetStringFont(const Ref<Texture>& fontTexture);
         static void SetStringAlignment(StringAlignment alignment);
         static void ResetStringState();
 
         static void SetPixelPosition(const glm::vec3& position);
-        static void SetPixelColor(const glm::vec4& color);
+        static void SetPixelTintColor(const glm::vec4& tintColor);
 		static void SetPixelSize(float size = 1.0f);
         static void ResetPixelState();
 
@@ -111,14 +111,14 @@ namespace Lumina
         static void SetTrianglePoint2(const glm::vec3& point2);
         static void SetTrianglePoint3(const glm::vec3& point3);
         static void SetTriangleTexture(const Ref<Texture>& texture);
-        static void SetTriangleColor(const glm::vec4& color);
+        static void SetTriangleTintColor(const glm::vec4& tintColor);
         static void ResetTriangleState();
 
         static void SetGridPosition(const glm::vec3& position);
         static void SetGridRotation(const glm::vec3& rotation);
         static void SetGridSize(const glm::vec2& size);
         static void SetGridCellSize(float gridSize);
-        static void SetGridColor(const glm::vec4& color);
+        static void SetGridTintColor(const glm::vec4& tintColor);
         static void SetGridLineWidth(float lineWidth);
         static void SetGridShowCheckerboard(bool showCheckerboard);
         static void SetGridCheckerColor1(const glm::vec4& checkerColor1);

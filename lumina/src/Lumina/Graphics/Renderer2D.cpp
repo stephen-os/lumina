@@ -41,7 +41,7 @@ namespace Lumina
     struct QuadVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
         glm::vec2 TexCoord;
         float TexIndex;
     };
@@ -50,7 +50,7 @@ namespace Lumina
     {
         glm::vec3 WorldPosition;
         glm::vec3 LocalPosition;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
         glm::vec2 TexCoord;
         float TexIndex;
         float Thickness;
@@ -60,13 +60,13 @@ namespace Lumina
     struct LineVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
     };
 
     struct TextVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
         glm::vec2 TexCoord;
         float TexIndex;
     };
@@ -74,13 +74,13 @@ namespace Lumina
     struct PixelVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
     };
 
     struct TriangleVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
         glm::vec2 TexCoord;
         float TexIndex;
     };
@@ -88,7 +88,7 @@ namespace Lumina
     struct GridVertex
     {
         glm::vec3 Position;
-        glm::vec4 Color;
+        glm::vec4 TintColor;
         glm::vec2 TexCoord;
         float TexIndex;
         glm::vec3 GridPosition;
@@ -221,37 +221,37 @@ namespace Lumina
         glm::vec2 CircleRadius = { 1.0f, 1.0f };
         Ref<Texture> CircleTexture = nullptr;
         glm::vec4 CircleTextureCoords = { 0.0f, 0.0f, 1.0f, 1.0f };
-        glm::vec4 CircleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 CircleTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         float CircleThickness = 1.0f;
         float CircleFade = 0.0f;
 
         glm::vec3 LineStart = { 0.0f, 0.0f, 0.0f };
         glm::vec3 LineEnd = { 1.0f, 1.0f, 0.0f };
         float LineThickness = 2.0f;
-        glm::vec4 LineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 LineTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         std::string StringContent = "";
         glm::vec3 StringPosition = { 0.0f, 0.0f, 0.0f };
-        glm::vec4 StringColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 StringTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         float StringSize = 1.0f;
         Ref<Texture> StringFont = nullptr;
         StringAlignment StringAlignment = StringAlignment::Left;
 
         glm::vec3 PixelPosition = { 0.0f, 0.0f, 0.0f };
-        glm::vec4 PixelColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 PixelTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		float PixelSize = 1.0f;
 
         glm::vec3 TrianglePoint1 = { 0.0f, 0.0f, 0.0f };
         glm::vec3 TrianglePoint2 = { 1.0f, 0.0f, 0.0f };
         glm::vec3 TrianglePoint3 = { 0.5f, 1.0f, 0.0f };
         Ref<Texture> TriangleTexture = nullptr;
-        glm::vec4 TriangleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glm::vec4 TriangleTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         glm::vec3 GridPosition = { 0.0f, 0.0f, 0.0f };
         glm::vec3 GridRotation = { 0.0f, 0.0f, 0.0f };
         glm::vec2 GridSize = { 1000.0f, 1000.0f };
         float GridCellSize = 1.0f;
-        glm::vec4 GridColor = { 0.3f, 0.3f, 0.3f, 0.8f };
+        glm::vec4 GridTintColor = { 0.3f, 0.3f, 0.3f, 0.8f };
         float GridLineWidth = 1.0f;
         bool GridShowCheckerboard = true;
         glm::vec4 GridCheckerColor1 = { 0.9f, 0.9f, 0.9f, 0.2f };
@@ -916,9 +916,9 @@ namespace Lumina
         s_Data.CircleTextureCoords = textureCoords;
     }
 
-    void Renderer2D::SetCircleColor(const glm::vec4& color)
+    void Renderer2D::SetCircleTintColor(const glm::vec4& tintColor)
     {
-        s_Data.CircleColor = color;
+        s_Data.CircleTintColor = tintColor;
     }
 
     void Renderer2D::SetCircleThickness(float thickness)
@@ -938,7 +938,7 @@ namespace Lumina
         s_Data.CircleRadius = { 1.0f, 1.0f };
         s_Data.CircleTexture = nullptr;
         s_Data.CircleTextureCoords = { 0.0f, 0.0f, 1.0f, 1.0f };
-        s_Data.CircleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.CircleTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         s_Data.CircleThickness = 1.0f;
         s_Data.CircleFade = 0.0f;
     }
@@ -958,9 +958,9 @@ namespace Lumina
         s_Data.LineThickness = thickness;
     }
 
-    void Renderer2D::SetLineColor(const glm::vec4& color)
+    void Renderer2D::SetLineTintColor(const glm::vec4& tintColor)
     {
-        s_Data.LineColor = color;
+        s_Data.LineTintColor = tintColor;
     }
 
     void Renderer2D::ResetLineState()
@@ -968,7 +968,7 @@ namespace Lumina
         s_Data.LineStart = { 0.0f, 0.0f, 0.0f };
         s_Data.LineEnd = { 1.0f, 1.0f, 0.0f };
         s_Data.LineThickness = 2.0f;
-        s_Data.LineColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.LineTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     }
 
     void Renderer2D::SetStringContent(const std::string& text)
@@ -981,9 +981,9 @@ namespace Lumina
         s_Data.StringPosition = position;
     }
 
-    void Renderer2D::SetStringColor(const glm::vec4& color)
+    void Renderer2D::SetStringTintColor(const glm::vec4& tintColor)
     {
-        s_Data.StringColor = color;
+        s_Data.StringTintColor = tintColor;
     }
 
     void Renderer2D::SetStringSize(float size)
@@ -1005,7 +1005,7 @@ namespace Lumina
     {
         s_Data.StringContent = "";
         s_Data.StringPosition = { 0.0f, 0.0f, 0.0f };
-        s_Data.StringColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.StringTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
         s_Data.StringSize = 1.0f;
         s_Data.StringFont = nullptr;
         s_Data.StringAlignment = StringAlignment::Left; 
@@ -1016,9 +1016,9 @@ namespace Lumina
         s_Data.PixelPosition = position;
     }
 
-    void Renderer2D::SetPixelColor(const glm::vec4& color)
+    void Renderer2D::SetPixelTintColor(const glm::vec4& tintColor)
     {
-        s_Data.PixelColor = color;
+        s_Data.PixelTintColor = tintColor;
     }
 
     void Renderer2D::SetPixelSize(float size)
@@ -1038,7 +1038,7 @@ namespace Lumina
     void Renderer2D::ResetPixelState()
     {
         s_Data.PixelPosition = { 0.0f, 0.0f, 0.0f };
-        s_Data.PixelColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.PixelTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     }
 
     void Renderer2D::SetTrianglePoint1(const glm::vec3& point1)
@@ -1061,9 +1061,9 @@ namespace Lumina
         s_Data.TriangleTexture = texture;
     }
 
-    void Renderer2D::SetTriangleColor(const glm::vec4& color)
+    void Renderer2D::SetTriangleTintColor(const glm::vec4& tintColor)
     {
-        s_Data.TriangleColor = color;
+        s_Data.TriangleTintColor = tintColor;
     }
 
     void Renderer2D::ResetTriangleState()
@@ -1072,7 +1072,7 @@ namespace Lumina
         s_Data.TrianglePoint2 = { 1.0f, 0.0f, 0.0f };
         s_Data.TrianglePoint3 = { 0.5f, 1.0f, 0.0f };
         s_Data.TriangleTexture = nullptr;
-        s_Data.TriangleColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+        s_Data.TriangleTintColor = { 1.0f, 1.0f, 1.0f, 1.0f };
     }
 
     void Renderer2D::SetGridPosition(const glm::vec3& position)
@@ -1095,9 +1095,9 @@ namespace Lumina
         s_Data.GridCellSize = gridSize;
     }
 
-    void Renderer2D::SetGridColor(const glm::vec4& color)
+    void Renderer2D::SetGridTintColor(const glm::vec4& tintColor)
     {
-        s_Data.GridColor = color;
+        s_Data.GridTintColor = tintColor;
     }
 
     void Renderer2D::SetGridLineWidth(float lineWidth)
@@ -1126,7 +1126,7 @@ namespace Lumina
         s_Data.GridRotation = { 0.0f, 0.0f, 0.0f };
         s_Data.GridSize = { 1000.0f, 1000.0f };
         s_Data.GridCellSize = 1.0f;
-        s_Data.GridColor = { 0.3f, 0.3f, 0.3f, 0.8f };
+        s_Data.GridTintColor = { 0.3f, 0.3f, 0.3f, 0.8f };
         s_Data.GridLineWidth = 1.0f;
         s_Data.GridShowCheckerboard = true;
         s_Data.GridCheckerColor1 = { 0.9f, 0.9f, 0.9f, 0.2f };
@@ -1219,7 +1219,7 @@ namespace Lumina
         for (size_t i = 0; i < 4; i++)
         {
             s_Data.QuadVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-            s_Data.QuadVertexBufferPtr->Color = s_Data.QuadTintColor;
+            s_Data.QuadVertexBufferPtr->TintColor = s_Data.QuadTintColor;
             s_Data.QuadVertexBufferPtr->TexCoord = uvs[i];
             s_Data.QuadVertexBufferPtr->TexIndex = texIndex;
             s_Data.QuadVertexBufferPtr++;
@@ -1264,7 +1264,7 @@ namespace Lumina
         {
             s_Data.CircleVertexBufferPtr->WorldPosition = transform * s_Data.QuadVertexPositions[i];
             s_Data.CircleVertexBufferPtr->LocalPosition = s_Data.CircleVertexPositions[i];
-            s_Data.CircleVertexBufferPtr->Color = s_Data.CircleColor;
+            s_Data.CircleVertexBufferPtr->TintColor = s_Data.CircleTintColor;
             s_Data.CircleVertexBufferPtr->TexCoord = uvs[i];
             s_Data.CircleVertexBufferPtr->TexIndex = texIndex;
             s_Data.CircleVertexBufferPtr->Thickness = s_Data.CircleThickness;
@@ -1292,12 +1292,12 @@ namespace Lumina
         }
 
         s_Data.LineVertexBufferPtr->Position = s_Data.LineStart;
-        s_Data.LineVertexBufferPtr->Color = s_Data.LineColor;
+        s_Data.LineVertexBufferPtr->TintColor = s_Data.LineTintColor;
         s_Data.LineVertexBufferPtr++;
         s_Data.LineVertexCount++;
 
         s_Data.LineVertexBufferPtr->Position = s_Data.LineEnd;
-        s_Data.LineVertexBufferPtr->Color = s_Data.LineColor;
+        s_Data.LineVertexBufferPtr->TintColor = s_Data.LineTintColor;
         s_Data.LineVertexBufferPtr++;
         s_Data.LineVertexCount++;
 
@@ -1365,7 +1365,7 @@ namespace Lumina
             for (size_t i = 0; i < 4; i++)
             {
                 s_Data.TextVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-                s_Data.TextVertexBufferPtr->Color = s_Data.StringColor;
+                s_Data.TextVertexBufferPtr->TintColor = s_Data.StringTintColor;
                 s_Data.TextVertexBufferPtr->TexCoord = uvs[i];
                 s_Data.TextVertexBufferPtr->TexIndex = texIndex;
                 s_Data.TextVertexBufferPtr++;
@@ -1387,7 +1387,7 @@ namespace Lumina
         }
 
         s_Data.PixelVertexBufferPtr->Position = s_Data.PixelPosition;
-        s_Data.PixelVertexBufferPtr->Color = s_Data.PixelColor;
+        s_Data.PixelVertexBufferPtr->TintColor = s_Data.PixelTintColor;
         s_Data.PixelVertexBufferPtr++;
         s_Data.PixelVertexCount++;
 
@@ -1405,19 +1405,19 @@ namespace Lumina
         float texIndex = ComputeTextureIndex(s_Data.TriangleTexture);
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint1;
-        s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
+        s_Data.TriangleVertexBufferPtr->TintColor = s_Data.TriangleTintColor;
         s_Data.TriangleVertexBufferPtr->TexCoord = { 0.0f, 1.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint2;
-        s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
+        s_Data.TriangleVertexBufferPtr->TintColor = s_Data.TriangleTintColor;
         s_Data.TriangleVertexBufferPtr->TexCoord = { 1.0f, 1.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
 
         s_Data.TriangleVertexBufferPtr->Position = s_Data.TrianglePoint3;
-        s_Data.TriangleVertexBufferPtr->Color = s_Data.TriangleColor;
+        s_Data.TriangleVertexBufferPtr->TintColor = s_Data.TriangleTintColor;
         s_Data.TriangleVertexBufferPtr->TexCoord = { 0.5f, 0.0f };
         s_Data.TriangleVertexBufferPtr->TexIndex = texIndex;
         s_Data.TriangleVertexBufferPtr++;
@@ -1453,14 +1453,14 @@ namespace Lumina
         for (size_t i = 0; i < 4; i++)
         {
             s_Data.GridVertexBufferPtr->Position = transform * s_Data.QuadVertexPositions[i];
-            s_Data.GridVertexBufferPtr->Color = s_Data.GridColor;
+            s_Data.GridVertexBufferPtr->TintColor = s_Data.GridTintColor;
             s_Data.GridVertexBufferPtr->TexCoord = texCoords[i];
             s_Data.GridVertexBufferPtr->TexIndex = 0.0f;
 
             s_Data.GridVertexBufferPtr->GridPosition = s_Data.GridPosition;
             s_Data.GridVertexBufferPtr->GridSize = s_Data.GridSize;
             s_Data.GridVertexBufferPtr->CellSize = s_Data.GridCellSize;
-            s_Data.GridVertexBufferPtr->GridColor = s_Data.GridColor;
+            s_Data.GridVertexBufferPtr->GridColor = s_Data.GridTintColor;
             s_Data.GridVertexBufferPtr->LineWidth = s_Data.GridLineWidth;
             s_Data.GridVertexBufferPtr->ShowCheckerboard = s_Data.GridShowCheckerboard ? 1.0f : 0.0f;
             s_Data.GridVertexBufferPtr->CheckerColor1 = s_Data.GridCheckerColor1;
