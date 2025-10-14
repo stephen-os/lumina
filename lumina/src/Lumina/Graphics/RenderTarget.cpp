@@ -119,11 +119,18 @@ namespace Lumina
         m_Width = std::max(width, 1u);
         m_Height = std::max(height, 1u);
 
-        // Delete old framebuffer
-        DeleteFramebuffer();
+        for (uint32_t i = 0; i < m_ColorAttachments.size(); i++)
+        {
+            GLCALL(glBindTexture(GL_TEXTURE_2D, m_ColorAttachments[i]));
+            GLCALL(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, m_Width, m_Height, 0, GL_RGBA, GL_FLOAT, nullptr));
+            GLCALL(glGenerateMipmap(GL_TEXTURE_2D));
+        }
 
-        // Create new framebuffer with new size
-        CreateFramebuffer();
+        GLCALL(glBindRenderbuffer(GL_RENDERBUFFER, m_DepthAttachment));
+        GLCALL(glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, m_Width, m_Height));
+
+        GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+        LUMINA_ASSERT(status == GL_FRAMEBUFFER_COMPLETE, "Framebuffer is incomplete after resize");
     }
 
     void RenderTarget::Resize(float width, float height)
