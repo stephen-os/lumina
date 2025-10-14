@@ -28,6 +28,7 @@ namespace Lumina
 
 		int GetWidth() const { return m_GridWidth; }
 		int GetHeight() const { return m_GridHeight; }
+		int GetTextureCount() const { return m_GridWidth * m_GridHeight; }
 
 		bool HasTexture() const { return m_HasTexture; }
 		void RemoveTexture();
