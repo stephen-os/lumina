@@ -29,6 +29,7 @@ namespace Lumina
     class Layer
     {
     public:
+		Layer(const std::string& name = "Unamed Layer") : m_Name(name) {}
         virtual ~Layer() = default;
         virtual void OnAttach() {}
         virtual void OnDetach() {}
@@ -36,6 +37,8 @@ namespace Lumina
         virtual void OnUpdate(float ts) {}
         virtual void OnEvent(Event& e) {}
         virtual void OnUIRender() {}
+
+		const std::string& GetName() const { return m_Name; }
 
         void ProcessDockingRequests(ImGuiID dockspaceID);
         bool HasDockingRequests() const { return !m_DockRequests.empty(); }
@@ -70,6 +73,8 @@ namespace Lumina
                 return false;
             }
         };
+
+        std::string m_Name;
 
         std::vector<DockRequest> m_DockRequests;
         std::unordered_map<std::string, ImGuiID> m_WindowDockIDs;
