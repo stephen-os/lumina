@@ -3,7 +3,7 @@
 #include <utility>
 #include <string>
 
-#include "KeyCode.h"
+#include "KeyCodes.h"
 
 namespace Lumina 
 {

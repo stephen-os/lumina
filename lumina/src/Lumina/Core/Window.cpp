@@ -1,6 +1,7 @@
 #include "Window.h"
 #include "Log.h"
 #include "Assert.h"
+#include "KeyCodes.h"
 
 #include <Lumina/Events/ApplicationEvent.h>
 #include <Lumina/Events/MouseEvent.h>
@@ -18,7 +19,7 @@ namespace Lumina
         LUMINA_LOG_ERROR("[GLFW ERROR] {}: {}", error, description);
     }
 
-    Window::Window(const WindowSpecification& specification) 
+    Window::Window(const WindowSpecification& specification)
     {
         m_WindowSpecifications = specification;
 
@@ -63,7 +64,7 @@ namespace Lumina
         LUMINA_ASSERT(version, "[OpenGL Context] Failed to retrieve OpenGL version.");
         LUMINA_LOG_INFO("OpenGL Version: {}", version);
 
-		SetupCallbacks();
+        SetupCallbacks();
 
         // Apply fullscreen or maximized state
         if (specification.Fullscreen)
@@ -145,23 +146,24 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
+                    KeyCode keyCode = static_cast<KeyCode>(key);
                     switch (action)
                     {
                     case GLFW_PRESS:
                     {
-                        KeyPressedEvent event(key, false);
+                        KeyPressedEvent event(keyCode, false);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_RELEASE:
                     {
-                        KeyReleasedEvent event(key);
+                        KeyReleasedEvent event(keyCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_REPEAT:
                     {
-                        KeyPressedEvent event(key, true);
+                        KeyPressedEvent event(keyCode, true);
                         win->m_WindowEventCallback(event);
                         break;
                     }
@@ -174,7 +176,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    KeyTypedEvent event(codepoint);
+                    KeyTypedEvent event(static_cast<KeyCode>(codepoint));
                     win->m_WindowEventCallback(event);
                 }
             });
@@ -275,7 +277,7 @@ namespace Lumina
 
     void Window::Maximize()
     {
-		m_WindowSpecifications.Maximized = true;
+        m_WindowSpecifications.Maximized = true;
         glfwMaximizeWindow(m_Window);
     }
 
