@@ -1,6 +1,7 @@
 #pragma once
 
 #include <utility>
+#include <string>
 
 #include "KeyCode.h"
 
@@ -16,5 +17,7 @@ namespace Lumina
         static float GetMouseY();
 
         static void SetCursorMode(CursorMode mode);
+
+        static std::string KeyCodeToString(KeyCode keycode);
     };
 }
