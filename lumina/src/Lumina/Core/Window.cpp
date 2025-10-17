@@ -2,9 +2,9 @@
 #include "Log.h"
 #include "Assert.h"
 
-#include "Events/ApplicationEvent.h"
-#include "Events/MouseEvent.h"
-#include "Events/KeyEvent.h"
+#include <Lumina/Events/ApplicationEvent.h>
+#include <Lumina/Events/MouseEvent.h>
+#include <Lumina/Events/KeyEvent.h>
 
 #include <stb/stb_image.h>
 #include <glad/glad.h>

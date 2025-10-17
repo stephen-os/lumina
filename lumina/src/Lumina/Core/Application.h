@@ -5,7 +5,7 @@
 #include "Layer.h"
 #include "Window.h"
 
-#include "Events/Event.h"
+#include <Lumina/Events/Event.h>
 
 #include <string>
 #include <vector>

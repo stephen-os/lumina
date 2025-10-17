@@ -17,9 +17,9 @@
 #include "Assert.h"
 #include "Theme.h"
 
-#include "Events/ApplicationEvent.h"
-#include "Events/KeyEvent.h"
-#include "Events/MouseEvent.h"
+#include <Lumina/Events/ApplicationEvent.h>
+#include <Lumina/Events/MouseEvent.h>
+#include <Lumina/Events/KeyEvent.h>
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
