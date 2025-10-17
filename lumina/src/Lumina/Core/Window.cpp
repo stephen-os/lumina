@@ -186,23 +186,25 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
+                    MouseCode mouseCode = static_cast<MouseCode>(button);
                     switch (action)
                     {
                     case GLFW_PRESS:
                     {
-                        MouseButtonPressedEvent event(button);
+                        MouseButtonPressedEvent event(mouseCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_RELEASE:
                     {
-                        MouseButtonReleasedEvent event(button);
+                        MouseButtonReleasedEvent event(mouseCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     }
                 }
             });
+
 
         glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
             {

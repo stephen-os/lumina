@@ -1,7 +1,6 @@
 #pragma once
-
 #include "Event.h"
-
+#include "Lumina/Core/KeyCodes.h"
 #include <sstream>
 
 namespace Lumina
@@ -9,21 +8,17 @@ namespace Lumina
     class MouseMovedEvent : public Event
     {
     public:
-        MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) { }
-
+        MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
         float GetX() const { return m_MouseX; }
         float GetY() const { return m_MouseY; }
-
         std::string ToString() const override
         {
             std::stringstream ss;
             ss << "MouseMovedEvent: (" << m_MouseX << ", " << m_MouseY << ")";
             return ss.str();
         }
-
         EVENT_CLASS_TYPE(MouseMoved)
-        EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
-
+            EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
     private:
         float m_MouseX;
         float m_MouseY;
@@ -32,21 +27,17 @@ namespace Lumina
     class MouseScrolledEvent : public Event
     {
     public:
-        MouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) { }
-
+        MouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) {}
         float GetXOffset() const { return m_XOffset; }
         float GetYOffset() const { return m_YOffset; }
-
         std::string ToString() const override
         {
             std::stringstream ss;
             ss << "MouseScrolledEvent: (" << m_XOffset << ", " << m_YOffset << ")";
             return ss.str();
         }
-
         EVENT_CLASS_TYPE(MouseScrolled)
-        EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
-
+            EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
     private:
         float m_XOffset;
         float m_YOffset;
@@ -55,45 +46,52 @@ namespace Lumina
     class MouseButtonEvent : public Event
     {
     public:
-        int GetMouseButton() const { return m_Button; }
-
+        MouseCode GetMouseButton() const { return m_Button; }
         EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
-
     protected:
-        MouseButtonEvent(int button)
+        MouseButtonEvent(MouseCode button)
             : m_Button(button) {
         }
-
-        int m_Button;
+        MouseCode m_Button;
     };
 
     class MouseButtonPressedEvent : public MouseButtonEvent
     {
     public:
-        MouseButtonPressedEvent(int button) : MouseButtonEvent(button) { }
-
+        MouseButtonPressedEvent(MouseCode button) : MouseButtonEvent(button) {}
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseButtonPressedEvent: " << m_Button;
+            ss << "MouseButtonPressedEvent: ";
+            switch (m_Button)
+            {
+            case MouseCode::Left:   ss << "Left"; break;
+            case MouseCode::Right:  ss << "Right"; break;
+            case MouseCode::Middle: ss << "Middle"; break;
+            default: ss << "Button" << static_cast<int>(m_Button); break;
+            }
             return ss.str();
         }
-
         EVENT_CLASS_TYPE(MouseButtonPressed)
     };
 
     class MouseButtonReleasedEvent : public MouseButtonEvent
     {
     public:
-        MouseButtonReleasedEvent(int button) : MouseButtonEvent(button) { }
-
+        MouseButtonReleasedEvent(MouseCode button) : MouseButtonEvent(button) {}
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseButtonReleasedEvent: " << m_Button;
+            ss << "MouseButtonReleasedEvent: ";
+            switch (m_Button)
+            {
+            case MouseCode::Left:   ss << "Left"; break;
+            case MouseCode::Right:  ss << "Right"; break;
+            case MouseCode::Middle: ss << "Middle"; break;
+            default: ss << "Button" << static_cast<int>(m_Button); break;
+            }
             return ss.str();
         }
-
         EVENT_CLASS_TYPE(MouseButtonReleased)
     };
 }
