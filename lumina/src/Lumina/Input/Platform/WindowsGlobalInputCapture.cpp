@@ -1,4 +1,4 @@
-﻿#include "WindowsGlobalInput.h"
+﻿#include "WindowsGlobalInputCapture.h"
 
 #ifdef _WIN32
 
@@ -6,24 +6,24 @@
 
 namespace Lumina
 {
-    WindowsGlobalInput* WindowsGlobalInput::s_Instance = nullptr;
+    WindowsGlobalInputCapture* WindowsGlobalInputCapture::s_Instance = nullptr;
 
-    WindowsGlobalInput::WindowsGlobalInput()
+    WindowsGlobalInputCapture::WindowsGlobalInputCapture()
     {
         s_Instance = this;
     }
 
-    WindowsGlobalInput::~WindowsGlobalInput()
+    WindowsGlobalInputCapture::~WindowsGlobalInputCapture()
     {
         Stop();
         s_Instance = nullptr;
     }
 
-    bool WindowsGlobalInput::Start()
+    bool WindowsGlobalInputCapture::Start()
     {
         if (m_IsActive)
         {
-            LUMINA_LOG_WARN("WindowsGlobalInput already active");
+            LUMINA_LOG_WARN("WindowsGlobalInputCapture already active");
             return true;
         }
 
@@ -58,11 +58,11 @@ namespace Lumina
         }
 
         m_IsActive = true;
-        LUMINA_LOG_INFO("WindowsGlobalInput started successfully");
+        LUMINA_LOG_INFO("WindowsGlobalInputCapture started successfully");
         return true;
     }
 
-    void WindowsGlobalInput::Stop()
+    void WindowsGlobalInputCapture::Stop()
     {
         if (!m_IsActive)
             return;
@@ -80,10 +80,10 @@ namespace Lumina
         }
 
         m_IsActive = false;
-        LUMINA_LOG_INFO("WindowsGlobalInput stopped");
+        LUMINA_LOG_INFO("WindowsGlobalInputCapture stopped");
     }
 
-    LRESULT CALLBACK WindowsGlobalInput::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK WindowsGlobalInputCapture::KeyboardHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (nCode >= 0 && s_Instance)
         {
@@ -105,7 +105,7 @@ namespace Lumina
         return CallNextHookEx(s_Instance ? s_Instance->m_KeyboardHook : NULL, nCode, wParam, lParam);
     }
 
-    LRESULT CALLBACK WindowsGlobalInput::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
+    LRESULT CALLBACK WindowsGlobalInputCapture::MouseHookProc(int nCode, WPARAM wParam, LPARAM lParam)
     {
         if (nCode >= 0 && s_Instance)
         {
@@ -181,7 +181,7 @@ namespace Lumina
         return CallNextHookEx(s_Instance ? s_Instance->m_MouseHook : NULL, nCode, wParam, lParam);
     }
 
-    KeyCode WindowsGlobalInput::VirtualKeyToKeyCode(DWORD vkCode)
+    KeyCode WindowsGlobalInputCapture::VirtualKeyToKeyCode(DWORD vkCode)
     {
         switch (vkCode)
         {
@@ -319,7 +319,7 @@ namespace Lumina
         }
     }
 
-    MouseCode WindowsGlobalInput::ButtonToMouseCode(WPARAM wParam)
+    MouseCode WindowsGlobalInputCapture::ButtonToMouseCode(WPARAM wParam)
     {
         switch (wParam)
         {

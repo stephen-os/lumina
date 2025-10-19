@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Lumina/Input/GlobalInput.h"
+#include "Lumina/Input/GlobalInputCapture.h"
 
 #ifdef _WIN32
 
@@ -9,11 +9,11 @@
 
 namespace Lumina
 {
-    class WindowsGlobalInput : public GlobalInput
+    class WindowsGlobalInputCapture : public GlobalInputCapture
     {
     public:
-        WindowsGlobalInput();
-        ~WindowsGlobalInput() override;
+        WindowsGlobalInputCapture();
+        ~WindowsGlobalInputCapture() override;
 
         bool Start() override;
         void Stop() override;
@@ -32,7 +32,7 @@ namespace Lumina
         HHOOK m_MouseHook = nullptr;
         bool m_IsActive = false;
 
-        static WindowsGlobalInput* s_Instance;
+        static WindowsGlobalInputCapture* s_Instance;
     };
 }
 

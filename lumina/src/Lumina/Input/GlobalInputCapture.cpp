@@ -1,50 +1,50 @@
-#include "GlobalInput.h"
+#include "GlobalInputCapture.h"
 #include "Lumina/Core/Application.h"
 
 #include "Lumina/Events/GlobalKeyEvent.h"
 #include "Lumina/Events/GlobalMouseEvent.h"
 
 #ifdef _WIN32
-#include "Platform/WindowsGlobalInput.h"
+#include "Platform/WindowsGlobalInputCapture.h"
 #endif
 
 namespace Lumina
 {
-    std::unique_ptr<GlobalInput> GlobalInput::Create()
+    std::unique_ptr<GlobalInputCapture> GlobalInputCapture::Create()
     {
 #ifdef _WIN32
-        return std::make_unique<WindowsGlobalInput>();
+        return std::make_unique<WindowsGlobalInputCapture>();
 #else
         return nullptr;
 #endif
     }
 
-    void GlobalInput::SetKeyCallback(GlobalKeyCallback callback)
+    void GlobalInputCapture::SetKeyCallback(GlobalKeyCallback callback)
     {
         m_KeyCallback = callback;
     }
 
-    void GlobalInput::SetMouseButtonCallback(GlobalMouseButtonCallback callback)
+    void GlobalInputCapture::SetMouseButtonCallback(GlobalMouseButtonCallback callback)
     {
         m_MouseButtonCallback = callback;
     }
 
-    void GlobalInput::SetMouseMoveCallback(GlobalMouseMoveCallback callback)
+    void GlobalInputCapture::SetMouseMoveCallback(GlobalMouseMoveCallback callback)
     {
         m_MouseMoveCallback = callback;
     }
 
-    void GlobalInput::SetMouseScrollCallback(GlobalMouseScrollCallback callback)
+    void GlobalInputCapture::SetMouseScrollCallback(GlobalMouseScrollCallback callback)
     {
         m_ScrollCallback = callback;
     }
 
-    void GlobalInput::SetPostEventsToApplication(bool enable)
+    void GlobalInputCapture::SetPostEventsToApplication(bool enable)
     {
         m_PostEvents = enable;
     }
 
-    void GlobalInput::PostGlobalKeyEvent(KeyCode key, bool pressed)
+    void GlobalInputCapture::PostGlobalKeyEvent(KeyCode key, bool pressed)
     {
         if (!m_PostEvents)
             return;
@@ -61,7 +61,7 @@ namespace Lumina
         }
     }
 
-    void GlobalInput::PostGlobalMouseButtonEvent(MouseCode button, bool pressed, int x, int y)
+    void GlobalInputCapture::PostGlobalMouseButtonEvent(MouseCode button, bool pressed, int x, int y)
     {
         if (!m_PostEvents)
             return;
@@ -78,7 +78,7 @@ namespace Lumina
         }
     }
 
-    void GlobalInput::PostGlobalMouseMoveEvent(int x, int y)
+    void GlobalInputCapture::PostGlobalMouseMoveEvent(int x, int y)
     {
         if (!m_PostEvents)
             return;
@@ -87,7 +87,7 @@ namespace Lumina
         Application::GetInstance().QueueEvent(std::move(event));
     }
 
-    void GlobalInput::PostGlobalMouseScrollEvent(int dx, int dy)
+    void GlobalInputCapture::PostGlobalMouseScrollEvent(int dx, int dy)
     {
         if (!m_PostEvents)
             return;

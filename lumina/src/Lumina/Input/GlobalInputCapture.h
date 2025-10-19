@@ -14,10 +14,10 @@ namespace Lumina
     using GlobalMouseMoveCallback = std::function<void(int x, int y)>;
     using GlobalMouseScrollCallback = std::function<void(int dx, int dy)>;
 
-    class GlobalInput
+    class GlobalInputCapture
     {
     public:
-        virtual ~GlobalInput() = default;
+        virtual ~GlobalInputCapture() = default;
 
         virtual bool Start() = 0;
         virtual void Stop() = 0;
@@ -31,7 +31,7 @@ namespace Lumina
         void SetPostEventsToApplication(bool enable);
         bool IsPostingEvents() const { return m_PostEvents; }
 
-        static std::unique_ptr<GlobalInput> Create();
+        static std::unique_ptr<GlobalInputCapture> Create();
 
     protected:
         GlobalKeyCallback m_KeyCallback;
