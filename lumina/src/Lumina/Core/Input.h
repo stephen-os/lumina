@@ -18,6 +18,12 @@ namespace Lumina
 
         static void SetCursorMode(CursorMode mode);
 
+        static bool IsShiftPressed();
+        static bool IsCtrlPressed();
+        static bool IsAltPressed();
+        static bool IsSuperPressed();
+        static bool IsCapsLockActive();
+
         static std::string KeyCodeToString(KeyCode keycode);
     };
 }

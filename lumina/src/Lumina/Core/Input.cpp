@@ -63,6 +63,35 @@ namespace Lumina
         glfwSetInputMode(window, GLFW_CURSOR, glfwMode);
     }
 
+    bool Input::IsShiftPressed()
+    {
+        return IsKeyPressed(KeyCode::LeftShift) || IsKeyPressed(KeyCode::RightShift);
+    }
+
+    bool Input::IsCtrlPressed()
+    {
+        return IsKeyPressed(KeyCode::LeftControl) || IsKeyPressed(KeyCode::RightControl);
+    }
+
+    bool Input::IsAltPressed()
+    {
+        return IsKeyPressed(KeyCode::LeftAlt) || IsKeyPressed(KeyCode::RightAlt);
+    }
+
+    bool Input::IsSuperPressed()
+    {
+        return IsKeyPressed(KeyCode::LeftSuper) || IsKeyPressed(KeyCode::RightSuper);
+    }
+
+    bool Input::IsCapsLockActive()
+    {
+        GLFWwindow* window = Application::GetInstance().GetWindowHandle();
+        LUMINA_ASSERT(window, "Window is null.");
+
+        int state = glfwGetKey(window, GLFW_KEY_CAPS_LOCK);
+        return state == GLFW_PRESS;
+    }
+
     std::string Input::KeyCodeToString(KeyCode keycode)
     {
         int code = static_cast<int>(keycode);
