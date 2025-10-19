@@ -3,9 +3,9 @@
 #include "Assert.h"
 #include "KeyCodes.h"
 
-#include <Lumina/Events/ApplicationEvent.h>
-#include <Lumina/Events/MouseEvent.h>
-#include <Lumina/Events/KeyEvent.h>
+#include <Lumina/Events/WindowEvent.h>
+#include <Lumina/Events/WindowMouseEvent.h>
+#include <Lumina/Events/WindowKeyEvent.h>
 
 #include <stb/stb_image.h>
 #include <glad/glad.h>
@@ -151,19 +151,19 @@ namespace Lumina
                     {
                     case GLFW_PRESS:
                     {
-                        KeyPressedEvent event(keyCode, false);
+                        WindowKeyPressedEvent event(keyCode, false);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_RELEASE:
                     {
-                        KeyReleasedEvent event(keyCode);
+                        WindowKeyReleasedEvent event(keyCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_REPEAT:
                     {
-                        KeyPressedEvent event(keyCode, true);
+                        WindowKeyPressedEvent event(keyCode, true);
                         win->m_WindowEventCallback(event);
                         break;
                     }
@@ -176,7 +176,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    KeyTypedEvent event(static_cast<KeyCode>(codepoint));
+                    WindowKeyTypedEvent event(static_cast<KeyCode>(codepoint));
                     win->m_WindowEventCallback(event);
                 }
             });
@@ -191,13 +191,13 @@ namespace Lumina
                     {
                     case GLFW_PRESS:
                     {
-                        MouseButtonPressedEvent event(mouseCode);
+                        WindowMouseButtonPressedEvent event(mouseCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
                     case GLFW_RELEASE:
                     {
-                        MouseButtonReleasedEvent event(mouseCode);
+                        WindowMouseButtonReleasedEvent event(mouseCode);
                         win->m_WindowEventCallback(event);
                         break;
                     }
@@ -211,7 +211,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    MouseScrolledEvent event((float)xOffset, (float)yOffset);
+                    WindowMouseScrolledEvent event((float)xOffset, (float)yOffset);
                     win->m_WindowEventCallback(event);
                 }
             });
@@ -221,7 +221,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    MouseMovedEvent event((float)xPos, (float)yPos);
+                    WindowMouseMovedEvent event((float)xPos, (float)yPos);
                     win->m_WindowEventCallback(event);
                 }
             });

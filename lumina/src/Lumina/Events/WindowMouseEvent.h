@@ -1,68 +1,77 @@
 #pragma once
+
 #include "Event.h"
+
 #include "Lumina/Core/KeyCodes.h"
+
 #include <sstream>
 
 namespace Lumina
 {
-    class MouseMovedEvent : public Event
+    class WindowMouseMovedEvent : public Event
     {
     public:
-        MouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
+        WindowMouseMovedEvent(float x, float y) : m_MouseX(x), m_MouseY(y) {}
         float GetX() const { return m_MouseX; }
         float GetY() const { return m_MouseY; }
+
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseMovedEvent: (" << m_MouseX << ", " << m_MouseY << ")";
+            ss << "WindowMouseMovedEvent: (" << m_MouseX << ", " << m_MouseY << ")";
             return ss.str();
         }
-        EVENT_CLASS_TYPE(MouseMoved)
+
+        EVENT_CLASS_TYPE(WindowMouseMoved)
             EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
     private:
         float m_MouseX;
         float m_MouseY;
     };
 
-    class MouseScrolledEvent : public Event
+    class WindowMouseScrolledEvent : public Event
     {
     public:
-        MouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) {}
+        WindowMouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) {}
+
         float GetXOffset() const { return m_XOffset; }
         float GetYOffset() const { return m_YOffset; }
+
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseScrolledEvent: (" << m_XOffset << ", " << m_YOffset << ")";
+            ss << "WindowMouseScrolledEvent: (" << m_XOffset << ", " << m_YOffset << ")";
             return ss.str();
         }
-        EVENT_CLASS_TYPE(MouseScrolled)
+
+        EVENT_CLASS_TYPE(WindowMouseScrolled)
             EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput)
     private:
         float m_XOffset;
         float m_YOffset;
     };
 
-    class MouseButtonEvent : public Event
+    class WindowMouseButtonEvent : public Event
     {
     public:
         MouseCode GetMouseButton() const { return m_Button; }
         EVENT_CLASS_CATEGORY(EventCategoryMouse | EventCategoryInput | EventCategoryMouseButton)
     protected:
-        MouseButtonEvent(MouseCode button)
+        WindowMouseButtonEvent(MouseCode button)
             : m_Button(button) {
         }
         MouseCode m_Button;
     };
 
-    class MouseButtonPressedEvent : public MouseButtonEvent
+    class WindowMouseButtonPressedEvent : public WindowMouseButtonEvent
     {
     public:
-        MouseButtonPressedEvent(MouseCode button) : MouseButtonEvent(button) {}
+        WindowMouseButtonPressedEvent(MouseCode button) : WindowMouseButtonEvent(button) {}
+
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseButtonPressedEvent: ";
+            ss << "WindowMouseButtonPressedEvent: ";
             switch (m_Button)
             {
             case MouseCode::Left:   ss << "Left"; break;
@@ -72,17 +81,19 @@ namespace Lumina
             }
             return ss.str();
         }
-        EVENT_CLASS_TYPE(MouseButtonPressed)
+
+        EVENT_CLASS_TYPE(WindowMouseButtonPressed)
     };
 
-    class MouseButtonReleasedEvent : public MouseButtonEvent
+    class WindowMouseButtonReleasedEvent : public WindowMouseButtonEvent
     {
     public:
-        MouseButtonReleasedEvent(MouseCode button) : MouseButtonEvent(button) {}
+        WindowMouseButtonReleasedEvent(MouseCode button) : WindowMouseButtonEvent(button) {}
+
         std::string ToString() const override
         {
             std::stringstream ss;
-            ss << "MouseButtonReleasedEvent: ";
+            ss << "WindowMouseButtonReleasedEvent: ";
             switch (m_Button)
             {
             case MouseCode::Left:   ss << "Left"; break;
@@ -92,6 +103,7 @@ namespace Lumina
             }
             return ss.str();
         }
-        EVENT_CLASS_TYPE(MouseButtonReleased)
+
+        EVENT_CLASS_TYPE(WindowMouseButtonReleased)
     };
 }

@@ -17,10 +17,6 @@
 #include "Assert.h"
 #include "Theme.h"
 
-#include <Lumina/Events/ApplicationEvent.h>
-#include <Lumina/Events/MouseEvent.h>
-#include <Lumina/Events/KeyEvent.h>
-
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
@@ -96,19 +92,6 @@ namespace Lumina
     {
         EventDispatcher dispatcher(e);
 
-        // Handle application-level events
-        dispatcher.Dispatch<WindowCloseEvent>([this](WindowCloseEvent& e) {
-            m_Running = false;
-            return true;
-            });
-
-        dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& e) {
-            LUMINA_LOG_INFO("Window resized: {}x{}", e.GetWidth(), e.GetHeight());
-            return false;
-            });
-
-        // Propagate to layers in reverse order (top to bottom)
-        // This allows UI layers to handle events before game layers
         for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
         {
             if (e.Handled)

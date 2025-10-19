@@ -1,5 +1,4 @@
 #pragma once
-
 #include <string>
 #include <functional>
 
@@ -18,16 +17,26 @@ namespace Lumina
         WindowLostFocus = 4,
         WindowMoved = 5,
 
-        // Keyboard events
-        KeyPressed = 6,
-        KeyReleased = 7,
-        KeyTyped = 8,
+        // Window keyboard events (window-focused)
+        WindowKeyPressed = 6,
+        WindowKeyReleased = 7,
+        WindowKeyTyped = 8,
 
-        // Mouse events
-        MouseButtonPressed = 9,
-        MouseButtonReleased = 10,
-        MouseMoved = 11,
-        MouseScrolled = 12,
+        // Window mouse events (window-focused)
+        WindowMouseButtonPressed = 9,
+        WindowMouseButtonReleased = 10,
+        WindowMouseMoved = 11,
+        WindowMouseScrolled = 12,
+
+        // Global keyboard events (system-wide)
+        GlobalKeyPressed = 13,
+        GlobalKeyReleased = 14,
+
+        // Global mouse events (system-wide)
+        GlobalMouseButtonPressed = 15,
+        GlobalMouseButtonReleased = 16,
+        GlobalMouseMoved = 17,
+        GlobalMouseScrolled = 18,
 
         // User events can start from this range
         UserEventStart = 1000
@@ -47,7 +56,6 @@ namespace Lumina
     {
     public:
         bool Handled = false;
-
         virtual ~Event() = default;
 
         virtual EventType GetEventType() const = 0;
@@ -64,7 +72,7 @@ namespace Lumina
     class EventDispatcher
     {
     public:
-        EventDispatcher(Event& event) : m_Event(event) { }
+        EventDispatcher(Event& event) : m_Event(event) {}
 
         template<typename T, typename F>
         bool Dispatch(const F& func)
@@ -81,10 +89,11 @@ namespace Lumina
         Event& m_Event;
     };
 
-    // Helper macro to reduce boilerplate
-#define EVENT_CLASS_TYPE(type) static EventType GetStaticType() { return EventType::type; }\
-                                   virtual EventType GetEventType() const override { return GetStaticType(); }\
-                                   virtual const char* GetName() const override { return #type; }
+#define EVENT_CLASS_TYPE(type) \
+        static EventType GetStaticType() { return EventType::type; } \
+        virtual EventType GetEventType() const override { return GetStaticType(); } \
+        virtual const char* GetName() const override { return #type; }
 
-#define EVENT_CLASS_CATEGORY(category) virtual int GetCategoryFlags() const override { return category; }
+#define EVENT_CLASS_CATEGORY(category) \
+        virtual int GetCategoryFlags() const override { return category; }
 }
