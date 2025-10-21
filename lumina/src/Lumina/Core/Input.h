@@ -2,38 +2,12 @@
 
 #include <utility>
 #include <string>
+#include <vector>
 
 #include "KeyCodes.h"
 
 namespace Lumina 
 {
-    struct KeyCombo
-    {
-        std::vector<KeyCode> Keys;
-
-        bool IsPressed() const
-        {
-            for (const auto& key : Keys)
-            {
-                if (!Input::IsKeyPressed(key))
-                    return false;
-            }
-            return true;
-		}
-
-        bool operator==(const KeyCombo& other) const
-        {
-            if (Keys.size() != other.Keys.size())
-                return false;
-            for (const auto& key : Keys)
-            {
-                if (std::find(other.Keys.begin(), other.Keys.end(), key) == other.Keys.end())
-                    return false;
-            }
-            return true;
-		}
-    };
-
     class Input
     {
     public:
@@ -52,5 +26,32 @@ namespace Lumina
         static bool IsCapsLockActive();
 
         static std::string KeyCodeToString(KeyCode keycode);
+    };
+
+    struct KeyCombo
+    {
+        std::vector<KeyCode> Keys;
+
+        bool IsPressed() const
+        {
+            for (const auto& key : Keys)
+            {
+                if (!Input::IsKeyPressed(key))
+                    return false;
+            }
+            return true;
+        }
+
+        bool operator==(const KeyCombo& other) const
+        {
+            if (Keys.size() != other.Keys.size())
+                return false;
+            for (const auto& key : Keys)
+            {
+                if (std::find(other.Keys.begin(), other.Keys.end(), key) == other.Keys.end())
+                    return false;
+            }
+            return true;
+        }
     };
 }
