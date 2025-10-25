@@ -28,6 +28,8 @@ namespace Lumina
         static std::string KeyCodeToString(KeyCode keycode);
     };
 
+
+    // TODO: Move this to a separate file
     struct KeyCombo
     {
         std::vector<KeyCode> Keys;
@@ -40,6 +42,39 @@ namespace Lumina
                     return false;
             }
             return true;
+        }
+
+        bool Contains(KeyCode key) const
+        {
+            return std::find(Keys.begin(), Keys.end(), key) != Keys.end();
+        }
+
+        void Add(KeyCode key)
+        {
+            if (!Contains(key))
+                Keys.push_back(key);
+        }
+
+        void Remove(KeyCode key)
+        {
+            auto it = std::find(Keys.begin(), Keys.end(), key);
+            if (it != Keys.end())
+                Keys.erase(it);
+        }
+
+        void Clear()
+        {
+            Keys.clear();
+        }
+
+        bool IsEmpty() const
+        {
+            return Keys.empty();
+        }
+
+        size_t Size() const
+        {
+            return Keys.size();
         }
 
         bool operator==(const KeyCombo& other) const
