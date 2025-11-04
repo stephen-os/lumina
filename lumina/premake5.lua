@@ -22,7 +22,9 @@ project "Lumina"
       "../Dependencies/tinygltf",
       "../Dependencies/imguifd",
       "../Dependencies/spdlog/include",
-      "../Dependencies/box2d/include"
+      "../Dependencies/box2d/include",
+      "../Dependencies/imgui-node-editor",
+      "../Dependencies/imgui-node-editor/external/DXSDK/include"
    }
 
    links
@@ -33,6 +35,7 @@ project "Lumina"
        "TinyGLTF",
        "ImGuiFD",
        "Box2D",
+       "ImGuiNodeEditor",
 
        "opengl32.lib"
    }
@@ -40,7 +43,8 @@ project "Lumina"
    defines
    {
       "GLFW_INCLUDE_NONE",
-      "GLEW_STATIC"
+      "GLEW_STATIC",
+      "IMGUI_DEFINE_MATH_OPERATORS"
    }
 
    buildoptions { "/utf-8" }

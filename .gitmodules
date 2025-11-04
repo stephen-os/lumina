@@ -22,3 +22,6 @@
 [submodule "dependencies/glad"]
 	path = dependencies/glad
 	url = https://github.com/stephen-os/glad.git
+[submodule "dependencies/imgui-node-editor"]
+	path = dependencies/imgui-node-editor
+	url = https://github.com/stephen-os/imgui-node-editor.git

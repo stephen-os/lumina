@@ -9,10 +9,11 @@ Library["OpenGL"] = "opengl32.lib"
 
 group "Dependencies"
    include "dependencies/imgui"
+   include "dependencies/imguifd"
+   include "dependencies/imgui-node-editor"
    include "dependencies/glfw"
    include "dependencies/glad"
    include "dependencies/tinygltf"
-   include "dependencies/imguifd"
    include "dependencies/box2d"
 group ""
 
