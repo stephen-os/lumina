@@ -26,6 +26,7 @@ namespace Lumina
         static bool IsCapsLockActive();
 
         static std::string KeyCodeToString(KeyCode keycode);
+        static std::string MouseCodeToString(MouseCode mousecode); 
     };
 
 

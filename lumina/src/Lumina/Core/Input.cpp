@@ -168,4 +168,31 @@ namespace Lumina
         default: return "UNKNOWN_" + std::to_string(code);
         }
     }
+
+    std::string MouseCodeToString(MouseCode mousecode)
+    {
+        switch (mousecode)
+        {
+        case MouseCode::Button0:
+            return "Left";
+
+        case MouseCode::Button1:
+            return "Right";
+
+        case MouseCode::Button2:
+            return "Middle";
+
+        case MouseCode::Button3:
+            return "Button3";
+
+        case MouseCode::Button4:
+            return "Button4";
+
+        case MouseCode::Button5:
+            return "Button5";
+
+        default:
+            return "Unknown";
+        }
+    }
 }
