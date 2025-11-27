@@ -169,7 +169,7 @@ namespace Lumina
         }
     }
 
-    std::string MouseCodeToString(MouseCode mousecode)
+    std::string Input::MouseCodeToString(MouseCode mousecode)
     {
         switch (mousecode)
         {
