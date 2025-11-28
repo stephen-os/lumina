@@ -3,15 +3,18 @@
 
 #include "ApplicationLayer.h"
 
-Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
+namespace Lumina::Core
 {
-    Lumina::ApplicationSpecification spec;
-    spec.Name = "Lumina Application";
-    spec.Width = 900;
-    spec.Height = 900;
+    Application * CreateApplication(int argc, char** argv)
+    {
+        ApplicationSpecification spec;
+        spec.Name = "Lumina Application";
+        spec.Width = 900;
+        spec.Height = 900;
     
-    Lumina::Application* app = new Lumina::Application(spec);
-    app->PushLayer<ApplicationLayer>();
+        Application* app = new Application(spec);
+        app->PushLayer<ApplicationLayer>();
     
-    return app;
+        return app;
+    }
 }

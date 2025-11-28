@@ -1,6 +1,6 @@
 #include "Lumina/Core/Layer.h"
 
-namespace Lumina
+namespace Lumina::Core
 {
     class ApplicationLayer : public Layer
     {
@@ -19,6 +19,11 @@ namespace Lumina
         {
          
         }
+
+        virtual void OnEvent(Core::Event& event) override
+        {
+         
+		}
 
         virtual void OnUIRender() override
         {
