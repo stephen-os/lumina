@@ -1,13 +1,13 @@
 #pragma once
 
-#include <Lumina/Events/Event.h>
-
 #include <string>
 #include <functional>
 
 #include <GLFW/glfw3.h>
 
-namespace Lumina
+#include "Event.h"
+
+namespace Lumina::Core
 {
     struct WindowSpecification
     {

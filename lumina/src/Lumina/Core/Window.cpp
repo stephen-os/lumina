@@ -1,16 +1,13 @@
 #include "Window.h"
 #include "Log.h"
 #include "Assert.h"
-#include "KeyCodes.h"
 
-#include <Lumina/Events/WindowEvent.h>
-#include <Lumina/Events/WindowMouseEvent.h>
-#include <Lumina/Events/WindowKeyEvent.h>
+#include "Input.h"
 
 #include <stb/stb_image.h>
 #include <glad/glad.h>
 
-namespace Lumina
+namespace Lumina::Core
 {
     static bool s_GLFWInitialized = false;
 
@@ -146,7 +143,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    KeyCode keyCode = static_cast<KeyCode>(key);
+                    Input::KeyCode keyCode = static_cast<Input::KeyCode>(key);
                     switch (action)
                     {
                     case GLFW_PRESS:
@@ -176,7 +173,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    WindowKeyTypedEvent event(static_cast<KeyCode>(codepoint));
+                    WindowKeyTypedEvent event(codepoint);
                     win->m_WindowEventCallback(event);
                 }
             });
@@ -186,7 +183,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    MouseCode mouseCode = static_cast<MouseCode>(button);
+                    Input::MouseCode mouseCode = static_cast<Input::MouseCode>(button);
                     switch (action)
                     {
                     case GLFW_PRESS:
@@ -205,13 +202,12 @@ namespace Lumina
                 }
             });
 
-
         glfwSetScrollCallback(m_Window, [](GLFWwindow* window, double xOffset, double yOffset)
             {
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    WindowMouseScrolledEvent event((float)xOffset, (float)yOffset);
+                    WindowMouseScrolledEvent event(static_cast<float>(xOffset), static_cast<float>(yOffset));
                     win->m_WindowEventCallback(event);
                 }
             });
@@ -221,7 +217,7 @@ namespace Lumina
                 Window* win = (Window*)glfwGetWindowUserPointer(window);
                 if (win->m_WindowEventCallback)
                 {
-                    WindowMouseMovedEvent event((float)xPos, (float)yPos);
+                    WindowMouseMovedEvent event(static_cast<float>(xPos), static_cast<float>(yPos));
                     win->m_WindowEventCallback(event);
                 }
             });
