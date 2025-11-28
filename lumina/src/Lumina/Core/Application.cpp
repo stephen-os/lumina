@@ -20,9 +20,9 @@
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 
-namespace Lumina
+namespace Lumina::Core
 {
-    static Lumina::Application* s_Instance = nullptr;
+    static Lumina::Core::Application* s_Instance = nullptr;
 
     Application& Application::GetInstance() { return *s_Instance; }
 
@@ -94,7 +94,7 @@ namespace Lumina
 
         for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
         {
-            if (e.Handled)
+            if (e.IsHandled())
                 break;
             (*it)->OnEvent(e);
         }

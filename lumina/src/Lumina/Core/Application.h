@@ -5,13 +5,13 @@
 #include "Layer.h"
 #include "Window.h"
 
-#include <Lumina/Events/Event.h>
+#include "Event.h"
 
 #include <string>
 #include <vector>
 #include <memory>
 
-namespace Lumina
+namespace Lumina::Core
 {
     struct ApplicationSpecification
     {

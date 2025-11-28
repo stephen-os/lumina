@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-namespace Lumina
+namespace Lumina::Core
 {
     namespace Color
     {

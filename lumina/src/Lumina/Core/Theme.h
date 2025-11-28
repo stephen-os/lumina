@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Lumina
+namespace Lumina::Core
 {
 	class Theme
 	{

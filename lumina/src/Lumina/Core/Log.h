@@ -8,7 +8,7 @@
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/rotating_file_sink.h>
 
-namespace Lumina
+namespace Lumina::Core
 {
     namespace Log
     {
@@ -112,11 +112,11 @@ namespace Lumina
 }
 
 #ifdef LUMINA_DEBUG
-    #define LUMINA_LOG_TRACE(...) ::Lumina::Log::Logger::LogTrace(__VA_ARGS__)
-    #define LUMINA_LOG_INFO(...) ::Lumina::Log::Logger::LogInfo(__VA_ARGS__)
-    #define LUMINA_LOG_WARN(...) ::Lumina::Log::Logger::LogWarn(__VA_ARGS__)
-    #define LUMINA_LOG_ERROR(...) ::Lumina::Log::Logger::LogError(__VA_ARGS__)
-    #define LUMINA_LOG_CRITICAL(...) ::Lumina::Log::Logger::LogCritical(__VA_ARGS__)
+    #define LUMINA_LOG_TRACE(...) ::Lumina::Core::Log::Logger::LogTrace(__VA_ARGS__)
+    #define LUMINA_LOG_INFO(...) ::Lumina::Core::Log::Logger::LogInfo(__VA_ARGS__)
+    #define LUMINA_LOG_WARN(...) ::Lumina::Core::Log::Logger::LogWarn(__VA_ARGS__)
+    #define LUMINA_LOG_ERROR(...) ::Lumina::Core::Log::Logger::LogError(__VA_ARGS__)
+    #define LUMINA_LOG_CRITICAL(...) ::Lumina::Core::Log::Logger::LogCritical(__VA_ARGS__)
 #else
     #define LUMINA_LOG_TRACE(...) ((void)0)
     #define LUMINA_LOG_INFO(...) ((void)0)

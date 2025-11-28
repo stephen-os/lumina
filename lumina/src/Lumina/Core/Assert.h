@@ -8,7 +8,7 @@
 #define LUMINA_ASSERT(condition, ...) \
         do { \
             if (!(condition)) { \
-                ::Lumina::Assert::LogFailure(#condition, __FILE__, __LINE__, ##__VA_ARGS__); \
+                ::Lumina::Core::Assert::LogFailure(#condition, __FILE__, __LINE__, ##__VA_ARGS__); \
                 std::abort(); \
             } \
         } while (0)
@@ -16,7 +16,7 @@
     #define LUMINA_ASSERT(condition, ...) do { (void)sizeof(condition); } while (0)
 #endif
 
-namespace Lumina
+namespace Lumina::Core
 {
     namespace Assert
     {

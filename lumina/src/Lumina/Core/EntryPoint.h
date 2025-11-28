@@ -4,13 +4,13 @@
 
 #ifdef LUMINA_PLATFORM_WINDOWS
 
-extern Lumina::Application* Lumina::CreateApplication(int argc, char** argv);
+extern Lumina::Core::Application* Lumina::Core::CreateApplication(int argc, char** argv);
 
-namespace Lumina 
+namespace Lumina::Core
 {
 	int Main(int argc, char** argv)
 	{
-		Lumina::Application* app = Lumina::CreateApplication(argc, argv);
+		Application* app = CreateApplication(argc, argv);
 		app->Run();
 		delete app;
 
@@ -24,14 +24,14 @@ namespace Lumina
 
 int APIENTRY WinMain(HINSTANCE hInst, HINSTANCE hInstPrev, PSTR cmdline, int cmdshow)
 {
-	return Lumina::Main(__argc, __argv);
+	return Lumina::Core::Main(__argc, __argv);
 }
 
 #else
 
 int main(int argc, char** argv)
 {
-	return Lumina::Main(argc, argv); 
+	return Lumina::Core::Main(argc, argv); 
 }
 
 #endif // LUMINA_DIST

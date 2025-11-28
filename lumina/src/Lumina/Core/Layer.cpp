@@ -6,7 +6,7 @@
 #include <algorithm>
 #include <filesystem>
 
-namespace Lumina
+namespace Lumina::Core
 {
     void Layer::DockWindowSplit(const std::string& windowName, DockPosition position, float sizeRatio)
     {

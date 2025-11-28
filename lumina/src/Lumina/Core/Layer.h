@@ -1,6 +1,6 @@
 #pragma once
 
-#include <Lumina/Events/Event.h>
+#include "Event.h"
 
 #include <string>
 #include <vector>
@@ -8,7 +8,7 @@
 
 #include <imgui.h>
 
-namespace Lumina
+namespace Lumina::Core
 {
     enum class DockPosition
     {

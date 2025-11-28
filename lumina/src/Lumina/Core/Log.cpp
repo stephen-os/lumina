@@ -1,6 +1,6 @@
 ﻿#include "Log.h"
 
-namespace Lumina
+namespace Lumina::Core
 {
     namespace Log
     {
