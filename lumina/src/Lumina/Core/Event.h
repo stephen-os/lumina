@@ -181,13 +181,13 @@ namespace Lumina::Core
     };
 
     // Events 
-    class WindowCloseEvent : public EventBase<WindowCloseEvent, EventType::WindowClose, EventCategory::Application>
+    class WindowCloseEvent final : public EventBase<WindowCloseEvent, EventType::WindowClose, EventCategory::Application>
     {
     public:
         WindowCloseEvent() = default;
     };
 
-    class WindowResizeEvent : public EventBase<WindowResizeEvent, EventType::WindowResize, EventCategory::Application>
+    class WindowResizeEvent final : public EventBase<WindowResizeEvent, EventType::WindowResize, EventCategory::Application>
     {
     public:
         WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) { }
@@ -204,19 +204,19 @@ namespace Lumina::Core
         uint32_t m_Width, m_Height;
     };
 
-    class WindowFocusEvent : public EventBase<WindowFocusEvent, EventType::WindowFocus, EventCategory::Application>
+    class WindowFocusEvent final : public EventBase<WindowFocusEvent, EventType::WindowFocus, EventCategory::Application>
     {
     public:
         WindowFocusEvent() = default;
     };
 
-    class WindowLostFocusEvent : public EventBase<WindowLostFocusEvent, EventType::WindowLostFocus, EventCategory::Application>
+    class WindowLostFocusEvent final : public EventBase<WindowLostFocusEvent, EventType::WindowLostFocus, EventCategory::Application>
     {
     public:
         WindowLostFocusEvent() = default;
     };
 
-    class WindowMovedEvent : public EventBase<WindowMovedEvent, EventType::WindowMoved, EventCategory::Application>
+    class WindowMovedEvent final : public EventBase<WindowMovedEvent, EventType::WindowMoved, EventCategory::Application>
     {
     public:
         WindowMovedEvent(int32_t x, int32_t y) : m_X(x), m_Y(y) { }
@@ -233,7 +233,7 @@ namespace Lumina::Core
         int32_t m_X, m_Y;
     };
 
-    class WindowKeyPressedEvent : public KeyEventBase<WindowKeyPressedEvent,
+    class WindowKeyPressedEvent final : public KeyEventBase<WindowKeyPressedEvent,
         EventType::WindowKeyPressed>
     {
     public:
@@ -250,13 +250,13 @@ namespace Lumina::Core
         bool m_IsRepeat;
     };
 
-    class WindowKeyReleasedEvent : public KeyEventBase<WindowKeyReleasedEvent, EventType::WindowKeyReleased>
+    class WindowKeyReleasedEvent final : public KeyEventBase<WindowKeyReleasedEvent, EventType::WindowKeyReleased>
     {
     public:
         WindowKeyReleasedEvent(Input::KeyCode keyCode) : KeyEventBase(keyCode) {}
     };
 
-    class WindowKeyTypedEvent : public EventBase<WindowKeyTypedEvent, EventType::WindowKeyTyped, EventCategory::Input | EventCategory::Keyboard>
+    class WindowKeyTypedEvent final : public EventBase<WindowKeyTypedEvent, EventType::WindowKeyTyped, EventCategory::Input | EventCategory::Keyboard>
     {
     public:
         WindowKeyTypedEvent(uint32_t character) : m_Character(character) {}
@@ -272,25 +272,25 @@ namespace Lumina::Core
         uint32_t m_Character;
     };
 
-    class WindowMouseButtonPressedEvent : public MouseButtonEventBase<WindowMouseButtonPressedEvent, EventType::WindowMouseButtonPressed>
+    class WindowMouseButtonPressedEvent final : public MouseButtonEventBase<WindowMouseButtonPressedEvent, EventType::WindowMouseButtonPressed>
     {
     public:
         WindowMouseButtonPressedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
     };
 
-    class WindowMouseButtonReleasedEvent : public MouseButtonEventBase<WindowMouseButtonReleasedEvent, EventType::WindowMouseButtonReleased>
+    class WindowMouseButtonReleasedEvent final : public MouseButtonEventBase<WindowMouseButtonReleasedEvent, EventType::WindowMouseButtonReleased>
     {
     public:
         WindowMouseButtonReleasedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
     };
 
-    class WindowMouseMovedEvent : public MouseMoveEventBase<WindowMouseMovedEvent, EventType::WindowMouseMoved>
+    class WindowMouseMovedEvent final : public MouseMoveEventBase<WindowMouseMovedEvent, EventType::WindowMouseMoved>
     {
     public:
         WindowMouseMovedEvent(float x, float y) : MouseMoveEventBase(x, y) {}
     };
 
-    class WindowMouseScrolledEvent : public EventBase<WindowMouseScrolledEvent, EventType::WindowMouseScrolled, EventCategory::Input | EventCategory::Mouse>
+    class WindowMouseScrolledEvent final : public EventBase<WindowMouseScrolledEvent, EventType::WindowMouseScrolled, EventCategory::Input | EventCategory::Mouse>
     {
     public:
         WindowMouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) { }
@@ -307,37 +307,37 @@ namespace Lumina::Core
         float m_XOffset, m_YOffset;
     };
 
-    class GlobalKeyPressedEvent : public KeyEventBase<GlobalKeyPressedEvent, EventType::GlobalKeyPressed>
+    class GlobalKeyPressedEvent final : public KeyEventBase<GlobalKeyPressedEvent, EventType::GlobalKeyPressed>
     {
     public:
         GlobalKeyPressedEvent(Input::KeyCode keyCode) : KeyEventBase(keyCode) {}
     };
 
-    class GlobalKeyReleasedEvent : public KeyEventBase<GlobalKeyReleasedEvent, EventType::GlobalKeyReleased>
+    class GlobalKeyReleasedEvent final : public KeyEventBase<GlobalKeyReleasedEvent, EventType::GlobalKeyReleased>
     {
     public:
         GlobalKeyReleasedEvent(Input::KeyCode keyCode) : KeyEventBase(keyCode) {}
     };
 
-    class GlobalMouseButtonPressedEvent : public MouseButtonEventBase<GlobalMouseButtonPressedEvent, EventType::GlobalMouseButtonPressed>
+    class GlobalMouseButtonPressedEvent final : public MouseButtonEventBase<GlobalMouseButtonPressedEvent, EventType::GlobalMouseButtonPressed>
     {
     public:
         GlobalMouseButtonPressedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
     };
 
-    class GlobalMouseButtonReleasedEvent : public MouseButtonEventBase<GlobalMouseButtonReleasedEvent, EventType::GlobalMouseButtonReleased>
+    class GlobalMouseButtonReleasedEvent final : public MouseButtonEventBase<GlobalMouseButtonReleasedEvent, EventType::GlobalMouseButtonReleased>
     {
     public:
         GlobalMouseButtonReleasedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
     };
 
-    class GlobalMouseMovedEvent : public MouseMoveEventBase<GlobalMouseMovedEvent, EventType::GlobalMouseMoved>
+    class GlobalMouseMovedEvent final : public MouseMoveEventBase<GlobalMouseMovedEvent, EventType::GlobalMouseMoved>
     {
     public:
         GlobalMouseMovedEvent(float x, float y) : MouseMoveEventBase(x, y) {}
     };
 
-    class GlobalMouseScrolledEvent : public EventBase<GlobalMouseScrolledEvent, EventType::GlobalMouseScrolled, EventCategory::Input | EventCategory::Mouse>
+    class GlobalMouseScrolledEvent final : public EventBase<GlobalMouseScrolledEvent, EventType::GlobalMouseScrolled, EventCategory::Input | EventCategory::Mouse>
     {
     public:
         GlobalMouseScrolledEvent(float xOffset, float yOffset) : m_XOffset(xOffset), m_YOffset(yOffset) { }
