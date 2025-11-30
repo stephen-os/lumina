@@ -25,3 +25,6 @@
 [submodule "dependencies/imgui-node-editor"]
 	path = dependencies/imgui-node-editor
 	url = https://github.com/stephen-os/imgui-node-editor.git
+[submodule "dependencies/libuiohook"]
+	path = dependencies/libuiohook
+	url = https://github.com/stephen-os/libuiohook.git
