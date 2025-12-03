@@ -25,8 +25,6 @@ LuminaConfig =
     
     links = 
     {
-        "Lumina",
-
         "GLFW",
         "Glad",
         
@@ -49,6 +47,23 @@ LuminaConfig =
         "IMGUI_DEFINE_MATH_OPERATORS"
     }
 }
+
+ApplicationConfig = {}
+
+ApplicationConfig.includedirs = {}
+for _, path in ipairs(LuminaConfig.includedirs) do
+    table.insert(ApplicationConfig.includedirs, path)
+end
+
+ApplicationConfig.links = { "Lumina" }
+for _, lib in ipairs(LuminaConfig.links) do
+    table.insert(ApplicationConfig.links, lib)
+end
+
+ApplicationConfig.defines = {}
+for _, def in ipairs(LuminaConfig.defines) do
+    table.insert(ApplicationConfig.defines, def)
+end
 
 project "Lumina"
    kind "StaticLib"

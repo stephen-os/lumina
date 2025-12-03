@@ -6,11 +6,11 @@ project "LuminaApplication"
    
    files { "src/**.h", "src/**.cpp" }
    
-   includedirs(LuminaConfig.includedirs)
+   includedirs(ApplicationConfig.includedirs)
    
-   links(LuminaConfig.links)
+   links(ApplicationConfig.links)
    
-   defines(LuminaConfig.defines)
+   defines(ApplicationConfig.defines)
    
    buildoptions { "/utf-8" }
    
