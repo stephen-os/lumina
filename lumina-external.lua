@@ -15,6 +15,7 @@ group "Dependencies"
    include "dependencies/glad"
    include "dependencies/tinygltf"
    include "dependencies/box2d"
+   include "dependencies/libuiohook"
 group ""
 
 group "Core"

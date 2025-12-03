@@ -18,7 +18,8 @@ project "LuminaApplication"
       "../../Dependencies/glad/include",
       "../../Dependencies/tinygltf",
       "../../Dependencies/imguifd",
-      "../../Dependencies/spdlog/include"
+      "../../Dependencies/spdlog/include",
+      "../../Dependencies/libuiohook/include"
    }
 
    links
@@ -29,7 +30,8 @@ project "LuminaApplication"
       "GLFW",
       "Glad",
       "TinyGLTF",
-      "ImGuiFD", 
+      "ImGuiFD",
+      "LibUIOHook",
 
       "opengl32.lib"
    }

@@ -24,7 +24,8 @@ project "Lumina"
       "../Dependencies/spdlog/include",
       "../Dependencies/box2d/include",
       "../Dependencies/imgui-node-editor",
-      "../Dependencies/imgui-node-editor/external/DXSDK/include"
+      "../Dependencies/imgui-node-editor/external/DXSDK/include", 
+      "../Dependencies/libuiohook/include"
    }
 
    links
@@ -36,6 +37,7 @@ project "Lumina"
        "ImGuiFD",
        "Box2D",
        "ImGuiNodeEditor",
+       "LibUIOHook",
 
        "opengl32.lib"
    }
