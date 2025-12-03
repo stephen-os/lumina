@@ -1,5 +1,8 @@
 #pragma once
 
+#include "Duration.h"
+
+#include <string>
 #include <string_view>
 #include <vector>
 
@@ -147,7 +150,46 @@ namespace Lumina::Core::Input
         Last = Button7
     };
 
-	// Key operations
+    void PressKeyGlobal(KeyCode keycode);
+    void ReleaseKeyGlobal(KeyCode keycode);
+    void TapKeyGlobal(KeyCode keycode, Duration holdDuration = Duration::Milliseconds(0));
+    void TypeTextGlobal(std::string_view text, Duration delayBetweenKeys = Duration::Milliseconds(50));
+
+    void PressMouseButtonGlobal(MouseCode button);
+    void ReleaseMouseButtonGlobal(MouseCode button);
+    void ClickMouseButtonGlobal(MouseCode button);
+    void MoveMouseGlobal(int x, int y);
+    void MoveMouseRelativeGlobal(int deltaX, int deltaY);
+    void ScrollMouseGlobal(float xOffset, float yOffset);
+
+    void QueueKeyPress(KeyCode keycode);
+    void QueueKeyRelease(KeyCode keycode);
+    void QueueKeyTap(KeyCode keycode, Duration holdDuration = Duration::Milliseconds(0));
+    void QueueTypeText(std::string_view text, Duration delayBetweenKeys = Duration::Milliseconds(50));
+
+    void QueueMouseButtonPress(MouseCode button);
+    void QueueMouseButtonRelease(MouseCode button);
+    void QueueMouseButtonClick(MouseCode button);
+    void QueueMouseMove(int x, int y);
+    void QueueMouseMoveRelative(int deltaX, int deltaY);
+    void QueueMouseScroll(float xOffset, float yOffset);
+
+    void QueueDelay(Duration delay);
+
+    void StartSimulationQueue();
+    void StopSimulationQueue();
+    void ClearSimulationQueue();
+    void ShutdownSimulationQueue();
+
+    bool IsSimulationQueueRunning();
+    size_t GetSimulationQueueSize();
+
+    void PlatformPressKey(KeyCode key, bool press);
+    void PlatformPressMouseButton(MouseCode button, bool press);
+    void PlatformMoveMouse(int x, int y, bool absolute);
+    void PlatformScrollMouse(float xOffset, float yOffset);
+
+	// Key state queries
 	bool IsKeyPressed(KeyCode keycode);
     
     constexpr bool IsModifierKey(KeyCode keycode)

@@ -4,7 +4,7 @@
 
 #include "Layer.h"
 #include "Window.h"
-
+#include "Capture.h"
 #include "Event.h"
 
 #include <string>
@@ -52,13 +52,20 @@ namespace Lumina::Core
         ImGuiID GetDockspaceID() { return m_DockspaceID; }
         GLFWwindow* GetWindowHandle() const { return m_Window->GetNativeWindow(); }
 
-        static Application& GetInstance();
-        static float GetTime(); 
+        void StartGlobalCapture();
+        void StopGlobalCapture();
+        bool IsGlobalCaptureActive() const;
+        void SetGlobalCaptureSpecifications(const CaptureSpecifications spec);
+        const CaptureSpecifications& GetGlobalCaptureSpecifications() const;
 
+        static Application& GetInstance();
+        static float GetTime();
+        
     private:
         ApplicationSpecification m_Specifications;
         
         std::unique_ptr<Window> m_Window;
+		std::unique_ptr<Capture> m_Capture;
 
         ImGuiID m_DockspaceID = 0;
         

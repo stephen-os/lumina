@@ -16,6 +16,7 @@
 #include "Log.h"
 #include "Assert.h"
 #include "Theme.h"
+#include "Input.h"
 
 #include <glad/glad.h>
 #include <glm/glm.hpp>
@@ -46,9 +47,10 @@ namespace Lumina::Core
         windowSpec.Maximized = m_Specifications.Maximized;
 
         m_Window = std::make_unique<Window>(windowSpec);
-
-        // Set event callback for window
         m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
+
+		m_Capture = std::make_unique<Capture>();
+		m_Capture->SetEventCallback([this](Event& e) { OnEvent(e); });
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -82,6 +84,16 @@ namespace Lumina::Core
             layer->OnDetach();
 
         m_LayerStack.clear();
+
+        if (m_Capture)
+        {
+            if (m_Capture->IsCapturing())
+				m_Capture->Stop();
+
+			m_Capture.reset();
+        }
+
+        Input::ShutdownSimulationQueue(); 
 
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
@@ -215,4 +227,37 @@ namespace Lumina::Core
     {
         return (float)glfwGetTime();
     }
+
+	// NOTE: We should assert that Caputure is valid before calling these methods
+    // May not need the if check
+    void Application::StartGlobalCapture()
+    {
+        if (m_Capture && !m_Capture->IsCapturing())
+            m_Capture->Start();
+    }
+
+    void Application::StopGlobalCapture()
+    {
+        if (m_Capture && m_Capture->IsCapturing())
+            m_Capture->Stop();
+	}
+
+    bool Application::IsGlobalCaptureActive() const
+    {
+        return m_Capture && m_Capture->IsCapturing();
+	}
+
+    void Application::SetGlobalCaptureSpecifications(const CaptureSpecifications spec)
+    {
+        if (m_Capture)
+            m_Capture->ApplySpecifications(spec);
+	}
+
+    const CaptureSpecifications& Application::GetGlobalCaptureSpecifications() const
+    {
+        static CaptureSpecifications defaultSpec;
+        if (m_Capture)
+            return m_Capture->GetSpecifications();
+        return defaultSpec;
+	}
 }
