@@ -48,9 +48,11 @@ namespace Lumina::Core
 
         m_Window = std::make_unique<Window>(windowSpec);
         m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
+		LUMINA_ASSERT(m_Window, "Failed to create application window!");    
 
 		m_Capture = std::make_unique<Capture>();
 		m_Capture->SetEventCallback([this](Event& e) { OnEvent(e); });
+		LUMINA_ASSERT(m_Capture, "Failed to create global capture instance!");
 
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -78,26 +80,27 @@ namespace Lumina::Core
 
     Application::~Application()
     {
-        s_Instance = nullptr;
+        m_EventQueue.clear(); 
 
         for (auto& layer : m_LayerStack)
             layer->OnDetach();
 
         m_LayerStack.clear();
 
-        if (m_Capture)
-        {
-            if (m_Capture->IsCapturing())
-				m_Capture->Stop();
+        if (m_Capture->IsCapturing())
+            m_Capture->Stop();
 
-			m_Capture.reset();
-        }
+        m_Capture.reset();
 
         Input::ShutdownSimulationQueue(); 
 
         ImGui_ImplOpenGL3_Shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
+
+		m_Window.reset();
+
+        s_Instance = nullptr;
     }
 
     void Application::OnEvent(Event& e)
@@ -232,13 +235,17 @@ namespace Lumina::Core
     // May not need the if check
     void Application::StartGlobalCapture()
     {
-        if (m_Capture && !m_Capture->IsCapturing())
+		LUMINA_ASSERT(m_Capture, "Global Capture instance is null!");
+
+        if (!m_Capture->IsCapturing())
             m_Capture->Start();
     }
 
     void Application::StopGlobalCapture()
     {
-        if (m_Capture && m_Capture->IsCapturing())
+		LUMINA_ASSERT(m_Capture, "Global Capture instance is null!");   
+
+        if (m_Capture->IsCapturing())
             m_Capture->Stop();
 	}
 
