@@ -1,3 +1,55 @@
+LuminaConfig = 
+{
+    includedirs = 
+    {
+        "%{wks.location}/Lumina/src",
+        
+        "%{wks.location}/dependencies/glfw/include",
+        "%{wks.location}/dependencies/glad/include",
+
+        "%{wks.location}/dependencies/imgui",
+        "%{wks.location}/dependencies/imguifd",
+        "%{wks.location}/dependencies/imgui-node-editor",
+        "%{wks.location}/dependencies/imgui-node-editor/external/DXSDK/include",
+
+        "%{wks.location}/dependencies/glm",
+        "%{wks.location}/dependencies/tinygltf",
+        
+        "%{wks.location}/dependencies/box2d/include",
+
+        "%{wks.location}/dependencies/stb_image",
+        "%{wks.location}/dependencies/spdlog/include",
+        
+        "%{wks.location}/dependencies/libuiohook/include"
+    },
+    
+    links = 
+    {
+        "Lumina",
+
+        "GLFW",
+        "Glad",
+        
+        "ImGui",
+        "ImGuiFD",
+        "ImGuiNodeEditor",
+        
+        "TinyGLTF",
+        "Box2D",
+
+        "LibUIOHook",
+
+        "opengl32.lib"
+    },
+    
+    defines = 
+    {
+        "GLFW_INCLUDE_NONE",
+        "GLEW_STATIC",
+        "IMGUI_DEFINE_MATH_OPERATORS"
+    }
+}
+
 project "Lumina"
    kind "StaticLib"
    language "C++"
@@ -5,54 +57,20 @@ project "Lumina"
    targetdir "bin/%{cfg.buildcfg}"
    staticruntime "off"
 
-   -- Enable multi-core compilation
    flags { "MultiProcessorCompile" }
 
    files { "src/**.h", "src/**.cpp" }
 
-   includedirs
-   {
-      "src",
+   includedirs(LuminaConfig.includedirs)
 
-      "../Dependencies/imgui",
-      "../Dependencies/glfw/include",
-      "../Dependencies/glm",
-      "../Dependencies/stb_image",
-      "../Dependencies/glad/include",
-      "../Dependencies/tinygltf",
-      "../Dependencies/imguifd",
-      "../Dependencies/spdlog/include",
-      "../Dependencies/box2d/include",
-      "../Dependencies/imgui-node-editor",
-      "../Dependencies/imgui-node-editor/external/DXSDK/include", 
-      "../Dependencies/libuiohook/include"
-   }
-
-   links
-   {
-       "ImGui",
-       "GLFW",
-       "Glad",
-       "TinyGLTF",
-       "ImGuiFD",
-       "Box2D",
-       "ImGuiNodeEditor",
-       "LibUIOHook",
-
-       "opengl32.lib"
-   }
-
-   defines
-   {
-      "GLFW_INCLUDE_NONE",
-      "GLEW_STATIC",
-      "IMGUI_DEFINE_MATH_OPERATORS"
-   }
+   links(LuminaConfig.links)
+   
+   defines(LuminaConfig.defines)
 
    buildoptions { "/utf-8" }
 
-   targetdir ("../bin/" .. outputdir .. "/%{prj.name}")
-   objdir ("../bin-int/" .. outputdir .. "/%{prj.name}")
+   targetdir ("%{wks.location}/bin/" .. outputdir .. "/%{prj.name}")
+   objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
    filter "system:windows"
       systemversion "latest"
