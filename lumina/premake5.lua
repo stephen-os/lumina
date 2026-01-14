@@ -1,9 +1,10 @@
-LuminaConfig = 
+-- Root config (when lumina is the main workspace)
+LuminaConfigRoot =
 {
-    includedirs = 
+    includedirs =
     {
-        "%{wks.location}/Lumina/src",
-        
+        "%{wks.location}/lumina/src",
+
         "%{wks.location}/dependencies/glfw/include",
         "%{wks.location}/dependencies/glad/include",
 
@@ -14,24 +15,24 @@ LuminaConfig =
 
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/tinygltf",
-        
+
         "%{wks.location}/dependencies/box2d/include",
 
         "%{wks.location}/dependencies/stb_image",
         "%{wks.location}/dependencies/spdlog/include",
-        
+
         "%{wks.location}/dependencies/libuiohook/include"
     },
-    
-    links = 
+
+    links =
     {
         "GLFW",
         "Glad",
-        
+
         "ImGui",
         "ImGuiFD",
         "ImGuiNodeEditor",
-        
+
         "TinyGLTF",
         "Box2D",
 
@@ -39,14 +40,68 @@ LuminaConfig =
 
         "opengl32.lib"
     },
-    
-    defines = 
+
+    defines =
     {
         "GLFW_INCLUDE_NONE",
         "GLEW_STATIC",
         "IMGUI_DEFINE_MATH_OPERATORS"
     }
 }
+
+-- Submodule config (when lumina is included as a submodule)
+LuminaConfigSubmodule =
+{
+    includedirs =
+    {
+        "%{wks.location}/lumina/lumina/src",
+
+        "%{wks.location}/lumina/dependencies/glfw/include",
+        "%{wks.location}/lumina/dependencies/glad/include",
+
+        "%{wks.location}/lumina/dependencies/imgui",
+        "%{wks.location}/lumina/dependencies/imguifd",
+        "%{wks.location}/lumina/dependencies/imgui-node-editor",
+        "%{wks.location}/lumina/dependencies/imgui-node-editor/external/DXSDK/include",
+
+        "%{wks.location}/lumina/dependencies/glm",
+        "%{wks.location}/lumina/dependencies/tinygltf",
+
+        "%{wks.location}/lumina/dependencies/box2d/include",
+
+        "%{wks.location}/lumina/dependencies/stb_image",
+        "%{wks.location}/lumina/dependencies/spdlog/include",
+
+        "%{wks.location}/lumina/dependencies/libuiohook/include"
+    },
+
+    links =
+    {
+        "GLFW",
+        "Glad",
+
+        "ImGui",
+        "ImGuiFD",
+        "ImGuiNodeEditor",
+
+        "TinyGLTF",
+        "Box2D",
+
+        "LibUIOHook",
+
+        "opengl32.lib"
+    },
+
+    defines =
+    {
+        "GLFW_INCLUDE_NONE",
+        "GLEW_STATIC",
+        "IMGUI_DEFINE_MATH_OPERATORS"
+    }
+}
+
+-- Select config based on LuminaAsSubmodule flag (set this to true before including this file)
+LuminaConfig = LuminaAsSubmodule and LuminaConfigSubmodule or LuminaConfigRoot
 
 ApplicationConfig = {}
 
@@ -79,7 +134,7 @@ project "Lumina"
    includedirs(LuminaConfig.includedirs)
 
    links(LuminaConfig.links)
-   
+
    defines(LuminaConfig.defines)
 
    buildoptions { "/utf-8" }
