@@ -1,9 +1,9 @@
-LuminaConfig = 
+LuminaConfig =
 {
-    includedirs = 
+    includedirs =
     {
         "%{wks.location}/Lumina/src",
-        
+
         "%{wks.location}/dependencies/glfw/include",
         "%{wks.location}/dependencies/glad/include",
 
@@ -14,37 +14,51 @@ LuminaConfig =
 
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/tinygltf",
-        
+
         "%{wks.location}/dependencies/box2d/include",
 
         "%{wks.location}/dependencies/stb_image",
         "%{wks.location}/dependencies/spdlog/include",
-        
-        "%{wks.location}/dependencies/libuiohook/include"
+
+        "%{wks.location}/dependencies/libuiohook/include",
+
+        -- NVRHI
+        "%{wks.location}/dependencies/nvrhi/include",
+        "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
+        "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include"
     },
-    
-    links = 
+
+    links =
     {
         "GLFW",
         "Glad",
-        
+
         "ImGui",
         "ImGuiFD",
         "ImGuiNodeEditor",
-        
+
         "TinyGLTF",
         "Box2D",
 
         "LibUIOHook",
 
-        "opengl32.lib"
+        "opengl32.lib",
+
+        -- NVRHI
+        "NVRHI",
+        "NVRHI_D3D12",
+        "NVRHI_VK"
     },
-    
-    defines = 
+
+    defines =
     {
         "GLFW_INCLUDE_NONE",
         "GLEW_STATIC",
-        "IMGUI_DEFINE_MATH_OPERATORS"
+        "IMGUI_DEFINE_MATH_OPERATORS",
+
+        -- NVRHI
+        "NVRHI_WITH_VULKAN=1",
+        "NVRHI_WITH_DX12=1"
     }
 }
 
