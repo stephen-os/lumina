@@ -5,7 +5,6 @@ LuminaConfig =
         "%{wks.location}/Lumina/src",
 
         "%{wks.location}/dependencies/glfw/include",
-        "%{wks.location}/dependencies/glad/include",
 
         "%{wks.location}/dependencies/imgui",
         "%{wks.location}/dependencies/imguifd",
@@ -31,7 +30,6 @@ LuminaConfig =
     links =
     {
         "GLFW",
-        "Glad",
 
         "ImGui",
         "ImGuiFD",
@@ -42,8 +40,6 @@ LuminaConfig =
 
         "LibUIOHook",
 
-        "opengl32.lib",
-
         -- NVRHI
         "NVRHI",
         "NVRHI_D3D12",
@@ -53,7 +49,6 @@ LuminaConfig =
     defines =
     {
         "GLFW_INCLUDE_NONE",
-        "GLEW_STATIC",
         "IMGUI_DEFINE_MATH_OPERATORS",
 
         -- NVRHI
