@@ -28,3 +28,6 @@
 [submodule "dependencies/libuiohook"]
 	path = dependencies/libuiohook
 	url = https://github.com/stephen-os/libuiohook.git
+[submodule "dependencies/nvrhi"]
+	path = dependencies/nvrhi
+	url = https://github.com/stephen-os/NVRHI.git
