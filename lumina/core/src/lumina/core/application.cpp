@@ -1,6 +1,7 @@
 #include "application.h"
 #include "log.h"
 #include "assert.h"
+#include "theme.h"
 #include "imgui/imgui_nvrhi.h"
 
 #include <imgui.h>
@@ -116,10 +117,7 @@ namespace lumina::core
         bool imgui_init = imgui::init(imgui_config);
         LUMINA_ASSERT(imgui_init, "Failed to initialize ImGui NVRHI backend");
 
-        if (m_spec.dark_theme)
-            ImGui::StyleColorsDark();
-        else
-            ImGui::StyleColorsLight();
+        theme::apply_lumina_theme();
 
         LUMINA_LOG_INFO("ImGui initialized");
     }

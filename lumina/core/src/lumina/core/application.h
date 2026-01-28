@@ -25,7 +25,6 @@ namespace lumina::core
         bool fullscreen = false;
         bool maximized = false;
         bool enable_docking = true;
-        bool dark_theme = true;
         bool vsync = true;
         graphics_api api = graphics_api::vulkan;
     };

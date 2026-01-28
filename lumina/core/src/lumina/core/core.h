@@ -11,4 +11,5 @@
 #include "layer.h"
 #include "window.h"
 #include "graphics_device.h"
+#include "theme.h"
 #include "application.h"
