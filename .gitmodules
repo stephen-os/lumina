@@ -1,0 +1,13 @@
+[submodule "dependencies/glfw"]
+	path = dependencies/glfw
+	url = https://github.com/glfw/glfw.git
+[submodule "dependencies/imgui"]
+	path = dependencies/imgui
+	url = https://github.com/ocornut/imgui.git
+	branch = docking
+[submodule "dependencies/spdlog"]
+	path = dependencies/spdlog
+	url = https://github.com/gabime/spdlog.git
+[submodule "dependencies/nvrhi"]
+	path = dependencies/nvrhi
+	url = https://github.com/NVIDIAGameWorks/nvrhi.git
