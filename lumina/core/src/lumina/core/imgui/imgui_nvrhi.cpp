@@ -1,20 +1,29 @@
 #include "imgui_nvrhi.h"
 #include "../log.h"
+#include "../graphics_device.h"
 
 #include <imgui.h>
 
 #include <nvrhi/utils.h>
+
+#define GLFW_INCLUDE_VULKAN
+#include <GLFW/glfw3.h>
+
+#ifdef LUMINA_PLATFORM_WINDOWS
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <GLFW/glfw3native.h>
+#include <d3dcompiler.h>
+#include <dxgi1_6.h>
+#include <d3d12.h>
+#include <wrl/client.h>
+#pragma comment(lib, "d3dcompiler.lib")
+#endif
 
 #include <vector>
 #include <cstring>
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
-
-#ifdef LUMINA_PLATFORM_WINDOWS
-#include <d3dcompiler.h>
-#pragma comment(lib, "d3dcompiler.lib")
-#endif
 
 namespace lumina::core::imgui
 {
@@ -754,5 +763,548 @@ namespace lumina::core::imgui
             global_idx_offset += cmd_list->IdxBuffer.Size;
             global_vtx_offset += cmd_list->VtxBuffer.Size;
         }
+    }
+
+    // =========================================================================
+    // Multi-viewport support
+    // =========================================================================
+
+    // Native handles cached from graphics_device
+    static vulkan_native_handles s_vk_handles;
+#ifdef LUMINA_PLATFORM_WINDOWS
+    static d3d12_native_handles s_dx_handles;
+#endif
+
+    // Per-viewport renderer data stored in ImGuiViewport::RendererUserData
+    struct viewport_data
+    {
+        nvrhi::CommandListHandle command_list;
+        std::vector<nvrhi::TextureHandle> swapchain_textures;
+        std::vector<nvrhi::FramebufferHandle> framebuffers;
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t backbuffer_count = 2;
+        uint32_t frame_index = 0;
+        uint32_t image_index = 0;
+
+        // Vulkan-specific
+        VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
+        VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
+        VkFormat vk_format = VK_FORMAT_UNDEFINED;
+        std::vector<VkImage> vk_images;
+        std::vector<VkFence> vk_fences;
+
+        // D3D12-specific
+#ifdef LUMINA_PLATFORM_WINDOWS
+        Microsoft::WRL::ComPtr<IDXGISwapChain4> dx_swapchain;
+        Microsoft::WRL::ComPtr<ID3D12Fence> dx_fence;
+        std::vector<uint64_t> dx_fence_values;
+        uint64_t dx_current_fence_value = 1;
+        HANDLE dx_fence_event = nullptr;
+#endif
+    };
+
+    // --- Vulkan viewport helpers ---
+
+    static bool vk_create_viewport_swapchain(viewport_data* vd, uint32_t width, uint32_t height)
+    {
+        VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
+        VkPhysicalDevice physical = static_cast<VkPhysicalDevice>(s_vk_handles.physical_device);
+        VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+
+        // Query surface capabilities
+        VkSurfaceCapabilitiesKHR caps;
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, vd->vk_surface, &caps);
+
+        uint32_t fmt_count;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->vk_surface, &fmt_count, nullptr);
+        std::vector<VkSurfaceFormatKHR> formats(fmt_count);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->vk_surface, &fmt_count, formats.data());
+
+        // Prefer UNORM (matches main window)
+        VkSurfaceFormatKHR surface_format = formats[0];
+        for (const auto& f : formats)
+        {
+            if (f.format == VK_FORMAT_B8G8R8A8_UNORM && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+            {
+                surface_format = f;
+                break;
+            }
+        }
+        vd->vk_format = surface_format.format;
+
+        VkExtent2D extent;
+        if (caps.currentExtent.width != UINT32_MAX)
+            extent = caps.currentExtent;
+        else
+        {
+            extent.width = std::max(caps.minImageExtent.width, std::min(caps.maxImageExtent.width, width));
+            extent.height = std::max(caps.minImageExtent.height, std::min(caps.maxImageExtent.height, height));
+        }
+        vd->width = extent.width;
+        vd->height = extent.height;
+
+        uint32_t image_count = caps.minImageCount + 1;
+        if (caps.maxImageCount > 0 && image_count > caps.maxImageCount)
+            image_count = caps.maxImageCount;
+        vd->backbuffer_count = image_count;
+
+        VkSwapchainCreateInfoKHR sc_info{};
+        sc_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        sc_info.surface = vd->vk_surface;
+        sc_info.minImageCount = image_count;
+        sc_info.imageFormat = surface_format.format;
+        sc_info.imageColorSpace = surface_format.colorSpace;
+        sc_info.imageExtent = extent;
+        sc_info.imageArrayLayers = 1;
+        sc_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        sc_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        sc_info.preTransform = caps.currentTransform;
+        sc_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        sc_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        sc_info.clipped = VK_TRUE;
+
+        if (vkCreateSwapchainKHR(device, &sc_info, nullptr, &vd->vk_swapchain) != VK_SUCCESS)
+        {
+            LUMINA_LOG_ERROR("Failed to create viewport Vulkan swapchain");
+            return false;
+        }
+
+        // Get images
+        vkGetSwapchainImagesKHR(device, vd->vk_swapchain, &image_count, nullptr);
+        vd->vk_images.resize(image_count);
+        vkGetSwapchainImagesKHR(device, vd->vk_swapchain, &image_count, vd->vk_images.data());
+        vd->backbuffer_count = image_count;
+
+        // Create fences
+        vd->vk_fences.resize(image_count);
+        VkFenceCreateInfo fence_info{};
+        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        for (uint32_t i = 0; i < image_count; ++i)
+            vkCreateFence(device, &fence_info, nullptr, &vd->vk_fences[i]);
+
+        // Wrap as NVRHI textures/framebuffers
+        nvrhi::Format nvrhi_fmt = nvrhi::Format::BGRA8_UNORM;
+        if (vd->vk_format == VK_FORMAT_R8G8B8A8_SRGB || vd->vk_format == VK_FORMAT_B8G8R8A8_SRGB)
+            nvrhi_fmt = nvrhi::Format::SBGRA8_UNORM;
+
+        vd->swapchain_textures.resize(image_count);
+        vd->framebuffers.resize(image_count);
+
+        for (uint32_t i = 0; i < image_count; ++i)
+        {
+            nvrhi::TextureDesc td;
+            td.dimension = nvrhi::TextureDimension::Texture2D;
+            td.format = nvrhi_fmt;
+            td.width = vd->width;
+            td.height = vd->height;
+            td.isRenderTarget = true;
+            td.debugName = "Viewport Swapchain " + std::to_string(i);
+            td.initialState = nvrhi::ResourceStates::Present;
+            td.keepInitialState = true;
+
+            vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
+                nvrhi::ObjectTypes::VK_Image, nvrhi::Object(vd->vk_images[i]), td);
+
+            nvrhi::FramebufferDesc fb_desc;
+            fb_desc.addColorAttachment(vd->swapchain_textures[i]);
+            vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
+        }
+
+        return true;
+    }
+
+    static void vk_destroy_viewport_swapchain(viewport_data* vd)
+    {
+        VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+
+        vd->framebuffers.clear();
+        vd->swapchain_textures.clear();
+
+        for (auto& fence : vd->vk_fences)
+            if (fence) vkDestroyFence(device, fence, nullptr);
+        vd->vk_fences.clear();
+
+        if (vd->vk_swapchain)
+        {
+            vkDestroySwapchainKHR(device, vd->vk_swapchain, nullptr);
+            vd->vk_swapchain = VK_NULL_HANDLE;
+        }
+
+        vd->vk_images.clear();
+    }
+
+    // --- D3D12 viewport helpers ---
+
+#ifdef LUMINA_PLATFORM_WINDOWS
+    static bool dx_create_viewport_swapchain(viewport_data* vd, HWND hwnd, uint32_t width, uint32_t height)
+    {
+        auto* factory = static_cast<IDXGIFactory6*>(s_dx_handles.dxgi_factory);
+        auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
+        auto* d3d_device = static_cast<ID3D12Device*>(s_dx_handles.device);
+
+        vd->width = width;
+        vd->height = height;
+        vd->backbuffer_count = 2;
+
+        DXGI_SWAP_CHAIN_DESC1 desc{};
+        desc.Width = width;
+        desc.Height = height;
+        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+        desc.SampleDesc.Count = 1;
+        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        desc.BufferCount = vd->backbuffer_count;
+        desc.Scaling = DXGI_SCALING_STRETCH;
+        desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+        desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+        desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+
+        Microsoft::WRL::ComPtr<IDXGISwapChain1> sc1;
+        HRESULT hr = factory->CreateSwapChainForHwnd(cmd_queue, hwnd, &desc, nullptr, nullptr, &sc1);
+        if (FAILED(hr))
+        {
+            LUMINA_LOG_ERROR("Failed to create viewport D3D12 swapchain");
+            return false;
+        }
+
+        factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+        sc1.As(&vd->dx_swapchain);
+
+        // Create fence
+        vd->dx_fence_values.resize(vd->backbuffer_count, 0);
+        vd->dx_current_fence_value = 1;
+        d3d_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&vd->dx_fence));
+        vd->dx_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+
+        // Wrap backbuffers as NVRHI
+        vd->swapchain_textures.resize(vd->backbuffer_count);
+        vd->framebuffers.resize(vd->backbuffer_count);
+        vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+
+        for (UINT i = 0; i < vd->backbuffer_count; ++i)
+        {
+            Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
+            vd->dx_swapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
+
+            nvrhi::TextureDesc td;
+            td.dimension = nvrhi::TextureDimension::Texture2D;
+            td.format = nvrhi::Format::RGBA8_UNORM;
+            td.width = width;
+            td.height = height;
+            td.isRenderTarget = true;
+            td.debugName = "Viewport DX Swapchain " + std::to_string(i);
+            td.initialState = nvrhi::ResourceStates::Present;
+            td.keepInitialState = true;
+
+            vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
+                nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
+
+            nvrhi::FramebufferDesc fb_desc;
+            fb_desc.addColorAttachment(vd->swapchain_textures[i]);
+            vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
+        }
+
+        return true;
+    }
+
+    static void dx_destroy_viewport_swapchain(viewport_data* vd)
+    {
+        vd->framebuffers.clear();
+        vd->swapchain_textures.clear();
+
+        if (vd->dx_fence_event)
+        {
+            CloseHandle(vd->dx_fence_event);
+            vd->dx_fence_event = nullptr;
+        }
+        vd->dx_fence.Reset();
+        vd->dx_swapchain.Reset();
+        vd->dx_fence_values.clear();
+    }
+#endif
+
+    // --- ImGui renderer callbacks ---
+
+    static void renderer_create_window(ImGuiViewport* vp)
+    {
+        auto* vd = new viewport_data();
+        vp->RendererUserData = vd;
+
+        vd->command_list = s_device->createCommandList();
+
+        int w = static_cast<int>(vp->Size.x);
+        int h = static_cast<int>(vp->Size.y);
+
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+        {
+            VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
+            auto* glfw_window = static_cast<GLFWwindow*>(vp->PlatformHandle);
+
+            if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &vd->vk_surface) != VK_SUCCESS)
+            {
+                LUMINA_LOG_ERROR("Failed to create Vulkan surface for viewport");
+                return;
+            }
+
+            vk_create_viewport_swapchain(vd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+        }
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
+        {
+            HWND hwnd = static_cast<HWND>(vp->PlatformHandleRaw);
+            if (!hwnd)
+            {
+                auto* glfw_window = static_cast<GLFWwindow*>(vp->PlatformHandle);
+                hwnd = glfwGetWin32Window(glfw_window);
+            }
+
+            dx_create_viewport_swapchain(vd, hwnd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+        }
+#endif
+    }
+
+    static void renderer_destroy_window(ImGuiViewport* vp)
+    {
+        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
+        if (!vd)
+            return;
+
+        // Wait for all GPU work to finish
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+        {
+            VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
+            vkQueueWaitIdle(queue);
+
+            vk_destroy_viewport_swapchain(vd);
+
+            if (vd->vk_surface)
+            {
+                VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
+                vkDestroySurfaceKHR(instance, vd->vk_surface, nullptr);
+                vd->vk_surface = VK_NULL_HANDLE;
+            }
+        }
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
+        {
+            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
+            // Wait for GPU
+            if (vd->dx_fence)
+            {
+                const uint64_t val = vd->dx_current_fence_value;
+                cmd_queue->Signal(vd->dx_fence.Get(), val);
+                if (vd->dx_fence->GetCompletedValue() < val)
+                {
+                    vd->dx_fence->SetEventOnCompletion(val, vd->dx_fence_event);
+                    WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
+                }
+            }
+
+            dx_destroy_viewport_swapchain(vd);
+        }
+#endif
+
+        vd->command_list = nullptr;
+        delete vd;
+        vp->RendererUserData = nullptr;
+    }
+
+    static void renderer_set_window_size(ImGuiViewport* vp, ImVec2 size)
+    {
+        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
+        if (!vd)
+            return;
+
+        uint32_t w = static_cast<uint32_t>(size.x);
+        uint32_t h = static_cast<uint32_t>(size.y);
+
+        if (w == 0 || h == 0)
+            return;
+
+        if (w == vd->width && h == vd->height)
+            return;
+
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+        {
+            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
+            vkQueueWaitIdle(queue);
+
+            vk_destroy_viewport_swapchain(vd);
+            vk_create_viewport_swapchain(vd, w, h);
+        }
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
+        {
+            // Wait for GPU
+            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
+            if (vd->dx_fence)
+            {
+                const uint64_t val = vd->dx_current_fence_value;
+                cmd_queue->Signal(vd->dx_fence.Get(), val);
+                vd->dx_current_fence_value++;
+                if (vd->dx_fence->GetCompletedValue() < val)
+                {
+                    vd->dx_fence->SetEventOnCompletion(val, vd->dx_fence_event);
+                    WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
+                }
+            }
+
+            // Release NVRHI refs before resize
+            vd->framebuffers.clear();
+            vd->swapchain_textures.clear();
+
+            DXGI_SWAP_CHAIN_DESC desc;
+            vd->dx_swapchain->GetDesc(&desc);
+            vd->dx_swapchain->ResizeBuffers(vd->backbuffer_count, w, h, desc.BufferDesc.Format, desc.Flags);
+
+            vd->width = w;
+            vd->height = h;
+            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+
+            // Re-wrap backbuffers
+            vd->swapchain_textures.resize(vd->backbuffer_count);
+            vd->framebuffers.resize(vd->backbuffer_count);
+            for (auto& fv : vd->dx_fence_values) fv = vd->dx_fence->GetCompletedValue();
+
+            for (UINT i = 0; i < vd->backbuffer_count; ++i)
+            {
+                Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
+                vd->dx_swapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
+
+                nvrhi::TextureDesc td;
+                td.dimension = nvrhi::TextureDimension::Texture2D;
+                td.format = nvrhi::Format::RGBA8_UNORM;
+                td.width = w;
+                td.height = h;
+                td.isRenderTarget = true;
+                td.debugName = "Viewport DX Swapchain " + std::to_string(i);
+                td.initialState = nvrhi::ResourceStates::Present;
+                td.keepInitialState = true;
+
+                vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
+                    nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
+
+                nvrhi::FramebufferDesc fb_desc;
+                fb_desc.addColorAttachment(vd->swapchain_textures[i]);
+                vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
+            }
+        }
+#endif
+    }
+
+    static void renderer_render_window(ImGuiViewport* vp, void*)
+    {
+        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
+        if (!vd || vd->width == 0 || vd->height == 0)
+            return;
+
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+        {
+            VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
+
+            vkQueueWaitIdle(queue);
+
+            vkResetFences(device, 1, &vd->vk_fences[vd->frame_index]);
+
+            VkResult result = vkAcquireNextImageKHR(device, vd->vk_swapchain, UINT64_MAX,
+                VK_NULL_HANDLE, vd->vk_fences[vd->frame_index], &vd->image_index);
+
+            if (result == VK_ERROR_OUT_OF_DATE_KHR)
+                return;
+
+            vkWaitForFences(device, 1, &vd->vk_fences[vd->frame_index], VK_TRUE, UINT64_MAX);
+        }
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
+        {
+            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+            vd->image_index = vd->frame_index;
+
+            if (vd->dx_fence->GetCompletedValue() < vd->dx_fence_values[vd->frame_index])
+            {
+                vd->dx_fence->SetEventOnCompletion(vd->dx_fence_values[vd->frame_index], vd->dx_fence_event);
+                WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
+            }
+        }
+#endif
+
+        // Record and submit rendering commands
+        vd->command_list->open();
+
+        nvrhi::utils::ClearColorAttachment(vd->command_list, vd->framebuffers[vd->image_index], 0,
+            nvrhi::Color(0.0f, 0.0f, 0.0f, 1.0f));
+
+        render_draw_data(vd->command_list, vd->framebuffers[vd->image_index], vp->DrawData);
+
+        vd->command_list->close();
+        s_device->executeCommandList(vd->command_list);
+    }
+
+    static void renderer_swap_buffers(ImGuiViewport* vp, void*)
+    {
+        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
+        if (!vd || vd->width == 0 || vd->height == 0)
+            return;
+
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+        {
+            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
+            vkQueueWaitIdle(queue);
+
+            VkPresentInfoKHR present_info{};
+            present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+            present_info.swapchainCount = 1;
+            present_info.pSwapchains = &vd->vk_swapchain;
+            present_info.pImageIndices = &vd->image_index;
+
+            vkQueuePresentKHR(queue, &present_info);
+            vd->frame_index = (vd->frame_index + 1) % vd->backbuffer_count;
+        }
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
+        {
+            vd->dx_swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+
+            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
+            const uint64_t fence_val = vd->dx_current_fence_value;
+            cmd_queue->Signal(vd->dx_fence.Get(), fence_val);
+            vd->dx_fence_values[vd->frame_index] = fence_val;
+            vd->dx_current_fence_value++;
+
+            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+        }
+#endif
+    }
+
+    // --- Public viewport API ---
+
+    void init_platform_viewports(graphics_device& device)
+    {
+        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
+            s_vk_handles = device.get_vulkan_handles();
+#ifdef LUMINA_PLATFORM_WINDOWS
+        else
+            s_dx_handles = device.get_d3d12_handles();
+#endif
+
+        ImGuiIO& io = ImGui::GetIO();
+        io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+
+        ImGuiPlatformIO& pio = ImGui::GetPlatformIO();
+        pio.Renderer_CreateWindow = renderer_create_window;
+        pio.Renderer_DestroyWindow = renderer_destroy_window;
+        pio.Renderer_SetWindowSize = renderer_set_window_size;
+        pio.Renderer_RenderWindow = renderer_render_window;
+        pio.Renderer_SwapBuffers = renderer_swap_buffers;
+
+        LUMINA_LOG_INFO("ImGui multi-viewport renderer callbacks registered");
+    }
+
+    void shutdown_platform_viewports()
+    {
+        ImGui::DestroyPlatformWindows();
     }
 }

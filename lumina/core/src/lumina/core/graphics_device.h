@@ -28,6 +28,23 @@ namespace lumina::core
         std::string app_name = "Lumina Application";
     };
 
+    // Native handle structs for viewport support (void* to avoid leaking API headers)
+    struct vulkan_native_handles
+    {
+        void* instance = nullptr;           // VkInstance
+        void* physical_device = nullptr;    // VkPhysicalDevice
+        void* device = nullptr;             // VkDevice
+        void* graphics_queue = nullptr;     // VkQueue
+        uint32_t graphics_queue_family = 0;
+    };
+
+    struct d3d12_native_handles
+    {
+        void* device = nullptr;             // ID3D12Device*
+        void* command_queue = nullptr;      // ID3D12CommandQueue*
+        void* dxgi_factory = nullptr;       // IDXGIFactory6*
+    };
+
     class graphics_device
     {
     public:
@@ -51,6 +68,9 @@ namespace lumina::core
 
         virtual graphics_api get_api() const = 0;
         virtual nvrhi::Format get_swapchain_format() const = 0;
+
+        virtual vulkan_native_handles get_vulkan_handles() const { return {}; }
+        virtual d3d12_native_handles get_d3d12_handles() const { return {}; }
 
         static scope<graphics_device> create(graphics_api api);
     };

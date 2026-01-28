@@ -51,6 +51,8 @@ namespace lumina::core
 
         GLFWwindow* get_native_window() const { return m_window; }
 
+        static void terminate_glfw();
+
     private:
         void setup_callbacks();
 

@@ -51,6 +51,11 @@ namespace lumina::core::platform::d3d12
         graphics_api get_api() const override { return graphics_api::d3d12; }
         nvrhi::Format get_swapchain_format() const override { return nvrhi::Format::RGBA8_UNORM; }
 
+        d3d12_native_handles get_d3d12_handles() const override
+        {
+            return { m_device.Get(), m_command_queue.Get(), m_factory.Get() };
+        }
+
     private:
         bool create_device();
         bool create_swapchain();

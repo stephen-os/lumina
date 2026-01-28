@@ -50,6 +50,11 @@ namespace lumina::core::platform::vulkan
         graphics_api get_api() const override { return graphics_api::vulkan; }
         nvrhi::Format get_swapchain_format() const override;
 
+        vulkan_native_handles get_vulkan_handles() const override
+        {
+            return { m_instance, m_physical_device, m_device, m_graphics_queue, m_graphics_queue_family };
+        }
+
     private:
         bool create_instance();
         bool create_device();

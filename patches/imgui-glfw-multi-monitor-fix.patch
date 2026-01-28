@@ -1,0 +1,13 @@
+diff --git a/backends/imgui_impl_glfw.cpp b/backends/imgui_impl_glfw.cpp
+index 24b51045c..6f68bf4d2 100644
+--- a/backends/imgui_impl_glfw.cpp
++++ b/backends/imgui_impl_glfw.cpp
+@@ -1107,7 +1107,7 @@ static void ImGui_ImplGlfw_UpdateMonitors()
+         // Happens on macOS sleeping (#5683) and seemingly occasionally on Windows (#9195)
+         if (!updated_monitors)
+             platform_io.Monitors.resize(0);
+-        updated_monitors = false;
++        updated_monitors = true;
+         platform_io.Monitors.push_back(monitor);
+     }
+ }

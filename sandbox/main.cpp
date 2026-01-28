@@ -58,7 +58,7 @@ lumina::core::application* lumina::core::create_application(int argc, char** arg
     spec.name = "Lumina Sandbox";
     spec.width = 1280;
     spec.height = 720;
-	spec.api = lumina::core::graphics_api::d3d12;
+	// spec.api = lumina::core::graphics_api::d3d12;
 
     auto* app = new lumina::core::application(spec);
     app->push_layer<sandbox_layer>();

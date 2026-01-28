@@ -82,6 +82,7 @@ namespace lumina::core
         m_graphics_device.reset();
 
         m_window.reset();
+        window::terminate_glfw();
 
         log::shutdown();
         s_instance = nullptr;
@@ -96,8 +97,7 @@ namespace lumina::core
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        // TODO: Enable viewports - requires per-window NVRHI swapchain/device and platform rendering callbacks
-        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
 
         ImGuiStyle& style = ImGui::GetStyle();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -117,6 +117,8 @@ namespace lumina::core
         bool imgui_init = imgui::init(imgui_config);
         LUMINA_ASSERT(imgui_init, "Failed to initialize ImGui NVRHI backend");
 
+        imgui::init_platform_viewports(*m_graphics_device);
+
         theme::apply_lumina_theme();
 
         LUMINA_LOG_INFO("ImGui initialized");
@@ -124,6 +126,7 @@ namespace lumina::core
 
     void application::shutdown_imgui()
     {
+        imgui::shutdown_platform_viewports();
         imgui::shutdown();
         ImGui_ImplGlfw_Shutdown();
         ImGui::DestroyContext();
@@ -153,14 +156,17 @@ namespace lumina::core
         auto fb = m_graphics_device->get_current_framebuffer();
         imgui::render_draw_data(cmd, fb, ImGui::GetDrawData());
 
+        // Present the main window first — this closes and executes the main command list.
+        // Viewport rendering must happen after, since NVRHI only allows one immediate
+        // command list open at a time.
+        m_graphics_device->present();
+
         ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
         {
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
         }
-
-        m_graphics_device->present();
     }
 
     void application::on_event(event& e)

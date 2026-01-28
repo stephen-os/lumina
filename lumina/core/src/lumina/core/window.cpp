@@ -78,9 +78,15 @@ namespace lumina::core
             glfwDestroyWindow(m_window);
             m_window = nullptr;
         }
+    }
 
-        glfwTerminate();
-        s_glfw_initialized = false;
+    void window::terminate_glfw()
+    {
+        if (s_glfw_initialized)
+        {
+            glfwTerminate();
+            s_glfw_initialized = false;
+        }
     }
 
     void window::setup_callbacks()
