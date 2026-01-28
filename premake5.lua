@@ -23,6 +23,7 @@ group ""
 -- Lumina Modules
 group "Lumina"
     include "lumina/core"
+    include "lumina/ui"
     -- Future modules:
     -- include "lumina/renderer"
     -- include "lumina/physics"
@@ -46,7 +47,9 @@ group "Sandbox"
 
         includedirs {
             "lumina/core/src",
+            "lumina/ui/src",
             "dependencies/glfw/include",
+            "dependencies/glm",
             "dependencies/imgui",
             "dependencies/imgui/backends",
             "dependencies/spdlog/include",
@@ -57,6 +60,7 @@ group "Sandbox"
 
         links {
             "core",
+            "ui",
             "glfw",
             "imgui",
             "nvrhi",

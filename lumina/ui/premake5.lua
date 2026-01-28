@@ -1,7 +1,7 @@
--- core premake5.lua
--- This file defines the core static library
+-- ui premake5.lua
+-- This file defines the UI static library
 
-project "core"
+project "ui"
     kind "StaticLib"
     language "C++"
     cppdialect "C++23"
@@ -18,31 +18,23 @@ project "core"
     includedirs {
         "src",
 
-        -- Dependencies (paths relative to workspace location)
-        "%{wks.location}/dependencies/glfw/include",
+        -- Lumina core
+        "%{wks.location}/lumina/core/src",
+
+        -- Dependencies
         "%{wks.location}/dependencies/imgui",
         "%{wks.location}/dependencies/imgui/backends",
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/spdlog/include",
-        "%{wks.location}/dependencies/nvrhi/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
     }
 
     links {
-        "glfw",
+        "core",
         "imgui",
-        "nvrhi",
-        "nvrhi-d3d12",
-        "nvrhi-vk",
     }
 
     defines {
-        "GLFW_INCLUDE_NONE",
         "IMGUI_DEFINE_MATH_OPERATORS",
-        "NVRHI_WITH_DX12=1",
-        "NVRHI_WITH_VULKAN=1",
-        "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1",
     }
 
     flags { "MultiProcessorCompile" }
@@ -52,16 +44,6 @@ project "core"
         systemversion "latest"
         defines {
             "LUMINA_PLATFORM_WINDOWS",
-            "WIN32_LEAN_AND_MEAN",
-            "NOMINMAX",
-            "VK_USE_PLATFORM_WIN32_KHR",
-        }
-        libdirs { "$(VULKAN_SDK)/Lib" }
-        links {
-            "d3d12",
-            "dxgi",
-            "dxguid",
-            "vulkan-1",
         }
 
     filter "configurations:Debug"

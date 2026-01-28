@@ -23,6 +23,10 @@ project "imgui"
         "%{wks.location}/dependencies/imgui/imstb_textedit.h",
         "%{wks.location}/dependencies/imgui/imstb_truetype.h",
 
+        -- C++ stdlib helpers
+        "%{wks.location}/dependencies/imgui/misc/cpp/imgui_stdlib.cpp",
+        "%{wks.location}/dependencies/imgui/misc/cpp/imgui_stdlib.h",
+
         -- GLFW backend (for input handling)
         "%{wks.location}/dependencies/imgui/backends/imgui_impl_glfw.cpp",
         "%{wks.location}/dependencies/imgui/backends/imgui_impl_glfw.h",
