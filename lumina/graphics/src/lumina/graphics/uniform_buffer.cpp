@@ -1,5 +1,6 @@
 #include "uniform_buffer.h"
-#include "device.h"
+
+#include <lumina/core/device.h>
 
 #include <lumina/core/assert.h>
 #include <lumina/core/log.h>
@@ -28,7 +29,7 @@ namespace lumina::graphics
         other.m_aligned_size = 0;
     }
 
-    ref<uniform_buffer> uniform_buffer::create(device& dev, size_t size)
+    ref<uniform_buffer> uniform_buffer::create(core::device& dev, size_t size)
     {
         auto* nvrhi_device = dev.get_nvrhi_device();
         if (!nvrhi_device)

@@ -8,10 +8,10 @@
 #include <span>
 
 namespace nvrhi { class IBuffer; }
+namespace lumina::core { class device; }
 
 namespace lumina::graphics
 {
-    class device;
 
     class vertex_buffer
     {
@@ -24,10 +24,10 @@ namespace lumina::graphics
         vertex_buffer(vertex_buffer&& other) noexcept;
         vertex_buffer& operator=(vertex_buffer&&) = delete;
 
-        static ref<vertex_buffer> create(device& dev, const void* data, size_t size, size_t stride, buffer_usage usage);
+        static ref<vertex_buffer> create(core::device& dev, const void* data, size_t size, size_t stride, buffer_usage usage);
 
         template<typename T>
-        static ref<vertex_buffer> create(device& dev, std::span<const T> vertices, buffer_usage usage)
+        static ref<vertex_buffer> create(core::device& dev, std::span<const T> vertices, buffer_usage usage)
         {
             return create(dev, vertices.data(), vertices.size_bytes(), sizeof(T), usage);
         }
@@ -49,7 +49,7 @@ namespace lumina::graphics
         nvrhi::IBuffer* get_buffer() const { return m_handle; }
 
     private:
-        vertex_buffer(device& dev, nvrhi::IBuffer* handle, size_t size, size_t stride, buffer_usage usage)
+        vertex_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t size, size_t stride, buffer_usage usage)
             : m_device(dev)
             , m_handle(handle)
             , m_size(size)
@@ -57,7 +57,7 @@ namespace lumina::graphics
             , m_usage(usage)
         {}
 
-        device& m_device;
+        core::device& m_device;
         nvrhi::IBuffer* m_handle;
         size_t m_size;
         size_t m_stride;

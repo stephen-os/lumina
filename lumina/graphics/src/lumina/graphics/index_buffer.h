@@ -9,10 +9,10 @@
 #include <span>
 
 namespace nvrhi { class IBuffer; }
+namespace lumina::core { class device; }
 
 namespace lumina::graphics
 {
-    class device;
 
     class index_buffer
     {
@@ -24,14 +24,14 @@ namespace lumina::graphics
         index_buffer(index_buffer&& other) noexcept;
         index_buffer& operator=(index_buffer&&) = delete;
 
-        static ref<index_buffer> create(device& dev, const void* data, size_t count, size_t index_size);
+        static ref<index_buffer> create(core::device& dev, const void* data, size_t count, size_t index_size);
 
-        static ref<index_buffer> create(device& dev, std::span<const uint16_t> indices)
+        static ref<index_buffer> create(core::device& dev, std::span<const uint16_t> indices)
         {
             return create(dev, indices.data(), indices.size(), sizeof(uint16_t));
         }
 
-        static ref<index_buffer> create(device& dev, std::span<const uint32_t> indices)
+        static ref<index_buffer> create(core::device& dev, std::span<const uint32_t> indices)
         {
             return create(dev, indices.data(), indices.size(), sizeof(uint32_t));
         }
@@ -46,14 +46,14 @@ namespace lumina::graphics
         nvrhi::IBuffer* get_buffer() const { return m_handle; }
 
     private:
-        index_buffer(device& dev, nvrhi::IBuffer* handle, size_t count, size_t index_size)
+        index_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t count, size_t index_size)
             : m_device(dev)
             , m_handle(handle)
             , m_count(count)
             , m_index_size(index_size)
         {}
 
-        device& m_device;
+        core::device& m_device;
         nvrhi::IBuffer* m_handle;
         size_t m_count;
         size_t m_index_size;

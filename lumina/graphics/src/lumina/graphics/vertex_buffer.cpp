@@ -1,5 +1,6 @@
 #include "vertex_buffer.h"
-#include "device.h"
+
+#include <lumina/core/device.h>
 
 #include <lumina/core/assert.h>
 #include <lumina/core/log.h>
@@ -29,7 +30,7 @@ namespace lumina::graphics
         other.m_stride = 0;
     }
 
-    ref<vertex_buffer> vertex_buffer::create(device& dev, const void* data, size_t size, size_t stride, buffer_usage usage)
+    ref<vertex_buffer> vertex_buffer::create(core::device& dev, const void* data, size_t size, size_t stride, buffer_usage usage)
     {
         auto* nvrhi_device = dev.get_nvrhi_device();
         if (!nvrhi_device)

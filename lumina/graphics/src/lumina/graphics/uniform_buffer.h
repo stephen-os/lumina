@@ -12,9 +12,10 @@ namespace nvrhi
     class ICommandList;
 }
 
+namespace lumina::core { class device; }
+
 namespace lumina::graphics
 {
-    class device;
 
     class uniform_buffer
     {
@@ -26,10 +27,10 @@ namespace lumina::graphics
         uniform_buffer(uniform_buffer&& other) noexcept;
         uniform_buffer& operator=(uniform_buffer&&) = delete;
 
-        static ref<uniform_buffer> create(device& dev, size_t size);
+        static ref<uniform_buffer> create(core::device& dev, size_t size);
 
         template<typename T>
-        static ref<uniform_buffer> create(device& dev)
+        static ref<uniform_buffer> create(core::device& dev)
         {
             return create(dev, sizeof(T));
         }
@@ -48,14 +49,14 @@ namespace lumina::graphics
         nvrhi::IBuffer* get_buffer() const { return m_handle; }
 
     private:
-        uniform_buffer(device& dev, nvrhi::IBuffer* handle, size_t size, size_t aligned_size)
+        uniform_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t size, size_t aligned_size)
             : m_device(dev)
             , m_handle(handle)
             , m_size(size)
             , m_aligned_size(aligned_size)
         {}
 
-        device& m_device;
+        core::device& m_device;
         nvrhi::IBuffer* m_handle;
         size_t m_size;
         size_t m_aligned_size;

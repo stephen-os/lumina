@@ -1,5 +1,6 @@
 #include "index_buffer.h"
-#include "device.h"
+
+#include <lumina/core/device.h>
 
 #include <lumina/core/log.h>
 
@@ -26,7 +27,7 @@ namespace lumina::graphics
         other.m_count = 0;
     }
 
-    ref<index_buffer> index_buffer::create(device& dev, const void* data, size_t count, size_t index_size)
+    ref<index_buffer> index_buffer::create(core::device& dev, const void* data, size_t count, size_t index_size)
     {
         auto* nvrhi_device = dev.get_nvrhi_device();
         if (!nvrhi_device)
