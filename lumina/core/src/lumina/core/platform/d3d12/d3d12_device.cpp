@@ -37,7 +37,7 @@ namespace lumina::core::platform::d3d12
         shutdown();
     }
 
-    bool d3d12_device::init(const graphics_device_desc& desc)
+    bool d3d12_device::init(const device_desc& desc)
     {
         m_window = desc.window;
         m_width = desc.width;

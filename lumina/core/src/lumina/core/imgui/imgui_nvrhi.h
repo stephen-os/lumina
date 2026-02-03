@@ -6,7 +6,7 @@ struct ImDrawData;
 
 namespace lumina::core
 {
-    class graphics_device;
+    class device;
 }
 
 namespace lumina::core::imgui
@@ -25,6 +25,6 @@ namespace lumina::core::imgui
     void new_frame();
     void render_draw_data(nvrhi::ICommandList* command_list, nvrhi::IFramebuffer* framebuffer, ImDrawData* draw_data);
 
-    void init_platform_viewports(graphics_device& device);
+    void init_platform_viewports(device& dev);
     void shutdown_platform_viewports();
 }

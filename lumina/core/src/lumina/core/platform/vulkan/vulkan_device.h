@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../graphics_device.h"
+#include "../../device.h"
 
 // Platform defines must be set before including Vulkan headers
 #ifdef _WIN32
@@ -25,13 +25,13 @@ namespace lumina::core::platform::vulkan
         void message(nvrhi::MessageSeverity severity, const char* message_text) override;
     };
 
-    class vulkan_device : public graphics_device
+    class vulkan_device : public device
     {
     public:
         vulkan_device() = default;
         ~vulkan_device() override;
 
-        bool init(const graphics_device_desc& desc) override;
+        bool init(const device_desc& desc) override;
         void shutdown() override;
 
         void begin_frame() override;
@@ -39,7 +39,7 @@ namespace lumina::core::platform::vulkan
 
         void resize(uint32_t width, uint32_t height) override;
 
-        nvrhi::IDevice* get_device() const override { return m_nvrhi_device.Get(); }
+        nvrhi::IDevice* get_nvrhi_device() const override { return m_nvrhi_device.Get(); }
         nvrhi::ICommandList* get_command_list() const override { return m_command_list.Get(); }
         nvrhi::IFramebuffer* get_current_framebuffer() const override;
 

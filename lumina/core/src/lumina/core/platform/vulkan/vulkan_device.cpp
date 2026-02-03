@@ -64,7 +64,7 @@ namespace lumina::core::platform::vulkan
         shutdown();
     }
 
-    bool vulkan_device::init(const graphics_device_desc& desc)
+    bool vulkan_device::init(const device_desc& desc)
     {
         m_window = desc.window;
         m_width = desc.width;

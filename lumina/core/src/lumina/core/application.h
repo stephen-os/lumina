@@ -4,7 +4,7 @@
 #include "window.h"
 #include "layer.h"
 #include "event.h"
-#include "graphics_device.h"
+#include "device.h"
 
 #include <string>
 #include <vector>
@@ -65,8 +65,8 @@ namespace lumina::core
         GLFWwindow* get_window_handle() const { return m_window->get_native_window(); }
         window& get_window() { return *m_window; }
 
-        graphics_device& get_graphics_device() { return *m_graphics_device; }
-        nvrhi::IDevice* get_nvrhi_device() { return m_graphics_device->get_device(); }
+        device& get_device() { return *m_device; }
+        nvrhi::IDevice* get_nvrhi_device() { return m_device->get_nvrhi_device(); }
 
         static application& get();
         static float get_time();
@@ -80,7 +80,7 @@ namespace lumina::core
 
         application_spec m_spec;
         scope<window> m_window;
-        scope<graphics_device> m_graphics_device;
+        scope<device> m_device;
 
         bool m_running = true;
         std::vector<ref<layer>> m_layer_stack;

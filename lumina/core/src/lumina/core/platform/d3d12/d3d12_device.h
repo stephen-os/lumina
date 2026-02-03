@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../graphics_device.h"
+#include "../../device.h"
 
 #ifdef LUMINA_PLATFORM_WINDOWS
 
@@ -26,13 +26,13 @@ namespace lumina::core::platform::d3d12
         void message(nvrhi::MessageSeverity severity, const char* message_text) override;
     };
 
-    class d3d12_device : public graphics_device
+    class d3d12_device : public device
     {
     public:
         d3d12_device() = default;
         ~d3d12_device() override;
 
-        bool init(const graphics_device_desc& desc) override;
+        bool init(const device_desc& desc) override;
         void shutdown() override;
 
         void begin_frame() override;
@@ -40,7 +40,7 @@ namespace lumina::core::platform::d3d12
 
         void resize(uint32_t width, uint32_t height) override;
 
-        nvrhi::IDevice* get_device() const override { return m_nvrhi_device.Get(); }
+        nvrhi::IDevice* get_nvrhi_device() const override { return m_nvrhi_device.Get(); }
         nvrhi::ICommandList* get_command_list() const override { return m_command_list.Get(); }
         nvrhi::IFramebuffer* get_current_framebuffer() const override;
 

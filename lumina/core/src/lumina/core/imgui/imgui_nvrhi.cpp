@@ -1,6 +1,6 @@
 #include "imgui_nvrhi.h"
 #include "../log.h"
-#include "../graphics_device.h"
+#include "../device.h"
 
 #include <imgui.h>
 
@@ -1281,13 +1281,13 @@ namespace lumina::core::imgui
 
     // --- Public viewport API ---
 
-    void init_platform_viewports(graphics_device& device)
+    void init_platform_viewports(device& dev)
     {
         if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-            s_vk_handles = device.get_vulkan_handles();
+            s_vk_handles = dev.get_vulkan_handles();
 #ifdef LUMINA_PLATFORM_WINDOWS
         else
-            s_dx_handles = device.get_d3d12_handles();
+            s_dx_handles = dev.get_d3d12_handles();
 #endif
 
         ImGuiIO& io = ImGui::GetIO();

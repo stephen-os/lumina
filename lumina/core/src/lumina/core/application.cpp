@@ -47,22 +47,22 @@ namespace lumina::core
         m_window->set_event_callback([this](event& e) { on_event(e); });
         LUMINA_ASSERT(m_window, "Failed to create application window");
 
-        // Initialize graphics device
-        m_graphics_device = graphics_device::create(m_spec.api);
-        LUMINA_ASSERT(m_graphics_device, "Failed to create graphics device");
+        // Initialize device
+        m_device = device::create(m_spec.api);
+        LUMINA_ASSERT(m_device, "Failed to create device");
 
-        graphics_device_desc gfx_desc;
-        gfx_desc.window = m_window->get_native_window();
-        gfx_desc.width = m_window->get_width();
-        gfx_desc.height = m_window->get_height();
-        gfx_desc.vsync = m_spec.vsync;
-        gfx_desc.app_name = m_spec.name;
+        device_desc dev_desc;
+        dev_desc.window = m_window->get_native_window();
+        dev_desc.width = m_window->get_width();
+        dev_desc.height = m_window->get_height();
+        dev_desc.vsync = m_spec.vsync;
+        dev_desc.app_name = m_spec.name;
 #ifdef LUMINA_DEBUG
-        gfx_desc.enable_debug_layer = true;
+        dev_desc.enable_debug_layer = true;
 #endif
 
-        bool gfx_init = m_graphics_device->init(gfx_desc);
-        LUMINA_ASSERT(gfx_init, "Failed to initialize graphics device");
+        bool dev_init = m_device->init(dev_desc);
+        LUMINA_ASSERT(dev_init, "Failed to initialize device");
 
         init_imgui();
     }
@@ -78,8 +78,8 @@ namespace lumina::core
 
         shutdown_imgui();
 
-        m_graphics_device->shutdown();
-        m_graphics_device.reset();
+        m_device->shutdown();
+        m_device.reset();
 
         m_window.reset();
         window::terminate_glfw();
@@ -111,13 +111,13 @@ namespace lumina::core
 
         // Initialize NVRHI backend for ImGui rendering
         imgui::imgui_nvrhi_config imgui_config;
-        imgui_config.device = m_graphics_device->get_device();
-        imgui_config.render_target_format = m_graphics_device->get_swapchain_format();
+        imgui_config.device = m_device->get_nvrhi_device();
+        imgui_config.render_target_format = m_device->get_swapchain_format();
 
         bool imgui_init = imgui::init(imgui_config);
         LUMINA_ASSERT(imgui_init, "Failed to initialize ImGui NVRHI backend");
 
-        imgui::init_platform_viewports(*m_graphics_device);
+        imgui::init_platform_viewports(*m_device);
 
         theme::apply_lumina_theme();
 
@@ -134,11 +134,11 @@ namespace lumina::core
 
     void application::begin_frame()
     {
-        m_graphics_device->begin_frame();
+        m_device->begin_frame();
 
         // Clear the framebuffer
-        auto cmd = m_graphics_device->get_command_list();
-        auto fb = m_graphics_device->get_current_framebuffer();
+        auto cmd = m_device->get_command_list();
+        auto fb = m_device->get_current_framebuffer();
 
         nvrhi::utils::ClearColorAttachment(cmd, fb, 0, nvrhi::Color(0.1f, 0.1f, 0.1f, 1.0f));
 
@@ -152,14 +152,14 @@ namespace lumina::core
         ImGui::Render();
 
         // Render ImGui draw data using NVRHI
-        auto cmd = m_graphics_device->get_command_list();
-        auto fb = m_graphics_device->get_current_framebuffer();
+        auto cmd = m_device->get_command_list();
+        auto fb = m_device->get_current_framebuffer();
         imgui::render_draw_data(cmd, fb, ImGui::GetDrawData());
 
         // Present the main window first — this closes and executes the main command list.
         // Viewport rendering must happen after, since NVRHI only allows one immediate
         // command list open at a time.
-        m_graphics_device->present();
+        m_device->present();
 
         ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
@@ -192,7 +192,7 @@ namespace lumina::core
         if (width == 0 || height == 0)
             return;
 
-        m_graphics_device->resize(width, height);
+        m_device->resize(width, height);
     }
 
     void application::post_event(event& e)

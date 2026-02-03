@@ -1,4 +1,4 @@
-#include "graphics_device.h"
+#include "device.h"
 #include "log.h"
 
 #ifdef LUMINA_PLATFORM_WINDOWS
@@ -9,7 +9,7 @@
 
 namespace lumina::core
 {
-    scope<graphics_device> graphics_device::create(graphics_api api)
+    scope<device> device::create(graphics_api api)
     {
         switch (api)
         {
