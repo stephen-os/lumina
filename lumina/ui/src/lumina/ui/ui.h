@@ -16,3 +16,5 @@
 #include "docking.h"
 #include "icons.h"
 #include "widgets.h"
+#include "node_editor.h"
+#include "file_dialog.h"
