@@ -2,57 +2,58 @@
 
 #include <imgui.h>
 
-#include <concepts>
-
 namespace lumina::ui
 {
-    inline bool panel(const char* title, std::invocable auto&& body, ImGuiWindowFlags flags = 0)
+    // Panel - a styled window with consistent padding
+    inline bool begin_panel(const char* title, ImGuiWindowFlags flags = 0)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
         bool visible = ImGui::Begin(title, nullptr, flags);
         ImGui::PopStyleVar();
-        if (visible) body();
-        ImGui::End();
         return visible;
     }
 
-    inline bool panel(const char* title, bool& open, std::invocable auto&& body, ImGuiWindowFlags flags = 0)
+    inline bool begin_panel(const char* title, bool& open, ImGuiWindowFlags flags = 0)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
         bool visible = ImGui::Begin(title, &open, flags);
         ImGui::PopStyleVar();
-        if (visible) body();
-        ImGui::End();
         return visible;
     }
 
-    inline bool section(const char* label, std::invocable auto&& body,
-                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
+    inline void end_panel()
+    {
+        ImGui::End();
+    }
+
+    // Section - collapsing header with indented content
+    // Returns true if the section is open (content should be rendered)
+    inline bool begin_section(const char* label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
     {
         bool open = ImGui::CollapsingHeader(label, flags);
         if (open)
         {
             ImGui::Indent();
             ImGui::Spacing();
-            body();
-            ImGui::Spacing();
-            ImGui::Unindent();
         }
         return open;
     }
 
-    inline bool section(const char* label, bool& visible, std::invocable auto&& body,
-                        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
+    inline bool begin_section(const char* label, bool& visible, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
     {
         bool open = ImGui::CollapsingHeader(label, &visible, flags);
         if (open)
         {
             ImGui::Indent();
             ImGui::Spacing();
-            body();
-            ImGui::Spacing();
-            ImGui::Unindent();
         }
         return open;
+    }
+
+    // Call only if begin_section returned true
+    inline void end_section()
+    {
+        ImGui::Spacing();
+        ImGui::Unindent();
     }
 }

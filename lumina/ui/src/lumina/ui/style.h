@@ -3,61 +3,26 @@
 #include <imgui.h>
 #include <glm/glm.hpp>
 
-#include <concepts>
-
 namespace lumina::ui
 {
-    inline void with_style_color(ImGuiCol idx, const ImVec4& color, std::invocable auto&& body)
-    {
-        ImGui::PushStyleColor(idx, color);
-        body();
-        ImGui::PopStyleColor();
-    }
+    // Style color push/pop
+    inline void push_style_color(ImGuiCol idx, const ImVec4& color) { ImGui::PushStyleColor(idx, color); }
+    inline void push_style_color(ImGuiCol idx, const glm::vec4& color) { ImGui::PushStyleColor(idx, ImVec4(color.r, color.g, color.b, color.a)); }
+    inline void push_style_color(ImGuiCol idx, const glm::vec3& color) { ImGui::PushStyleColor(idx, ImVec4(color.r, color.g, color.b, 1.0f)); }
+    inline void push_style_color(ImGuiCol idx, ImU32 color) { ImGui::PushStyleColor(idx, color); }
+    inline void pop_style_color(int count = 1) { ImGui::PopStyleColor(count); }
 
-    inline void with_style_color(ImGuiCol idx, const glm::vec4& color, std::invocable auto&& body)
-    {
-        ImGui::PushStyleColor(idx, ImVec4(color.r, color.g, color.b, color.a));
-        body();
-        ImGui::PopStyleColor();
-    }
+    // Style var push/pop
+    inline void push_style_var(ImGuiStyleVar idx, float val) { ImGui::PushStyleVar(idx, val); }
+    inline void push_style_var(ImGuiStyleVar idx, const ImVec2& val) { ImGui::PushStyleVar(idx, val); }
+    inline void push_style_var(ImGuiStyleVar idx, const glm::vec2& val) { ImGui::PushStyleVar(idx, ImVec2(val.x, val.y)); }
+    inline void pop_style_var(int count = 1) { ImGui::PopStyleVar(count); }
 
-    inline void with_style_color(ImGuiCol idx, const glm::vec3& color, std::invocable auto&& body)
-    {
-        ImGui::PushStyleColor(idx, ImVec4(color.r, color.g, color.b, 1.0f));
-        body();
-        ImGui::PopStyleColor();
-    }
-
-    inline void with_style_var(ImGuiStyleVar idx, const glm::vec2& val, std::invocable auto&& body)
-    {
-        ImGui::PushStyleVar(idx, ImVec2(val.x, val.y));
-        body();
-        ImGui::PopStyleVar();
-    }
-
-    inline void with_style_var(ImGuiStyleVar idx, float val, std::invocable auto&& body)
-    {
-        ImGui::PushStyleVar(idx, val);
-        body();
-        ImGui::PopStyleVar();
-    }
-
-    inline void with_style_var(ImGuiStyleVar idx, const ImVec2& val, std::invocable auto&& body)
-    {
-        ImGui::PushStyleVar(idx, val);
-        body();
-        ImGui::PopStyleVar();
-    }
-
-    inline void with_font(ImFont* font, std::invocable auto&& body)
-    {
-        ImGui::PushFont(font);
-        body();
-        ImGui::PopFont();
-    }
+    // Font push/pop
+    inline void push_font(ImFont* font) { ImGui::PushFont(font); }
+    inline void pop_font() { ImGui::PopFont(); }
 
     // Themed button variants
-
     inline bool button(const char* label, const ImVec2& size = {0, 0})
     {
         return ImGui::Button(label, size);
@@ -98,6 +63,7 @@ namespace lumina::ui
         return clicked;
     }
 
+    // Basic widgets
     inline bool checkbox(const char* label, bool& value)
     {
         return ImGui::Checkbox(label, &value);

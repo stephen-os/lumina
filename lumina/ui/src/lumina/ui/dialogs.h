@@ -1,21 +1,11 @@
 #pragma once
 
-#include <imgui.h>
+#include "raw.h"
 
 #include <concepts>
 
 namespace lumina::ui
 {
-    inline void open_popup(const char* id)
-    {
-        ImGui::OpenPopup(id);
-    }
-
-    inline void close_current_popup()
-    {
-        ImGui::CloseCurrentPopup();
-    }
-
     inline void confirm_dialog(const char* title, const char* message,
                                std::invocable auto&& on_confirm,
                                std::invocable auto&& on_cancel = []{})

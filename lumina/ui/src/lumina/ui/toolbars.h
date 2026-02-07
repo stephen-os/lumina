@@ -49,7 +49,15 @@ namespace lumina::ui
 
     inline void toolbar_separator()
     {
-        ImGui::SeparatorEx(ImGuiSeparatorFlags_Vertical);
-        ImGui::SameLine();
+        ImGui::SameLine(0, 8.0f);
+        ImVec2 p = ImGui::GetCursorScreenPos();
+        ImGui::GetWindowDrawList()->AddLine(
+            ImVec2(p.x, p.y + 2.0f),
+            ImVec2(p.x, p.y + ImGui::GetFrameHeight() - 2.0f),
+            ImGui::GetColorU32(ImGuiCol_Separator),
+            1.0f
+        );
+        ImGui::Dummy(ImVec2(1.0f, 0.0f));
+        ImGui::SameLine(0, 8.0f);
     }
 }
