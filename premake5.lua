@@ -16,6 +16,8 @@ workspace "Lumina"
 group "Dependencies"
     include "premake/dep-configs/glfw"
     include "premake/dep-configs/imgui"
+    include "premake/dep-configs/imgui-node-editor"
+    include "premake/dep-configs/imgui-file-dialog"
     include "premake/dep-configs/nvrhi"
     -- spdlog is header-only, no build needed
 group ""

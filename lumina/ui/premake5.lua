@@ -24,6 +24,8 @@ project "ui"
         -- Dependencies
         "%{wks.location}/dependencies/imgui",
         "%{wks.location}/dependencies/imgui/backends",
+        "%{wks.location}/dependencies/imgui-node-editor",
+        "%{wks.location}/dependencies/ImGuiFileDialog",
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/spdlog/include",
     }
@@ -31,6 +33,8 @@ project "ui"
     links {
         "core",
         "imgui",
+        "imgui-node-editor",
+        "imgui-file-dialog",
     }
 
     defines {
