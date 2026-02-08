@@ -25,7 +25,7 @@ project "ui"
         "%{wks.location}/dependencies/imgui",
         "%{wks.location}/dependencies/imgui/backends",
         "%{wks.location}/dependencies/imgui-node-editor",
-        "%{wks.location}/dependencies/ImGuiFileDialog",
+        "%{wks.location}/dependencies/imgui-file-dialog",
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/spdlog/include",
     }

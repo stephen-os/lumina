@@ -12,13 +12,13 @@ project "imgui-file-dialog"
     objdir ("%{wks.location}/bin-int/" .. outputdir .. "/%{prj.name}")
 
     files {
-        "%{wks.location}/dependencies/ImGuiFileDialog/ImGuiFileDialog.cpp",
-        "%{wks.location}/dependencies/ImGuiFileDialog/ImGuiFileDialog.h",
-        "%{wks.location}/dependencies/ImGuiFileDialog/ImGuiFileDialogConfig.h",
+        "%{wks.location}/dependencies/imgui-file-dialog/ImGuiFileDialog.cpp",
+        "%{wks.location}/dependencies/imgui-file-dialog/ImGuiFileDialog.h",
+        "%{wks.location}/dependencies/imgui-file-dialog/ImGuiFileDialogConfig.h",
     }
 
     includedirs {
-        "%{wks.location}/dependencies/ImGuiFileDialog",
+        "%{wks.location}/dependencies/imgui-file-dialog",
         "%{wks.location}/dependencies/imgui",
     }
 
