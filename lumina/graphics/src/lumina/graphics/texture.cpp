@@ -11,11 +11,19 @@ namespace lumina::graphics
 {
     texture::~texture()
     {
-        if (m_handle)
+        if (m_handle && m_owns_handle)
         {
             m_handle->Release();
             m_handle = nullptr;
         }
+    }
+
+    ref<texture> texture::wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt)
+    {
+        if (!handle)
+            return nullptr;
+
+        return ref<texture>(new texture(dev, handle, width, height, fmt, false));
     }
 
     ref<texture> texture::create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data)

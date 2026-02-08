@@ -33,6 +33,8 @@ namespace lumina::graphics
         static ref<texture> create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data = nullptr);
         static ref<texture> create(core::device& dev, const texture_desc& desc, const void* data = nullptr);
 
+        static ref<texture> wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt);
+
         uint32_t get_width() const { return m_width; }
         uint32_t get_height() const { return m_height; }
         format get_format() const { return m_format; }
@@ -40,12 +42,13 @@ namespace lumina::graphics
         nvrhi::ITexture* get_texture() const { return m_handle; }
 
     private:
-        texture(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt)
+        texture(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt, bool owns_handle = true)
             : m_device(dev)
             , m_handle(handle)
             , m_width(width)
             , m_height(height)
             , m_format(fmt)
+            , m_owns_handle(owns_handle)
         {}
 
         core::device& m_device;
@@ -53,5 +56,6 @@ namespace lumina::graphics
         uint32_t m_width;
         uint32_t m_height;
         format m_format;
+        bool m_owns_handle = true;
     };
 }
