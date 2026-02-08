@@ -24,6 +24,7 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <unordered_map>
 
 namespace lumina::core::imgui
 {
@@ -237,6 +238,9 @@ namespace lumina::core::imgui
     static nvrhi::SamplerHandle s_font_sampler;
     static nvrhi::BindingSetHandle s_binding_set;
 
+    // Cache for texture binding sets (texture ptr -> binding set)
+    static std::unordered_map<nvrhi::ITexture*, nvrhi::BindingSetHandle> s_texture_binding_sets;
+
     static uint32_t s_vertex_buffer_size = 0;
     static uint32_t s_index_buffer_size = 0;
     static nvrhi::Format s_render_target_format = nvrhi::Format::RGBA8_UNORM;
@@ -272,8 +276,8 @@ namespace lumina::core::imgui
         cmd->close();
         s_device->executeCommandList(cmd);
 
-        // Store texture ID for ImGui
-        io.Fonts->SetTexID(reinterpret_cast<ImTextureID>(s_font_texture.Get()));
+        // Store texture ID for ImGui (cast pointer to ImTextureID via uintptr_t for 32/64-bit safety)
+        io.Fonts->SetTexID((ImTextureID)(uintptr_t)s_font_texture.Get());
 
         return true;
     }
@@ -548,6 +552,27 @@ namespace lumina::core::imgui
         return true;
     }
 
+    static nvrhi::BindingSetHandle get_or_create_texture_binding(nvrhi::ITexture* texture)
+    {
+        // Check cache first
+        auto it = s_texture_binding_sets.find(texture);
+        if (it != s_texture_binding_sets.end())
+            return it->second;
+
+        // Create new binding set for this texture
+        nvrhi::BindingSetDesc binding_set_desc;
+        binding_set_desc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, s_constant_buffer));
+        binding_set_desc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, texture));
+        binding_set_desc.addItem(nvrhi::BindingSetItem::Sampler(0, s_font_sampler));
+
+        nvrhi::BindingSetHandle binding_set = s_device->createBindingSet(binding_set_desc, s_binding_layout);
+        if (binding_set)
+        {
+            s_texture_binding_sets[texture] = binding_set;
+        }
+        return binding_set;
+    }
+
     static bool create_buffers(uint32_t vertex_count, uint32_t index_count)
     {
         // Create or resize vertex buffer
@@ -625,6 +650,7 @@ namespace lumina::core::imgui
 
     void shutdown()
     {
+        s_texture_binding_sets.clear();
         s_binding_set = nullptr;
         s_font_sampler = nullptr;
         s_font_texture = nullptr;
@@ -713,6 +739,9 @@ namespace lumina::core::imgui
         state.addVertexBuffer({ s_vertex_buffer, 0, 0 });
         state.indexBuffer = { s_index_buffer, nvrhi::Format::R16_UINT, 0 };
 
+        // Track current texture to minimize binding set changes
+        nvrhi::ITexture* current_texture = s_font_texture.Get();
+
         command_list->setGraphicsState(state);
 
         // Render draw lists
@@ -748,6 +777,19 @@ namespace lumina::core::imgui
                     scissor.maxY = static_cast<int>(clip_max.y);
 
                     state.viewport.scissorRects[0] = scissor;
+
+                    // Handle custom textures (cast ImTextureID back to pointer via uintptr_t)
+                    nvrhi::ITexture* texture = (nvrhi::ITexture*)(uintptr_t)pcmd->GetTexID();
+                    if (texture != current_texture)
+                    {
+                        current_texture = texture;
+                        nvrhi::BindingSetHandle binding_set = get_or_create_texture_binding(texture);
+                        if (binding_set)
+                        {
+                            state.bindings[0] = { binding_set };
+                        }
+                    }
+
                     command_list->setGraphicsState(state);
 
                     // Draw
