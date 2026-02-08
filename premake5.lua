@@ -29,6 +29,11 @@ group "Lumina"
     include "lumina/graphics"
 group ""
 
+-- Examples
+group "Examples"
+    include "examples"
+group ""
+
 -- Sandbox/Test Application
 group "Sandbox"
     project "sandbox"
