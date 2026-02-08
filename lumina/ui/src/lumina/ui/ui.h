@@ -18,3 +18,4 @@
 #include "widgets.h"
 #include "node_editor.h"
 #include "file_dialog.h"
+#include "demo.h"
