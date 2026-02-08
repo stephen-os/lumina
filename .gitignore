@@ -14,3 +14,9 @@ bin-int/
 
 # imgui
 **/imgui.ini
+
+# Generated shaders (keep .hlsl source files)
+lumina/graphics/src/lumina/graphics/shaders/*_ps.h
+lumina/graphics/src/lumina/graphics/shaders/*_vs.h
+lumina/graphics/src/lumina/graphics/shaders/*_dxil.h
+lumina/graphics/src/lumina/graphics/shaders/*_spirv.h
