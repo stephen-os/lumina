@@ -15,6 +15,9 @@ bin-int/
 # imgui
 **/imgui.ini
 
+# Node editor settings
+**/*.node-editor.json
+
 # Generated shaders (keep .hlsl source files)
 lumina/graphics/src/lumina/graphics/shaders/*_ps.h
 lumina/graphics/src/lumina/graphics/shaders/*_vs.h
