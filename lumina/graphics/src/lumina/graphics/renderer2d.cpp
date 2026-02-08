@@ -24,6 +24,10 @@
 #include "shaders/pixel_ps.h"
 #include "shaders/grid_vs.h"
 #include "shaders/grid_ps.h"
+#include "shaders/point_light_vs.h"
+#include "shaders/point_light_ps.h"
+#include "shaders/composite_vs.h"
+#include "shaders/composite_ps.h"
 
 namespace
 {
@@ -151,6 +155,40 @@ namespace
             return { g_grid_ps_dxil, sizeof(g_grid_ps_dxil) };
         else
             return { g_grid_ps_spirv, sizeof(g_grid_ps_spirv) };
+    }
+
+    // Point light shaders
+    shader_bytecode get_point_light_vs(lumina::core::graphics_api api)
+    {
+        if (api == lumina::core::graphics_api::d3d12)
+            return { g_point_light_vs_dxil, sizeof(g_point_light_vs_dxil) };
+        else
+            return { g_point_light_vs_spirv, sizeof(g_point_light_vs_spirv) };
+    }
+
+    shader_bytecode get_point_light_ps(lumina::core::graphics_api api)
+    {
+        if (api == lumina::core::graphics_api::d3d12)
+            return { g_point_light_ps_dxil, sizeof(g_point_light_ps_dxil) };
+        else
+            return { g_point_light_ps_spirv, sizeof(g_point_light_ps_spirv) };
+    }
+
+    // Composite shaders
+    shader_bytecode get_composite_vs(lumina::core::graphics_api api)
+    {
+        if (api == lumina::core::graphics_api::d3d12)
+            return { g_composite_vs_dxil, sizeof(g_composite_vs_dxil) };
+        else
+            return { g_composite_vs_spirv, sizeof(g_composite_vs_spirv) };
+    }
+
+    shader_bytecode get_composite_ps(lumina::core::graphics_api api)
+    {
+        if (api == lumina::core::graphics_api::d3d12)
+            return { g_composite_ps_dxil, sizeof(g_composite_ps_dxil) };
+        else
+            return { g_composite_ps_spirv, sizeof(g_composite_ps_spirv) };
     }
 }
 
@@ -584,6 +622,10 @@ namespace lumina::graphics
         }
 
         // Pipelines will be created lazily based on render target format
+
+        // Initialize lighting resources
+        init_lighting_resources();
+
         m_initialized = true;
 
         LUMINA_LOG_INFO("Renderer2D initialized (quads: {}, circles: {}, lines: {}, text: {}, triangles: {}, pixels: {}, grids: {})",
@@ -596,6 +638,9 @@ namespace lumina::graphics
     {
         if (!m_initialized)
             return;
+
+        // Shutdown lighting resources
+        shutdown_lighting_resources();
 
         // Clear pipelines
         m_quad_pipeline.reset();
@@ -665,12 +710,38 @@ namespace lumina::graphics
         }
 
         m_view_projection = projection * view;
+
+        // If lighting is enabled, redirect rendering to the scene target
+        if (m_lighting_enabled)
+        {
+            uint32_t width = m_current_target ? m_current_target->get_width() : m_device.get_width();
+            uint32_t height = m_current_target ? m_current_target->get_height() : m_device.get_height();
+
+            ensure_lighting_targets(width, height);
+
+            // Render scene to the scene target
+            m_context->set_render_target(m_scene_target);
+            m_context->clear(clear_color(0.0f, 0.0f, 0.0f, 0.0f));
+            m_context->set_viewport(0, 0, static_cast<float>(width), static_cast<float>(height));
+
+            // Update format tracking for pipeline creation
+            m_current_color_format = m_scene_target->get_color_format();
+            m_current_depth_format = m_scene_target->get_depth_format();
+        }
+
         start_batch();
     }
 
     void renderer2d::end()
     {
         flush_all();
+
+        // If lighting is enabled, render lights and composite
+        if (m_lighting_enabled)
+        {
+            flush_lights();
+            composite_scene();
+        }
     }
 
     void renderer2d::set_render_target(ref<render_target> target)
@@ -1600,5 +1671,351 @@ namespace lumina::graphics
 
         batch.grid_vertices.clear();
         batch.grid_count = 0;
+    }
+
+    // ========================================================================
+    // Lighting Implementation
+    // ========================================================================
+
+    void renderer2d::init_lighting_resources()
+    {
+        // Create fullscreen quad vertex buffer (NDC coordinates)
+        fullscreen_vertex fullscreen_verts[4] = {
+            {{ -1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }},  // Bottom-left
+            {{  1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},  // Bottom-right
+            {{  1.0f,  1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }},  // Top-right
+            {{ -1.0f,  1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }},  // Top-left
+        };
+
+        m_fullscreen_vertex_buffer = vertex_buffer::create(m_device, fullscreen_verts, sizeof(fullscreen_verts), sizeof(fullscreen_vertex), buffer_usage::immutable);
+        if (!m_fullscreen_vertex_buffer)
+        {
+            LUMINA_LOG_ERROR("Failed to create fullscreen vertex buffer");
+            return;
+        }
+
+        // Point light shader
+        {
+            auto vs = get_point_light_vs(m_device.get_api());
+            auto ps = get_point_light_ps(m_device.get_api());
+
+            shader_desc desc;
+            desc.vertex_blob = vs.data;
+            desc.vertex_size = vs.size;
+            desc.pixel_blob = ps.data;
+            desc.pixel_size = ps.size;
+            desc.vertex_entry = "VSMain";
+            desc.pixel_entry = "PSMain";
+            desc.debug_name = "Point Light";
+
+            m_point_light_shader = shader::create(m_device, desc);
+            if (!m_point_light_shader)
+            {
+                LUMINA_LOG_ERROR("Failed to create point light shader");
+                return;
+            }
+        }
+
+        // Point light input layout
+        input_layout_desc light_layout_desc;
+        light_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
+                         .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord);
+
+        m_point_light_input_layout = input_layout::create(m_device, light_layout_desc, m_point_light_shader);
+        if (!m_point_light_input_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create point light input layout");
+            return;
+        }
+
+        // Point light binding layout (constant buffer only)
+        binding_layout_desc light_binding_desc;
+        light_binding_desc.add_constant_buffer(0);
+
+        m_point_light_binding_layout = binding_layout::create(m_device, light_binding_desc);
+        if (!m_point_light_binding_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create point light binding layout");
+            return;
+        }
+
+        // Point light constant buffer
+        // Structure: float2 position, float2 viewport_size, float3 color, float intensity,
+        //            float radius, float attenuation, float falloff, float pad, mat4 inv_view_proj
+        m_light_params_buffer = uniform_buffer::create(m_device, 128); // Generous size for alignment
+        if (!m_light_params_buffer)
+        {
+            LUMINA_LOG_ERROR("Failed to create light params buffer");
+            return;
+        }
+
+        // Composite shader
+        {
+            auto vs = get_composite_vs(m_device.get_api());
+            auto ps = get_composite_ps(m_device.get_api());
+
+            shader_desc desc;
+            desc.vertex_blob = vs.data;
+            desc.vertex_size = vs.size;
+            desc.pixel_blob = ps.data;
+            desc.pixel_size = ps.size;
+            desc.vertex_entry = "VSMain";
+            desc.pixel_entry = "PSMain";
+            desc.debug_name = "Composite";
+
+            m_composite_shader = shader::create(m_device, desc);
+            if (!m_composite_shader)
+            {
+                LUMINA_LOG_ERROR("Failed to create composite shader");
+                return;
+            }
+        }
+
+        // Composite input layout (same as point light)
+        m_composite_input_layout = m_point_light_input_layout;
+
+        // Composite binding layout (constant buffer + 2 textures + sampler)
+        binding_layout_desc composite_binding_desc;
+        composite_binding_desc.add_constant_buffer(0);
+        composite_binding_desc.add_texture(0);  // Scene texture
+        composite_binding_desc.add_texture(1);  // Light texture
+        composite_binding_desc.add_sampler(0);
+
+        m_composite_binding_layout = binding_layout::create(m_device, composite_binding_desc);
+        if (!m_composite_binding_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create composite binding layout");
+            return;
+        }
+
+        // Composite constant buffer
+        // Structure: float3 ambient_color, float ambient_intensity
+        m_composite_params_buffer = uniform_buffer::create(m_device, 32);
+        if (!m_composite_params_buffer)
+        {
+            LUMINA_LOG_ERROR("Failed to create composite params buffer");
+            return;
+        }
+
+        LUMINA_LOG_INFO("Lighting resources initialized");
+    }
+
+    void renderer2d::shutdown_lighting_resources()
+    {
+        m_scene_target.reset();
+        m_light_accumulation.reset();
+        m_fullscreen_vertex_buffer.reset();
+        m_point_light_shader.reset();
+        m_point_light_input_layout.reset();
+        m_point_light_binding_layout.reset();
+        m_point_light_pipeline.reset();
+        m_composite_shader.reset();
+        m_composite_input_layout.reset();
+        m_composite_binding_layout.reset();
+        m_composite_pipeline.reset();
+        m_light_params_buffer.reset();
+        m_composite_params_buffer.reset();
+
+        m_lighting_target_width = 0;
+        m_lighting_target_height = 0;
+    }
+
+    void renderer2d::ensure_lighting_targets(uint32_t width, uint32_t height)
+    {
+        if (m_lighting_target_width == width && m_lighting_target_height == height)
+            return;
+
+        // Create or resize scene target
+        if (!m_scene_target || m_scene_target->get_width() != width || m_scene_target->get_height() != height)
+        {
+            m_scene_target = render_target::create(m_device, width, height, format::rgba16_float);
+            if (!m_scene_target)
+            {
+                LUMINA_LOG_ERROR("Failed to create scene render target for lighting");
+                return;
+            }
+        }
+
+        // Create or resize light accumulation target
+        if (!m_light_accumulation || m_light_accumulation->get_width() != width || m_light_accumulation->get_height() != height)
+        {
+            m_light_accumulation = render_target::create(m_device, width, height, format::rgba16_float);
+            if (!m_light_accumulation)
+            {
+                LUMINA_LOG_ERROR("Failed to create light accumulation render target");
+                return;
+            }
+        }
+
+        m_lighting_target_width = width;
+        m_lighting_target_height = height;
+
+        LUMINA_LOG_INFO("Lighting targets resized to {}x{}", width, height);
+    }
+
+    void renderer2d::flush_lights()
+    {
+        if (m_point_lights.empty())
+            return;
+
+        // Ensure point light pipeline exists
+        if (!m_point_light_pipeline)
+        {
+            pipeline_desc desc;
+            desc.shader_program = m_point_light_shader;
+            desc.vertex_layout = m_point_light_input_layout;
+            desc.binding_layouts.push_back(m_point_light_binding_layout);
+            desc.state.blend = blend_mode::additive;  // Additive blending for light accumulation
+            desc.state.depth = depth_mode::none;
+            desc.state.cull = cull_mode::none;
+            desc.state.primitive = topology::triangles;
+            desc.color_format = m_light_accumulation ? m_light_accumulation->get_color_format() : format::rgba16_float;
+            desc.depth_format = format::unknown;
+
+            m_point_light_pipeline = pipeline::create(m_device, desc);
+            if (!m_point_light_pipeline)
+            {
+                LUMINA_LOG_ERROR("Failed to create point light pipeline");
+                return;
+            }
+        }
+
+        // Clear light accumulation buffer
+        m_context->set_render_target(m_light_accumulation);
+        m_context->clear(clear_color(0.0f, 0.0f, 0.0f, 0.0f));
+
+        // Calculate inverse view-projection matrix
+        glm::mat4 inv_view_proj = glm::inverse(m_view_projection);
+
+        // Render each point light
+        for (const auto& light : m_point_lights)
+        {
+            // Light params structure (must match HLSL cbuffer layout)
+            struct alignas(16) light_params
+            {
+                glm::vec2 position;
+                glm::vec2 viewport_size;
+                glm::vec3 color;
+                float intensity;
+                float radius;
+                float attenuation_model;
+                float falloff;
+                float _pad;
+                glm::mat4 inv_view_proj;
+            };
+
+            light_params params;
+            params.position = glm::vec2(light.position.x, light.position.y);
+            params.viewport_size = glm::vec2(static_cast<float>(m_lighting_target_width), static_cast<float>(m_lighting_target_height));
+            params.color = light.color;
+            params.intensity = light.intensity;
+            params.radius = light.radius;
+            params.attenuation_model = light.attenuation;
+            params.falloff = light.falloff;
+            params._pad = 0.0f;
+            params.inv_view_proj = inv_view_proj;
+
+            // Update constant buffer
+            m_light_params_buffer->update(params, m_device.get_command_list());
+
+            // Create binding set for this light
+            binding_set_desc bs_desc;
+            bs_desc.layout = m_point_light_binding_layout;
+            bs_desc.add_constant_buffer(0, m_light_params_buffer);
+
+            auto binding_set = binding_set::create(m_device, bs_desc);
+            if (!binding_set)
+            {
+                LUMINA_LOG_ERROR("Failed to create point light binding set");
+                continue;
+            }
+
+            // Draw fullscreen quad
+            auto& ctx = *m_context;
+            ctx.set_pipeline(m_point_light_pipeline);
+            ctx.set_binding_set(binding_set);
+            ctx.set_vertex_buffer(m_fullscreen_vertex_buffer);
+            ctx.set_index_buffer(m_quad_index_buffer); // Reuse quad index buffer
+            ctx.draw_indexed(6);
+
+            m_stats.draw_calls++;
+        }
+    }
+
+    void renderer2d::composite_scene()
+    {
+        if (!m_scene_target || !m_light_accumulation)
+            return;
+
+        // Ensure composite pipeline exists
+        if (!m_composite_pipeline)
+        {
+            pipeline_desc desc;
+            desc.shader_program = m_composite_shader;
+            desc.vertex_layout = m_composite_input_layout;
+            desc.binding_layouts.push_back(m_composite_binding_layout);
+            desc.state.blend = blend_mode::alpha;
+            desc.state.depth = depth_mode::none;
+            desc.state.cull = cull_mode::none;
+            desc.state.primitive = topology::triangles;
+            desc.color_format = m_current_color_format;
+            desc.depth_format = m_current_depth_format;
+
+            m_composite_pipeline = pipeline::create(m_device, desc);
+            if (!m_composite_pipeline)
+            {
+                LUMINA_LOG_ERROR("Failed to create composite pipeline");
+                return;
+            }
+        }
+
+        // Composite params structure (must match HLSL cbuffer layout)
+        struct alignas(16) composite_params
+        {
+            glm::vec3 ambient_color;
+            float ambient_intensity;
+        };
+
+        composite_params params;
+        params.ambient_color = m_ambient_color;
+        params.ambient_intensity = m_ambient_intensity;
+
+        // Update constant buffer
+        m_composite_params_buffer->update(params, m_device.get_command_list());
+
+        // Set render target back to original (swapchain or user target)
+        if (m_current_target)
+        {
+            m_context->set_render_target(m_current_target);
+        }
+        else
+        {
+            m_context->set_swapchain_framebuffer(m_device.get_current_framebuffer());
+        }
+
+        // Create binding set
+        binding_set_desc bs_desc;
+        bs_desc.layout = m_composite_binding_layout;
+        bs_desc.add_constant_buffer(0, m_composite_params_buffer);
+        bs_desc.add_texture(0, m_scene_target->get_color_texture());
+        bs_desc.add_texture(1, m_light_accumulation->get_color_texture());
+        bs_desc.add_sampler(0, m_default_sampler);
+
+        auto binding_set = binding_set::create(m_device, bs_desc);
+        if (!binding_set)
+        {
+            LUMINA_LOG_ERROR("Failed to create composite binding set");
+            return;
+        }
+
+        // Draw fullscreen quad
+        auto& ctx = *m_context;
+        ctx.set_pipeline(m_composite_pipeline);
+        ctx.set_binding_set(binding_set);
+        ctx.set_vertex_buffer(m_fullscreen_vertex_buffer);
+        ctx.set_index_buffer(m_quad_index_buffer);
+        ctx.draw_indexed(6);
+
+        m_stats.draw_calls++;
     }
 }

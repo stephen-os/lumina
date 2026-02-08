@@ -3,6 +3,7 @@
 #include "types.h"
 #include "vertex_buffer.h"
 #include "index_buffer.h"
+#include "uniform_buffer.h"
 #include "texture.h"
 #include "sampler.h"
 #include "shader.h"
@@ -551,6 +552,49 @@ namespace lumina::graphics
         };
 
         std::vector<point_light_data> m_point_lights;
+
+        // ========================================================================
+        // Lighting Resources (Godot-style deferred 2D lighting)
+        // ========================================================================
+
+        // Render targets for lighting pass
+        ref<render_target> m_scene_target;          // Scene is rendered here when lighting enabled
+        ref<render_target> m_light_accumulation;    // Light contributions accumulated here
+
+        // Fullscreen quad for lighting passes
+        struct fullscreen_vertex
+        {
+            glm::vec4 position;
+            glm::vec2 texcoord;
+        };
+        ref<vertex_buffer> m_fullscreen_vertex_buffer;
+
+        // Point light shader and pipeline
+        ref<shader> m_point_light_shader;
+        ref<input_layout> m_point_light_input_layout;
+        ref<binding_layout> m_point_light_binding_layout;
+        ref<pipeline> m_point_light_pipeline;
+
+        // Composite shader and pipeline
+        ref<shader> m_composite_shader;
+        ref<input_layout> m_composite_input_layout;
+        ref<binding_layout> m_composite_binding_layout;
+        ref<pipeline> m_composite_pipeline;
+
+        // Constant buffers for lighting passes
+        ref<uniform_buffer> m_light_params_buffer;
+        ref<uniform_buffer> m_composite_params_buffer;
+
+        // Cached viewport size for lighting target resize
+        uint32_t m_lighting_target_width = 0;
+        uint32_t m_lighting_target_height = 0;
+
+        // Private lighting methods
+        void init_lighting_resources();
+        void shutdown_lighting_resources();
+        void ensure_lighting_targets(uint32_t width, uint32_t height);
+        void flush_lights();
+        void composite_scene();
 
         // ========================================================================
         // Render Target State

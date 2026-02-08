@@ -81,10 +81,11 @@ namespace lumina::graphics
         nvrhi_desc.visibility = visibility;
 
         // Binding offsets must match DXC SPIR-V compilation flags
+        // Leave room for multiple textures before samplers start
         nvrhi_desc.bindingOffsets.shaderResource = 0;
-        nvrhi_desc.bindingOffsets.sampler = 1;
-        nvrhi_desc.bindingOffsets.constantBuffer = 128;
-        nvrhi_desc.bindingOffsets.unorderedAccess = 256;
+        nvrhi_desc.bindingOffsets.sampler = 32;     // Space for up to 32 textures
+        nvrhi_desc.bindingOffsets.constantBuffer = 64;
+        nvrhi_desc.bindingOffsets.unorderedAccess = 128;
 
         for (const auto& item : desc.bindings)
         {

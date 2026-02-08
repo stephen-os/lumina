@@ -45,7 +45,7 @@ namespace lumina::graphics
         desc.isConstantBuffer = true;
         desc.debugName = "Lumina Uniform Buffer";
         desc.initialState = nvrhi::ResourceStates::CopyDest;
-        desc.keepInitialState = false;
+        desc.keepInitialState = true;
 
         nvrhi::BufferHandle buffer = nvrhi_device->createBuffer(desc);
         if (!buffer)

@@ -59,7 +59,7 @@ namespace lumina::graphics
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI input layout");
             return nullptr;
--        }
+        }
 
         layout->AddRef();
 
