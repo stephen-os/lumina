@@ -2,9 +2,14 @@
 #include "log.h"
 #include "assert.h"
 #include "input.h"
+#include "default_icon.h"
 
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include <stb_image.h>
 
 namespace lumina::core
 {
@@ -50,10 +55,15 @@ namespace lumina::core
         // Position window
         glfwSetWindowPos(m_window, m_spec.position_x, m_spec.position_y);
 
-        // Set window icon if specified
+        // Set window icon (custom or default)
         if (!m_spec.icon_path.empty())
         {
             set_icon(m_spec.icon_path);
+        }
+        else
+        {
+            // Apply default Lumina icon
+            set_default_icon();
         }
 
         setup_callbacks();
@@ -283,10 +293,50 @@ namespace lumina::core
 
     void window::set_icon(const std::string& icon_path)
     {
-        // TODO: Implement icon loading with stb_image
-        // For now, just store the path
         m_spec.icon_path = icon_path;
-        LUMINA_LOG_WARN("Window icon loading not yet implemented");
+
+        int width, height, channels;
+        unsigned char* pixels = stbi_load(icon_path.c_str(), &width, &height, &channels, 4);
+
+        if (!pixels)
+        {
+            LUMINA_LOG_ERROR("Failed to load window icon: {}", icon_path);
+            return;
+        }
+
+        GLFWimage icon;
+        icon.width = width;
+        icon.height = height;
+        icon.pixels = pixels;
+
+        glfwSetWindowIcon(m_window, 1, &icon);
+        stbi_image_free(pixels);
+
+        LUMINA_LOG_INFO("Window icon set: {} ({}x{})", icon_path, width, height);
+    }
+
+    void window::set_default_icon()
+    {
+        int width, height, channels;
+        unsigned char* pixels = stbi_load_from_memory(
+            default_icon_data,
+            static_cast<int>(default_icon_size),
+            &width, &height, &channels, 4
+        );
+
+        if (!pixels)
+        {
+            LUMINA_LOG_WARN("Failed to load default window icon");
+            return;
+        }
+
+        GLFWimage icon;
+        icon.width = width;
+        icon.height = height;
+        icon.pixels = pixels;
+
+        glfwSetWindowIcon(m_window, 1, &icon);
+        stbi_image_free(pixels);
     }
 
     void window::set_title(const std::string& title)

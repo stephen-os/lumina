@@ -55,6 +55,7 @@ namespace lumina::core
 
     private:
         void setup_callbacks();
+        void set_default_icon();
 
         GLFWwindow* m_window = nullptr;
         window_spec m_spec;

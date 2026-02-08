@@ -27,6 +27,7 @@ project "core"
         "%{wks.location}/dependencies/nvrhi/include",
         "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
         "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
+        "%{wks.location}/dependencies/stb_image",
     }
 
     links {
