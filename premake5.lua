@@ -19,6 +19,7 @@ group "Dependencies"
     include "premake/dep-configs/imgui-node-editor"
     include "premake/dep-configs/imgui-file-dialog"
     include "premake/dep-configs/nvrhi"
+    include "premake/dep-configs/catch2"
     -- spdlog is header-only, no build needed
 group ""
 
@@ -119,4 +120,9 @@ group "Sandbox"
             runtime "Release"
             optimize "On"
             symbols "Off"
+group ""
+
+-- Tests
+group "Tests"
+    include "tests"
 group ""
