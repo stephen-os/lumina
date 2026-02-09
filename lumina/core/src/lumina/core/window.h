@@ -46,6 +46,7 @@ namespace lumina::core
         void set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b);
         void set_position(int32_t x, int32_t y);
         void maximize();
+        void show();
 
         uint32_t get_width() const { return m_spec.width; }
         uint32_t get_height() const { return m_spec.height; }

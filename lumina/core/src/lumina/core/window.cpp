@@ -50,6 +50,7 @@ namespace lumina::core
 
         // No graphics API - NVRHI will handle this
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+        glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
 
         m_window = glfwCreateWindow(
             static_cast<int>(m_spec.width),
@@ -395,5 +396,10 @@ namespace lumina::core
         m_spec.position_x = x;
         m_spec.position_y = y;
         glfwSetWindowPos(m_window, x, y);
+    }
+
+    void window::show()
+    {
+        glfwShowWindow(m_window);
     }
 }

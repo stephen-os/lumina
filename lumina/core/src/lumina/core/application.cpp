@@ -197,6 +197,8 @@ namespace lumina::core
 
     void application::run()
     {
+        m_window->show();
+
         float last_time = get_time();
 
         while (m_running)
