@@ -78,6 +78,22 @@ namespace lumina::core
             s_initialized = false;
         }
 
+        void logger::set_name(const std::string& name)
+        {
+            if (!s_initialized || !s_logger)
+                return;
+
+            // Unregister old logger
+            spdlog::drop(s_logger->name());
+
+            // Create new logger with same sinks but new name
+            auto level = s_logger->level();
+            s_logger = std::make_shared<spdlog::logger>(name, s_sinks.begin(), s_sinks.end());
+            s_logger->set_level(level);
+            s_logger->flush_on(spdlog::level::err);
+            spdlog::register_logger(s_logger);
+        }
+
         void logger::set_level(spdlog::level::level_enum level)
         {
             if (!s_initialized || !s_logger)

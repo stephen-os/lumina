@@ -42,6 +42,7 @@ namespace lumina::core
         public:
             static void init(const std::string& name);
             static void shutdown();
+            static void set_name(const std::string& name);
             static std::shared_ptr<spdlog::logger>& get() { return s_logger; }
             static void set_level(spdlog::level::level_enum level);
             static void enable_file_logging(const std::string& filename);
@@ -109,6 +110,7 @@ namespace lumina::core
 
         inline void init(const std::string& name) { logger::init(name); }
         inline void shutdown() { logger::shutdown(); }
+        inline void set_name(const std::string& name) { logger::set_name(name); }
         inline void set_level(spdlog::level::level_enum level) { logger::set_level(level); }
         inline void enable_file_logging(const std::string& filename) { logger::enable_file_logging(filename); }
     }

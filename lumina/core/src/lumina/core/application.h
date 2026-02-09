@@ -5,34 +5,18 @@
 #include "layer.h"
 #include "event.h"
 #include "device.h"
+#include "input.h"
 
 #include <string>
 #include <vector>
 #include <memory>
 
-struct GLFWwindow;
-
 namespace lumina::core
 {
-    struct application_spec
-    {
-        std::string name = "Lumina Application";
-        std::string icon = "";
-        uint32_t width = 1600;
-        uint32_t height = 900;
-        int32_t position_x = 100;
-        int32_t position_y = 100;
-        bool fullscreen = false;
-        bool maximized = false;
-        bool enable_docking = true;
-        bool vsync = true;
-        graphics_api api = graphics_api::vulkan;
-    };
-
     class application
     {
     public:
-        application(const application_spec& spec = application_spec());
+        application(graphics_api api = graphics_api::vulkan);
         ~application();
 
         application(const application&) = delete;
@@ -58,13 +42,23 @@ namespace lumina::core
         void post_event(event& e);
         void queue_event(std::unique_ptr<event> e);
 
-        void set_fullscreen();
+        // Window configuration
+        void set_title(const std::string& title);
+        void set_icon(const std::string& icon_path);
+        void set_titlebar_color(uint8_t r, uint8_t g, uint8_t b);
+        void set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b);
+        void set_fullscreen(bool fullscreen);
+        void set_vsync(bool enabled);
+        void set_position(int32_t x, int32_t y);
+        void maximize();
 
+        // Window state
         uint32_t get_width() const { return m_window->get_width(); }
         uint32_t get_height() const { return m_window->get_height(); }
-        GLFWwindow* get_window_handle() const { return m_window->get_native_window(); }
-        window& get_window() { return *m_window; }
+        bool is_fullscreen() const { return m_window->is_fullscreen(); }
+        bool is_vsync() const { return m_window->is_vsync(); }
 
+        // Device access
         device& get_device() { return *m_device; }
         nvrhi::IDevice* get_nvrhi_device() { return m_device->get_nvrhi_device(); }
 
@@ -78,7 +72,14 @@ namespace lumina::core
         void end_frame();
         void on_resize(uint32_t width, uint32_t height);
 
-        application_spec m_spec;
+        // Internal window access for input system
+        GLFWwindow* get_window_handle() const { return m_window->get_native_window(); }
+        friend bool input::is_key_pressed(input::key_code);
+        friend bool input::is_mouse_button_pressed(input::mouse_code);
+        friend void input::set_cursor_mode(input::cursor_mode);
+        friend input::mouse_position input::get_mouse_position();
+
+        graphics_api m_api;
         scope<window> m_window;
         scope<device> m_device;
 

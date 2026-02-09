@@ -42,6 +42,9 @@ namespace lumina::core
         void set_fullscreen(bool fullscreen);
         void set_title(const std::string& title);
         void set_icon(const std::string& icon_path);
+        void set_titlebar_color(uint8_t r, uint8_t g, uint8_t b);
+        void set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b);
+        void set_position(int32_t x, int32_t y);
         void maximize();
 
         uint32_t get_width() const { return m_spec.width; }

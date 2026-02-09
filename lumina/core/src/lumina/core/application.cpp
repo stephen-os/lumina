@@ -23,40 +23,30 @@ namespace lumina::core
         return *s_instance;
     }
 
-    application::application(const application_spec& spec)
-        : m_spec(spec)
+    application::application(graphics_api api) : m_api(api)
     {
+        log::init("Lumina Application");
+
         LUMINA_ASSERT(!s_instance, "Application already exists");
         s_instance = this;
 
-        log::init(m_spec.name);
-        LUMINA_LOG_INFO("Starting Lumina Application: {}", m_spec.name);
+        LUMINA_LOG_INFO("Starting Lumina Application");
 
-        // Create window
-        window_spec win_spec;
-        win_spec.title = m_spec.name;
-        win_spec.icon_path = m_spec.icon;
-        win_spec.width = m_spec.width;
-        win_spec.height = m_spec.height;
-        win_spec.position_x = m_spec.position_x;
-        win_spec.position_y = m_spec.position_y;
-        win_spec.fullscreen = m_spec.fullscreen;
-        win_spec.maximized = m_spec.maximized;
-
-        m_window = make_scope<window>(win_spec);
+        // Create window with defaults
+        m_window = make_scope<window>(window_spec{});
         m_window->set_event_callback([this](event& e) { on_event(e); });
         LUMINA_ASSERT(m_window, "Failed to create application window");
 
         // Initialize device
-        m_device = device::create(m_spec.api);
+        m_device = device::create(m_api);
         LUMINA_ASSERT(m_device, "Failed to create device");
 
         device_desc dev_desc;
         dev_desc.window = m_window->get_native_window();
         dev_desc.width = m_window->get_width();
         dev_desc.height = m_window->get_height();
-        dev_desc.vsync = m_spec.vsync;
-        dev_desc.app_name = m_spec.name;
+        dev_desc.vsync = true;
+        dev_desc.app_name = "Lumina Application";
 #ifdef LUMINA_DEBUG
         dev_desc.enable_debug_layer = true;
 #endif
@@ -234,51 +224,80 @@ namespace lumina::core
 
             begin_frame();
 
-            // Setup dockspace if enabled
-            if (m_spec.enable_docking)
-            {
-                ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->WorkPos);
-                ImGui::SetNextWindowSize(viewport->WorkSize);
-                ImGui::SetNextWindowViewport(viewport->ID);
+            // Setup dockspace
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::SetNextWindowPos(viewport->WorkPos);
+            ImGui::SetNextWindowSize(viewport->WorkSize);
+            ImGui::SetNextWindowViewport(viewport->ID);
 
-                ImGuiWindowFlags window_flags =
-                    ImGuiWindowFlags_NoTitleBar |
-                    ImGuiWindowFlags_NoCollapse |
-                    ImGuiWindowFlags_NoResize |
-                    ImGuiWindowFlags_NoMove |
-                    ImGuiWindowFlags_NoBringToFrontOnFocus |
-                    ImGuiWindowFlags_NoNavFocus |
-                    ImGuiWindowFlags_NoBackground;
+            ImGuiWindowFlags window_flags =
+                ImGuiWindowFlags_NoTitleBar |
+                ImGuiWindowFlags_NoCollapse |
+                ImGuiWindowFlags_NoResize |
+                ImGuiWindowFlags_NoMove |
+                ImGuiWindowFlags_NoBringToFrontOnFocus |
+                ImGuiWindowFlags_NoNavFocus |
+                ImGuiWindowFlags_NoBackground;
 
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-                ImGui::Begin("lumian_dockspace", nullptr, window_flags);
-                ImGui::PopStyleVar(3);
+            ImGui::Begin("lumina_dockspace", nullptr, window_flags);
+            ImGui::PopStyleVar(3);
 
-                ImGuiID dockspace_id = ImGui::GetID("lumina_dockspace_id");
-                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-            }
+            ImGuiID dockspace_id = ImGui::GetID("lumina_dockspace_id");
+            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
 
             // Render layers
             for (auto& layer : m_layer_stack)
                 layer->on_render();
 
-            if (m_spec.enable_docking)
-            {
-                ImGui::End();
-            }
+            ImGui::End();
 
             end_frame();
         }
     }
 
-    void application::set_fullscreen()
+    void application::set_title(const std::string& title)
     {
-        m_spec.fullscreen = !m_spec.fullscreen;
-        m_window->set_fullscreen(m_spec.fullscreen);
+        m_window->set_title(title);
+        log::set_name(title);
+    }
+
+    void application::set_icon(const std::string& icon_path)
+    {
+        m_window->set_icon(icon_path);
+    }
+
+    void application::set_titlebar_color(uint8_t r, uint8_t g, uint8_t b)
+    {
+        m_window->set_titlebar_color(r, g, b);
+    }
+
+    void application::set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b)
+    {
+        m_window->set_titlebar_text_color(r, g, b);
+    }
+
+    void application::set_fullscreen(bool fullscreen)
+    {
+        m_window->set_fullscreen(fullscreen);
+    }
+
+    void application::set_vsync(bool enabled)
+    {
+        m_window->set_vsync(enabled);
+    }
+
+    void application::set_position(int32_t x, int32_t y)
+    {
+        m_window->set_position(x, y);
+    }
+
+    void application::maximize()
+    {
+        m_window->maximize();
     }
 
     float application::get_time()

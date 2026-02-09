@@ -62,6 +62,7 @@ project "core"
             "d3d12",
             "dxgi",
             "dxguid",
+            "dwmapi",
             "vulkan-1",
         }
 

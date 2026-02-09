@@ -4,8 +4,21 @@
 #include "input.h"
 #include "default_icon.h"
 
-#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
+
+#ifdef LUMINA_PLATFORM_WINDOWS
+    #define GLFW_EXPOSE_NATIVE_WIN32
+    #include <GLFW/glfw3native.h>
+    #include <dwmapi.h>
+
+    // These may not be defined in older Windows SDK versions
+    #ifndef DWMWA_CAPTION_COLOR
+        #define DWMWA_CAPTION_COLOR 35
+    #endif
+    #ifndef DWMWA_TEXT_COLOR
+        #define DWMWA_TEXT_COLOR 36
+    #endif
+#endif
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STBI_ONLY_PNG
@@ -343,5 +356,44 @@ namespace lumina::core
     {
         m_spec.title = title;
         glfwSetWindowTitle(m_window, title.c_str());
+    }
+
+    void window::set_titlebar_color(uint8_t r, uint8_t g, uint8_t b)
+    {
+#ifdef LUMINA_PLATFORM_WINDOWS
+        HWND hwnd = glfwGetWin32Window(m_window);
+        COLORREF color = RGB(r, g, b);
+        HRESULT hr = DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &color, sizeof(color));
+        if (FAILED(hr))
+        {
+            LUMINA_LOG_WARN("Failed to set titlebar color (requires Windows 11+)");
+        }
+#else
+        LUMINA_LOG_WARN("Titlebar color customization is only supported on Windows");
+        (void)r; (void)g; (void)b;
+#endif
+    }
+
+    void window::set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b)
+    {
+#ifdef LUMINA_PLATFORM_WINDOWS
+        HWND hwnd = glfwGetWin32Window(m_window);
+        COLORREF color = RGB(r, g, b);
+        HRESULT hr = DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &color, sizeof(color));
+        if (FAILED(hr))
+        {
+            LUMINA_LOG_WARN("Failed to set titlebar text color (requires Windows 11+)");
+        }
+#else
+        LUMINA_LOG_WARN("Titlebar text color customization is only supported on Windows");
+        (void)r; (void)g; (void)b;
+#endif
+    }
+
+    void window::set_position(int32_t x, int32_t y)
+    {
+        m_spec.position_x = x;
+        m_spec.position_y = y;
+        glfwSetWindowPos(m_window, x, y);
     }
 }
