@@ -194,12 +194,8 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    lumina::core::application_spec spec;
-    spec.name = "01-primitives";
-    spec.width = 1280;
-    spec.height = 720;
-
-    auto* app = new lumina::core::application(spec);
+    auto* app = new lumina::core::application();
+    app->set_title("01-primitives");
     app->push_layer<primitives_layer>();
     return app;
 }

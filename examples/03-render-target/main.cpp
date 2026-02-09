@@ -173,12 +173,8 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    lumina::core::application_spec spec;
-    spec.name = "03-render-target";
-    spec.width = 1024;
-    spec.height = 768;
-
-    auto* app = new lumina::core::application(spec);
+    auto* app = new lumina::core::application();
+    app->set_title("03-render-target");
     app->push_layer<render_target_layer>();
     return app;
 }

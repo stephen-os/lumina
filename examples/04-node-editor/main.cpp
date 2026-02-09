@@ -370,12 +370,8 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    lumina::core::application_spec spec;
-    spec.name = "04-node-editor";
-    spec.width = 1280;
-    spec.height = 720;
-
-    auto* app = new lumina::core::application(spec);
+    auto* app = new lumina::core::application();
+    app->set_title("04-node-editor");
     app->push_layer<node_editor_layer>();
     return app;
 }

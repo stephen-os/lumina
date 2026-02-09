@@ -339,12 +339,8 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    lumina::core::application_spec spec;
-    spec.name = "07-lighting";
-    spec.width = 1280;
-    spec.height = 720;
-
-    auto* app = new lumina::core::application(spec);
+    auto* app = new lumina::core::application();
+    app->set_title("07-lighting");
     app->push_layer<lighting_layer>();
     return app;
 }

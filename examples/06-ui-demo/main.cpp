@@ -67,12 +67,8 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    lumina::core::application_spec spec;
-    spec.name = "06-ui-demo";
-    spec.width = 1400;
-    spec.height = 900;
-
-    auto* app = new lumina::core::application(spec);
+    auto* app = new lumina::core::application();
+    app->set_title("06-ui-demo");
     app->push_layer<ui_demo_layer>();
     return app;
 }
