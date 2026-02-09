@@ -19,3 +19,6 @@
 [submodule "dependencies/nvrhi"]
 	path = dependencies/nvrhi
 	url = https://github.com/stephen-os/nvrhi.git
+[submodule "dependencies/catch2"]
+	path = dependencies/catch2
+	url = https://github.com/catchorg/Catch2.git
