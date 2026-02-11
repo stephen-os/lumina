@@ -7,6 +7,8 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include <stb_image.h>
+
 namespace lumina::graphics
 {
     texture::~texture()
@@ -83,5 +85,31 @@ namespace lumina::graphics
         tex->AddRef();
 
         return ref<texture>(new texture(dev, tex.Get(), desc.width, desc.height, desc.pixel_format));
+    }
+
+    ref<texture> texture::load_from_file(core::device& dev, const std::string& path)
+    {
+        int width, height, channels;
+        stbi_set_flip_vertically_on_load(false);
+        unsigned char* data = stbi_load(path.c_str(), &width, &height, &channels, 4);  // Force RGBA
+
+        if (!data)
+        {
+            LUMINA_LOG_ERROR("Failed to load texture: {}", path);
+            return nullptr;
+        }
+
+        auto tex = create(dev, static_cast<uint32_t>(width), static_cast<uint32_t>(height), format::rgba8_unorm, data);
+
+        stbi_image_free(data);
+
+        if (!tex)
+        {
+            LUMINA_LOG_ERROR("Failed to create texture from image: {}", path);
+            return nullptr;
+        }
+
+        LUMINA_LOG_INFO("Loaded texture: {} ({}x{})", path, width, height);
+        return tex;
     }
 }

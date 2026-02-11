@@ -5,6 +5,7 @@
 #include <lumina/core/base.h>
 
 #include <cstdint>
+#include <string>
 
 namespace nvrhi { class ITexture; }
 namespace lumina::core { class device; }
@@ -32,6 +33,9 @@ namespace lumina::graphics
 
         static ref<texture> create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data = nullptr);
         static ref<texture> create(core::device& dev, const texture_desc& desc, const void* data = nullptr);
+
+        // Load texture from image file (PNG, JPG, BMP, etc.)
+        static ref<texture> load_from_file(core::device& dev, const std::string& path);
 
         static ref<texture> wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt);
 

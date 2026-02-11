@@ -24,10 +24,10 @@ project "graphics"
             '"$(VULKAN_SDK)/Bin/dxc.exe" -T vs_6_0 -E VSMain -Fh "%{file.directory}/%{file.basename}_vs_dxil.h" -Vn g_%{file.basename}_vs_dxil "%{file.relpath}" -O3',
             -- Compile pixel shader to DXIL
             '"$(VULKAN_SDK)/Bin/dxc.exe" -T ps_6_0 -E PSMain -Fh "%{file.directory}/%{file.basename}_ps_dxil.h" -Vn g_%{file.basename}_ps_dxil "%{file.relpath}" -O3',
-            -- Compile vertex shader to SPIR-V
-            '"$(VULKAN_SDK)/Bin/dxc.exe" -T vs_6_0 -E VSMain -Fh "%{file.directory}/%{file.basename}_vs_spirv.h" -Vn g_%{file.basename}_vs_spirv -spirv "%{file.relpath}" -O3',
-            -- Compile pixel shader to SPIR-V
-            '"$(VULKAN_SDK)/Bin/dxc.exe" -T ps_6_0 -E PSMain -Fh "%{file.directory}/%{file.basename}_ps_spirv.h" -Vn g_%{file.basename}_ps_spirv -spirv "%{file.relpath}" -O3',
+            -- Compile vertex shader to SPIR-V (shift flags must match binding_layout.cpp offsets)
+            '"$(VULKAN_SDK)/Bin/dxc.exe" -T vs_6_0 -E VSMain -Fh "%{file.directory}/%{file.basename}_vs_spirv.h" -Vn g_%{file.basename}_vs_spirv -spirv -fvk-t-shift 0 0 -fvk-s-shift 32 0 -fvk-b-shift 64 0 "%{file.relpath}" -O3',
+            -- Compile pixel shader to SPIR-V (shift flags must match binding_layout.cpp offsets)
+            '"$(VULKAN_SDK)/Bin/dxc.exe" -T ps_6_0 -E PSMain -Fh "%{file.directory}/%{file.basename}_ps_spirv.h" -Vn g_%{file.basename}_ps_spirv -spirv -fvk-t-shift 0 0 -fvk-s-shift 32 0 -fvk-b-shift 64 0 "%{file.relpath}" -O3',
             -- Create combined vertex shader header
             'echo // Auto-generated combined %{file.basename} vertex shader header > "%{file.directory}/%{file.basename}_vs.h"',
             'echo #pragma once >> "%{file.directory}/%{file.basename}_vs.h"',
@@ -63,6 +63,7 @@ project "graphics"
         "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
         "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
         "%{wks.location}/dependencies/stb_truetype",
+        "%{wks.location}/dependencies/stb_image",
     }
 
     links {

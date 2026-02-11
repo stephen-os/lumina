@@ -219,6 +219,9 @@ namespace lumina::graphics
             return false;
         }
 
+        // Create pipeline cache to keep pipelines alive across flushes
+        m_pipeline_cache = lumina::make_scope<pipeline_cache>(m_device);
+
         // Reserve point lights storage (layers are created on-demand)
         m_point_lights.reserve(config.max_point_lights);
 
@@ -226,7 +229,7 @@ namespace lumina::graphics
         // Create shared resources
         // ========================================================================
 
-        // Default sampler
+        // Default sampler (linear)
         m_default_sampler = sampler::create(m_device, samplers::linear_clamp());
         if (!m_default_sampler)
         {
@@ -234,12 +237,32 @@ namespace lumina::graphics
             return false;
         }
 
+        // Point sampler (for pixel art)
+        m_point_sampler = sampler::create(m_device, samplers::point_clamp());
+        if (!m_point_sampler)
+        {
+            LUMINA_LOG_ERROR("Failed to create point sampler");
+            return false;
+        }
+
+        // Set current sampler to default (linear)
+        m_current_sampler = m_default_sampler;
+        m_filter_mode = filter_mode::linear;
+
         // 1x1 white texture
         uint32_t white_pixel = 0xFFFFFFFF;
         m_white_texture = texture::create(m_device, 1, 1, format::rgba8_unorm, &white_pixel);
         if (!m_white_texture)
         {
             LUMINA_LOG_ERROR("Failed to create white texture");
+            return false;
+        }
+
+        // Camera constant buffer
+        m_camera_buffer = uniform_buffer::create<camera_data>(m_device);
+        if (!m_camera_buffer)
+        {
+            LUMINA_LOG_ERROR("Failed to create camera buffer");
             return false;
         }
 
@@ -311,7 +334,8 @@ namespace lumina::graphics
         quad_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
                         .add("COLOR", format::rgba32_float, vertex_semantic::color)
                         .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord)
-                        .add("TEXINDEX", format::rg32_float, vertex_semantic::custom);  // tex_index + _pad
+                        .add("TEXINDEX", format::r32_float, vertex_semantic::custom)
+                        .add("ZINDEX", format::r32_float, vertex_semantic::custom);
 
         m_quad_input_layout = input_layout::create(m_device, quad_layout_desc, m_quad_shader);
         if (!m_quad_input_layout)
@@ -320,9 +344,10 @@ namespace lumina::graphics
             return false;
         }
 
-        // Quad binding layout
+        // Quad binding layout (constant buffer + texture array + sampler)
         binding_layout_desc quad_binding_desc;
-        quad_binding_desc.add_texture(0);
+        quad_binding_desc.add_constant_buffer(0);     // Camera view-projection
+        quad_binding_desc.add_texture_array(0, 32);   // Up to 32 textures per batch
         quad_binding_desc.add_sampler(0);
 
         m_quad_binding_layout = binding_layout::create(m_device, quad_binding_desc);
@@ -377,7 +402,8 @@ namespace lumina::graphics
                           .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord)
                           .add("TEXINDEX", format::r32_float, vertex_semantic::custom)
                           .add("THICKNESS", format::r32_float, vertex_semantic::custom)
-                          .add("FADE", format::rgba32_float, vertex_semantic::custom);         // fade + _pad[3]
+                          .add("FADE", format::r32_float, vertex_semantic::custom)
+                          .add("ZINDEX", format::r32_float, vertex_semantic::custom);
 
         m_circle_input_layout = input_layout::create(m_device, circle_layout_desc, m_circle_shader);
         if (!m_circle_input_layout)
@@ -432,6 +458,17 @@ namespace lumina::graphics
         if (!m_line_input_layout)
         {
             LUMINA_LOG_ERROR("Failed to create line input layout");
+            return false;
+        }
+
+        // Line binding layout (just camera constant buffer)
+        binding_layout_desc line_binding_desc;
+        line_binding_desc.add_constant_buffer(0);
+
+        m_line_binding_layout = binding_layout::create(m_device, line_binding_desc);
+        if (!m_line_binding_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create line binding layout");
             return false;
         }
 
@@ -565,6 +602,17 @@ namespace lumina::graphics
             return false;
         }
 
+        // Pixel binding layout (just camera constant buffer)
+        binding_layout_desc pixel_binding_desc;
+        pixel_binding_desc.add_constant_buffer(0);
+
+        m_pixel_binding_layout = binding_layout::create(m_device, pixel_binding_desc);
+        if (!m_pixel_binding_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create pixel binding layout");
+            return false;
+        }
+
         // ========================================================================
         // Create grid resources
         // ========================================================================
@@ -621,6 +669,17 @@ namespace lumina::graphics
             return false;
         }
 
+        // Grid binding layout (just camera constant buffer)
+        binding_layout_desc grid_binding_desc;
+        grid_binding_desc.add_constant_buffer(0);
+
+        m_grid_binding_layout = binding_layout::create(m_device, grid_binding_desc);
+        if (!m_grid_binding_layout)
+        {
+            LUMINA_LOG_ERROR("Failed to create grid binding layout");
+            return false;
+        }
+
         // Pipelines will be created lazily based on render target format
 
         // Initialize lighting resources
@@ -674,6 +733,8 @@ namespace lumina::graphics
         // Clear textures
         m_white_texture.reset();
         m_default_font.reset();
+        m_current_sampler.reset();
+        m_point_sampler.reset();
         m_default_sampler.reset();
 
         // Clear buffers
@@ -703,6 +764,12 @@ namespace lumina::graphics
         // Set up context with current frame's command list
         m_context->set_command_list(m_device.get_command_list());
 
+        // Clear frame resources from previous frame (keep binding sets alive until now)
+        m_frame_binding_sets.clear();
+
+        // Reset vertex buffer offsets for new frame
+        m_quad_vertex_offset = 0;
+
         // Auto-set default render target if none is currently set
         if (!m_current_target && !m_context->has_framebuffer())
         {
@@ -710,6 +777,11 @@ namespace lumina::graphics
         }
 
         m_view_projection = projection * view;
+
+        // Update camera constant buffer
+        camera_data cam_data;
+        cam_data.view_projection = m_view_projection;
+        m_camera_buffer->update(cam_data, m_device.get_command_list());
 
         // If lighting is enabled, redirect rendering to the scene target
         if (m_lighting_enabled)
@@ -730,6 +802,11 @@ namespace lumina::graphics
         }
 
         start_batch();
+    }
+
+    void renderer2d::begin(const camera2d& camera)
+    {
+        begin(camera.get_view_matrix(), camera.get_projection_matrix());
     }
 
     void renderer2d::end()
@@ -757,6 +834,11 @@ namespace lumina::graphics
             {
                 m_current_color_format = target->get_color_format();
                 m_current_depth_format = target->get_depth_format();
+
+                // Set viewport to match render target size
+                m_context->set_viewport(0, 0,
+                    static_cast<float>(target->get_width()),
+                    static_cast<float>(target->get_height()));
             }
         }
     }
@@ -771,6 +853,11 @@ namespace lumina::graphics
 
         m_current_color_format = from_nvrhi_format(m_device.get_swapchain_format());
         m_current_depth_format = format::unknown;
+    }
+
+    void renderer2d::clear(const glm::vec4& color)
+    {
+        m_context->clear(clear_color(color.r, color.g, color.b, color.a));
     }
 
     void renderer2d::start_batch()
@@ -817,11 +904,24 @@ namespace lumina::graphics
         // Need to bind new texture
         if (batch.texture_slot_index >= m_config.max_textures)
         {
-            // Out of texture slots for this layer, flush the layer and reset
+            // Out of texture slots for this layer, flush and reset texture slots
+            // Note: flush_layer clears vertex data, but we must preserve blend modes
+            // which were already set by the caller before calling get_texture_index
+            blend_mode saved_quad_blend = batch.quad_blend;
+            blend_mode saved_circle_blend = batch.circle_blend;
+            blend_mode saved_triangle_blend = batch.triangle_blend;
+
             flush_layer(layer_id);
-            batch.clear();
+
+            // Reset only texture slots - vertex data was cleared by flush_layer
+            batch.texture_slots.fill(nullptr);
             batch.texture_slots[0] = m_white_texture;
             batch.texture_slot_index = 1;
+
+            // Restore blend modes (they may have been set before this call)
+            batch.quad_blend = saved_quad_blend;
+            batch.circle_blend = saved_circle_blend;
+            batch.triangle_blend = saved_triangle_blend;
         }
 
         batch.texture_slots[batch.texture_slot_index] = tex;
@@ -838,11 +938,21 @@ namespace lumina::graphics
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if blend mode changes - must flush lower layers first to maintain order
+        if (batch.quad_count > 0 && batch.quad_blend != desc.blend)
+        {
+            flush_layers_up_to(layer_id);
+            flush_quads(layer_id);
+            // Note: flush_quads clears quad_vertices and quad_count at the end
+        }
+        batch.quad_blend = desc.blend;
+
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.quad_count >= m_config.max_quads)
         {
+            flush_layers_up_to(layer_id);
             flush_quads(layer_id);
-            batch.quad_vertices.clear();
-            batch.quad_count = 0;
+            // Note: flush_quads clears quad_vertices and quad_count at the end
         }
 
         float tex_index = get_texture_index(layer_id, desc.texture);
@@ -881,17 +991,17 @@ namespace lumina::graphics
             p3 = rotate(glm::vec2(-origin.x, size.y - origin.y));
         }
 
-        // Transform to clip space
-        glm::vec4 clip0 = m_view_projection * glm::vec4(p0, pos.z, 1.0f);
-        glm::vec4 clip1 = m_view_projection * glm::vec4(p1, pos.z, 1.0f);
-        glm::vec4 clip2 = m_view_projection * glm::vec4(p2, pos.z, 1.0f);
-        glm::vec4 clip3 = m_view_projection * glm::vec4(p3, pos.z, 1.0f);
+        // Store world positions - GPU will transform via camera buffer
+        glm::vec4 world0 = glm::vec4(p0, pos.z, 1.0f);
+        glm::vec4 world1 = glm::vec4(p1, pos.z, 1.0f);
+        glm::vec4 world2 = glm::vec4(p2, pos.z, 1.0f);
+        glm::vec4 world3 = glm::vec4(p3, pos.z, 1.0f);
 
-        // Add vertices (CCW winding)
-        batch.quad_vertices.push_back({ clip0, desc.color, desc.uv_min, tex_index, 0.0f });
-        batch.quad_vertices.push_back({ clip1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, 0.0f });
-        batch.quad_vertices.push_back({ clip2, desc.color, desc.uv_max, tex_index, 0.0f });
-        batch.quad_vertices.push_back({ clip3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, 0.0f });
+        // Add vertices (CCW winding) with z_index from desc
+        batch.quad_vertices.push_back({ world0, desc.color, desc.uv_min, tex_index, desc.z });
+        batch.quad_vertices.push_back({ world1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.z });
+        batch.quad_vertices.push_back({ world2, desc.color, desc.uv_max, tex_index, desc.z });
+        batch.quad_vertices.push_back({ world3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.z });
 
         batch.quad_count++;
         m_stats.quad_count++;
@@ -902,11 +1012,21 @@ namespace lumina::graphics
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if blend mode changes - must flush lower layers first to maintain order
+        if (batch.circle_count > 0 && batch.circle_blend != desc.blend)
+        {
+            flush_layers_up_to(layer_id);
+            flush_circles(layer_id);
+            // Note: flush_circles clears circle_vertices and circle_count at the end
+        }
+        batch.circle_blend = desc.blend;
+
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.circle_count >= m_config.max_circles)
         {
+            flush_layers_up_to(layer_id);
             flush_circles(layer_id);
-            batch.circle_vertices.clear();
-            batch.circle_count = 0;
+            // Note: flush_circles clears circle_vertices and circle_count at the end
         }
 
         float tex_index = get_texture_index(layer_id, desc.texture);
@@ -921,11 +1041,11 @@ namespace lumina::graphics
         glm::vec2 p2 = glm::vec2(pos) + glm::vec2( radius.x,  radius.y);
         glm::vec2 p3 = glm::vec2(pos) + glm::vec2(-radius.x,  radius.y);
 
-        // Transform to clip space
-        glm::vec4 clip0 = m_view_projection * glm::vec4(p0, pos.z, 1.0f);
-        glm::vec4 clip1 = m_view_projection * glm::vec4(p1, pos.z, 1.0f);
-        glm::vec4 clip2 = m_view_projection * glm::vec4(p2, pos.z, 1.0f);
-        glm::vec4 clip3 = m_view_projection * glm::vec4(p3, pos.z, 1.0f);
+        // Store world positions - GPU will transform via camera buffer
+        glm::vec4 world0 = glm::vec4(p0, pos.z, 1.0f);
+        glm::vec4 world1 = glm::vec4(p1, pos.z, 1.0f);
+        glm::vec4 world2 = glm::vec4(p2, pos.z, 1.0f);
+        glm::vec4 world3 = glm::vec4(p3, pos.z, 1.0f);
 
         // Local coordinates for SDF (-1 to 1)
         glm::vec4 local0 = glm::vec4(-1.0f, -1.0f, 0.0f, 0.0f);
@@ -933,11 +1053,11 @@ namespace lumina::graphics
         glm::vec4 local2 = glm::vec4( 1.0f,  1.0f, 0.0f, 0.0f);
         glm::vec4 local3 = glm::vec4(-1.0f,  1.0f, 0.0f, 0.0f);
 
-        // Add vertices
-        circle_vertex v0 = { clip0, local0, desc.color, desc.uv_min, tex_index, desc.thickness, desc.fade, {0, 0, 0} };
-        circle_vertex v1 = { clip1, local1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.thickness, desc.fade, {0, 0, 0} };
-        circle_vertex v2 = { clip2, local2, desc.color, desc.uv_max, tex_index, desc.thickness, desc.fade, {0, 0, 0} };
-        circle_vertex v3 = { clip3, local3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.thickness, desc.fade, {0, 0, 0} };
+        // Add vertices with z_index from desc
+        circle_vertex v0 = { world0, local0, desc.color, desc.uv_min, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
+        circle_vertex v1 = { world1, local1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
+        circle_vertex v2 = { world2, local2, desc.color, desc.uv_max, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
+        circle_vertex v3 = { world3, local3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
 
         batch.circle_vertices.push_back(v0);
         batch.circle_vertices.push_back(v1);
@@ -953,8 +1073,10 @@ namespace lumina::graphics
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.line_count >= m_config.max_lines)
         {
+            flush_layers_up_to(layer_id);
             flush_lines(layer_id);
             batch.line_vertices.clear();
             batch.line_count = 0;
@@ -962,12 +1084,12 @@ namespace lumina::graphics
 
         if (desc.thickness <= 1.0f)
         {
-            // Simple thin line
-            glm::vec4 clip_start = m_view_projection * glm::vec4(desc.start, 1.0f);
-            glm::vec4 clip_end = m_view_projection * glm::vec4(desc.end, 1.0f);
+            // Simple thin line - store world positions with z_index in w
+            glm::vec4 world_start = glm::vec4(desc.start, desc.z);
+            glm::vec4 world_end = glm::vec4(desc.end, desc.z);
 
-            batch.line_vertices.push_back({ clip_start, desc.color });
-            batch.line_vertices.push_back({ clip_end, desc.color });
+            batch.line_vertices.push_back({ world_start, desc.color });
+            batch.line_vertices.push_back({ world_end, desc.color });
 
             batch.line_count++;
             m_stats.line_count++;
@@ -989,7 +1111,8 @@ namespace lumina::graphics
                 .color = desc.color,
                 .rotation = std::atan2(dir.y, dir.x),
                 .origin = {0.0f, 0.5f},
-                .layer = desc.layer
+                .layer = desc.layer,
+                .z = desc.z
             });
         }
     }
@@ -1031,8 +1154,10 @@ namespace lumina::graphics
 
         for (char c : desc.text)
         {
+            // Flush if batch is full - must flush lower layers first to maintain order
             if (batch.text_char_count >= m_config.max_text_chars)
             {
+                flush_layers_up_to(layer_id);
                 flush_text(layer_id);
                 batch.text_vertices.clear();
                 batch.text_char_count = 0;
@@ -1053,15 +1178,16 @@ namespace lumina::graphics
             glm::vec2 p2 = glm::vec2(x1, y1);
             glm::vec2 p3 = glm::vec2(x0, y1);
 
-            glm::vec4 clip0 = m_view_projection * glm::vec4(p0, z, 1.0f);
-            glm::vec4 clip1 = m_view_projection * glm::vec4(p1, z, 1.0f);
-            glm::vec4 clip2 = m_view_projection * glm::vec4(p2, z, 1.0f);
-            glm::vec4 clip3 = m_view_projection * glm::vec4(p3, z, 1.0f);
+            // Store world positions - GPU will transform via camera buffer
+            glm::vec4 world0 = glm::vec4(p0, z, 1.0f);
+            glm::vec4 world1 = glm::vec4(p1, z, 1.0f);
+            glm::vec4 world2 = glm::vec4(p2, z, 1.0f);
+            glm::vec4 world3 = glm::vec4(p3, z, 1.0f);
 
-            batch.text_vertices.push_back({ clip0, desc.color, { glyph->u0, glyph->v0 }, tex_index, 0.0f });
-            batch.text_vertices.push_back({ clip1, desc.color, { glyph->u1, glyph->v0 }, tex_index, 0.0f });
-            batch.text_vertices.push_back({ clip2, desc.color, { glyph->u1, glyph->v1 }, tex_index, 0.0f });
-            batch.text_vertices.push_back({ clip3, desc.color, { glyph->u0, glyph->v1 }, tex_index, 0.0f });
+            batch.text_vertices.push_back({ world0, desc.color, { glyph->u0, glyph->v0 }, tex_index, desc.z });
+            batch.text_vertices.push_back({ world1, desc.color, { glyph->u1, glyph->v0 }, tex_index, desc.z });
+            batch.text_vertices.push_back({ world2, desc.color, { glyph->u1, glyph->v1 }, tex_index, desc.z });
+            batch.text_vertices.push_back({ world3, desc.color, { glyph->u0, glyph->v1 }, tex_index, desc.z });
 
             batch.text_char_count++;
             m_stats.text_char_count++;
@@ -1075,24 +1201,34 @@ namespace lumina::graphics
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if blend mode changes - must flush lower layers first to maintain order
+        if (batch.triangle_count > 0 && batch.triangle_blend != desc.blend)
+        {
+            flush_layers_up_to(layer_id);
+            flush_triangles(layer_id);
+            // Note: flush_triangles clears triangle_vertices and triangle_count at the end
+        }
+        batch.triangle_blend = desc.blend;
+
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.triangle_count >= m_config.max_triangles)
         {
+            flush_layers_up_to(layer_id);
             flush_triangles(layer_id);
-            batch.triangle_vertices.clear();
-            batch.triangle_count = 0;
+            // Note: flush_triangles clears triangle_vertices and triangle_count at the end
         }
 
         float tex_index = get_texture_index(layer_id, desc.texture);
 
-        // Transform to clip space
-        glm::vec4 clip0 = m_view_projection * glm::vec4(desc.p0, 1.0f);
-        glm::vec4 clip1 = m_view_projection * glm::vec4(desc.p1, 1.0f);
-        glm::vec4 clip2 = m_view_projection * glm::vec4(desc.p2, 1.0f);
+        // Store world positions - GPU will transform via camera buffer
+        glm::vec4 world0 = glm::vec4(desc.p0, 1.0f);
+        glm::vec4 world1 = glm::vec4(desc.p1, 1.0f);
+        glm::vec4 world2 = glm::vec4(desc.p2, 1.0f);
 
-        // Add vertices
-        batch.triangle_vertices.push_back({ clip0, desc.color, desc.uv0, tex_index, 0.0f });
-        batch.triangle_vertices.push_back({ clip1, desc.color, desc.uv1, tex_index, 0.0f });
-        batch.triangle_vertices.push_back({ clip2, desc.color, desc.uv2, tex_index, 0.0f });
+        // Add vertices with z_index from desc
+        batch.triangle_vertices.push_back({ world0, desc.color, desc.uv0, tex_index, desc.z });
+        batch.triangle_vertices.push_back({ world1, desc.color, desc.uv1, tex_index, desc.z });
+        batch.triangle_vertices.push_back({ world2, desc.color, desc.uv2, tex_index, desc.z });
 
         batch.triangle_count++;
         m_stats.triangle_count++;
@@ -1103,17 +1239,19 @@ namespace lumina::graphics
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.pixel_count >= m_config.max_pixels)
         {
+            flush_layers_up_to(layer_id);
             flush_pixels(layer_id);
             batch.pixel_vertices.clear();
             batch.pixel_count = 0;
         }
 
-        // Transform to clip space
-        glm::vec4 clip = m_view_projection * glm::vec4(desc.position, 1.0f);
+        // Store world position with z_index in w
+        glm::vec4 world_pos = glm::vec4(desc.position, desc.z);
 
-        batch.pixel_vertices.push_back({ clip, desc.color, desc.size, {0, 0, 0} });
+        batch.pixel_vertices.push_back({ world_pos, desc.color, desc.size, {0, 0, 0} });
 
         batch.pixel_count++;
         m_stats.pixel_count++;
@@ -1155,13 +1293,78 @@ namespace lumina::graphics
         draw_line({ .start = p3, .end = p0, .color = desc.color, .thickness = desc.thickness, .layer = desc.layer });
     }
 
+    void renderer2d::draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc)
+    {
+        const atlas_region* region = atlas.get_region(region_name);
+        if (!region)
+        {
+            LUMINA_LOG_WARN("Sprite region '{}' not found in atlas", region_name);
+            return;
+        }
+
+        draw_sprite(*region, atlas.get_texture(), desc);
+    }
+
+    void renderer2d::draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc)
+    {
+        const atlas_region* region = atlas.get_region(region_index);
+        if (!region)
+        {
+            LUMINA_LOG_WARN("Sprite region index {} not found in atlas", region_index);
+            return;
+        }
+
+        draw_sprite(*region, atlas.get_texture(), desc);
+    }
+
+    void renderer2d::draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc)
+    {
+        // Determine size (use region size if not specified)
+        glm::vec2 size = desc.size;
+        if (size.x <= 0.0f || size.y <= 0.0f)
+        {
+            size = region.size;
+        }
+
+        // Handle UV flipping
+        glm::vec2 uv_min = region.uv_min;
+        glm::vec2 uv_max = region.uv_max;
+
+        if (desc.flip_x)
+        {
+            std::swap(uv_min.x, uv_max.x);
+        }
+        if (desc.flip_y)
+        {
+            std::swap(uv_min.y, uv_max.y);
+        }
+
+        // Draw as a textured quad
+        quad_desc quad;
+        quad.position = desc.position;
+        quad.size = size;
+        quad.color = desc.color;
+        quad.rotation = desc.rotation;
+        quad.origin = desc.origin;
+        quad.texture = atlas_texture;
+        quad.uv_min = uv_min;
+        quad.uv_max = uv_max;
+        quad.layer = desc.layer;
+        quad.z = desc.z;
+        quad.blend = desc.blend;
+
+        draw_quad(quad);
+    }
+
     void renderer2d::draw_grid(const grid_desc& desc)
     {
         uint32_t layer_id = static_cast<uint32_t>(desc.layer);
         auto& batch = get_layer(layer_id);
 
+        // Flush if batch is full - must flush lower layers first to maintain order
         if (batch.grid_count >= m_config.max_grids)
         {
+            flush_layers_up_to(layer_id);
             flush_grids(layer_id);
             batch.grid_vertices.clear();
             batch.grid_count = 0;
@@ -1177,11 +1380,11 @@ namespace lumina::graphics
         glm::vec2 p2 = glm::vec2(pos) + size;
         glm::vec2 p3 = glm::vec2(pos) + glm::vec2(0.0f, size.y);
 
-        // Transform to clip space
-        glm::vec4 clip0 = m_view_projection * glm::vec4(p0, pos.z, 1.0f);
-        glm::vec4 clip1 = m_view_projection * glm::vec4(p1, pos.z, 1.0f);
-        glm::vec4 clip2 = m_view_projection * glm::vec4(p2, pos.z, 1.0f);
-        glm::vec4 clip3 = m_view_projection * glm::vec4(p3, pos.z, 1.0f);
+        // Store world positions with z_index in w
+        glm::vec4 world0 = glm::vec4(p0, pos.z, desc.z);
+        glm::vec4 world1 = glm::vec4(p1, pos.z, desc.z);
+        glm::vec4 world2 = glm::vec4(p2, pos.z, desc.z);
+        glm::vec4 world3 = glm::vec4(p3, pos.z, desc.z);
 
         // Local positions (0 to size for grid calculation)
         glm::vec4 local0 = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -1192,10 +1395,10 @@ namespace lumina::graphics
         float show_checker = desc.checkerboard ? 1.0f : 0.0f;
 
         // Add vertices (all vertices have same grid parameters)
-        grid_vertex v0 = { clip0, local0, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v1 = { clip1, local1, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v2 = { clip2, local2, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v3 = { clip3, local3, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
+        grid_vertex v0 = { world0, local0, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
+        grid_vertex v1 = { world1, local1, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
+        grid_vertex v2 = { world2, local2, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
+        grid_vertex v3 = { world3, local3, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
 
         batch.grid_vertices.push_back(v0);
         batch.grid_vertices.push_back(v1);
@@ -1204,6 +1407,19 @@ namespace lumina::graphics
 
         batch.grid_count++;
         m_stats.grid_count++;
+    }
+
+    // ========================================================================
+    // Texture Filtering
+    // ========================================================================
+
+    void renderer2d::set_filter_mode(filter_mode mode)
+    {
+        if (m_filter_mode != mode)
+        {
+            m_filter_mode = mode;
+            m_current_sampler = (mode == filter_mode::point) ? m_point_sampler : m_default_sampler;
+        }
     }
 
     // ========================================================================
@@ -1271,6 +1487,21 @@ namespace lumina::graphics
         flush_grids(layer_id);
     }
 
+    void renderer2d::flush_layers_up_to(uint32_t layer_id)
+    {
+        // Flush all layers with IDs less than the given layer_id
+        // This ensures correct render order when a higher layer needs to flush early
+        for (auto& [id, batch] : m_layers)
+        {
+            if (id >= layer_id)
+                break;  // std::map is ordered, so we can stop early
+            if (!batch.is_empty())
+            {
+                flush_layer(id);
+            }
+        }
+    }
+
     void renderer2d::flush_quads(uint32_t layer_id)
     {
         auto it = m_layers.find(layer_id);
@@ -1281,38 +1512,53 @@ namespace lumina::graphics
         if (batch.quad_count == 0)
             return;
 
-        // Ensure pipeline exists
-        if (!m_quad_pipeline ||
-            m_quad_pipeline->get_desc().color_format != m_current_color_format ||
-            m_quad_pipeline->get_desc().depth_format != m_current_depth_format)
-        {
-            pipeline_desc desc;
-            desc.shader_program = m_quad_shader;
-            desc.vertex_layout = m_quad_input_layout;
-            desc.binding_layouts.push_back(m_quad_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
+        // Get or create pipeline with correct blend mode (cached to keep alive)
+        pipeline_desc desc;
+        desc.shader_program = m_quad_shader;
+        desc.vertex_layout = m_quad_input_layout;
+        desc.binding_layouts.push_back(m_quad_binding_layout);
+        desc.state.blend = batch.quad_blend;
+        desc.state.depth = depth_mode::none;
+        desc.state.cull = cull_mode::none;
+        desc.state.primitive = topology::triangles;
+        desc.color_format = m_current_color_format;
+        desc.depth_format = m_current_depth_format;
 
-            m_quad_pipeline = pipeline::create(m_device, desc);
-            if (!m_quad_pipeline)
-            {
-                LUMINA_LOG_ERROR("Failed to create quad pipeline");
-                return;
-            }
+        m_quad_pipeline = m_pipeline_cache->get_or_create(desc);
+        if (!m_quad_pipeline)
+        {
+            LUMINA_LOG_ERROR("Failed to create quad pipeline");
+            return;
         }
 
-        // Update vertex buffer
-        m_quad_vertex_buffer->update(batch.quad_vertices.data(), batch.quad_vertices.size() * sizeof(quad_vertex));
+        // Check if we have room in the vertex buffer
+        uint32_t vertices_needed = batch.quad_count * vertices_per_quad;
+        if (m_quad_vertex_offset + vertices_needed > m_config.max_quads * vertices_per_quad)
+        {
+            // Buffer is full, reset offset (this may cause issues if GPU hasn't finished previous draws)
+            // In practice, this shouldn't happen often with a large enough buffer
+            LUMINA_LOG_WARN("Quad vertex buffer full, resetting offset (may cause visual artifacts)");
+            m_quad_vertex_offset = 0;
+        }
 
-        // Create binding set
+        // Calculate byte offset for vertex data
+        size_t offset_bytes = m_quad_vertex_offset * sizeof(quad_vertex);
+
+        // Update vertex buffer at current offset using command list for proper GPU synchronization
+        m_quad_vertex_buffer->update_at_offset(batch.quad_vertices.data(), batch.quad_vertices.size() * sizeof(quad_vertex), offset_bytes, m_context->get_command_list());
+
+        // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
         bs_desc.layout = m_quad_binding_layout;
-        bs_desc.add_texture(0, batch.texture_slots[0] ? batch.texture_slots[0] : m_white_texture);
-        bs_desc.add_sampler(0, m_default_sampler);
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        // Bind all 32 texture slots (fill unused with white texture)
+        for (uint32_t i = 0; i < 32; i++)
+        {
+            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
+            bs_desc.add_texture_array_element(0, i, tex);
+        }
+        bs_desc.add_sampler(0, m_current_sampler);
 
         auto binding_set = binding_set::create(m_device, bs_desc);
         if (!binding_set)
@@ -1320,19 +1566,28 @@ namespace lumina::graphics
             LUMINA_LOG_ERROR("Failed to create quad binding set");
             return;
         }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with base vertex offset to read from correct position in vertex buffer
         auto& ctx = *m_context;
         ctx.set_pipeline(m_quad_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_quad_vertex_buffer);
         ctx.set_index_buffer(m_quad_index_buffer);
-        ctx.draw_indexed(batch.quad_count * indices_per_quad);
+        ctx.draw_indexed(batch.quad_count * indices_per_quad, 0, static_cast<int32_t>(m_quad_vertex_offset));
 
         m_stats.draw_calls++;
 
+        // Advance vertex offset for next flush
+        m_quad_vertex_offset += batch.quad_count * vertices_per_quad;
+
         batch.quad_vertices.clear();
         batch.quad_count = 0;
+
+        // Reset texture slots after flush so next batch starts fresh
+        batch.texture_slots.fill(nullptr);
+        batch.texture_slots[0] = m_white_texture;
+        batch.texture_slot_index = 1;
     }
 
     void renderer2d::flush_circles(uint32_t layer_id)
@@ -1345,23 +1600,24 @@ namespace lumina::graphics
         if (batch.circle_count == 0)
             return;
 
-        // Ensure pipeline exists
+        // Ensure pipeline exists with correct blend mode
         if (!m_circle_pipeline ||
             m_circle_pipeline->get_desc().color_format != m_current_color_format ||
-            m_circle_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_circle_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_circle_pipeline->get_desc().state.blend != batch.circle_blend)
         {
             pipeline_desc desc;
             desc.shader_program = m_circle_shader;
             desc.vertex_layout = m_circle_input_layout;
             desc.binding_layouts.push_back(m_circle_binding_layout);
-            desc.state.blend = blend_mode::alpha;
+            desc.state.blend = batch.circle_blend;
             desc.state.depth = depth_mode::none;
             desc.state.cull = cull_mode::none;
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_circle_pipeline = pipeline::create(m_device, desc);
+            m_circle_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_circle_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create circle pipeline");
@@ -1370,13 +1626,20 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_circle_vertex_buffer->update(batch.circle_vertices.data(), batch.circle_vertices.size() * sizeof(circle_vertex));
+        m_circle_vertex_buffer->update(batch.circle_vertices.data(), batch.circle_vertices.size() * sizeof(circle_vertex), m_context->get_command_list());
 
-        // Create binding set
+        // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
         bs_desc.layout = m_circle_binding_layout;
-        bs_desc.add_texture(0, batch.texture_slots[0] ? batch.texture_slots[0] : m_white_texture);
-        bs_desc.add_sampler(0, m_default_sampler);
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        // Bind all 32 texture slots (fill unused with white texture)
+        for (uint32_t i = 0; i < 32; i++)
+        {
+            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
+            bs_desc.add_texture_array_element(0, i, tex);
+        }
+        bs_desc.add_sampler(0, m_current_sampler);
 
         auto binding_set = binding_set::create(m_device, bs_desc);
         if (!binding_set)
@@ -1384,6 +1647,7 @@ namespace lumina::graphics
             LUMINA_LOG_ERROR("Failed to create circle binding set");
             return;
         }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw
         auto& ctx = *m_context;
@@ -1417,6 +1681,7 @@ namespace lumina::graphics
             pipeline_desc desc;
             desc.shader_program = m_line_shader;
             desc.vertex_layout = m_line_input_layout;
+            desc.binding_layouts.push_back(m_line_binding_layout);
             desc.state.blend = blend_mode::alpha;
             desc.state.depth = depth_mode::none;
             desc.state.cull = cull_mode::none;
@@ -1424,7 +1689,7 @@ namespace lumina::graphics
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_line_pipeline = pipeline::create(m_device, desc);
+            m_line_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_line_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create line pipeline");
@@ -1433,12 +1698,25 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_line_vertex_buffer->update(batch.line_vertices.data(), batch.line_vertices.size() * sizeof(line_vertex));
+        m_line_vertex_buffer->update(batch.line_vertices.data(), batch.line_vertices.size() * sizeof(line_vertex), m_context->get_command_list());
+
+        // Create binding set with camera buffer
+        binding_set_desc bs_desc;
+        bs_desc.layout = m_line_binding_layout;
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        auto binding_set = binding_set::create(m_device, bs_desc);
+        if (!binding_set)
+        {
+            LUMINA_LOG_ERROR("Failed to create line binding set");
+            return;
+        }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw
         auto& ctx = *m_context;
         ctx.set_pipeline(m_line_pipeline);
-        ctx.set_binding_set(nullptr);
+        ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_line_vertex_buffer);
         ctx.draw(batch.line_count * 2);
 
@@ -1474,7 +1752,7 @@ namespace lumina::graphics
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_text_pipeline = pipeline::create(m_device, desc);
+            m_text_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_text_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create text pipeline");
@@ -1483,12 +1761,20 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_text_vertex_buffer->update(batch.text_vertices.data(), batch.text_vertices.size() * sizeof(text_vertex));
+        m_text_vertex_buffer->update(batch.text_vertices.data(), batch.text_vertices.size() * sizeof(text_vertex), m_context->get_command_list());
 
+        // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
         bs_desc.layout = m_text_binding_layout;
-        bs_desc.add_texture(0, batch.texture_slots[1] ? batch.texture_slots[1] : m_default_font->get_texture());
-        bs_desc.add_sampler(0, m_default_sampler);
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        // Bind all 32 texture slots (fill unused with white texture)
+        for (uint32_t i = 0; i < 32; i++)
+        {
+            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
+            bs_desc.add_texture_array_element(0, i, tex);
+        }
+        bs_desc.add_sampler(0, m_current_sampler);
 
         auto binding_set = binding_set::create(m_device, bs_desc);
         if (!binding_set)
@@ -1496,6 +1782,7 @@ namespace lumina::graphics
             LUMINA_LOG_ERROR("Failed to create text binding set");
             return;
         }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw
         auto& ctx = *m_context;
@@ -1521,23 +1808,24 @@ namespace lumina::graphics
         if (batch.triangle_count == 0)
             return;
 
-        // Ensure pipeline exists
+        // Ensure pipeline exists with correct blend mode
         if (!m_triangle_pipeline ||
             m_triangle_pipeline->get_desc().color_format != m_current_color_format ||
-            m_triangle_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_triangle_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_triangle_pipeline->get_desc().state.blend != batch.triangle_blend)
         {
             pipeline_desc desc;
             desc.shader_program = m_triangle_shader;
             desc.vertex_layout = m_triangle_input_layout;
             desc.binding_layouts.push_back(m_triangle_binding_layout);
-            desc.state.blend = blend_mode::alpha;
+            desc.state.blend = batch.triangle_blend;
             desc.state.depth = depth_mode::none;
             desc.state.cull = cull_mode::none;
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_triangle_pipeline = pipeline::create(m_device, desc);
+            m_triangle_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_triangle_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create triangle pipeline");
@@ -1546,13 +1834,20 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_triangle_vertex_buffer->update(batch.triangle_vertices.data(), batch.triangle_vertices.size() * sizeof(triangle_vertex));
+        m_triangle_vertex_buffer->update(batch.triangle_vertices.data(), batch.triangle_vertices.size() * sizeof(triangle_vertex), m_context->get_command_list());
 
-        // Create binding set
+        // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
         bs_desc.layout = m_triangle_binding_layout;
-        bs_desc.add_texture(0, batch.texture_slots[0] ? batch.texture_slots[0] : m_white_texture);
-        bs_desc.add_sampler(0, m_default_sampler);
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        // Bind all 32 texture slots (fill unused with white texture)
+        for (uint32_t i = 0; i < 32; i++)
+        {
+            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
+            bs_desc.add_texture_array_element(0, i, tex);
+        }
+        bs_desc.add_sampler(0, m_current_sampler);
 
         auto binding_set = binding_set::create(m_device, bs_desc);
         if (!binding_set)
@@ -1560,6 +1855,7 @@ namespace lumina::graphics
             LUMINA_LOG_ERROR("Failed to create triangle binding set");
             return;
         }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw (no index buffer - raw triangles)
         auto& ctx = *m_context;
@@ -1592,6 +1888,7 @@ namespace lumina::graphics
             pipeline_desc desc;
             desc.shader_program = m_pixel_shader;
             desc.vertex_layout = m_pixel_input_layout;
+            desc.binding_layouts.push_back(m_pixel_binding_layout);
             desc.state.blend = blend_mode::alpha;
             desc.state.depth = depth_mode::none;
             desc.state.cull = cull_mode::none;
@@ -1599,7 +1896,7 @@ namespace lumina::graphics
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_pixel_pipeline = pipeline::create(m_device, desc);
+            m_pixel_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_pixel_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create pixel pipeline");
@@ -1608,12 +1905,25 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_pixel_vertex_buffer->update(batch.pixel_vertices.data(), batch.pixel_vertices.size() * sizeof(pixel_vertex));
+        m_pixel_vertex_buffer->update(batch.pixel_vertices.data(), batch.pixel_vertices.size() * sizeof(pixel_vertex), m_context->get_command_list());
+
+        // Create binding set with camera buffer
+        binding_set_desc bs_desc;
+        bs_desc.layout = m_pixel_binding_layout;
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        auto binding_set = binding_set::create(m_device, bs_desc);
+        if (!binding_set)
+        {
+            LUMINA_LOG_ERROR("Failed to create pixel binding set");
+            return;
+        }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw
         auto& ctx = *m_context;
         ctx.set_pipeline(m_pixel_pipeline);
-        ctx.set_binding_set(nullptr);
+        ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_pixel_vertex_buffer);
         ctx.draw(batch.pixel_count);
 
@@ -1641,6 +1951,7 @@ namespace lumina::graphics
             pipeline_desc desc;
             desc.shader_program = m_grid_shader;
             desc.vertex_layout = m_grid_input_layout;
+            desc.binding_layouts.push_back(m_grid_binding_layout);
             desc.state.blend = blend_mode::alpha;
             desc.state.depth = depth_mode::none;
             desc.state.cull = cull_mode::none;
@@ -1648,7 +1959,7 @@ namespace lumina::graphics
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_grid_pipeline = pipeline::create(m_device, desc);
+            m_grid_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_grid_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create grid pipeline");
@@ -1657,12 +1968,25 @@ namespace lumina::graphics
         }
 
         // Update vertex buffer
-        m_grid_vertex_buffer->update(batch.grid_vertices.data(), batch.grid_vertices.size() * sizeof(grid_vertex));
+        m_grid_vertex_buffer->update(batch.grid_vertices.data(), batch.grid_vertices.size() * sizeof(grid_vertex), m_context->get_command_list());
+
+        // Create binding set with camera buffer
+        binding_set_desc bs_desc;
+        bs_desc.layout = m_grid_binding_layout;
+        bs_desc.add_constant_buffer(0, m_camera_buffer);
+
+        auto binding_set = binding_set::create(m_device, bs_desc);
+        if (!binding_set)
+        {
+            LUMINA_LOG_ERROR("Failed to create grid binding set");
+            return;
+        }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw
         auto& ctx = *m_context;
         ctx.set_pipeline(m_grid_pipeline);
-        ctx.set_binding_set(nullptr);
+        ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_grid_vertex_buffer);
         ctx.set_index_buffer(m_grid_index_buffer);
         ctx.draw_indexed(batch.grid_count * indices_per_quad);
@@ -1872,7 +2196,7 @@ namespace lumina::graphics
             desc.color_format = m_light_accumulation ? m_light_accumulation->get_color_format() : format::rgba16_float;
             desc.depth_format = format::unknown;
 
-            m_point_light_pipeline = pipeline::create(m_device, desc);
+            m_point_light_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_point_light_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create point light pipeline");
@@ -1929,6 +2253,7 @@ namespace lumina::graphics
                 LUMINA_LOG_ERROR("Failed to create point light binding set");
                 continue;
             }
+            m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
             // Draw fullscreen quad
             auto& ctx = *m_context;
@@ -1961,7 +2286,7 @@ namespace lumina::graphics
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
 
-            m_composite_pipeline = pipeline::create(m_device, desc);
+            m_composite_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_composite_pipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create composite pipeline");
@@ -1999,7 +2324,7 @@ namespace lumina::graphics
         bs_desc.add_constant_buffer(0, m_composite_params_buffer);
         bs_desc.add_texture(0, m_scene_target->get_color_texture());
         bs_desc.add_texture(1, m_light_accumulation->get_color_texture());
-        bs_desc.add_sampler(0, m_default_sampler);
+        bs_desc.add_sampler(0, m_current_sampler);
 
         auto binding_set = binding_set::create(m_device, bs_desc);
         if (!binding_set)
@@ -2007,6 +2332,7 @@ namespace lumina::graphics
             LUMINA_LOG_ERROR("Failed to create composite binding set");
             return;
         }
+        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
         // Draw fullscreen quad
         auto& ctx = *m_context;

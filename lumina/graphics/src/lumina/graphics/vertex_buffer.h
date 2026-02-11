@@ -7,7 +7,7 @@
 #include <cstddef>
 #include <span>
 
-namespace nvrhi { class IBuffer; }
+namespace nvrhi { class IBuffer; class ICommandList; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -32,12 +32,31 @@ namespace lumina::graphics
             return create(dev, vertices.data(), vertices.size_bytes(), sizeof(T), usage);
         }
 
+        // Update using direct CPU mapping (legacy - has race conditions with in-flight draws)
         void update(const void* data, size_t size);
+
+        // Update using command list writeBuffer (preferred - properly synchronized)
+        void update(const void* data, size_t size, nvrhi::ICommandList* cmd);
+
+        // Update at specific byte offset using command list writeBuffer
+        void update_at_offset(const void* data, size_t size, size_t offset_bytes, nvrhi::ICommandList* cmd);
 
         template<typename T>
         void update(std::span<const T> vertices)
         {
             update(vertices.data(), vertices.size_bytes());
+        }
+
+        template<typename T>
+        void update(std::span<const T> vertices, nvrhi::ICommandList* cmd)
+        {
+            update(vertices.data(), vertices.size_bytes(), cmd);
+        }
+
+        template<typename T>
+        void update_at_offset(std::span<const T> vertices, size_t offset_bytes, nvrhi::ICommandList* cmd)
+        {
+            update_at_offset(vertices.data(), vertices.size_bytes(), offset_bytes, cmd);
         }
 
         size_t get_size() const { return m_size; }

@@ -277,8 +277,9 @@ namespace lumina::graphics
         apply_state();
 
         nvrhi::DrawArguments args;
-        args.vertexCount = index_count;
-        args.startVertexLocation = start_index;
+        args.vertexCount = index_count;           // Number of indices to draw
+        args.startIndexLocation = start_index;    // Offset into index buffer
+        args.startVertexLocation = base_vertex;   // Base vertex added to each index
         args.instanceCount = 1;
         args.startInstanceLocation = 0;
 

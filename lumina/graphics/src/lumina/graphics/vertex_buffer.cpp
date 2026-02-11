@@ -130,4 +130,50 @@ namespace lumina::graphics
         std::memcpy(mapped, data, size);
         nvrhi_device->unmapBuffer(m_handle);
     }
+
+    void vertex_buffer::update(const void* data, size_t size, nvrhi::ICommandList* cmd)
+    {
+        LUMINA_ASSERT(data != nullptr, "Cannot update vertex buffer with null data");
+        LUMINA_ASSERT(m_handle != nullptr, "Vertex buffer handle is null");
+        LUMINA_ASSERT(cmd != nullptr, "Command list is null");
+
+        if (!data || !m_handle || !cmd)
+        {
+            LUMINA_LOG_ERROR("vertex_buffer::update called with invalid state");
+            return;
+        }
+
+        if (size > m_size)
+        {
+            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}", size, m_size);
+            size = m_size;
+        }
+
+        // Use writeBuffer through command list for proper GPU synchronization
+        cmd->writeBuffer(m_handle, data, size);
+    }
+
+    void vertex_buffer::update_at_offset(const void* data, size_t size, size_t offset_bytes, nvrhi::ICommandList* cmd)
+    {
+        LUMINA_ASSERT(data != nullptr, "Cannot update vertex buffer with null data");
+        LUMINA_ASSERT(m_handle != nullptr, "Vertex buffer handle is null");
+        LUMINA_ASSERT(cmd != nullptr, "Command list is null");
+
+        if (!data || !m_handle || !cmd)
+        {
+            LUMINA_LOG_ERROR("vertex_buffer::update_at_offset called with invalid state");
+            return;
+        }
+
+        if (offset_bytes + size > m_size)
+        {
+            LUMINA_LOG_WARN("Update at offset {} with size {} exceeds buffer size {}", offset_bytes, size, m_size);
+            if (offset_bytes >= m_size)
+                return;
+            size = m_size - offset_bytes;
+        }
+
+        // Use writeBuffer through command list with offset for proper GPU synchronization
+        cmd->writeBuffer(m_handle, data, size, offset_bytes);
+    }
 }

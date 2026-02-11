@@ -12,6 +12,8 @@
 #include "pipeline.h"
 #include "render_target.h"
 #include "font_atlas.h"
+#include "camera2d.h"
+#include "texture_atlas.h"
 
 #include <lumina/core/base.h>
 
@@ -96,6 +98,8 @@ namespace lumina::graphics
         glm::vec2 uv_min = {0, 0};
         glm::vec2 uv_max = {1, 1};
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        blend_mode blend = blend_mode::alpha;
     };
 
     struct circle_desc
@@ -109,6 +113,8 @@ namespace lumina::graphics
         glm::vec2 uv_min = {0, 0};
         glm::vec2 uv_max = {1, 1};
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        blend_mode blend = blend_mode::alpha;
     };
 
     struct line_desc
@@ -118,6 +124,7 @@ namespace lumina::graphics
         glm::vec4 color = {1, 1, 1, 1};
         float thickness = 1.0f;
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
     struct text_desc
@@ -129,6 +136,7 @@ namespace lumina::graphics
         text_alignment alignment = text_alignment::left;
         ref<font_atlas> font = nullptr;     // nullptr = default font
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
     struct triangle_desc
@@ -142,6 +150,8 @@ namespace lumina::graphics
         glm::vec2 uv1 = {1, 1};
         glm::vec2 uv2 = {0.5f, 0};
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        blend_mode blend = blend_mode::alpha;
     };
 
     struct pixel_desc
@@ -150,6 +160,7 @@ namespace lumina::graphics
         glm::vec4 color = {1, 1, 1, 1};
         float size = 1.0f;
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
     struct rect_desc
@@ -160,6 +171,7 @@ namespace lumina::graphics
         float thickness = 1.0f;
         float rotation = 0.0f;
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
     struct grid_desc
@@ -173,6 +185,7 @@ namespace lumina::graphics
         glm::vec4 checker_color1 = {0.4f, 0.4f, 0.4f, 1.0f};
         glm::vec4 checker_color2 = {0.6f, 0.6f, 0.6f, 1.0f};
         render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
     struct point_light_desc
@@ -186,6 +199,20 @@ namespace lumina::graphics
         attenuation_model attenuation = attenuation_model::quadratic;
         float falloff = 1.0f;
         render_layer layer = render_layer::effects;
+    };
+
+    struct sprite_desc
+    {
+        glm::vec3 position = {0, 0, 0};
+        glm::vec2 size = {0, 0};            // If {0,0}, uses region size
+        glm::vec4 color = {1, 1, 1, 1};
+        float rotation = 0.0f;
+        glm::vec2 origin = {0.5f, 0.5f};    // Rotation pivot (0-1 normalized)
+        bool flip_x = false;                 // Horizontal flip
+        bool flip_y = false;                 // Vertical flip
+        render_layer layer = render_layer::default_layer;
+        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        blend_mode blend = blend_mode::alpha;
     };
 
     // ============================================================================
@@ -262,11 +289,13 @@ namespace lumina::graphics
         // Scene management
         void begin(const glm::mat4& projection);
         void begin(const glm::mat4& view, const glm::mat4& projection);
+        void begin(const camera2d& camera);
         void end();
 
         // Render target
         void set_render_target(ref<render_target> target);
         void set_default_render_target();
+        void clear(const glm::vec4& color = {0.0f, 0.0f, 0.0f, 1.0f});
 
         // ========================================================================
         // Drawing API (struct-based)
@@ -282,6 +311,18 @@ namespace lumina::graphics
         void draw_pixel(const pixel_desc& desc);
         void draw_rect(const rect_desc& desc);
         void draw_grid(const grid_desc& desc);
+
+        // Sprite drawing (texture atlas support)
+        void draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc);
+        void draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc);
+        void draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc);
+
+        // ========================================================================
+        // Texture Filtering
+        // ========================================================================
+
+        void set_filter_mode(filter_mode mode);
+        filter_mode get_filter_mode() const { return m_filter_mode; }
 
         // ========================================================================
         // Lighting
@@ -306,6 +347,8 @@ namespace lumina::graphics
     private:
         core::device& m_device;
         lumina::scope<context> m_context;
+        lumina::scope<pipeline_cache> m_pipeline_cache;
+        std::vector<ref<binding_set>> m_frame_binding_sets;  // Keep binding sets alive during frame
         renderer2d_config m_config;
         bool m_initialized = false;
 
@@ -318,52 +361,53 @@ namespace lumina::graphics
 
         struct quad_vertex
         {
-            glm::vec4 position;     // Pre-transformed clip-space
+            glm::vec4 position;     // World position (xyz) + padding
             glm::vec4 color;
             glm::vec2 texcoord;
             float tex_index;
-            float _pad;
+            float z_index;          // Depth within layer (0.0-1.0)
         };
 
         struct circle_vertex
         {
-            glm::vec4 world_position;   // Pre-transformed clip-space
+            glm::vec4 world_position;   // World position (xyz) + padding
             glm::vec4 local_position;   // Local coords for SDF
             glm::vec4 color;
             glm::vec2 texcoord;
             float tex_index;
             float thickness;
             float fade;
-            float _pad[3];
+            float z_index;              // Depth within layer (0.0-1.0)
+            float _pad[2];
         };
 
         struct line_vertex
         {
-            glm::vec4 position;     // Pre-transformed clip-space
+            glm::vec4 position;     // World position (xyz) + z_index in w
             glm::vec4 color;
         };
 
         struct text_vertex
         {
-            glm::vec4 position;     // Pre-transformed clip-space
+            glm::vec4 position;     // World position (xyz) + padding
             glm::vec4 color;
             glm::vec2 texcoord;
             float tex_index;
-            float _pad;
+            float z_index;          // Depth within layer (0.0-1.0)
         };
 
         struct triangle_vertex
         {
-            glm::vec4 position;     // Pre-transformed clip-space
+            glm::vec4 position;     // World position (xyz) + padding
             glm::vec4 color;
             glm::vec2 texcoord;
             float tex_index;
-            float _pad;
+            float z_index;          // Depth within layer (0.0-1.0)
         };
 
         struct pixel_vertex
         {
-            glm::vec4 position;     // Pre-transformed clip-space
+            glm::vec4 position;     // World position (xyz) + z_index in w
             glm::vec4 color;
             float size;
             float _pad[3];
@@ -371,7 +415,7 @@ namespace lumina::graphics
 
         struct grid_vertex
         {
-            glm::vec4 position;         // Pre-transformed clip-space
+            glm::vec4 position;         // World position (xyz) + z_index in w
             glm::vec4 local_position;   // For procedural grid in shader
             glm::vec4 line_color;
             glm::vec2 grid_size;
@@ -408,6 +452,11 @@ namespace lumina::graphics
             std::array<ref<texture>, 32> texture_slots;
             uint32_t texture_slot_index = 0;
 
+            // Blend mode tracking per primitive type
+            blend_mode quad_blend = blend_mode::alpha;
+            blend_mode circle_blend = blend_mode::alpha;
+            blend_mode triangle_blend = blend_mode::alpha;
+
             void clear()
             {
                 quad_vertices.clear();
@@ -428,6 +477,10 @@ namespace lumina::graphics
 
                 texture_slots.fill(nullptr);
                 texture_slot_index = 0;
+
+                quad_blend = blend_mode::alpha;
+                circle_blend = blend_mode::alpha;
+                triangle_blend = blend_mode::alpha;
             }
 
             bool is_empty() const
@@ -456,6 +509,7 @@ namespace lumina::graphics
         // ========================================================================
 
         void flush_layer(uint32_t layer_id);
+        void flush_layers_up_to(uint32_t layer_id);  // Flush all layers below this layer
         void flush_quads(uint32_t layer_id);
         void flush_circles(uint32_t layer_id);
         void flush_lines(uint32_t layer_id);
@@ -480,6 +534,7 @@ namespace lumina::graphics
         ref<input_layout> m_quad_input_layout;
         ref<binding_layout> m_quad_binding_layout;
         ref<pipeline> m_quad_pipeline;
+        uint32_t m_quad_vertex_offset = 0;  // Current vertex offset for appending (in vertices, not bytes)
 
         // Circle
         ref<vertex_buffer> m_circle_vertex_buffer;
@@ -493,6 +548,7 @@ namespace lumina::graphics
         ref<vertex_buffer> m_line_vertex_buffer;
         ref<shader> m_line_shader;
         ref<input_layout> m_line_input_layout;
+        ref<binding_layout> m_line_binding_layout;
         ref<pipeline> m_line_pipeline;
 
         // Text
@@ -515,6 +571,7 @@ namespace lumina::graphics
         ref<vertex_buffer> m_pixel_vertex_buffer;
         ref<shader> m_pixel_shader;
         ref<input_layout> m_pixel_input_layout;
+        ref<binding_layout> m_pixel_binding_layout;
         ref<pipeline> m_pixel_pipeline;
 
         // Grid
@@ -522,6 +579,7 @@ namespace lumina::graphics
         ref<index_buffer> m_grid_index_buffer;
         ref<shader> m_grid_shader;
         ref<input_layout> m_grid_input_layout;
+        ref<binding_layout> m_grid_binding_layout;
         ref<pipeline> m_grid_pipeline;
 
         // ========================================================================
@@ -529,7 +587,17 @@ namespace lumina::graphics
         // ========================================================================
 
         ref<sampler> m_default_sampler;
+        ref<sampler> m_point_sampler;
+        ref<sampler> m_current_sampler;  // Active sampler (linear or point)
+        filter_mode m_filter_mode = filter_mode::linear;
         ref<texture> m_white_texture;
+
+        // Camera constant buffer (shared by all primitives)
+        struct camera_data
+        {
+            glm::mat4 view_projection;
+        };
+        ref<uniform_buffer> m_camera_buffer;
 
         // ========================================================================
         // Lighting State
