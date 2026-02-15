@@ -8,6 +8,7 @@
 #include <lumina/ui/ui.h>
 
 #include <glm/glm.hpp>
+#include <cmath>
 
 namespace ui = lumina::ui;
 namespace gfx = lumina::graphics;
@@ -128,6 +129,65 @@ public:
             .blend = blend
         });
 
+        // Scissor test: draw quads clipped to a region
+        if (m_scissor_enabled)
+        {
+            // Push scissor region (centered, 200x200 pixels)
+            float scissor_size = 200.0f;
+            float scissor_x = (600.0f - scissor_size) / 2.0f;
+            float scissor_y = (600.0f - scissor_size) / 2.0f;
+            m_renderer->push_scissor(scissor_x, scissor_y, scissor_size, scissor_size);
+
+            // Draw some quads that should be clipped
+            for (int i = 0; i < 4; i++)
+            {
+                float angle = m_time + i * 1.57f;
+                float x = std::cos(angle) * 150.0f;
+                float y = std::sin(angle) * 150.0f;
+
+                m_renderer->draw_quad({
+                    .position = {x, y, 0.5f},
+                    .size = {80.0f, 80.0f},
+                    .color = {0.0f, 0.5f, 1.0f, 0.8f},
+                    .blend = gfx::blend_mode::alpha
+                });
+            }
+
+            m_renderer->pop_scissor();
+
+            // Draw outline bars around the scissor region (in world space, follows camera)
+            // Convert scissor screen coords to world coords relative to camera
+            glm::vec2 cam_pos = m_camera.get_position();
+            float half_size = scissor_size / 2.0f / m_camera.get_zoom();
+            float bar_thickness = 4.0f;
+            glm::vec4 bar_color = {1.0f, 0.0f, 1.0f, 1.0f};  // Magenta
+
+            // Top bar
+            m_renderer->draw_quad({
+                .position = {cam_pos.x, cam_pos.y + half_size, 0.9f},
+                .size = {scissor_size / m_camera.get_zoom() + bar_thickness, bar_thickness},
+                .color = bar_color
+            });
+            // Bottom bar
+            m_renderer->draw_quad({
+                .position = {cam_pos.x, cam_pos.y - half_size, 0.9f},
+                .size = {scissor_size / m_camera.get_zoom() + bar_thickness, bar_thickness},
+                .color = bar_color
+            });
+            // Left bar
+            m_renderer->draw_quad({
+                .position = {cam_pos.x - half_size, cam_pos.y, 0.9f},
+                .size = {bar_thickness, scissor_size / m_camera.get_zoom() + bar_thickness},
+                .color = bar_color
+            });
+            // Right bar
+            m_renderer->draw_quad({
+                .position = {cam_pos.x + half_size, cam_pos.y, 0.9f},
+                .size = {bar_thickness, scissor_size / m_camera.get_zoom() + bar_thickness},
+                .color = bar_color
+            });
+        }
+
         m_renderer->end();
 
         // UI
@@ -155,6 +215,15 @@ public:
         ImGui::RadioButton("Alpha", &m_center_blend_mode, 1);
         ImGui::RadioButton("Additive", &m_center_blend_mode, 2);
         ImGui::RadioButton("Multiply", &m_center_blend_mode, 3);
+        ui::separator();
+
+        // Scissor test
+        ui::text("Scissor Clipping:");
+        ImGui::Checkbox("Enable Scissor Test", &m_scissor_enabled);
+        if (m_scissor_enabled)
+        {
+            ui::text("Blue quads orbit and are clipped to center 200x200 region");
+        }
         ui::separator();
 
         ui::text("Controls: WASD/Arrows=Pan, Q/E=Zoom");
@@ -198,6 +267,7 @@ private:
     glm::vec4 m_grid_color2{0.3f, 0.8f, 0.3f, 1.0f};  // Green
     glm::vec4 m_center_color{1.0f, 1.0f, 0.0f, 0.7f}; // Yellow
     int m_center_blend_mode = 2;  // 0=opaque, 1=alpha, 2=additive, 3=multiply
+    bool m_scissor_enabled = false;
 };
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)

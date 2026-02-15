@@ -776,6 +776,10 @@ namespace lumina::graphics
         m_pixel_vertex_offset = 0;
         m_grid_vertex_offset = 0;
 
+        // Clear scissor stack for new frame
+        while (!m_scissor_stack.empty())
+            m_scissor_stack.pop();
+
         // Auto-set default render target if none is currently set
         if (!m_current_target && !m_context->has_framebuffer())
         {
@@ -1429,6 +1433,87 @@ namespace lumina::graphics
     }
 
     // ========================================================================
+    // Scissor/Clipping
+    // ========================================================================
+
+    void renderer2d::push_scissor(float x, float y, float width, float height)
+    {
+        push_scissor(glm::vec4(x, y, width, height));
+    }
+
+    void renderer2d::push_scissor(const glm::vec4& rect)
+    {
+        // Flush all current primitives before changing scissor state
+        flush_all();
+
+        glm::vec4 new_scissor = rect;
+
+        // If there's already a scissor active, intersect with it
+        if (!m_scissor_stack.empty())
+        {
+            const glm::vec4& current = m_scissor_stack.top();
+
+            // Calculate intersection of rectangles
+            float x1 = std::max(rect.x, current.x);
+            float y1 = std::max(rect.y, current.y);
+            float x2 = std::min(rect.x + rect.z, current.x + current.z);
+            float y2 = std::min(rect.y + rect.w, current.y + current.w);
+
+            // If no intersection, create a zero-sized rect (nothing will render)
+            if (x2 <= x1 || y2 <= y1)
+            {
+                new_scissor = glm::vec4(x1, y1, 0, 0);
+            }
+            else
+            {
+                new_scissor = glm::vec4(x1, y1, x2 - x1, y2 - y1);
+            }
+        }
+
+        m_scissor_stack.push(new_scissor);
+    }
+
+    void renderer2d::pop_scissor()
+    {
+        if (m_scissor_stack.empty())
+        {
+            LUMINA_LOG_WARN("pop_scissor called with empty scissor stack");
+            return;
+        }
+
+        // Flush all current primitives before changing scissor state
+        flush_all();
+
+        m_scissor_stack.pop();
+    }
+
+    glm::vec4 renderer2d::get_current_scissor() const
+    {
+        if (m_scissor_stack.empty())
+            return glm::vec4(0, 0, 0, 0);
+        return m_scissor_stack.top();
+    }
+
+    void renderer2d::apply_scissor()
+    {
+        if (m_scissor_stack.empty())
+        {
+            // No scissor - use full viewport (set to 0,0,0,0 to let context use viewport default)
+            m_context->set_scissor(0, 0, 0, 0);
+        }
+        else
+        {
+            const glm::vec4& scissor = m_scissor_stack.top();
+            m_context->set_scissor(
+                static_cast<int32_t>(scissor.x),
+                static_cast<int32_t>(scissor.y),
+                static_cast<int32_t>(scissor.z),
+                static_cast<int32_t>(scissor.w)
+            );
+        }
+    }
+
+    // ========================================================================
     // Lighting
     // ========================================================================
 
@@ -1580,6 +1665,7 @@ namespace lumina::graphics
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_quad_vertex_buffer);
         ctx.set_index_buffer(m_quad_index_buffer);
+        apply_scissor();
         ctx.draw_indexed(batch.quad_count * indices_per_quad, 0, static_cast<int32_t>(m_quad_vertex_offset));
 
         m_stats.draw_calls++;
@@ -1670,6 +1756,7 @@ namespace lumina::graphics
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_circle_vertex_buffer);
         ctx.set_index_buffer(m_circle_index_buffer);
+        apply_scissor();
         ctx.draw_indexed(batch.circle_count * indices_per_quad, 0, static_cast<int32_t>(m_circle_vertex_offset));
 
         m_stats.draw_calls++;
@@ -1745,6 +1832,7 @@ namespace lumina::graphics
         ctx.set_pipeline(m_line_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_line_vertex_buffer);
+        apply_scissor();
         ctx.draw(batch.line_count * 2, m_line_vertex_offset);
 
         m_stats.draw_calls++;
@@ -1829,6 +1917,7 @@ namespace lumina::graphics
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_text_vertex_buffer);
         ctx.set_index_buffer(m_text_index_buffer);
+        apply_scissor();
         ctx.draw_indexed(batch.text_char_count * indices_per_quad, 0, static_cast<int32_t>(m_text_vertex_offset));
 
         m_stats.draw_calls++;
@@ -1913,6 +2002,7 @@ namespace lumina::graphics
         ctx.set_pipeline(m_triangle_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_triangle_vertex_buffer);
+        apply_scissor();
         ctx.draw(batch.triangle_count * 3, m_triangle_vertex_offset);
 
         m_stats.draw_calls++;
@@ -1988,6 +2078,7 @@ namespace lumina::graphics
         ctx.set_pipeline(m_pixel_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_pixel_vertex_buffer);
+        apply_scissor();
         ctx.draw(batch.pixel_count, m_pixel_vertex_offset);
 
         m_stats.draw_calls++;
@@ -2065,6 +2156,7 @@ namespace lumina::graphics
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_grid_vertex_buffer);
         ctx.set_index_buffer(m_grid_index_buffer);
+        apply_scissor();
         ctx.draw_indexed(batch.grid_count * indices_per_quad, 0, m_grid_vertex_offset);
 
         m_stats.draw_calls++;

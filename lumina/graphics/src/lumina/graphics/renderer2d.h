@@ -21,6 +21,7 @@
 
 #include <array>
 #include <map>
+#include <stack>
 #include <string>
 #include <string_view>
 
@@ -318,6 +319,25 @@ namespace lumina::graphics
         void draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc);
 
         // ========================================================================
+        // Scissor/Clipping Regions
+        // ========================================================================
+
+        // Push a scissor rectangle onto the stack. All subsequent drawing will be clipped to this region.
+        // If there's already a scissor active, the new scissor is intersected with the current one.
+        // x, y = top-left corner in screen coordinates, w, h = dimensions
+        void push_scissor(float x, float y, float width, float height);
+        void push_scissor(const glm::vec4& rect);  // rect = {x, y, width, height}
+
+        // Pop the current scissor rectangle, restoring the previous one (or disabling scissor if stack is empty)
+        void pop_scissor();
+
+        // Check if scissor is currently active
+        bool has_scissor() const { return !m_scissor_stack.empty(); }
+
+        // Get the current scissor rect (returns zero rect if no scissor active)
+        glm::vec4 get_current_scissor() const;
+
+        // ========================================================================
         // Texture Filtering
         // ========================================================================
 
@@ -354,6 +374,9 @@ namespace lumina::graphics
 
         // Camera
         glm::mat4 m_view_projection{1.0f};
+
+        // Scissor stack
+        std::stack<glm::vec4> m_scissor_stack;  // Stack of scissor rects {x, y, width, height}
 
         // ========================================================================
         // Vertex Types (internal)
@@ -522,6 +545,7 @@ namespace lumina::graphics
         void start_batch();
         float get_texture_index(uint32_t layer_id, ref<texture> tex);
         layer_batch& get_layer(uint32_t layer_id);
+        void apply_scissor();  // Apply current scissor state to context
 
         // ========================================================================
         // Shared GPU Resources (pipelines, shaders, buffers - shared across layers)
