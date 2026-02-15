@@ -899,10 +899,11 @@ namespace lumina::graphics
 
     float renderer2d::get_texture_index(uint32_t layer_id, ref<texture> tex)
     {
-        if (!tex)
-            return 0.0f;
-
         auto& batch = get_layer(layer_id);
+
+        // If no texture specified, use white texture
+        if (!tex)
+            tex = m_white_texture;
 
         // Check if texture is already bound in this layer
         for (uint32_t i = 0; i < batch.texture_slot_index; i++)
@@ -925,8 +926,7 @@ namespace lumina::graphics
 
             // Reset only texture slots - vertex data was cleared by flush_layer
             batch.texture_slots.fill(nullptr);
-            batch.texture_slots[0] = m_white_texture;
-            batch.texture_slot_index = 1;
+            batch.texture_slot_index = 0;
 
             // Restore blend modes (they may have been set before this call)
             batch.quad_blend = saved_quad_blend;
