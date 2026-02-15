@@ -769,6 +769,12 @@ namespace lumina::graphics
 
         // Reset vertex buffer offsets for new frame
         m_quad_vertex_offset = 0;
+        m_circle_vertex_offset = 0;
+        m_line_vertex_offset = 0;
+        m_text_vertex_offset = 0;
+        m_triangle_vertex_offset = 0;
+        m_pixel_vertex_offset = 0;
+        m_grid_vertex_offset = 0;
 
         // Auto-set default render target if none is currently set
         if (!m_current_target && !m_context->has_framebuffer())
@@ -1625,8 +1631,17 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_circle_vertex_buffer->update(batch.circle_vertices.data(), batch.circle_vertices.size() * sizeof(circle_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer
+        uint32_t vertices_needed = batch.circle_count * vertices_per_quad;
+        if (m_circle_vertex_offset + vertices_needed > m_config.max_circles * vertices_per_quad)
+        {
+            LUMINA_LOG_WARN("Circle vertex buffer full, resetting offset");
+            m_circle_vertex_offset = 0;
+        }
+
+        // Calculate byte offset and update vertex buffer at current offset
+        size_t offset_bytes = m_circle_vertex_offset * sizeof(circle_vertex);
+        m_circle_vertex_buffer->update_at_offset(batch.circle_vertices.data(), batch.circle_vertices.size() * sizeof(circle_vertex), offset_bytes, m_context->get_command_list());
 
         // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
@@ -1649,15 +1664,18 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with base vertex offset
         auto& ctx = *m_context;
         ctx.set_pipeline(m_circle_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_circle_vertex_buffer);
         ctx.set_index_buffer(m_circle_index_buffer);
-        ctx.draw_indexed(batch.circle_count * indices_per_quad);
+        ctx.draw_indexed(batch.circle_count * indices_per_quad, 0, static_cast<int32_t>(m_circle_vertex_offset));
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_circle_vertex_offset += batch.circle_count * vertices_per_quad;
 
         batch.circle_vertices.clear();
         batch.circle_count = 0;
@@ -1697,8 +1715,17 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_line_vertex_buffer->update(batch.line_vertices.data(), batch.line_vertices.size() * sizeof(line_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer (2 vertices per line)
+        uint32_t vertices_needed = batch.line_count * 2;
+        if (m_line_vertex_offset + vertices_needed > m_config.max_lines * 2)
+        {
+            LUMINA_LOG_WARN("Line vertex buffer full, resetting offset");
+            m_line_vertex_offset = 0;
+        }
+
+        // Calculate byte offset and update vertex buffer at current offset
+        size_t offset_bytes = m_line_vertex_offset * sizeof(line_vertex);
+        m_line_vertex_buffer->update_at_offset(batch.line_vertices.data(), batch.line_vertices.size() * sizeof(line_vertex), offset_bytes, m_context->get_command_list());
 
         // Create binding set with camera buffer
         binding_set_desc bs_desc;
@@ -1713,14 +1740,17 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with start vertex offset (lines don't use index buffer)
         auto& ctx = *m_context;
         ctx.set_pipeline(m_line_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_line_vertex_buffer);
-        ctx.draw(batch.line_count * 2);
+        ctx.draw(batch.line_count * 2, m_line_vertex_offset);
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_line_vertex_offset += batch.line_count * 2;
 
         batch.line_vertices.clear();
         batch.line_count = 0;
@@ -1760,8 +1790,17 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_text_vertex_buffer->update(batch.text_vertices.data(), batch.text_vertices.size() * sizeof(text_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer (4 vertices per character)
+        uint32_t vertices_needed = batch.text_char_count * vertices_per_quad;
+        if (m_text_vertex_offset + vertices_needed > m_config.max_text_chars * vertices_per_quad)
+        {
+            LUMINA_LOG_WARN("Text vertex buffer full, resetting offset");
+            m_text_vertex_offset = 0;
+        }
+
+        // Calculate byte offset and update vertex buffer at current offset
+        size_t offset_bytes = m_text_vertex_offset * sizeof(text_vertex);
+        m_text_vertex_buffer->update_at_offset(batch.text_vertices.data(), batch.text_vertices.size() * sizeof(text_vertex), offset_bytes, m_context->get_command_list());
 
         // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
@@ -1784,15 +1823,18 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with base vertex offset
         auto& ctx = *m_context;
         ctx.set_pipeline(m_text_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_text_vertex_buffer);
         ctx.set_index_buffer(m_text_index_buffer);
-        ctx.draw_indexed(batch.text_char_count * indices_per_quad);
+        ctx.draw_indexed(batch.text_char_count * indices_per_quad, 0, static_cast<int32_t>(m_text_vertex_offset));
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_text_vertex_offset += batch.text_char_count * vertices_per_quad;
 
         batch.text_vertices.clear();
         batch.text_char_count = 0;
@@ -1833,8 +1875,17 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_triangle_vertex_buffer->update(batch.triangle_vertices.data(), batch.triangle_vertices.size() * sizeof(triangle_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer (3 vertices per triangle)
+        uint32_t vertices_needed = batch.triangle_count * 3;
+        if (m_triangle_vertex_offset + vertices_needed > m_config.max_triangles * 3)
+        {
+            LUMINA_LOG_WARN("Triangle vertex buffer full, resetting offset");
+            m_triangle_vertex_offset = 0;
+        }
+
+        // Calculate byte offset and update vertex buffer at current offset
+        size_t offset_bytes = m_triangle_vertex_offset * sizeof(triangle_vertex);
+        m_triangle_vertex_buffer->update_at_offset(batch.triangle_vertices.data(), batch.triangle_vertices.size() * sizeof(triangle_vertex), offset_bytes, m_context->get_command_list());
 
         // Create binding set with camera buffer and all texture slots
         binding_set_desc bs_desc;
@@ -1857,14 +1908,17 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw (no index buffer - raw triangles)
+        // Draw with start vertex offset (no index buffer - raw triangles)
         auto& ctx = *m_context;
         ctx.set_pipeline(m_triangle_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_triangle_vertex_buffer);
-        ctx.draw(batch.triangle_count * 3);
+        ctx.draw(batch.triangle_count * 3, m_triangle_vertex_offset);
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_triangle_vertex_offset += batch.triangle_count * 3;
 
         batch.triangle_vertices.clear();
         batch.triangle_count = 0;
@@ -1904,8 +1958,17 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_pixel_vertex_buffer->update(batch.pixel_vertices.data(), batch.pixel_vertices.size() * sizeof(pixel_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer
+        uint32_t max_vertices = m_config.max_pixels;
+        if (m_pixel_vertex_offset + batch.pixel_count > max_vertices)
+        {
+            LUMINA_LOG_WARN("Pixel vertex buffer full, resetting offset (may cause visual artifacts)");
+            m_pixel_vertex_offset = 0;
+        }
+
+        // Update vertex buffer at current offset
+        size_t byte_offset = m_pixel_vertex_offset * sizeof(pixel_vertex);
+        m_pixel_vertex_buffer->update_at_offset(batch.pixel_vertices.data(), batch.pixel_vertices.size() * sizeof(pixel_vertex), byte_offset, m_context->get_command_list());
 
         // Create binding set with camera buffer
         binding_set_desc bs_desc;
@@ -1920,14 +1983,17 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with start_vertex offset
         auto& ctx = *m_context;
         ctx.set_pipeline(m_pixel_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_pixel_vertex_buffer);
-        ctx.draw(batch.pixel_count);
+        ctx.draw(batch.pixel_count, m_pixel_vertex_offset);
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_pixel_vertex_offset += batch.pixel_count;
 
         batch.pixel_vertices.clear();
         batch.pixel_count = 0;
@@ -1967,8 +2033,18 @@ namespace lumina::graphics
             }
         }
 
-        // Update vertex buffer
-        m_grid_vertex_buffer->update(batch.grid_vertices.data(), batch.grid_vertices.size() * sizeof(grid_vertex), m_context->get_command_list());
+        // Check if we have room in the vertex buffer
+        uint32_t vertices_needed = batch.grid_count * vertices_per_quad;
+        uint32_t max_vertices = m_config.max_grids * vertices_per_quad;
+        if (m_grid_vertex_offset + vertices_needed > max_vertices)
+        {
+            LUMINA_LOG_WARN("Grid vertex buffer full, resetting offset (may cause visual artifacts)");
+            m_grid_vertex_offset = 0;
+        }
+
+        // Update vertex buffer at current offset
+        size_t byte_offset = m_grid_vertex_offset * sizeof(grid_vertex);
+        m_grid_vertex_buffer->update_at_offset(batch.grid_vertices.data(), batch.grid_vertices.size() * sizeof(grid_vertex), byte_offset, m_context->get_command_list());
 
         // Create binding set with camera buffer
         binding_set_desc bs_desc;
@@ -1983,15 +2059,18 @@ namespace lumina::graphics
         }
         m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
 
-        // Draw
+        // Draw with base_vertex offset for indexed drawing
         auto& ctx = *m_context;
         ctx.set_pipeline(m_grid_pipeline);
         ctx.set_binding_set(binding_set);
         ctx.set_vertex_buffer(m_grid_vertex_buffer);
         ctx.set_index_buffer(m_grid_index_buffer);
-        ctx.draw_indexed(batch.grid_count * indices_per_quad);
+        ctx.draw_indexed(batch.grid_count * indices_per_quad, 0, m_grid_vertex_offset);
 
         m_stats.draw_calls++;
+
+        // Advance vertex offset for next flush
+        m_grid_vertex_offset += vertices_needed;
 
         batch.grid_vertices.clear();
         batch.grid_count = 0;

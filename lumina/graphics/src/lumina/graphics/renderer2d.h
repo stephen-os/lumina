@@ -543,6 +543,7 @@ namespace lumina::graphics
         ref<input_layout> m_circle_input_layout;
         ref<binding_layout> m_circle_binding_layout;
         ref<pipeline> m_circle_pipeline;
+        uint32_t m_circle_vertex_offset = 0;
 
         // Line
         ref<vertex_buffer> m_line_vertex_buffer;
@@ -550,6 +551,7 @@ namespace lumina::graphics
         ref<input_layout> m_line_input_layout;
         ref<binding_layout> m_line_binding_layout;
         ref<pipeline> m_line_pipeline;
+        uint32_t m_line_vertex_offset = 0;
 
         // Text
         ref<vertex_buffer> m_text_vertex_buffer;
@@ -559,6 +561,7 @@ namespace lumina::graphics
         ref<binding_layout> m_text_binding_layout;
         ref<pipeline> m_text_pipeline;
         ref<font_atlas> m_default_font;
+        uint32_t m_text_vertex_offset = 0;
 
         // Triangle
         ref<vertex_buffer> m_triangle_vertex_buffer;
@@ -566,6 +569,7 @@ namespace lumina::graphics
         ref<input_layout> m_triangle_input_layout;
         ref<binding_layout> m_triangle_binding_layout;
         ref<pipeline> m_triangle_pipeline;
+        uint32_t m_triangle_vertex_offset = 0;
 
         // Pixel
         ref<vertex_buffer> m_pixel_vertex_buffer;
@@ -573,6 +577,7 @@ namespace lumina::graphics
         ref<input_layout> m_pixel_input_layout;
         ref<binding_layout> m_pixel_binding_layout;
         ref<pipeline> m_pixel_pipeline;
+        uint32_t m_pixel_vertex_offset = 0;
 
         // Grid
         ref<vertex_buffer> m_grid_vertex_buffer;
@@ -581,6 +586,7 @@ namespace lumina::graphics
         ref<input_layout> m_grid_input_layout;
         ref<binding_layout> m_grid_binding_layout;
         ref<pipeline> m_grid_pipeline;
+        uint32_t m_grid_vertex_offset = 0;
 
         // ========================================================================
         // Shared Resources
