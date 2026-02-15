@@ -46,6 +46,19 @@ const char* get_test_name(benchmark_test test)
     }
 }
 
+struct test_result
+{
+    benchmark_test test;
+    float avg_fps;
+    float min_frame_time;
+    float max_frame_time;
+    float avg_frame_time;
+    float avg_render_time;
+    uint32_t avg_draw_calls;
+    uint32_t total_primitives;
+    float prims_per_call;
+};
+
 class benchmark_layer : public lumina::core::layer
 {
 public:
@@ -139,7 +152,143 @@ public:
         m_last_stats = m_renderer->get_stats();
         m_renderer->reset_stats();
 
+        // Handle automated benchmark
+        if (m_auto_running)
+        {
+            update_auto_benchmark();
+        }
+
         render_ui();
+    }
+
+    void start_auto_benchmark()
+    {
+        m_auto_running = true;
+        m_auto_current_test = 0;
+        m_auto_frame_count = 0;
+        m_auto_results.clear();
+        m_auto_frame_times.clear();
+        m_auto_render_times.clear();
+        m_auto_draw_calls.clear();
+        m_current_test = static_cast<benchmark_test>(0);
+        LUMINA_LOG_INFO("========== AUTOMATED BENCHMARK STARTED ==========");
+        LUMINA_LOG_INFO("Warmup frames: {}, Measure frames: {}", m_auto_warmup_frames, m_auto_measure_frames);
+        LUMINA_LOG_INFO("Primitives: {}, Quad Size: {:.1f}", m_primitive_count, m_quad_size);
+        LUMINA_LOG_INFO("==================================================");
+    }
+
+    void update_auto_benchmark()
+    {
+        m_auto_frame_count++;
+
+        // Skip warmup frames
+        if (m_auto_frame_count > m_auto_warmup_frames)
+        {
+            // Collect data
+            if (!m_frame_times.empty())
+                m_auto_frame_times.push_back(m_frame_times.back());
+            m_auto_render_times.push_back(m_render_time_ms);
+            m_auto_draw_calls.push_back(m_last_stats.draw_calls);
+        }
+
+        // Check if current test is done
+        int total_frames = m_auto_warmup_frames + m_auto_measure_frames;
+        if (m_auto_frame_count >= total_frames)
+        {
+            // Calculate results for this test
+            test_result result;
+            result.test = m_current_test;
+            result.total_primitives = m_last_stats.get_total_primitives();
+
+            // Frame time stats
+            float sum_frame = 0, min_frame = FLT_MAX, max_frame = 0;
+            for (float t : m_auto_frame_times)
+            {
+                sum_frame += t;
+                min_frame = std::min(min_frame, t);
+                max_frame = std::max(max_frame, t);
+            }
+            result.avg_frame_time = m_auto_frame_times.empty() ? 0 : sum_frame / m_auto_frame_times.size();
+            result.min_frame_time = min_frame == FLT_MAX ? 0 : min_frame;
+            result.max_frame_time = max_frame;
+            result.avg_fps = result.avg_frame_time > 0 ? 1000.0f / result.avg_frame_time : 0;
+
+            // Render time stats
+            float sum_render = 0;
+            for (float t : m_auto_render_times)
+                sum_render += t;
+            result.avg_render_time = m_auto_render_times.empty() ? 0 : sum_render / m_auto_render_times.size();
+
+            // Draw call stats
+            uint32_t sum_draws = 0;
+            for (uint32_t d : m_auto_draw_calls)
+                sum_draws += d;
+            result.avg_draw_calls = m_auto_draw_calls.empty() ? 0 : sum_draws / static_cast<uint32_t>(m_auto_draw_calls.size());
+            result.prims_per_call = result.avg_draw_calls > 0 ?
+                static_cast<float>(result.total_primitives) / result.avg_draw_calls : 0;
+
+            m_auto_results.push_back(result);
+
+            // Log this test's results
+            LUMINA_LOG_INFO("[{}] FPS: {:.1f}, Frame: {:.2f}ms, Render: {:.2f}ms, Draws: {}, P/D: {:.1f}",
+                get_test_name(result.test), result.avg_fps, result.avg_frame_time,
+                result.avg_render_time, result.avg_draw_calls, result.prims_per_call);
+
+            // Move to next test
+            advance_to_next_test();
+        }
+    }
+
+    void advance_to_next_test()
+    {
+        m_auto_current_test++;
+        m_auto_frame_count = 0;
+        m_auto_frame_times.clear();
+        m_auto_render_times.clear();
+        m_auto_draw_calls.clear();
+
+        // Skip slow tests if option enabled
+        while (m_auto_current_test < static_cast<int>(benchmark_test::count))
+        {
+            auto test = static_cast<benchmark_test>(m_auto_current_test);
+            if (m_skip_slow_tests && test == benchmark_test::quads_alternating_blend)
+            {
+                LUMINA_LOG_INFO("[{}] SKIPPED (slow test)", get_test_name(test));
+                m_auto_current_test++;
+                continue;
+            }
+            break;
+        }
+
+        if (m_auto_current_test >= static_cast<int>(benchmark_test::count))
+        {
+            finish_auto_benchmark();
+        }
+        else
+        {
+            m_current_test = static_cast<benchmark_test>(m_auto_current_test);
+        }
+    }
+
+    void finish_auto_benchmark()
+    {
+        m_auto_running = false;
+
+        LUMINA_LOG_INFO("");
+        LUMINA_LOG_INFO("============ BENCHMARK RESULTS SUMMARY ============");
+        LUMINA_LOG_INFO("| Test                      | FPS    | Draws | P/Draw  |");
+        LUMINA_LOG_INFO("|---------------------------|--------|-------|---------|");
+
+        for (const auto& r : m_auto_results)
+        {
+            LUMINA_LOG_INFO("| {:<25} | {:>6.1f} | {:>5} | {:>7.1f} |",
+                get_test_name(r.test), r.avg_fps, r.avg_draw_calls, r.prims_per_call);
+        }
+
+        LUMINA_LOG_INFO("|---------------------------|--------|-------|---------|");
+        LUMINA_LOG_INFO("Primitives: {}, Quad Size: {:.1f}", m_primitive_count, m_quad_size);
+        LUMINA_LOG_INFO("Warmup: {} frames, Measured: {} frames per test", m_auto_warmup_frames, m_auto_measure_frames);
+        LUMINA_LOG_INFO("====================================================");
     }
 
 private:
@@ -220,6 +369,9 @@ private:
     void run_quads_alternating_blend()
     {
         // Worst case: blend mode changes every quad -> many draw calls
+        // Cap at 1000 to avoid freezing (this test is intentionally pathological)
+        int count = std::min(m_primitive_count, 1000);
+
         gfx::blend_mode modes[] = {
             gfx::blend_mode::alpha,
             gfx::blend_mode::additive,
@@ -227,7 +379,7 @@ private:
             gfx::blend_mode::opaque
         };
 
-        for (int i = 0; i < m_primitive_count; i++)
+        for (int i = 0; i < count; i++)
         {
             m_renderer->draw_quad({
                 .position = {m_positions[i].x, m_positions[i].y, 0.0f},
@@ -460,6 +612,43 @@ private:
         }
         ui::separator();
 
+        // Automated benchmark button
+        if (m_auto_running)
+        {
+            ui::text_fmt("Running Test {}/{}: {}",
+                m_auto_current_test + 1,
+                static_cast<int>(benchmark_test::count),
+                get_test_name(m_current_test));
+            ui::text_fmt("Frame {}/{}",
+                m_auto_frame_count,
+                m_auto_warmup_frames + m_auto_measure_frames);
+
+            if (ImGui::Button("Cancel Benchmark"))
+            {
+                m_auto_running = false;
+                LUMINA_LOG_INFO("Benchmark cancelled by user");
+            }
+        }
+        else
+        {
+            if (ImGui::Button("Run All Tests (Auto)"))
+            {
+                start_auto_benchmark();
+            }
+            ImGui::SameLine();
+            ImGui::SetNextItemWidth(80);
+            ImGui::InputInt("Frames", &m_auto_measure_frames);
+            m_auto_measure_frames = std::max(30, std::min(600, m_auto_measure_frames));
+
+            ImGui::Checkbox("Skip Slow Tests", &m_skip_slow_tests);
+            if (m_skip_slow_tests)
+            {
+                ImGui::SameLine();
+                ui::text("(Alternating Blend)");
+            }
+        }
+        ui::separator();
+
         // Snapshot button
         if (ImGui::Button("Log Snapshot to Console"))
         {
@@ -540,6 +729,18 @@ private:
     std::deque<float> m_frame_times;
     float m_render_time_ms = 0.0f;
     gfx::renderer2d_stats m_last_stats;
+
+    // Automated benchmark mode
+    bool m_auto_running = false;
+    bool m_skip_slow_tests = true;      // Skip pathological tests by default
+    int m_auto_current_test = 0;
+    int m_auto_frame_count = 0;
+    int m_auto_warmup_frames = 30;      // Skip first N frames for warmup
+    int m_auto_measure_frames = 120;    // Measure over N frames
+    std::vector<float> m_auto_frame_times;
+    std::vector<float> m_auto_render_times;
+    std::vector<uint32_t> m_auto_draw_calls;
+    std::vector<test_result> m_auto_results;
 };
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
