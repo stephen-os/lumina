@@ -1,13 +1,35 @@
 #include "renderer.h"
 #include <lumina/core/application.h>
+#include <lumina/core/log.h>
 
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <unordered_map>
-#include <cassert>
 
 namespace lumina::graphics
 {
+    // ============================================================================
+    // Internal Validation Macros
+    // ============================================================================
+
+    // Check that renderer is initialized, return early if not
+    #define RENDERER_CHECK_INIT() \
+        do { \
+            if (!s_state) { \
+                LUMINA_LOG_ERROR("Renderer not initialized"); \
+                return; \
+            } \
+        } while (0)
+
+    // Check that renderer is initialized, return value if not
+    #define RENDERER_CHECK_INIT_RET(ret) \
+        do { \
+            if (!s_state) { \
+                LUMINA_LOG_ERROR("Renderer not initialized"); \
+                return ret; \
+            } \
+        } while (0)
+
     // ============================================================================
     // Static State
     // ============================================================================
@@ -78,7 +100,11 @@ namespace lumina::graphics
 
     void renderer::init(uint32_t width, uint32_t height)
     {
-        assert(s_state == nullptr && "Renderer already initialized");
+        if (s_state != nullptr)
+        {
+            LUMINA_LOG_WARN("Renderer already initialized");
+            return;
+        }
 
         s_state = new renderer_state();
 
@@ -106,7 +132,7 @@ namespace lumina::graphics
 
     void renderer::shutdown()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
 
         // Cleanup contexts
         s_state->contexts.clear();
@@ -131,7 +157,7 @@ namespace lumina::graphics
 
     render_context renderer::create_context(uint32_t width, uint32_t height)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(render_context{0});
 
         auto& device = core::application::get().get_device();
 
@@ -148,15 +174,20 @@ namespace lumina::graphics
 
     void renderer::destroy_context(render_context ctx)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
-        assert(ctx.id != 0 && "Cannot destroy default context");
+        RENDERER_CHECK_INIT();
+
+        if (ctx.id == 0)
+        {
+            LUMINA_LOG_WARN("Cannot destroy default context");
+            return;
+        }
 
         s_state->contexts.erase(ctx.id);
     }
 
     void renderer::resize(uint32_t width, uint32_t height)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
 
         if (width == 0 || height == 0) return;
         if (s_state->default_context.width == width &&
@@ -173,7 +204,7 @@ namespace lumina::graphics
 
     void renderer::resize(render_context ctx, uint32_t width, uint32_t height)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
 
         if (ctx.id == 0)
         {
@@ -197,13 +228,13 @@ namespace lumina::graphics
 
     glm::uvec2 renderer::get_size()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(glm::uvec2{0, 0});
         return {s_state->default_context.width, s_state->default_context.height};
     }
 
     glm::uvec2 renderer::get_size(render_context ctx)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(glm::uvec2{0, 0});
 
         auto* ctx_data = get_context_data(ctx.id);
         if (!ctx_data) return {0, 0};
@@ -222,11 +253,20 @@ namespace lumina::graphics
 
     void renderer::begin(render_context ctx)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
-        assert(!s_state->in_frame && "Already in a frame, call end() first");
+        RENDERER_CHECK_INIT();
+
+        if (s_state->in_frame)
+        {
+            LUMINA_LOG_ERROR("Already in a frame, call end() first");
+            return;
+        }
 
         auto* ctx_data = get_context_data(ctx.id);
-        assert(ctx_data != nullptr && "Invalid render context");
+        if (!ctx_data)
+        {
+            LUMINA_LOG_ERROR("Invalid render context");
+            return;
+        }
 
         s_state->current_context_id = ctx.id;
         s_state->in_frame = true;
@@ -248,8 +288,13 @@ namespace lumina::graphics
 
     void renderer::end()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
-        assert(s_state->in_frame && "Not in a frame, call begin() first");
+        RENDERER_CHECK_INIT();
+
+        if (!s_state->in_frame)
+        {
+            LUMINA_LOG_ERROR("Not in a frame, call begin() first");
+            return;
+        }
 
         s_state->renderer->end();
         s_state->in_frame = false;
@@ -260,7 +305,7 @@ namespace lumina::graphics
 
     void renderer::clear(const glm::vec4& color)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->clear(color);
     }
 
@@ -270,14 +315,14 @@ namespace lumina::graphics
 
     void renderer::set_camera(const camera2d& camera)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->current_projection = camera.get_view_projection_matrix();
         s_state->use_custom_projection = true;
     }
 
     void renderer::set_projection(const glm::mat4& projection)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->current_projection = projection;
         s_state->use_custom_projection = true;
     }
@@ -288,7 +333,7 @@ namespace lumina::graphics
 
     ref<texture> renderer::get_texture()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(nullptr);
 
         auto* ctx_data = get_context_data(0);
         if (!ctx_data || !ctx_data->target) return nullptr;
@@ -298,7 +343,7 @@ namespace lumina::graphics
 
     ref<texture> renderer::get_texture(render_context ctx)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(nullptr);
 
         auto* ctx_data = get_context_data(ctx.id);
         if (!ctx_data || !ctx_data->target) return nullptr;
@@ -312,43 +357,43 @@ namespace lumina::graphics
 
     void renderer::draw_quad(const quad_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_quad(desc);
     }
 
     void renderer::draw_circle(const circle_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_circle(desc);
     }
 
     void renderer::draw_line(const line_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_line(desc);
     }
 
     void renderer::draw_triangle(const triangle_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_triangle(desc);
     }
 
     void renderer::draw_rect(const rect_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_rect(desc);
     }
 
     void renderer::draw_pixel(const pixel_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_pixel(desc);
     }
 
     void renderer::draw_grid(const grid_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_grid(desc);
     }
 
@@ -358,19 +403,19 @@ namespace lumina::graphics
 
     void renderer::draw_text(const text_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_text(desc);
     }
 
     void renderer::set_default_font(ref<font_atlas> font)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->set_default_font(font);
     }
 
     ref<font_atlas> renderer::get_default_font()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(nullptr);
         return s_state->renderer->get_default_font();
     }
 
@@ -380,19 +425,19 @@ namespace lumina::graphics
 
     void renderer::draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_sprite(atlas, region_name, desc);
     }
 
     void renderer::draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_sprite(atlas, region_index, desc);
     }
 
     void renderer::draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_sprite(region, atlas_texture, desc);
     }
 
@@ -402,25 +447,25 @@ namespace lumina::graphics
 
     void renderer::push_scissor(float x, float y, float width, float height)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->push_scissor(x, y, width, height);
     }
 
     void renderer::push_scissor(const glm::vec4& rect)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->push_scissor(rect);
     }
 
     void renderer::pop_scissor()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->pop_scissor();
     }
 
     bool renderer::has_scissor()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(false);
         return s_state->renderer->has_scissor();
     }
 
@@ -430,13 +475,13 @@ namespace lumina::graphics
 
     void renderer::set_filter_mode(filter_mode mode)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->set_filter_mode(mode);
     }
 
     filter_mode renderer::get_filter_mode()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(filter_mode::linear);
         return s_state->renderer->get_filter_mode();
     }
 
@@ -446,25 +491,25 @@ namespace lumina::graphics
 
     void renderer::set_lighting_enabled(bool enabled)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->set_lighting_enabled(enabled);
     }
 
     bool renderer::is_lighting_enabled()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT_RET(false);
         return s_state->renderer->is_lighting_enabled();
     }
 
     void renderer::set_ambient_light(const glm::vec3& color, float intensity)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->set_ambient_light(color, intensity);
     }
 
     void renderer::draw_point_light(const point_light_desc& desc)
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->draw_point_light(desc);
     }
 
@@ -474,13 +519,18 @@ namespace lumina::graphics
 
     const renderer2d_stats& renderer::get_stats()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        static const renderer2d_stats empty_stats{};
+        if (!s_state)
+        {
+            LUMINA_LOG_ERROR("Renderer not initialized");
+            return empty_stats;
+        }
         return s_state->renderer->get_stats();
     }
 
     void renderer::reset_stats()
     {
-        assert(s_state != nullptr && "Renderer not initialized");
+        RENDERER_CHECK_INIT();
         s_state->renderer->reset_stats();
     }
 }
