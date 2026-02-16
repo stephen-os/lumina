@@ -1,4 +1,4 @@
-// 04-node-editor: Node-based visual editor
+// ui/01-node-editor: Node-based visual editor
 // Demonstrates: Node editor, nodes, pins, links, context menus
 
 #include <lumina/core/core.h>
@@ -39,7 +39,7 @@ public:
     {
         // Create node editor context
         ui::ne_config config;
-        config.SettingsFile = "04-node-editor.node-editor.json";
+        config.SettingsFile = "ui-01-node-editor.json";
         m_context = std::make_unique<ui::node_editor_context>(&config);
 
         // Create some example nodes
@@ -50,15 +50,10 @@ public:
         create_node("Output", 1, 0, ImVec2(650, 125));
 
         // Create some example links
-        // Start -> Process A
         create_link(m_nodes[0].outputs[0], m_nodes[1].inputs[0]);
-        // Start -> Process B
         create_link(m_nodes[0].outputs[0], m_nodes[2].inputs[0]);
-        // Process A -> Combine
         create_link(m_nodes[1].outputs[0], m_nodes[3].inputs[0]);
-        // Process B -> Combine
         create_link(m_nodes[2].outputs[0], m_nodes[3].inputs[1]);
-        // Combine -> Output
         create_link(m_nodes[3].outputs[0], m_nodes[4].inputs[0]);
     }
 
@@ -69,29 +64,18 @@ public:
 
     void on_render() override
     {
-        ui::begin_window("04-node-editor");
-        ui::text("Node Editor Demo");
+        ui::begin_window("Node Editor");
         ui::text("Right-click for context menu, drag to connect pins");
         ui::separator();
 
-        // Set our editor context as current
         m_context->set_current();
-
-        // Begin node editor
         ui::ne_begin("Node Editor", ImVec2(0, 0));
 
-        // Draw all nodes
         for (auto& node : m_nodes)
-        {
             draw_node(node);
-        }
 
-        // Draw all links
         for (auto& link : m_links)
-        {
-            ui::ne_link(link.id, link.start_pin, link.end_pin,
-                       ImVec4(1.0f, 1.0f, 1.0f, 1.0f), 2.0f);
-        }
+            ui::ne_link(link.id, link.start_pin, link.end_pin, ImVec4(1, 1, 1, 1), 2.0f);
 
         // Handle link creation
         if (ui::ne_begin_create())
@@ -102,9 +86,7 @@ public:
                 if (start_pin && end_pin && can_create_link(start_pin, end_pin))
                 {
                     if (ui::ne_accept_new_item())
-                    {
                         create_link(start_pin, end_pin);
-                    }
                 }
                 else
                 {
@@ -119,29 +101,62 @@ public:
         {
             ui::link_id link_id;
             while (ui::ne_query_deleted_link(&link_id))
-            {
                 if (ui::ne_accept_deleted_item())
-                {
                     delete_link(link_id);
-                }
-            }
 
             ui::node_id node_id;
             while (ui::ne_query_deleted_node(&node_id))
-            {
                 if (ui::ne_accept_deleted_item())
-                {
                     delete_node(node_id);
-                }
-            }
         }
         ui::ne_end_delete();
 
         // Context menus
         ui::ne_suspend();
+        handle_context_menus();
+        ui::ne_resume();
 
+        ui::ne_end();
+
+        ui::separator();
+        ui::text_fmt("Nodes: {}  Links: {}", m_nodes.size(), m_links.size());
+        ui::text_fmt("Zoom: {:.2f}x", ui::ne_get_current_zoom());
+
+        ui::end_window();
+    }
+
+private:
+    void draw_node(Node& node)
+    {
+        if (!node.position_set)
+        {
+            ui::ne_set_node_position(node.id, node.initial_position);
+            node.position_set = true;
+        }
+
+        ui::ne_begin_node(node.id);
+        ImGui::Text("%s", node.name.c_str());
+
+        for (size_t i = 0; i < node.inputs.size(); ++i)
+        {
+            ui::ne_begin_pin(node.inputs[i], ui::pin_kind::Input);
+            ImGui::Text("-> In %zu", i);
+            ui::ne_end_pin();
+        }
+
+        for (size_t i = 0; i < node.outputs.size(); ++i)
+        {
+            ui::ne_begin_pin(node.outputs[i], ui::pin_kind::Output);
+            ImGui::Text("Out %zu ->", i);
+            ui::ne_end_pin();
+        }
+
+        ui::ne_end_node();
+    }
+
+    void handle_context_menus()
+    {
         ui::node_id context_node_id;
-        ui::pin_id context_pin_id;
         ui::link_id context_link_id;
 
         if (ui::ne_show_node_context_menu(&context_node_id))
@@ -160,94 +175,34 @@ public:
             ImGui::OpenPopup("Background Context Menu");
         }
 
-        // Draw context menus
         if (ImGui::BeginPopup("Node Context Menu"))
         {
             if (ImGui::MenuItem("Delete Node"))
-            {
                 delete_node(m_context_node);
-            }
             ImGui::EndPopup();
         }
 
         if (ImGui::BeginPopup("Link Context Menu"))
         {
             if (ImGui::MenuItem("Delete Link"))
-            {
                 delete_link(m_context_link);
-            }
             ImGui::EndPopup();
         }
 
         if (ImGui::BeginPopup("Background Context Menu"))
         {
-            // Convert screen position to canvas position for node placement
             ImVec2 canvas_pos = ui::ne_screen_to_canvas(m_context_menu_pos);
-
             if (ImGui::MenuItem("Add Process Node"))
-            {
                 create_node("Process", 1, 1, canvas_pos);
-            }
             if (ImGui::MenuItem("Add Input Node"))
-            {
                 create_node("Input", 0, 1, canvas_pos);
-            }
             if (ImGui::MenuItem("Add Output Node"))
-            {
                 create_node("Output", 1, 0, canvas_pos);
-            }
             ImGui::Separator();
             if (ImGui::MenuItem("Navigate to Content"))
-            {
                 ui::ne_navigate_to_content();
-            }
             ImGui::EndPopup();
         }
-
-        ui::ne_resume();
-
-        ui::ne_end();
-
-        // Stats
-        ui::separator();
-        ui::text_fmt("Nodes: {}  Links: {}", m_nodes.size(), m_links.size());
-        ui::text_fmt("Zoom: {:.2f}x", ui::ne_get_current_zoom());
-
-        ui::end_window();
-    }
-
-private:
-    void draw_node(Node& node)
-    {
-        // Set initial position on first render
-        if (!node.position_set)
-        {
-            ui::ne_set_node_position(node.id, node.initial_position);
-            node.position_set = true;
-        }
-
-        ui::ne_begin_node(node.id);
-
-        // Header
-        ImGui::Text("%s", node.name.c_str());
-
-        // Input pins on left
-        for (size_t i = 0; i < node.inputs.size(); ++i)
-        {
-            ui::ne_begin_pin(node.inputs[i], ui::pin_kind::Input);
-            ImGui::Text("-> In %zu", i);
-            ui::ne_end_pin();
-        }
-
-        // Output pins on right
-        for (size_t i = 0; i < node.outputs.size(); ++i)
-        {
-            ui::ne_begin_pin(node.outputs[i], ui::pin_kind::Output);
-            ImGui::Text("Out %zu ->", i);
-            ui::ne_end_pin();
-        }
-
-        ui::ne_end_node();
     }
 
     void create_node(const std::string& name, int input_count, int output_count, ImVec2 position)
@@ -255,17 +210,10 @@ private:
         Node node;
         node.id = ui::node_id(m_next_id++);
         node.name = name;
-
         for (int i = 0; i < input_count; ++i)
-        {
             node.inputs.push_back(ui::pin_id(m_next_id++));
-        }
-
         for (int i = 0; i < output_count; ++i)
-        {
             node.outputs.push_back(ui::pin_id(m_next_id++));
-        }
-
         node.initial_position = position;
         m_nodes.push_back(node);
     }
@@ -281,18 +229,11 @@ private:
 
     bool can_create_link(ui::pin_id start, ui::pin_id end)
     {
-        // Check that pins aren't on the same node
         Node* start_node = find_node_by_pin(start);
         Node* end_node = find_node_by_pin(end);
-
         if (!start_node || !end_node || start_node == end_node)
             return false;
-
-        // Check that one is output and one is input
-        bool start_is_output = is_output_pin(start);
-        bool end_is_output = is_output_pin(end);
-
-        return start_is_output != end_is_output;
+        return is_output_pin(start) != is_output_pin(end);
     }
 
     Node* find_node_by_pin(ui::pin_id pin)
@@ -310,51 +251,39 @@ private:
     bool is_output_pin(ui::pin_id pin)
     {
         for (auto& node : m_nodes)
-        {
             for (auto& p : node.outputs)
                 if (p == pin) return true;
-        }
         return false;
     }
 
     void delete_node(ui::node_id id)
     {
-        // Remove links connected to this node
         auto it = m_nodes.begin();
         while (it != m_nodes.end())
         {
             if (it->id == id)
             {
-                // Remove all links connected to this node's pins
                 for (auto& pin : it->inputs)
                     remove_links_for_pin(pin);
                 for (auto& pin : it->outputs)
                     remove_links_for_pin(pin);
-
                 it = m_nodes.erase(it);
             }
             else
-            {
                 ++it;
-            }
         }
     }
 
     void delete_link(ui::link_id id)
     {
-        m_links.erase(
-            std::remove_if(m_links.begin(), m_links.end(),
-                [id](const Link& link) { return link.id == id; }),
-            m_links.end());
+        m_links.erase(std::remove_if(m_links.begin(), m_links.end(),
+            [id](const Link& link) { return link.id == id; }), m_links.end());
     }
 
     void remove_links_for_pin(ui::pin_id pin)
     {
-        m_links.erase(
-            std::remove_if(m_links.begin(), m_links.end(),
-                [pin](const Link& link) {
-                    return link.start_pin == pin || link.end_pin == pin;
-                }),
+        m_links.erase(std::remove_if(m_links.begin(), m_links.end(),
+            [pin](const Link& link) { return link.start_pin == pin || link.end_pin == pin; }),
             m_links.end());
     }
 
@@ -362,7 +291,6 @@ private:
     std::vector<Node> m_nodes;
     std::vector<Link> m_links;
     int m_next_id = 1;
-
     ui::node_id m_context_node;
     ui::link_id m_context_link;
     ImVec2 m_context_menu_pos;
@@ -371,7 +299,7 @@ private:
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
     auto* app = new lumina::core::application();
-    app->set_title("04-node-editor");
+    app->set_title("ui/01-node-editor");
     app->push_layer<node_editor_layer>();
     return app;
 }

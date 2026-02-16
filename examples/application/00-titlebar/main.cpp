@@ -1,4 +1,4 @@
-// 08-titlebar: Custom window titlebar colors
+// application/00-titlebar: Custom window titlebar colors
 // Demonstrates: Windows 11+ titlebar color customization
 
 #include <lumina/core/core.h>
@@ -28,14 +28,9 @@ public:
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
     auto* app = new lumina::core::application();
-    app->set_title("08-titlebar");
-
-    // Set titlebar to a nice dark gray
+    app->set_title("application/00-titlebar");
     app->set_titlebar_color(30, 30, 30);
-
-    // Set titlebar text to Lumina orange (RGB: 255, 128, 0)
     app->set_titlebar_text_color(255, 128, 0);
-
     app->push_layer<titlebar_layer>();
     return app;
 }

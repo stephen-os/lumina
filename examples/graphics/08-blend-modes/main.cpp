@@ -273,7 +273,7 @@ private:
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
     auto* app = new application(graphics_api::vulkan);
-    app->set_title("10 - Blend Modes");
+    app->set_title("graphics/08-blend-modes");
     app->push_layer<blend_modes_layer>();
     return app;
 }

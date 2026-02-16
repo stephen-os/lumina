@@ -1,5 +1,5 @@
-// 06-ui-demo: Lumina UI Demo Window
-// Demonstrates all ui:: functions in one place
+// ui/00-demo: Lumina UI Demo Window
+// Demonstrates: All ui:: functions in one place
 
 #include <lumina/core/core.h>
 #include <lumina/core/entry_point.h>
@@ -11,11 +11,6 @@ class ui_demo_layer : public lumina::core::layer
 {
 public:
     ui_demo_layer() : layer("ui_demo") {}
-
-    void on_attach() override
-    {
-        LUMINA_LOG_INFO("UI Demo layer attached");
-    }
 
     void on_render() override
     {
@@ -68,7 +63,7 @@ private:
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
     auto* app = new lumina::core::application();
-    app->set_title("06-ui-demo");
+    app->set_title("ui/00-demo");
     app->push_layer<ui_demo_layer>();
     return app;
 }

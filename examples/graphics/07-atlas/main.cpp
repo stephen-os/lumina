@@ -280,7 +280,7 @@ private:
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
     auto* app = new lumina::core::application();
-    app->set_title("09-atlas");
+    app->set_title("graphics/07-atlas");
     app->push_layer<atlas_layer>();
     return app;
 }
