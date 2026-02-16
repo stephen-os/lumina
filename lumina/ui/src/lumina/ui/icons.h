@@ -2,7 +2,7 @@
 
 #include <imgui.h>
 
-#include <string>
+#include <cstdio>
 
 namespace lumina::ui::icons
 {
@@ -35,13 +35,14 @@ namespace lumina::ui::icons
 
 namespace lumina::ui
 {
-    inline bool icon_button(const char* icon, const char* label, const ImVec2& size = {0, 0})
+    [[nodiscard]] inline bool icon_button(const char* icon, const char* label, const ImVec2& size = {0, 0})
     {
-        auto text = std::string(icon) + " " + label;
-        return ImGui::Button(text.c_str(), size);
+        char buffer[256];
+        std::snprintf(buffer, sizeof(buffer), "%s %s", icon, label);
+        return ImGui::Button(buffer, size);
     }
 
-    inline bool icon_button(const char* icon, const ImVec2& size = {0, 0})
+    [[nodiscard]] inline bool icon_button(const char* icon, const ImVec2& size = {0, 0})
     {
         return ImGui::Button(icon, size);
     }
