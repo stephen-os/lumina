@@ -31,7 +31,5 @@ namespace lumina::ui
     // Content region queries
     inline float get_content_width() { return ImGui::GetContentRegionAvail().x; }
     inline float get_content_height() { return ImGui::GetContentRegionAvail().y; }
-    inline ImVec2 get_content_size() { return ImGui::GetContentRegionAvail(); }
-
-    // Note: Cursor positioning functions are in state.h
+	inline glm::vec2 get_content_size() { ImVec2 size = ImGui::GetContentRegionAvail(); return { size.x, size.y }; }
 }
