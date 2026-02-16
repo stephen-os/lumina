@@ -4,7 +4,7 @@
 
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
+#include <utility>
 
 namespace lumina::graphics
 {
@@ -20,14 +20,7 @@ namespace lumina::graphics
         }
     }
 
-    sampler::~sampler()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    sampler::~sampler() = default;
 
     ref<sampler> sampler::create(core::device& dev, const sampler_desc& desc)
     {
@@ -73,8 +66,6 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        samp->AddRef();
-
-        return ref<sampler>(new sampler(dev, samp.Get(), desc));
+        return ref<sampler>(new sampler(dev, std::move(samp), desc));
     }
 }

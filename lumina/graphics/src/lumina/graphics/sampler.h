@@ -4,7 +4,8 @@
 
 #include <lumina/core/base.h>
 
-namespace nvrhi { class ISampler; }
+#include <nvrhi/nvrhi.h>
+
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -41,17 +42,17 @@ namespace lumina::graphics
         [[nodiscard]] static ref<sampler> create(core::device& dev, const sampler_desc& desc = {});
 
         [[nodiscard]] const sampler_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] nvrhi::ISampler* get_sampler() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::ISampler* get_sampler() const noexcept { return m_handle.Get(); }
 
     private:
-        sampler(core::device& dev, nvrhi::ISampler* handle, const sampler_desc& desc)
+        sampler(core::device& dev, nvrhi::SamplerHandle handle, const sampler_desc& desc)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_desc(desc)
         {}
 
         core::device& m_device;
-        nvrhi::ISampler* m_handle;
+        nvrhi::SamplerHandle m_handle;
         sampler_desc m_desc;
     };
 
