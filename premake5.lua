@@ -20,6 +20,7 @@ group "Dependencies"
     include "premake/dep-configs/imgui-file-dialog"
     include "premake/dep-configs/nvrhi"
     include "premake/dep-configs/catch2"
+    include "premake/dep-configs/box2d"
     -- spdlog is header-only, no build needed
 group ""
 
