@@ -5,28 +5,19 @@
 #include <lumina/core/assert.h>
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
-
 #include <string>
+#include <utility>
 
 namespace lumina::graphics
 {
-    uniform_buffer::~uniform_buffer()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    uniform_buffer::~uniform_buffer() = default;
 
     uniform_buffer::uniform_buffer(uniform_buffer&& other) noexcept
         : m_device(other.m_device)
-        , m_handle(other.m_handle)
+        , m_handle(std::move(other.m_handle))
         , m_size(other.m_size)
         , m_aligned_size(other.m_aligned_size)
     {
-        other.m_handle = nullptr;
         other.m_size = 0;
         other.m_aligned_size = 0;
     }
@@ -62,9 +53,7 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        buffer->AddRef();
-
-        return ref<uniform_buffer>(new uniform_buffer(dev, buffer.Get(), size, aligned_size));
+        return ref<uniform_buffer>(new uniform_buffer(dev, std::move(buffer), size, aligned_size));
     }
 
     void uniform_buffer::update(const void* data, size_t size, nvrhi::ICommandList* cmd_list)
@@ -85,8 +74,8 @@ namespace lumina::graphics
             size = m_size;
         }
 
-        cmd_list->writeBuffer(m_handle, data, size);
+        cmd_list->writeBuffer(m_handle.Get(), data, size);
 
-        cmd_list->setBufferState(m_handle, nvrhi::ResourceStates::ConstantBuffer);
+        cmd_list->setBufferState(m_handle.Get(), nvrhi::ResourceStates::ConstantBuffer);
     }
 }

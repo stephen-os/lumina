@@ -4,14 +4,10 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstddef>
 #include <string_view>
-
-namespace nvrhi
-{
-    class IBuffer;
-    class ICommandList;
-}
 
 namespace lumina::core { class device; }
 
@@ -57,18 +53,18 @@ namespace lumina::graphics
 
         [[nodiscard]] size_t get_size() const noexcept { return m_size; }
         [[nodiscard]] size_t get_aligned_size() const noexcept { return m_aligned_size; }
-        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle.Get(); }
 
     private:
-        uniform_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t size, size_t aligned_size)
+        uniform_buffer(core::device& dev, nvrhi::BufferHandle handle, size_t size, size_t aligned_size)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_size(size)
             , m_aligned_size(aligned_size)
         {}
 
         core::device& m_device;
-        nvrhi::IBuffer* m_handle;
+        nvrhi::BufferHandle m_handle;
         size_t m_size;
         size_t m_aligned_size;
     };
