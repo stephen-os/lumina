@@ -9,7 +9,8 @@ namespace lumina::core { class device; }
 
 namespace lumina::graphics
 {
-
+    /// Configuration for how textures are sampled.
+    /// Controls filtering (point/linear/anisotropic) and addressing (wrap/clamp/mirror).
     struct sampler_desc
     {
         filter_mode filter = filter_mode::linear;
@@ -21,11 +22,13 @@ namespace lumina::graphics
         float min_lod = 0.0f;
         float max_lod = 1000.0f;
 
-        sampler_desc& set_filter(filter_mode mode) { filter = mode; return *this; }
-        sampler_desc& set_address(address_mode mode) { address_u = address_v = address_w = mode; return *this; }
-        sampler_desc& set_anisotropy(float value) { max_anisotropy = value; filter = filter_mode::anisotropic; return *this; }
+        sampler_desc& set_filter(filter_mode mode) noexcept { filter = mode; return *this; }
+        sampler_desc& set_address(address_mode mode) noexcept { address_u = address_v = address_w = mode; return *this; }
+        sampler_desc& set_anisotropy(float value) noexcept { max_anisotropy = value; filter = filter_mode::anisotropic; return *this; }
     };
 
+    /// GPU sampler for controlling texture sampling behavior.
+    /// Samplers are immutable; create a new one to change settings.
     class sampler
     {
     public:
@@ -34,11 +37,11 @@ namespace lumina::graphics
         sampler(const sampler&) = delete;
         sampler& operator=(const sampler&) = delete;
 
-        static ref<sampler> create(core::device& dev, const sampler_desc& desc = {});
+        /// Creates a sampler with the specified settings. Returns nullptr on failure.
+        [[nodiscard]] static ref<sampler> create(core::device& dev, const sampler_desc& desc = {});
 
-        const sampler_desc& get_desc() const { return m_desc; }
-
-        nvrhi::ISampler* get_sampler() const { return m_handle; }
+        [[nodiscard]] const sampler_desc& get_desc() const noexcept { return m_desc; }
+        [[nodiscard]] nvrhi::ISampler* get_sampler() const noexcept { return m_handle; }
 
     private:
         sampler(core::device& dev, nvrhi::ISampler* handle, const sampler_desc& desc)
@@ -52,10 +55,10 @@ namespace lumina::graphics
         sampler_desc m_desc;
     };
 
-    // Common predefined samplers
+    /// Common predefined sampler configurations.
     namespace samplers
     {
-        inline sampler_desc point_clamp()
+        [[nodiscard]] inline sampler_desc point_clamp() noexcept
         {
             sampler_desc desc;
             desc.filter = filter_mode::point;
@@ -63,7 +66,7 @@ namespace lumina::graphics
             return desc;
         }
 
-        inline sampler_desc linear_clamp()
+        [[nodiscard]] inline sampler_desc linear_clamp() noexcept
         {
             sampler_desc desc;
             desc.filter = filter_mode::linear;
@@ -71,7 +74,7 @@ namespace lumina::graphics
             return desc;
         }
 
-        inline sampler_desc linear_wrap()
+        [[nodiscard]] inline sampler_desc linear_wrap() noexcept
         {
             sampler_desc desc;
             desc.filter = filter_mode::linear;
@@ -79,7 +82,7 @@ namespace lumina::graphics
             return desc;
         }
 
-        inline sampler_desc anisotropic_clamp(float anisotropy = 16.0f)
+        [[nodiscard]] inline sampler_desc anisotropic_clamp(float anisotropy = 16.0f) noexcept
         {
             sampler_desc desc;
             desc.filter = filter_mode::anisotropic;
