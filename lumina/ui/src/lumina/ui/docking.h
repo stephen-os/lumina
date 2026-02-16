@@ -24,7 +24,7 @@ namespace lumina::ui
         void tabbed(const std::string& window_name, const std::string& tab_with);
 
         void apply(unsigned int dockspace_id);
-        bool has_requests() const { return !m_requests.empty(); }
+        [[nodiscard]] bool has_requests() const { return !m_requests.empty(); }
 
     private:
         enum class dock_relation

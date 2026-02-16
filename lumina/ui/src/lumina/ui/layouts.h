@@ -29,7 +29,7 @@ namespace lumina::ui
     inline void pop_id() { ImGui::PopID(); }
 
     // Content region queries
-    inline float get_content_width() { return ImGui::GetContentRegionAvail().x; }
-    inline float get_content_height() { return ImGui::GetContentRegionAvail().y; }
-	inline glm::vec2 get_content_size() { ImVec2 size = ImGui::GetContentRegionAvail(); return { size.x, size.y }; }
+    [[nodiscard]] inline float get_content_width() { return ImGui::GetContentRegionAvail().x; }
+    [[nodiscard]] inline float get_content_height() { return ImGui::GetContentRegionAvail().y; }
+    [[nodiscard]] inline glm::vec2 get_content_size() { ImVec2 size = ImGui::GetContentRegionAvail(); return { size.x, size.y }; }
 }
