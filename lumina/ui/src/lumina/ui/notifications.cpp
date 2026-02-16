@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <chrono>
+#include <mutex>
 
 namespace lumina::ui
 {
@@ -20,6 +21,7 @@ namespace lumina::ui
         };
 
         std::vector<notification_entry> s_notifications;
+        std::mutex s_notifications_mutex;
 
         ImVec4 get_notification_color(notification_type type)
         {
@@ -48,6 +50,7 @@ namespace lumina::ui
 
     void notify(const std::string& message, notification_type type, float duration_seconds)
     {
+        std::lock_guard<std::mutex> lock(s_notifications_mutex);
         s_notifications.push_back({
             message,
             type,
@@ -58,6 +61,8 @@ namespace lumina::ui
 
     void render_notifications()
     {
+        std::lock_guard<std::mutex> lock(s_notifications_mutex);
+
         if (s_notifications.empty())
             return;
 
