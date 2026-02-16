@@ -965,7 +965,13 @@ namespace lumina::core::imgui
         fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
         fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
         for (uint32_t i = 0; i < image_count; ++i)
-            vkCreateFence(device, &fence_info, nullptr, &vd->vk_fences[i]);
+        {
+            if (vkCreateFence(device, &fence_info, nullptr, &vd->vk_fences[i]) != VK_SUCCESS)
+            {
+                LUMINA_LOG_ERROR("Failed to create viewport fence {}", i);
+                return false;
+            }
+        }
 
         // Wrap as NVRHI textures/framebuffers
         nvrhi::Format nvrhi_fmt = nvrhi::Format::BGRA8_UNORM;

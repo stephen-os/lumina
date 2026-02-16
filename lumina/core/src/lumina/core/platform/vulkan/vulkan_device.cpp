@@ -481,9 +481,21 @@ namespace lumina::core::platform::vulkan
 
         for (uint32_t i = 0; i < m_backbuffer_count; ++i)
         {
-            vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_image_available_semaphores[i]);
-            vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_render_finished_semaphores[i]);
-            vkCreateFence(m_device, &fence_info, nullptr, &m_in_flight_fences[i]);
+            if (vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_image_available_semaphores[i]) != VK_SUCCESS)
+            {
+                LUMINA_LOG_ERROR("Failed to create image available semaphore {}", i);
+                return false;
+            }
+            if (vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_render_finished_semaphores[i]) != VK_SUCCESS)
+            {
+                LUMINA_LOG_ERROR("Failed to create render finished semaphore {}", i);
+                return false;
+            }
+            if (vkCreateFence(m_device, &fence_info, nullptr, &m_in_flight_fences[i]) != VK_SUCCESS)
+            {
+                LUMINA_LOG_ERROR("Failed to create in-flight fence {}", i);
+                return false;
+            }
         }
 
         return true;
