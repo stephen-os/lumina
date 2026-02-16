@@ -255,7 +255,7 @@ public:
     void render_viewport()
     {
         // Viewport window - remove padding for clean image display
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
         ui::begin_window("Viewport");
 
         // Get available content size

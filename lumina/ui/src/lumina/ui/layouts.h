@@ -10,8 +10,8 @@ namespace lumina::ui
     inline void spacing() { ImGui::Spacing(); }
     inline void same_line(float offset = 0.0f, float spacing = -1.0f) { ImGui::SameLine(offset, spacing); }
     inline void new_line() { ImGui::NewLine(); }
-    inline void dummy(const ImVec2& size) { ImGui::Dummy(size); }
     inline void dummy(const glm::vec2& size) { ImGui::Dummy(ImVec2(size.x, size.y)); }
+    inline void dummy(float width, float height) { ImGui::Dummy(ImVec2(width, height)); }
 
     // Indent
     inline void indent(float width = 0.0f) { ImGui::Indent(width); }

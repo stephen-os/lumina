@@ -1,5 +1,5 @@
-// 10-blend-modes: Blend Modes Demo
-// Demonstrates: opaque, alpha, additive, multiply blend modes
+// 08-blend-modes: Blend Modes Demo
+// Demonstrates: Opaque, alpha, additive, multiply blend modes with scissor clipping
 
 #include <lumina/core/core.h>
 #include <lumina/core/entry_point.h>
@@ -241,7 +241,7 @@ public:
         ui::end_window();
 
         // Viewport
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
         ui::begin_window("Viewport");
 
         auto content_size = ui::get_content_size();

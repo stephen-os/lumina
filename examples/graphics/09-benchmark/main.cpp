@@ -1,5 +1,5 @@
-// 11-benchmark: Performance Benchmark Suite
-// Stress tests for renderer2d batching, draw calls, and throughput
+// 09-benchmark: Performance Benchmark Suite
+// Demonstrates: Stress tests for renderer2d batching, draw calls, and throughput
 
 #include <lumina/core/core.h>
 #include <lumina/core/entry_point.h>
@@ -676,7 +676,7 @@ private:
         ui::end_window();
 
         // Viewport
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
         ui::begin_window("Viewport");
 
         auto content_size = ui::get_content_size();

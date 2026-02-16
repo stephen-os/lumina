@@ -99,17 +99,17 @@ public:
         if (tex)
         {
             ui::text("Small");
-            ui::image(tex->get_texture(), ImVec2(100, 100));
+            ui::image(tex->get_texture(), 100, 100);
 
             ui::same_line();
 
             ui::text("Medium");
-            ui::image(tex->get_texture(), ImVec2(150, 150));
+            ui::image(tex->get_texture(), 150, 150);
 
             ui::same_line();
 
             ui::text("Large");
-            ui::image(tex->get_texture(), ImVec2(200, 200));
+            ui::image(tex->get_texture(), 200, 200);
         }
         ui::end_window();
     }
