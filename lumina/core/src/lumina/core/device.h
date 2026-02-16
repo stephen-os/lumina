@@ -50,7 +50,7 @@ namespace lumina::core
     public:
         virtual ~device() = default;
 
-        virtual bool init(const device_desc& desc) = 0;
+        [[nodiscard]] virtual bool init(const device_desc& desc) = 0;
         virtual void shutdown() = 0;
 
         virtual void begin_frame() = 0;
@@ -58,20 +58,20 @@ namespace lumina::core
 
         virtual void resize(uint32_t width, uint32_t height) = 0;
 
-        virtual nvrhi::IDevice* get_nvrhi_device() const = 0;
-        virtual nvrhi::ICommandList* get_command_list() const = 0;
-        virtual nvrhi::IFramebuffer* get_current_framebuffer() const = 0;
+        [[nodiscard]] virtual nvrhi::IDevice* get_nvrhi_device() const = 0;
+        [[nodiscard]] virtual nvrhi::ICommandList* get_command_list() const = 0;
+        [[nodiscard]] virtual nvrhi::IFramebuffer* get_current_framebuffer() const = 0;
 
-        virtual uint32_t get_width() const = 0;
-        virtual uint32_t get_height() const = 0;
-        virtual uint32_t get_frame_index() const = 0;
+        [[nodiscard]] virtual uint32_t get_width() const = 0;
+        [[nodiscard]] virtual uint32_t get_height() const = 0;
+        [[nodiscard]] virtual uint32_t get_frame_index() const = 0;
 
-        virtual graphics_api get_api() const = 0;
-        virtual nvrhi::Format get_swapchain_format() const = 0;
+        [[nodiscard]] virtual graphics_api get_api() const = 0;
+        [[nodiscard]] virtual nvrhi::Format get_swapchain_format() const = 0;
 
-        virtual vulkan_native_handles get_vulkan_handles() const { return {}; }
-        virtual d3d12_native_handles get_d3d12_handles() const { return {}; }
+        [[nodiscard]] virtual vulkan_native_handles get_vulkan_handles() const { return {}; }
+        [[nodiscard]] virtual d3d12_native_handles get_d3d12_handles() const { return {}; }
 
-        static scope<device> create(graphics_api api);
+        [[nodiscard]] static scope<device> create(graphics_api api);
     };
 }

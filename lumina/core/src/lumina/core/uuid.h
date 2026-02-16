@@ -7,6 +7,6 @@ namespace lumina::core
     class uuid
     {
     public:
-        static uint64_t generate();
+        [[nodiscard]] static uint64_t generate();
     };
 }

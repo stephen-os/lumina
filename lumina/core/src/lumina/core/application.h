@@ -53,17 +53,17 @@ namespace lumina::core
         void maximize();
 
         // Window state
-        uint32_t get_width() const { return m_window->get_width(); }
-        uint32_t get_height() const { return m_window->get_height(); }
-        bool is_fullscreen() const { return m_window->is_fullscreen(); }
-        bool is_vsync() const { return m_window->is_vsync(); }
+        [[nodiscard]] uint32_t get_width() const { return m_window->get_width(); }
+        [[nodiscard]] uint32_t get_height() const { return m_window->get_height(); }
+        [[nodiscard]] bool is_fullscreen() const { return m_window->is_fullscreen(); }
+        [[nodiscard]] bool is_vsync() const { return m_window->is_vsync(); }
 
         // Device access
-        device& get_device() { return *m_device; }
-        nvrhi::IDevice* get_nvrhi_device() { return m_device->get_nvrhi_device(); }
+        [[nodiscard]] device& get_device() { return *m_device; }
+        [[nodiscard]] nvrhi::IDevice* get_nvrhi_device() { return m_device->get_nvrhi_device(); }
 
-        static application& get();
-        static float get_time();
+        [[nodiscard]] static application& get();
+        [[nodiscard]] static float get_time();
 
     private:
         void init_imgui();
@@ -73,7 +73,7 @@ namespace lumina::core
         void on_resize(uint32_t width, uint32_t height);
 
         // Internal window access for input system
-        GLFWwindow* get_window_handle() const { return m_window->get_native_window(); }
+        [[nodiscard]] GLFWwindow* get_window_handle() const { return m_window->get_native_window(); }
         friend bool input::is_key_pressed(input::key_code);
         friend bool input::is_mouse_button_pressed(input::mouse_code);
         friend void input::set_cursor_mode(input::cursor_mode);

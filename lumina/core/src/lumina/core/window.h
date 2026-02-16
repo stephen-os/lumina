@@ -34,7 +34,7 @@ namespace lumina::core
         window& operator=(const window&) = delete;
 
         void update();
-        bool should_close() const;
+        [[nodiscard]] bool should_close() const;
 
         void set_event_callback(const event_callback& callback) { m_event_callback = callback; }
 
@@ -48,12 +48,12 @@ namespace lumina::core
         void maximize();
         void show();
 
-        uint32_t get_width() const { return m_spec.width; }
-        uint32_t get_height() const { return m_spec.height; }
-        bool is_vsync() const { return m_spec.vsync; }
-        bool is_fullscreen() const { return m_spec.fullscreen; }
+        [[nodiscard]] uint32_t get_width() const { return m_spec.width; }
+        [[nodiscard]] uint32_t get_height() const { return m_spec.height; }
+        [[nodiscard]] bool is_vsync() const { return m_spec.vsync; }
+        [[nodiscard]] bool is_fullscreen() const { return m_spec.fullscreen; }
 
-        GLFWwindow* get_native_window() const { return m_window; }
+        [[nodiscard]] GLFWwindow* get_native_window() const { return m_window; }
 
         static void terminate_glfw();
 

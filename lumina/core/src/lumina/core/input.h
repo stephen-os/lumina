@@ -123,19 +123,19 @@ namespace lumina::core
         };
 
         // Key state queries
-        bool is_key_pressed(key_code keycode);
-        bool is_mouse_button_pressed(mouse_code button);
+        [[nodiscard]] bool is_key_pressed(key_code keycode);
+        [[nodiscard]] bool is_mouse_button_pressed(mouse_code button);
 
         // Cursor operations
         void set_cursor_mode(cursor_mode mode);
 
         struct mouse_position { float x, y; };
-        mouse_position get_mouse_position();
-        inline float get_mouse_x() { return get_mouse_position().x; }
-        inline float get_mouse_y() { return get_mouse_position().y; }
+        [[nodiscard]] mouse_position get_mouse_position();
+        [[nodiscard]] inline float get_mouse_x() { return get_mouse_position().x; }
+        [[nodiscard]] inline float get_mouse_y() { return get_mouse_position().y; }
 
         // Key code utilities
-        constexpr bool is_modifier_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_modifier_key(key_code keycode)
         {
             return keycode == key_code::left_shift || keycode == key_code::right_shift ||
                    keycode == key_code::left_control || keycode == key_code::right_control ||
@@ -143,39 +143,39 @@ namespace lumina::core
                    keycode == key_code::left_super || keycode == key_code::right_super;
         }
 
-        constexpr bool is_printable_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_printable_key(key_code keycode)
         {
             return (keycode >= key_code::space && keycode <= key_code::grave_accent) ||
                    (keycode >= key_code::world_1 && keycode <= key_code::world_2);
         }
 
-        constexpr bool is_function_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_function_key(key_code keycode)
         {
             return keycode >= key_code::f1 && keycode <= key_code::f25;
         }
 
-        constexpr bool is_arrow_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_arrow_key(key_code keycode)
         {
             return keycode == key_code::up || keycode == key_code::down ||
                    keycode == key_code::left || keycode == key_code::right;
         }
 
-        constexpr bool is_numpad_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_numpad_key(key_code keycode)
         {
             return keycode >= key_code::kp_0 && keycode <= key_code::kp_equal;
         }
 
-        constexpr bool is_letter_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_letter_key(key_code keycode)
         {
             return keycode >= key_code::a && keycode <= key_code::z;
         }
 
-        constexpr bool is_number_key(key_code keycode)
+        [[nodiscard]] constexpr bool is_number_key(key_code keycode)
         {
             return keycode >= key_code::num_0 && keycode <= key_code::num_9;
         }
 
-        constexpr std::string_view key_state_to_string(key_state state)
+        [[nodiscard]] constexpr std::string_view key_state_to_string(key_state state)
         {
             switch (state)
             {
@@ -187,7 +187,7 @@ namespace lumina::core
             }
         }
 
-        constexpr std::string_view key_code_to_string(key_code keycode)
+        [[nodiscard]] constexpr std::string_view key_code_to_string(key_code keycode)
         {
             switch (keycode)
             {
@@ -316,7 +316,7 @@ namespace lumina::core
             }
         }
 
-        constexpr std::string_view mouse_code_to_string(mouse_code button)
+        [[nodiscard]] constexpr std::string_view mouse_code_to_string(mouse_code button)
         {
             switch (button)
             {
@@ -333,7 +333,7 @@ namespace lumina::core
             }
         }
 
-        constexpr std::string_view cursor_mode_to_string(cursor_mode mode)
+        [[nodiscard]] constexpr std::string_view cursor_mode_to_string(cursor_mode mode)
         {
             switch (mode)
             {

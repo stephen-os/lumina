@@ -17,13 +17,13 @@ namespace lumina::core
             m_start = std::chrono::high_resolution_clock::now();
         }
 
-        float elapsed() const
+        [[nodiscard]] float elapsed() const
         {
             auto now = std::chrono::high_resolution_clock::now();
             return std::chrono::duration<float>(now - m_start).count();
         }
 
-        float elapsed_millis() const
+        [[nodiscard]] float elapsed_millis() const
         {
             return elapsed() * 1000.0f;
         }

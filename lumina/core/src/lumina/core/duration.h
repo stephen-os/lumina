@@ -9,35 +9,35 @@ namespace lumina::core
     public:
         constexpr duration() : m_milliseconds(0) {}
 
-        constexpr float milliseconds() const { return m_milliseconds; }
-        constexpr float seconds() const { return m_milliseconds / 1000.0f; }
+        [[nodiscard]] constexpr float milliseconds() const { return m_milliseconds; }
+        [[nodiscard]] constexpr float seconds() const { return m_milliseconds / 1000.0f; }
 
-        std::chrono::milliseconds to_chrono_milliseconds() const
+        [[nodiscard]] std::chrono::milliseconds to_chrono_milliseconds() const
         {
             return std::chrono::milliseconds(static_cast<long long>(m_milliseconds));
         }
 
-        std::chrono::duration<float> to_chrono_seconds() const
+        [[nodiscard]] std::chrono::duration<float> to_chrono_seconds() const
         {
             return std::chrono::duration<float>(seconds());
         }
 
-        static constexpr duration from_milliseconds(float ms) { return duration(ms); }
-        static constexpr duration from_seconds(float s) { return duration(s * 1000.0f); }
-        static constexpr duration from_minutes(float m) { return duration(m * 60000.0f); }
-        static constexpr duration from_hours(float h) { return duration(h * 3600000.0f); }
+        [[nodiscard]] static constexpr duration from_milliseconds(float ms) { return duration(ms); }
+        [[nodiscard]] static constexpr duration from_seconds(float s) { return duration(s * 1000.0f); }
+        [[nodiscard]] static constexpr duration from_minutes(float m) { return duration(m * 60000.0f); }
+        [[nodiscard]] static constexpr duration from_hours(float h) { return duration(h * 3600000.0f); }
 
-        constexpr bool operator==(const duration& other) const { return m_milliseconds == other.m_milliseconds; }
-        constexpr bool operator!=(const duration& other) const { return m_milliseconds != other.m_milliseconds; }
-        constexpr bool operator<(const duration& other) const { return m_milliseconds < other.m_milliseconds; }
-        constexpr bool operator>(const duration& other) const { return m_milliseconds > other.m_milliseconds; }
-        constexpr bool operator<=(const duration& other) const { return m_milliseconds <= other.m_milliseconds; }
-        constexpr bool operator>=(const duration& other) const { return m_milliseconds >= other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator==(const duration& other) const { return m_milliseconds == other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator!=(const duration& other) const { return m_milliseconds != other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator<(const duration& other) const { return m_milliseconds < other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator>(const duration& other) const { return m_milliseconds > other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator<=(const duration& other) const { return m_milliseconds <= other.m_milliseconds; }
+        [[nodiscard]] constexpr bool operator>=(const duration& other) const { return m_milliseconds >= other.m_milliseconds; }
 
-        constexpr duration operator+(const duration& other) const { return duration(m_milliseconds + other.m_milliseconds); }
-        constexpr duration operator-(const duration& other) const { return duration(m_milliseconds - other.m_milliseconds); }
-        constexpr duration operator*(float scalar) const { return duration(m_milliseconds * scalar); }
-        constexpr duration operator/(float scalar) const { return duration(m_milliseconds / scalar); }
+        [[nodiscard]] constexpr duration operator+(const duration& other) const { return duration(m_milliseconds + other.m_milliseconds); }
+        [[nodiscard]] constexpr duration operator-(const duration& other) const { return duration(m_milliseconds - other.m_milliseconds); }
+        [[nodiscard]] constexpr duration operator*(float scalar) const { return duration(m_milliseconds * scalar); }
+        [[nodiscard]] constexpr duration operator/(float scalar) const { return duration(m_milliseconds / scalar); }
 
         constexpr duration& operator+=(const duration& other) { m_milliseconds += other.m_milliseconds; return *this; }
         constexpr duration& operator-=(const duration& other) { m_milliseconds -= other.m_milliseconds; return *this; }

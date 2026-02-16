@@ -18,7 +18,7 @@ namespace lumina::core
         virtual void on_render() {}
         virtual void on_event(event& e) {}
 
-        const std::string& get_name() const { return m_name; }
+        [[nodiscard]] const std::string& get_name() const { return m_name; }
 
     private:
         std::string m_name;
