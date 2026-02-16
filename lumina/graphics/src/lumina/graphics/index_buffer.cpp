@@ -1,10 +1,11 @@
 #include "index_buffer.h"
 
 #include <lumina/core/device.h>
-
 #include <lumina/core/log.h>
 
 #include <nvrhi/nvrhi.h>
+
+#include <string>
 
 namespace lumina::graphics
 {
@@ -27,7 +28,12 @@ namespace lumina::graphics
         other.m_count = 0;
     }
 
-    ref<index_buffer> index_buffer::create(core::device& dev, const void* data, size_t count, size_t index_size)
+    ref<index_buffer> index_buffer::create(
+        core::device& dev,
+        const void* data,
+        size_t count,
+        size_t index_size,
+        std::string_view debug_name)
     {
         auto* nvrhi_device = dev.get_nvrhi_device();
         if (!nvrhi_device)
@@ -38,7 +44,13 @@ namespace lumina::graphics
 
         if (index_size != 2 && index_size != 4)
         {
-            LUMINA_LOG_ERROR("Index size must be 2 (uint16) or 4 (uint32)");
+            LUMINA_LOG_ERROR("Failed to create index buffer: index_size must be 2 (uint16) or 4 (uint32)");
+            return nullptr;
+        }
+
+        if (count == 0)
+        {
+            LUMINA_LOG_ERROR("Failed to create index buffer: count cannot be zero");
             return nullptr;
         }
 
@@ -47,7 +59,7 @@ namespace lumina::graphics
         nvrhi::BufferDesc desc;
         desc.byteSize = byte_size;
         desc.isIndexBuffer = true;
-        desc.debugName = "Lumina Index Buffer";
+        desc.debugName = std::string(debug_name);
         desc.initialState = nvrhi::ResourceStates::IndexBuffer;
         desc.keepInitialState = true;
 
@@ -58,6 +70,7 @@ namespace lumina::graphics
             return nullptr;
         }
 
+        // Upload initial data if provided
         if (data)
         {
             nvrhi::CommandListHandle cmd = nvrhi_device->createCommandList();
@@ -69,7 +82,6 @@ namespace lumina::graphics
         }
 
         buffer->AddRef();
-
         return ref<index_buffer>(new index_buffer(dev, buffer.Get(), count, index_size));
     }
 }
