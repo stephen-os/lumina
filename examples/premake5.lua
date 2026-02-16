@@ -1,5 +1,5 @@
 -- Lumina Examples
--- Auto-discovers and builds all example projects
+-- Auto-discovers and builds all example projects (supports nested folders)
 
 local function create_example(name, folder)
     project(name)
@@ -89,16 +89,56 @@ local function create_example(name, folder)
         filter {}
 end
 
--- Auto-discover examples by looking for folders with main.cpp
-local examples_dir = path.getdirectory(_SCRIPT)
-local examples = os.matchdirs(examples_dir .. "/*")
+-- Recursively find all directories containing main.cpp
+-- Returns table of { path = "full/path", group = "solution/folder" }
+local function find_examples(base_dir, relative_group, depth)
+    depth = depth or 0
+    relative_group = relative_group or ""
+    if depth > 2 then return {} end  -- Limit recursion depth
 
-for _, example_path in ipairs(examples) do
-    local example_name = path.getname(example_path)
-    local main_file = example_path .. "/main.cpp"
+    local results = {}
+    local dirs = os.matchdirs(base_dir .. "/*")
 
-    -- Skip if no main.cpp (e.g., common folder, premake5.lua)
-    if os.isfile(main_file) then
-        create_example(example_name, example_path)
+    for _, dir_path in ipairs(dirs) do
+        local dir_name = path.getname(dir_path)
+        local main_file = dir_path .. "/main.cpp"
+
+        if os.isfile(main_file) then
+            -- Found an example
+            table.insert(results, {
+                path = dir_path,
+                group = relative_group
+            })
+        else
+            -- Recurse into subdirectory, building the group path
+            local sub_group = relative_group == "" and dir_name or (relative_group .. "/" .. dir_name)
+            local sub_results = find_examples(dir_path, sub_group, depth + 1)
+            for _, sub_entry in ipairs(sub_results) do
+                table.insert(results, sub_entry)
+            end
+        end
     end
+
+    return results
 end
+
+-- Auto-discover examples
+local examples_dir = path.getdirectory(_SCRIPT)
+local examples = find_examples(examples_dir)
+
+-- Group examples by their solution folder
+local current_group = nil
+for _, example in ipairs(examples) do
+    -- Set solution folder group (creates nested folders in VS)
+    local target_group = example.group == "" and "examples" or ("examples/" .. example.group)
+    if current_group ~= target_group then
+        group(target_group)
+        current_group = target_group
+    end
+
+    local example_name = path.getname(example.path)
+    create_example(example_name, example.path)
+end
+
+-- Reset group
+group("")
