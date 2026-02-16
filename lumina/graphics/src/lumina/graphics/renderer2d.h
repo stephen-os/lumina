@@ -233,12 +233,12 @@ namespace lumina::graphics
         uint32_t point_light_count = 0;
         uint32_t texture_binds = 0;
 
-        uint32_t get_total_primitives() const
+        [[nodiscard]] uint32_t get_total_primitives() const noexcept
         {
             return quad_count + circle_count + line_count + triangle_count + pixel_count + grid_count;
         }
 
-        void reset()
+        void reset() noexcept
         {
             draw_calls = 0;
             quad_count = 0;
@@ -307,7 +307,7 @@ namespace lumina::graphics
         void draw_line(const line_desc& desc);
         void draw_text(const text_desc& desc);
         void set_default_font(ref<font_atlas> font) { m_default_font = font; }
-        ref<font_atlas> get_default_font() const { return m_default_font; }
+        [[nodiscard]] ref<font_atlas> get_default_font() const noexcept { return m_default_font; }
         void draw_triangle(const triangle_desc& desc);
         void draw_pixel(const pixel_desc& desc);
         void draw_rect(const rect_desc& desc);
@@ -331,29 +331,29 @@ namespace lumina::graphics
         // Pop the current scissor rectangle, restoring the previous one (or disabling scissor if stack is empty)
         void pop_scissor();
 
-        // Check if scissor is currently active
-        bool has_scissor() const { return !m_scissor_stack.empty(); }
+        /// Checks if scissor is currently active.
+        [[nodiscard]] bool has_scissor() const noexcept { return !m_scissor_stack.empty(); }
 
-        // Get the current scissor rect (returns zero rect if no scissor active)
-        glm::vec4 get_current_scissor() const;
+        /// Gets the current scissor rect (returns zero rect if no scissor active).
+        [[nodiscard]] glm::vec4 get_current_scissor() const;
 
         // ========================================================================
         // Texture Filtering
         // ========================================================================
 
         void set_filter_mode(filter_mode mode);
-        filter_mode get_filter_mode() const { return m_filter_mode; }
+        [[nodiscard]] filter_mode get_filter_mode() const noexcept { return m_filter_mode; }
 
         // ========================================================================
         // Lighting
         // ========================================================================
 
         void set_lighting_enabled(bool enabled);
-        bool is_lighting_enabled() const { return m_lighting_enabled; }
+        [[nodiscard]] bool is_lighting_enabled() const noexcept { return m_lighting_enabled; }
 
         void set_ambient_light(const glm::vec3& color, float intensity = 1.0f);
-        const glm::vec3& get_ambient_color() const { return m_ambient_color; }
-        float get_ambient_intensity() const { return m_ambient_intensity; }
+        [[nodiscard]] const glm::vec3& get_ambient_color() const noexcept { return m_ambient_color; }
+        [[nodiscard]] float get_ambient_intensity() const noexcept { return m_ambient_intensity; }
 
         void draw_point_light(const point_light_desc& desc);
 
@@ -361,8 +361,8 @@ namespace lumina::graphics
         // Stats
         // ========================================================================
 
-        const renderer2d_stats& get_stats() const { return m_stats; }
-        void reset_stats() { m_stats.reset(); }
+        [[nodiscard]] const renderer2d_stats& get_stats() const noexcept { return m_stats; }
+        void reset_stats() noexcept { m_stats.reset(); }
 
     private:
         core::device& m_device;
