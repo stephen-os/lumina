@@ -8,16 +8,11 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include <utility>
+
 namespace lumina::graphics
 {
-    input_layout::~input_layout()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    input_layout::~input_layout() = default;
 
     ref<input_layout> input_layout::create(core::device& dev, const input_layout_desc& desc, ref<shader> vertex_shader)
     {
@@ -61,8 +56,6 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        layout->AddRef();
-
-        return ref<input_layout>(new input_layout(dev, layout.Get(), desc));
+        return ref<input_layout>(new input_layout(dev, std::move(layout), desc));
     }
 }

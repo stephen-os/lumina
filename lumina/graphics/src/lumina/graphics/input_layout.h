@@ -5,9 +5,10 @@
 #include <lumina/core/base.h>
 
 #include <string>
+#include <utility>
 #include <vector>
 
-namespace nvrhi { class IInputLayout; }
+namespace nvrhi { class IInputLayout; template<class T> class RefCountPtr; using InputLayoutHandle = RefCountPtr<IInputLayout>; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -93,17 +94,17 @@ namespace lumina::graphics
         [[nodiscard]] const input_layout_desc& get_desc() const noexcept { return m_desc; }
         [[nodiscard]] uint32_t get_stride() const noexcept { return m_desc.stride; }
         [[nodiscard]] size_t get_attribute_count() const noexcept { return m_desc.attributes.size(); }
-        [[nodiscard]] nvrhi::IInputLayout* get_layout() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IInputLayout* get_layout() const noexcept { return m_handle.Get(); }
 
     private:
-        input_layout(core::device& dev, nvrhi::IInputLayout* handle, const input_layout_desc& desc)
+        input_layout(core::device& dev, nvrhi::InputLayoutHandle handle, const input_layout_desc& desc)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_desc(desc)
         {}
 
         core::device& m_device;
-        nvrhi::IInputLayout* m_handle;
+        nvrhi::InputLayoutHandle m_handle;
         input_layout_desc m_desc;
     };
 
