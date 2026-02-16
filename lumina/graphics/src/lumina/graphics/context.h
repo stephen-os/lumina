@@ -28,6 +28,8 @@ namespace lumina::graphics
     class sampler;
     class pipeline;
 
+    /// Graphics rendering context managing state and draw commands.
+    /// Wraps NVRHI command list with higher-level state management.
     class context
     {
     public:
@@ -37,11 +39,11 @@ namespace lumina::graphics
         context(const context&) = delete;
         context& operator=(const context&) = delete;
 
-        // Frame management
+        /// Frame management
         void begin_frame();
         void end_frame();
 
-        // Render target
+        /// Render target management
         void set_render_target(ref<render_target> target);
         void set_default_render_target();
         void set_swapchain_framebuffer(nvrhi::IFramebuffer* framebuffer);
@@ -49,32 +51,32 @@ namespace lumina::graphics
         void clear(const clear_color& color);
         void clear_depth(float depth = 1.0f, uint8_t stencil = 0);
 
-        // Viewport and scissor
+        /// Viewport and scissor
         void set_viewport(float x, float y, float width, float height);
         void set_viewport(const viewport& vp);
         void set_scissor(int32_t x, int32_t y, int32_t width, int32_t height);
         void set_scissor(const scissor_rect& rect);
 
-        // Pipeline binding
+        /// Pipeline binding
         void set_pipeline(ref<pipeline> pso);
 
-        // Resource binding
+        /// Resource binding
         void set_binding_set(ref<binding_set> bindings);
         void set_vertex_buffer(ref<vertex_buffer> buffer);
         void set_index_buffer(ref<index_buffer> buffer);
 
-        // Drawing
+        /// Draw commands
         void draw(uint32_t vertex_count, uint32_t start_vertex = 0);
         void draw_indexed(uint32_t index_count, uint32_t start_index = 0, int32_t base_vertex = 0);
         void draw_instanced(uint32_t vertex_count, uint32_t instance_count, uint32_t start_vertex = 0, uint32_t start_instance = 0);
         void draw_indexed_instanced(uint32_t index_count, uint32_t instance_count, uint32_t start_index = 0, int32_t base_vertex = 0, uint32_t start_instance = 0);
 
-        // Access
-        core::device& get_device() { return m_device; }
-        nvrhi::ICommandList* get_command_list() const { return m_command_list; }
-        bool has_framebuffer() const { return m_swapchain_framebuffer != nullptr || m_current_render_target != nullptr; }
+        /// State access
+        [[nodiscard]] core::device& get_device() noexcept { return m_device; }
+        [[nodiscard]] nvrhi::ICommandList* get_command_list() const noexcept { return m_command_list; }
+        [[nodiscard]] bool has_framebuffer() const noexcept { return m_swapchain_framebuffer != nullptr || m_current_render_target != nullptr; }
 
-        // Set command list from core device (called by application)
+        /// Sets the command list from core device (called by application).
         void set_command_list(nvrhi::ICommandList* cmd_list);
 
     private:

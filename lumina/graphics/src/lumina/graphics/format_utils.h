@@ -6,7 +6,7 @@
 
 namespace lumina::graphics
 {
-    inline nvrhi::Format to_nvrhi_format(format fmt)
+    [[nodiscard]] inline nvrhi::Format to_nvrhi_format(format fmt) noexcept
     {
         switch (fmt)
         {
@@ -50,7 +50,7 @@ namespace lumina::graphics
         }
     }
 
-    inline format from_nvrhi_format(nvrhi::Format fmt)
+    [[nodiscard]] inline format from_nvrhi_format(nvrhi::Format fmt) noexcept
     {
         switch (fmt)
         {
