@@ -7,6 +7,8 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include <string>
+
 namespace lumina::graphics
 {
     uniform_buffer::~uniform_buffer()
@@ -29,7 +31,7 @@ namespace lumina::graphics
         other.m_aligned_size = 0;
     }
 
-    ref<uniform_buffer> uniform_buffer::create(core::device& dev, size_t size)
+    ref<uniform_buffer> uniform_buffer::create(core::device& dev, size_t size, std::string_view debug_name)
     {
         auto* nvrhi_device = dev.get_nvrhi_device();
         if (!nvrhi_device)
@@ -38,12 +40,18 @@ namespace lumina::graphics
             return nullptr;
         }
 
+        if (size == 0)
+        {
+            LUMINA_LOG_ERROR("Failed to create uniform buffer: size cannot be zero");
+            return nullptr;
+        }
+
         size_t aligned_size = (size + 255) & ~255;
 
         nvrhi::BufferDesc desc;
         desc.byteSize = aligned_size;
         desc.isConstantBuffer = true;
-        desc.debugName = "Lumina Uniform Buffer";
+        desc.debugName = std::string(debug_name);
         desc.initialState = nvrhi::ResourceStates::CopyDest;
         desc.keepInitialState = true;
 
