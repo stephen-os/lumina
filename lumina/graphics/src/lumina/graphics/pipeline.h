@@ -17,7 +17,8 @@ namespace lumina::graphics
     class binding_layout;
     class render_target;
 
-    // Complete pipeline description
+    /// Complete graphics pipeline configuration.
+    /// Combines shader, vertex layout, bindings, and render state.
     struct pipeline_desc
     {
         ref<shader> shader_program;
@@ -27,10 +28,12 @@ namespace lumina::graphics
         format color_format = format::rgba8_unorm;
         format depth_format = format::unknown;
 
-        // Generate a hash for pipeline caching
-        size_t hash() const;
+        /// Generates a hash for pipeline caching.
+        [[nodiscard]] size_t hash() const;
     };
 
+    /// GPU graphics pipeline encapsulating all rendering state.
+    /// Pipelines are immutable; use pipeline_cache to manage them efficiently.
     class pipeline
     {
     public:
@@ -39,11 +42,11 @@ namespace lumina::graphics
         pipeline(const pipeline&) = delete;
         pipeline& operator=(const pipeline&) = delete;
 
-        static ref<pipeline> create(core::device& dev, const pipeline_desc& desc);
+        /// Creates a graphics pipeline. Returns nullptr on failure.
+        [[nodiscard]] static ref<pipeline> create(core::device& dev, const pipeline_desc& desc);
 
-        const pipeline_desc& get_desc() const { return m_desc; }
-
-        nvrhi::IGraphicsPipeline* get_pipeline() const { return m_handle; }
+        [[nodiscard]] const pipeline_desc& get_desc() const noexcept { return m_desc; }
+        [[nodiscard]] nvrhi::IGraphicsPipeline* get_pipeline() const noexcept { return m_handle; }
 
     private:
         pipeline(core::device& dev, nvrhi::IGraphicsPipeline* handle, const pipeline_desc& desc)
@@ -57,7 +60,8 @@ namespace lumina::graphics
         pipeline_desc m_desc;
     };
 
-    // Pipeline cache manages and reuses pipelines
+    /// Manages and reuses pipelines based on their configuration.
+    /// Avoids creating duplicate pipelines for the same settings.
     class pipeline_cache
     {
     public:
@@ -67,14 +71,13 @@ namespace lumina::graphics
         pipeline_cache(const pipeline_cache&) = delete;
         pipeline_cache& operator=(const pipeline_cache&) = delete;
 
-        // Get or create a pipeline matching the description
-        ref<pipeline> get_or_create(const pipeline_desc& desc);
+        /// Gets an existing pipeline or creates a new one matching the description.
+        [[nodiscard]] ref<pipeline> get_or_create(const pipeline_desc& desc);
 
-        // Clear all cached pipelines
+        /// Clears all cached pipelines.
         void clear();
 
-        // Get cache statistics
-        size_t get_pipeline_count() const { return m_pipelines.size(); }
+        [[nodiscard]] size_t get_pipeline_count() const noexcept { return m_pipelines.size(); }
 
     private:
         core::device& m_device;
