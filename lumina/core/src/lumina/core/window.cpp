@@ -278,7 +278,11 @@ namespace lumina::core
         {
             // Store window position and size before going fullscreen
             glfwGetWindowPos(m_window, &m_spec.position_x, &m_spec.position_y);
-            glfwGetWindowSize(m_window, reinterpret_cast<int*>(&m_spec.width), reinterpret_cast<int*>(&m_spec.height));
+
+            int width, height;
+            glfwGetWindowSize(m_window, &width, &height);
+            m_spec.width = static_cast<uint32_t>(width);
+            m_spec.height = static_cast<uint32_t>(height);
 
             GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             LUMINA_ASSERT(monitor, "Failed to get primary monitor");
