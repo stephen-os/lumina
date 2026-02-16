@@ -18,6 +18,7 @@ namespace lumina::graphics
     class texture;
     class uniform_buffer;
 
+    /// Types of shader resource bindings.
     enum class binding_type
     {
         texture,            // Shader resource view (SRV) for textures
@@ -27,21 +28,23 @@ namespace lumina::graphics
         storage_buffer      // Read-write buffer (UAV)
     };
 
+    /// Describes a single binding slot in a binding layout.
     struct binding_item
     {
         uint32_t slot = 0;
         binding_type type = binding_type::texture;
-        uint32_t array_size = 1;  
+        uint32_t array_size = 1;
 
         binding_item() = default;
         binding_item(uint32_t slot, binding_type type, uint32_t size = 1) : slot(slot), type(type), array_size(size) {}
 
-        static binding_item texture(uint32_t slot) { return { slot, binding_type::texture, 1 }; }
-        static binding_item texture_array(uint32_t slot, uint32_t count) { return { slot, binding_type::texture, count }; }
-        static binding_item sampler(uint32_t slot) { return { slot, binding_type::sampler, 1 }; }
-        static binding_item constant_buffer(uint32_t slot) { return { slot, binding_type::constant_buffer, 1 }; }
+        [[nodiscard]] static binding_item texture(uint32_t slot) noexcept { return { slot, binding_type::texture, 1 }; }
+        [[nodiscard]] static binding_item texture_array(uint32_t slot, uint32_t count) noexcept { return { slot, binding_type::texture, count }; }
+        [[nodiscard]] static binding_item sampler(uint32_t slot) noexcept { return { slot, binding_type::sampler, 1 }; }
+        [[nodiscard]] static binding_item constant_buffer(uint32_t slot) noexcept { return { slot, binding_type::constant_buffer, 1 }; }
     };
 
+    /// Configuration for binding layout creation.
     struct binding_layout_desc
     {
         std::vector<binding_item> bindings;
@@ -73,6 +76,8 @@ namespace lumina::graphics
         }
     };
 
+    /// GPU binding layout describing shader resource binding slots.
+    /// Defines the structure of resource bindings without actual resources.
     class binding_layout
     {
     public:
@@ -81,11 +86,11 @@ namespace lumina::graphics
         binding_layout(const binding_layout&) = delete;
         binding_layout& operator=(const binding_layout&) = delete;
 
-        static ref<binding_layout> create(core::device& dev, const binding_layout_desc& desc);
+        /// Creates a binding layout. Returns nullptr on failure.
+        [[nodiscard]] static ref<binding_layout> create(core::device& dev, const binding_layout_desc& desc);
 
-        const binding_layout_desc& get_desc() const { return m_desc; }
-
-        nvrhi::IBindingLayout* get_layout() const { return m_handle; }
+        [[nodiscard]] const binding_layout_desc& get_desc() const noexcept { return m_desc; }
+        [[nodiscard]] nvrhi::IBindingLayout* get_layout() const noexcept { return m_handle; }
 
     private:
         binding_layout(core::device& dev, nvrhi::IBindingLayout* handle, const binding_layout_desc& desc)
@@ -99,12 +104,13 @@ namespace lumina::graphics
         binding_layout_desc m_desc;
     };
 
+    /// Describes a resource bound to a specific slot.
     struct binding_set_item
     {
-		uint32_t slot = 0;                          // Binding slot
-		uint32_t array_index = 0;                   // Array index for array bindings
-		binding_type type = binding_type::texture;  // Type of binding
-		void* resource = nullptr;                   // Pointer to resource (texture, sampler, buffer, etc.)
+        uint32_t slot = 0;                          // Binding slot
+        uint32_t array_index = 0;                   // Array index for array bindings
+        binding_type type = binding_type::texture;  // Type of binding
+        void* resource = nullptr;                   // Pointer to resource (texture, sampler, buffer, etc.)
 
         binding_set_item() = default;
         binding_set_item(uint32_t slot, binding_type type, void* res, uint32_t arr_idx = 0)
@@ -114,6 +120,7 @@ namespace lumina::graphics
     class texture;
     class sampler;
 
+    /// Configuration for binding set creation.
     struct binding_set_desc
     {
         ref<binding_layout> layout;
@@ -125,6 +132,8 @@ namespace lumina::graphics
         binding_set_desc& add_constant_buffer(uint32_t slot, ref<uniform_buffer> ubo);
     };
 
+    /// GPU binding set containing actual resource bindings.
+    /// Associates concrete resources with binding layout slots.
     class binding_set
     {
     public:
@@ -133,9 +142,10 @@ namespace lumina::graphics
         binding_set(const binding_set&) = delete;
         binding_set& operator=(const binding_set&) = delete;
 
-        static ref<binding_set> create(core::device& dev, const binding_set_desc& desc);
+        /// Creates a binding set. Returns nullptr on failure.
+        [[nodiscard]] static ref<binding_set> create(core::device& dev, const binding_set_desc& desc);
 
-        nvrhi::IBindingSet* get_binding_set() const { return m_handle; }
+        [[nodiscard]] nvrhi::IBindingSet* get_binding_set() const noexcept { return m_handle; }
 
     private:
         binding_set(core::device& dev, nvrhi::IBindingSet* handle, ref<binding_layout> layout)
@@ -149,11 +159,11 @@ namespace lumina::graphics
         ref<binding_layout> m_layout;
     };
 
-    // Common predefined binding layouts
+    /// Common predefined binding layouts.
     namespace binding_layouts
     {
-        // Single texture + sampler (typical 2D sprite shader)
-        inline binding_layout_desc texture_sampler()
+        /// Single texture + sampler (typical 2D sprite shader)
+        [[nodiscard]] inline binding_layout_desc texture_sampler() noexcept
         {
             binding_layout_desc desc;
             desc.add_texture(0);
@@ -161,16 +171,16 @@ namespace lumina::graphics
             return desc;
         }
 
-        // Constant buffer only (transform matrices, etc.)
-        inline binding_layout_desc constant_buffer()
+        /// Constant buffer only (transform matrices, etc.)
+        [[nodiscard]] inline binding_layout_desc constant_buffer() noexcept
         {
             binding_layout_desc desc;
             desc.add_constant_buffer(0);
             return desc;
         }
 
-        // Constant buffer + texture + sampler
-        inline binding_layout_desc standard_2d()
+        /// Constant buffer + texture + sampler
+        [[nodiscard]] inline binding_layout_desc standard_2d() noexcept
         {
             binding_layout_desc desc;
             desc.add_constant_buffer(0);
