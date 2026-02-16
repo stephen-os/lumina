@@ -12,6 +12,7 @@
 #include <nvrhi/nvrhi.h>
 
 #include <functional>
+#include <utility>
 
 namespace lumina::graphics
 {
@@ -152,14 +153,7 @@ namespace lumina::graphics
 
     // --- pipeline ---
 
-    pipeline::~pipeline()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    pipeline::~pipeline() = default;
 
     ref<pipeline> pipeline::create(core::device& dev, const pipeline_desc& desc)
     {
@@ -224,10 +218,7 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        // AddRef since we're storing raw pointer and GraphicsPipelineHandle will Release on scope exit
-        pso->AddRef();
-
-        return ref<pipeline>(new pipeline(dev, pso.Get(), desc));
+        return ref<pipeline>(new pipeline(dev, std::move(pso), desc));
     }
 
     // --- pipeline_cache ---

@@ -5,9 +5,10 @@
 #include <lumina/core/base.h>
 
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
-namespace nvrhi { class IGraphicsPipeline; }
+namespace nvrhi { class IGraphicsPipeline; template<class T> class RefCountPtr; using GraphicsPipelineHandle = RefCountPtr<IGraphicsPipeline>; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -46,17 +47,17 @@ namespace lumina::graphics
         [[nodiscard]] static ref<pipeline> create(core::device& dev, const pipeline_desc& desc);
 
         [[nodiscard]] const pipeline_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] nvrhi::IGraphicsPipeline* get_pipeline() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IGraphicsPipeline* get_pipeline() const noexcept { return m_handle.Get(); }
 
     private:
-        pipeline(core::device& dev, nvrhi::IGraphicsPipeline* handle, const pipeline_desc& desc)
+        pipeline(core::device& dev, nvrhi::GraphicsPipelineHandle handle, const pipeline_desc& desc)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_desc(desc)
         {}
 
         core::device& m_device;
-        nvrhi::IGraphicsPipeline* m_handle;
+        nvrhi::GraphicsPipelineHandle m_handle;
         pipeline_desc m_desc;
     };
 
