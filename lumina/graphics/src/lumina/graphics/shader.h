@@ -12,7 +12,7 @@ namespace lumina::core { class device; }
 
 namespace lumina::graphics
 {
-
+    /// Configuration for shader creation from compiled bytecode.
     struct shader_desc
     {
         const void* vertex_blob = nullptr;
@@ -24,6 +24,8 @@ namespace lumina::graphics
         std::string debug_name = "Lumina Shader";
     };
 
+    /// GPU shader program containing vertex and pixel shaders.
+    /// Shaders are created from pre-compiled bytecode (DXBC/DXIL/SPIR-V).
     class shader
     {
     public:
@@ -32,13 +34,20 @@ namespace lumina::graphics
         shader(const shader&) = delete;
         shader& operator=(const shader&) = delete;
 
-        static ref<shader> create(core::device& dev, const void* vertex_blob, size_t vertex_size, const void* pixel_blob, size_t pixel_size);
-        static ref<shader> create(core::device& dev, const shader_desc& desc);
+        /// Creates a shader from vertex and pixel shader bytecode. Returns nullptr on failure.
+        [[nodiscard]] static ref<shader> create(
+            core::device& dev,
+            const void* vertex_blob,
+            size_t vertex_size,
+            const void* pixel_blob,
+            size_t pixel_size);
 
-        bool is_valid() const { return m_vertex_shader && m_pixel_shader; }
+        /// Creates a shader from a descriptor. Returns nullptr on failure.
+        [[nodiscard]] static ref<shader> create(core::device& dev, const shader_desc& desc);
 
-        nvrhi::IShader* get_vertex_shader() const { return m_vertex_shader; }
-        nvrhi::IShader* get_pixel_shader() const { return m_pixel_shader; }
+        [[nodiscard]] bool is_valid() const noexcept { return m_vertex_shader && m_pixel_shader; }
+        [[nodiscard]] nvrhi::IShader* get_vertex_shader() const noexcept { return m_vertex_shader; }
+        [[nodiscard]] nvrhi::IShader* get_pixel_shader() const noexcept { return m_pixel_shader; }
 
     private:
         shader(core::device& dev, nvrhi::IShader* vertex_shader, nvrhi::IShader* pixel_shader)
