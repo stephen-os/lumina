@@ -13,6 +13,8 @@ namespace lumina::graphics
 {
     class texture;
 
+    /// Off-screen render target with color and optional depth attachments.
+    /// Use for rendering to texture, post-processing, or multi-pass rendering.
     class render_target
     {
     public:
@@ -21,20 +23,26 @@ namespace lumina::graphics
         render_target(const render_target&) = delete;
         render_target& operator=(const render_target&) = delete;
 
-        static ref<render_target> create(core::device& dev, uint32_t width, uint32_t height, format color_format, format depth_format = format::unknown);
+        /// Creates a render target. Returns nullptr on failure.
+        [[nodiscard]] static ref<render_target> create(
+            core::device& dev,
+            uint32_t width,
+            uint32_t height,
+            format color_format,
+            format depth_format = format::unknown);
 
+        /// Resizes the render target, recreating internal resources.
         void resize(uint32_t width, uint32_t height);
 
-        uint32_t get_width() const { return m_width; }
-        uint32_t get_height() const { return m_height; }
-        format get_color_format() const { return m_color_format; }
-        format get_depth_format() const { return m_depth_format; }
-        bool has_depth() const { return m_depth_format != format::unknown; }
+        [[nodiscard]] uint32_t get_width() const noexcept { return m_width; }
+        [[nodiscard]] uint32_t get_height() const noexcept { return m_height; }
+        [[nodiscard]] format get_color_format() const noexcept { return m_color_format; }
+        [[nodiscard]] format get_depth_format() const noexcept { return m_depth_format; }
+        [[nodiscard]] bool has_depth() const noexcept { return m_depth_format != format::unknown; }
 
-        ref<texture> get_color_texture() const { return m_color_texture; }
-        ref<texture> get_depth_texture() const { return m_depth_texture; }
-
-        nvrhi::IFramebuffer* get_framebuffer() const { return m_framebuffer; }
+        [[nodiscard]] ref<texture> get_color_texture() const noexcept { return m_color_texture; }
+        [[nodiscard]] ref<texture> get_depth_texture() const noexcept { return m_depth_texture; }
+        [[nodiscard]] nvrhi::IFramebuffer* get_framebuffer() const noexcept { return m_framebuffer; }
 
     private:
         render_target(core::device& dev, uint32_t width, uint32_t height, format color_format, format depth_format)
