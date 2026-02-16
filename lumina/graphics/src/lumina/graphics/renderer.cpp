@@ -228,13 +228,13 @@ namespace lumina::graphics
 
     glm::uvec2 renderer::get_size()
     {
-        RENDERER_CHECK_INIT_RET(glm::uvec2{0, 0});
+        RENDERER_CHECK_INIT_RET(glm::uvec2(0, 0));
         return {s_state->default_context.width, s_state->default_context.height};
     }
 
     glm::uvec2 renderer::get_size(render_context ctx)
     {
-        RENDERER_CHECK_INIT_RET(glm::uvec2{0, 0});
+        RENDERER_CHECK_INIT_RET(glm::uvec2(0, 0));
 
         auto* ctx_data = get_context_data(ctx.id);
         if (!ctx_data) return {0, 0};

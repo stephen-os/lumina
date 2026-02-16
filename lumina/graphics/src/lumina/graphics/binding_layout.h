@@ -4,17 +4,11 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <utility>
 #include <vector>
 
-namespace nvrhi
-{
-    class IBindingLayout;
-    class IBindingSet;
-    template<class T> class RefCountPtr;
-    using BindingLayoutHandle = RefCountPtr<IBindingLayout>;
-    using BindingSetHandle = RefCountPtr<IBindingSet>;
-}
 namespace lumina::core { class device; }
 
 namespace lumina::graphics

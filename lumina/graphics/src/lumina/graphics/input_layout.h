@@ -4,11 +4,12 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
-namespace nvrhi { class IInputLayout; template<class T> class RefCountPtr; using InputLayoutHandle = RefCountPtr<IInputLayout>; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics

@@ -4,11 +4,12 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
-namespace nvrhi { class IGraphicsPipeline; template<class T> class RefCountPtr; using GraphicsPipelineHandle = RefCountPtr<IGraphicsPipeline>; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
