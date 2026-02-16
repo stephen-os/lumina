@@ -16,3 +16,4 @@
 #include "binding_layout.h"
 #include "pipeline.h"
 #include "renderer2d.h"
+#include "renderer.h"
