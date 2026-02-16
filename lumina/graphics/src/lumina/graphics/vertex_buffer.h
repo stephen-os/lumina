@@ -4,11 +4,12 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstddef>
 #include <span>
 #include <string_view>
 
-namespace nvrhi { class IBuffer; class ICommandList; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -80,12 +81,12 @@ namespace lumina::graphics
         [[nodiscard]] size_t get_vertex_count() const noexcept { return m_stride > 0 ? m_size / m_stride : 0; }
         [[nodiscard]] buffer_usage get_usage() const noexcept { return m_usage; }
         [[nodiscard]] bool is_dynamic() const noexcept { return m_usage == buffer_usage::dynamic; }
-        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle.Get(); }
 
     private:
-        vertex_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t size, size_t stride, buffer_usage usage)
+        vertex_buffer(core::device& dev, nvrhi::BufferHandle handle, size_t size, size_t stride, buffer_usage usage)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_size(size)
             , m_stride(stride)
             , m_usage(usage)
@@ -95,7 +96,7 @@ namespace lumina::graphics
         void unmap();
 
         core::device& m_device;
-        nvrhi::IBuffer* m_handle;
+        nvrhi::BufferHandle m_handle;
         size_t m_size;
         size_t m_stride;
         buffer_usage m_usage;

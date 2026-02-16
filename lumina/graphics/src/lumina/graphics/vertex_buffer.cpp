@@ -4,30 +4,21 @@
 #include <lumina/core/assert.h>
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
-
 #include <cstring>
 #include <string>
+#include <utility>
 
 namespace lumina::graphics
 {
-    vertex_buffer::~vertex_buffer()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    vertex_buffer::~vertex_buffer() = default;
 
     vertex_buffer::vertex_buffer(vertex_buffer&& other) noexcept
         : m_device(other.m_device)
-        , m_handle(other.m_handle)
+        , m_handle(std::move(other.m_handle))
         , m_size(other.m_size)
         , m_stride(other.m_stride)
         , m_usage(other.m_usage)
     {
-        other.m_handle = nullptr;
         other.m_size = 0;
         other.m_stride = 0;
     }
@@ -113,20 +104,19 @@ namespace lumina::graphics
             }
         }
 
-        buffer->AddRef();
-        return ref<vertex_buffer>(new vertex_buffer(dev, buffer.Get(), size, stride, usage));
+        return ref<vertex_buffer>(new vertex_buffer(dev, std::move(buffer), size, stride, usage));
     }
 
     void* vertex_buffer::map_for_write()
     {
         auto* nvrhi_device = m_device.get_nvrhi_device();
-        return nvrhi_device->mapBuffer(m_handle, nvrhi::CpuAccessMode::Write);
+        return nvrhi_device->mapBuffer(m_handle.Get(), nvrhi::CpuAccessMode::Write);
     }
 
     void vertex_buffer::unmap()
     {
         auto* nvrhi_device = m_device.get_nvrhi_device();
-        nvrhi_device->unmapBuffer(m_handle);
+        nvrhi_device->unmapBuffer(m_handle.Get());
     }
 
     void vertex_buffer::update(const void* data, size_t size)
@@ -202,7 +192,7 @@ namespace lumina::graphics
                 LUMINA_LOG_ERROR("Command list required for update on immutable buffer");
                 return;
             }
-            cmd->writeBuffer(m_handle, data, size);
+            cmd->writeBuffer(m_handle.Get(), data, size);
         }
     }
 
@@ -252,7 +242,7 @@ namespace lumina::graphics
                 LUMINA_LOG_ERROR("Command list required for update_at_offset on immutable buffer");
                 return;
             }
-            cmd->writeBuffer(m_handle, data, size, offset_bytes);
+            cmd->writeBuffer(m_handle.Get(), data, size, offset_bytes);
         }
     }
 }
