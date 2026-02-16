@@ -311,7 +311,8 @@ namespace lumina::graphics
 
         nvrhi::DrawArguments args;
         args.vertexCount = index_count;
-        args.startVertexLocation = start_index;
+        args.startIndexLocation = start_index;
+        args.startVertexLocation = base_vertex;
         args.instanceCount = instance_count;
         args.startInstanceLocation = start_instance;
 
