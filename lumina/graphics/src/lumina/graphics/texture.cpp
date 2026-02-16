@@ -5,27 +5,23 @@
 
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
-
 #include <stb_image.h>
+
+#include <utility>
 
 namespace lumina::graphics
 {
-    texture::~texture()
-    {
-        if (m_handle && m_owns_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    texture::~texture() = default;
 
     ref<texture> texture::wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt)
     {
         if (!handle)
             return nullptr;
 
-        return ref<texture>(new texture(dev, handle, width, height, fmt, false));
+        // AddRef the external handle so our TextureHandle can safely release it later
+        // This gives us a shared reference to the external resource
+        handle->AddRef();
+        return ref<texture>(new texture(dev, nvrhi::TextureHandle(handle), width, height, fmt));
     }
 
     ref<texture> texture::create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data, std::string_view debug_name)
@@ -94,9 +90,7 @@ namespace lumina::graphics
             nvrhi_device->waitForIdle();
         }
 
-        tex->AddRef();
-
-        return ref<texture>(new texture(dev, tex.Get(), desc.width, desc.height, desc.pixel_format));
+        return ref<texture>(new texture(dev, std::move(tex), desc.width, desc.height, desc.pixel_format));
     }
 
     ref<texture> texture::load_from_file(core::device& dev, const std::string& path, std::string_view debug_name)

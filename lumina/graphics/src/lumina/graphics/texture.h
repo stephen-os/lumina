@@ -4,11 +4,12 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstdint>
 #include <string>
 #include <string_view>
 
-namespace nvrhi { class ITexture; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -67,23 +68,21 @@ namespace lumina::graphics
         [[nodiscard]] uint32_t get_width() const noexcept { return m_width; }
         [[nodiscard]] uint32_t get_height() const noexcept { return m_height; }
         [[nodiscard]] format get_format() const noexcept { return m_format; }
-        [[nodiscard]] nvrhi::ITexture* get_texture() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::ITexture* get_texture() const noexcept { return m_handle.Get(); }
 
     private:
-        texture(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt, bool owns_handle = true)
+        texture(core::device& dev, nvrhi::TextureHandle handle, uint32_t width, uint32_t height, format fmt)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_width(width)
             , m_height(height)
             , m_format(fmt)
-            , m_owns_handle(owns_handle)
         {}
 
         core::device& m_device;
-        nvrhi::ITexture* m_handle;
+        nvrhi::TextureHandle m_handle;
         uint32_t m_width;
         uint32_t m_height;
         format m_format;
-        bool m_owns_handle = true;
     };
 }
