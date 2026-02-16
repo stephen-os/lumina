@@ -28,6 +28,12 @@ namespace lumina::ui
         ImVec2 size;  // Actual rendered size
     };
 
+    inline image_rect image_with_rect(void* tex_id, const glm::vec2& size)
+    {
+        ImGui::Image(utils::to_imgui_tex(tex_id), { size.x, size.y });
+        return { ImGui::GetItemRectMin(), ImGui::GetItemRectSize() };
+    }
+
     inline image_rect image_with_rect(void* tex_id, const ImVec2& size)
     {
         ImGui::Image(utils::to_imgui_tex(tex_id), size);
