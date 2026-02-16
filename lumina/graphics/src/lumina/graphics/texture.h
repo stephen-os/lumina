@@ -6,23 +6,26 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace nvrhi { class ITexture; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
 {
-
+    /// Configuration for texture creation.
+    /// Note: filter and address modes are sampler properties in modern graphics APIs.
+    /// Use the sampler class to configure how textures are sampled.
     struct texture_desc
     {
         uint32_t width = 1;
         uint32_t height = 1;
         format pixel_format = format::rgba8_unorm;
-        filter_mode filter = filter_mode::linear;
-        address_mode address = address_mode::clamp;
         bool generate_mips = false;
     };
 
+    /// GPU texture for storing 2D image data.
+    /// Textures hold the actual pixel data; use sampler for filtering/addressing.
     class texture
     {
     public:
@@ -31,19 +34,40 @@ namespace lumina::graphics
         texture(const texture&) = delete;
         texture& operator=(const texture&) = delete;
 
-        static ref<texture> create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data = nullptr);
-        static ref<texture> create(core::device& dev, const texture_desc& desc, const void* data = nullptr);
+        /// Creates a texture with the specified dimensions and format. Returns nullptr on failure.
+        [[nodiscard]] static ref<texture> create(
+            core::device& dev,
+            uint32_t width,
+            uint32_t height,
+            format fmt,
+            const void* data = nullptr,
+            std::string_view debug_name = "Lumina Texture");
 
-        // Load texture from image file (PNG, JPG, BMP, etc.)
-        static ref<texture> load_from_file(core::device& dev, const std::string& path);
+        /// Creates a texture from a descriptor. Returns nullptr on failure.
+        [[nodiscard]] static ref<texture> create(
+            core::device& dev,
+            const texture_desc& desc,
+            const void* data = nullptr,
+            std::string_view debug_name = "Lumina Texture");
 
-        static ref<texture> wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt);
+        /// Loads a texture from an image file (PNG, JPG, BMP, etc.). Returns nullptr on failure.
+        [[nodiscard]] static ref<texture> load_from_file(
+            core::device& dev,
+            const std::string& path,
+            std::string_view debug_name = "");
 
-        uint32_t get_width() const { return m_width; }
-        uint32_t get_height() const { return m_height; }
-        format get_format() const { return m_format; }
+        /// Wraps an existing NVRHI texture handle. The texture does NOT take ownership.
+        [[nodiscard]] static ref<texture> wrap(
+            core::device& dev,
+            nvrhi::ITexture* handle,
+            uint32_t width,
+            uint32_t height,
+            format fmt);
 
-        nvrhi::ITexture* get_texture() const { return m_handle; }
+        [[nodiscard]] uint32_t get_width() const noexcept { return m_width; }
+        [[nodiscard]] uint32_t get_height() const noexcept { return m_height; }
+        [[nodiscard]] format get_format() const noexcept { return m_format; }
+        [[nodiscard]] nvrhi::ITexture* get_texture() const noexcept { return m_handle; }
 
     private:
         texture(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt, bool owns_handle = true)
