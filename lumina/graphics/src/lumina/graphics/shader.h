@@ -4,10 +4,11 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstddef>
 #include <string>
 
-namespace nvrhi { class IShader; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -46,18 +47,18 @@ namespace lumina::graphics
         [[nodiscard]] static ref<shader> create(core::device& dev, const shader_desc& desc);
 
         [[nodiscard]] bool is_valid() const noexcept { return m_vertex_shader && m_pixel_shader; }
-        [[nodiscard]] nvrhi::IShader* get_vertex_shader() const noexcept { return m_vertex_shader; }
-        [[nodiscard]] nvrhi::IShader* get_pixel_shader() const noexcept { return m_pixel_shader; }
+        [[nodiscard]] nvrhi::IShader* get_vertex_shader() const noexcept { return m_vertex_shader.Get(); }
+        [[nodiscard]] nvrhi::IShader* get_pixel_shader() const noexcept { return m_pixel_shader.Get(); }
 
     private:
-        shader(core::device& dev, nvrhi::IShader* vertex_shader, nvrhi::IShader* pixel_shader)
+        shader(core::device& dev, nvrhi::ShaderHandle vertex_shader, nvrhi::ShaderHandle pixel_shader)
             : m_device(dev)
-            , m_vertex_shader(vertex_shader)
-            , m_pixel_shader(pixel_shader)
+            , m_vertex_shader(std::move(vertex_shader))
+            , m_pixel_shader(std::move(pixel_shader))
         {}
 
         core::device& m_device;
-        nvrhi::IShader* m_vertex_shader;
-        nvrhi::IShader* m_pixel_shader;
+        nvrhi::ShaderHandle m_vertex_shader;
+        nvrhi::ShaderHandle m_pixel_shader;
     };
 }

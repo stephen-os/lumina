@@ -4,24 +4,11 @@
 
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
+#include <utility>
 
 namespace lumina::graphics
 {
-    shader::~shader()
-    {
-        if (m_vertex_shader)
-        {
-            m_vertex_shader->Release();
-            m_vertex_shader = nullptr;
-        }
-
-        if (m_pixel_shader)
-        {
-            m_pixel_shader->Release();
-            m_pixel_shader = nullptr;
-        }
-    }
+    shader::~shader() = default;
 
     ref<shader> shader::create(core::device& dev, const void* vertex_blob, size_t vertex_size, const void* pixel_blob, size_t pixel_size)
     {
@@ -80,10 +67,6 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        // AddRef since we're storing raw pointers and ShaderHandles will Release on scope exit
-        vertex_shader->AddRef();
-        pixel_shader->AddRef();
-
-        return ref<shader>(new shader(dev, vertex_shader.Get(), pixel_shader.Get()));
+        return ref<shader>(new shader(dev, std::move(vertex_shader), std::move(pixel_shader)));
     }
 }
