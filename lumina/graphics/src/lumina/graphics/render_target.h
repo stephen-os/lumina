@@ -4,9 +4,10 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstdint>
 
-namespace nvrhi { class IFramebuffer; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -42,12 +43,11 @@ namespace lumina::graphics
 
         [[nodiscard]] ref<texture> get_color_texture() const noexcept { return m_color_texture; }
         [[nodiscard]] ref<texture> get_depth_texture() const noexcept { return m_depth_texture; }
-        [[nodiscard]] nvrhi::IFramebuffer* get_framebuffer() const noexcept { return m_framebuffer; }
+        [[nodiscard]] nvrhi::IFramebuffer* get_framebuffer() const noexcept { return m_framebuffer.Get(); }
 
     private:
         render_target(core::device& dev, uint32_t width, uint32_t height, format color_format, format depth_format)
             : m_device(dev)
-            , m_framebuffer(nullptr)
             , m_width(width)
             , m_height(height)
             , m_color_format(color_format)
@@ -58,7 +58,9 @@ namespace lumina::graphics
         void destroy_resources();
 
         core::device& m_device;
-        nvrhi::IFramebuffer* m_framebuffer;
+        nvrhi::FramebufferHandle m_framebuffer;
+        nvrhi::TextureHandle m_color_texture_handle;
+        nvrhi::TextureHandle m_depth_texture_handle;
         ref<texture> m_color_texture;
         ref<texture> m_depth_texture;
         uint32_t m_width;
