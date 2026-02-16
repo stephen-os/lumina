@@ -117,17 +117,17 @@ namespace lumina::graphics
         depth_stencil   = 1 << 2,   // Can be used as depth buffer
     };
 
-    inline texture_usage operator|(texture_usage a, texture_usage b)
+    [[nodiscard]] inline texture_usage operator|(texture_usage a, texture_usage b) noexcept
     {
         return static_cast<texture_usage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
 
-    inline texture_usage operator&(texture_usage a, texture_usage b)
+    [[nodiscard]] inline texture_usage operator&(texture_usage a, texture_usage b) noexcept
     {
         return static_cast<texture_usage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
     }
 
-    inline bool has_flag(texture_usage value, texture_usage flag)
+    [[nodiscard]] inline bool has_flag(texture_usage value, texture_usage flag) noexcept
     {
         return (static_cast<uint32_t>(value) & static_cast<uint32_t>(flag)) != 0;
     }
