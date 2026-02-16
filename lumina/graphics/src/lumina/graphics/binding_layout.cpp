@@ -9,6 +9,8 @@
 
 #include <nvrhi/nvrhi.h>
 
+#include <utility>
+
 namespace lumina::graphics
 {
     static nvrhi::ResourceType to_nvrhi_resource_type(binding_type type)
@@ -52,14 +54,7 @@ namespace lumina::graphics
 
     // --- binding_layout ---
 
-    binding_layout::~binding_layout()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    binding_layout::~binding_layout() = default;
 
     ref<binding_layout> binding_layout::create(core::device& dev, const binding_layout_desc& desc)
     {
@@ -103,21 +98,12 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        layout->AddRef();
-
-        return ref<binding_layout>(new binding_layout(dev, layout.Get(), desc));
+        return ref<binding_layout>(new binding_layout(dev, std::move(layout), desc));
     }
 
     // --- binding_set ---
 
-    binding_set::~binding_set()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    binding_set::~binding_set() = default;
 
     ref<binding_set> binding_set::create(core::device& dev, const binding_set_desc& desc)
     {
@@ -184,8 +170,6 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        set->AddRef();
-
-        return ref<binding_set>(new binding_set(dev, set.Get(), desc.layout));
+        return ref<binding_set>(new binding_set(dev, std::move(set), desc.layout));
     }
 }

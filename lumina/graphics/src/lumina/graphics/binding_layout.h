@@ -4,12 +4,16 @@
 
 #include <lumina/core/base.h>
 
+#include <utility>
 #include <vector>
 
 namespace nvrhi
 {
     class IBindingLayout;
     class IBindingSet;
+    template<class T> class RefCountPtr;
+    using BindingLayoutHandle = RefCountPtr<IBindingLayout>;
+    using BindingSetHandle = RefCountPtr<IBindingSet>;
 }
 namespace lumina::core { class device; }
 
@@ -90,17 +94,17 @@ namespace lumina::graphics
         [[nodiscard]] static ref<binding_layout> create(core::device& dev, const binding_layout_desc& desc);
 
         [[nodiscard]] const binding_layout_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] nvrhi::IBindingLayout* get_layout() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IBindingLayout* get_layout() const noexcept { return m_handle.Get(); }
 
     private:
-        binding_layout(core::device& dev, nvrhi::IBindingLayout* handle, const binding_layout_desc& desc)
+        binding_layout(core::device& dev, nvrhi::BindingLayoutHandle handle, const binding_layout_desc& desc)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_desc(desc)
         {}
 
         core::device& m_device;
-        nvrhi::IBindingLayout* m_handle;
+        nvrhi::BindingLayoutHandle m_handle;
         binding_layout_desc m_desc;
     };
 
@@ -145,17 +149,17 @@ namespace lumina::graphics
         /// Creates a binding set. Returns nullptr on failure.
         [[nodiscard]] static ref<binding_set> create(core::device& dev, const binding_set_desc& desc);
 
-        [[nodiscard]] nvrhi::IBindingSet* get_binding_set() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IBindingSet* get_binding_set() const noexcept { return m_handle.Get(); }
 
     private:
-        binding_set(core::device& dev, nvrhi::IBindingSet* handle, ref<binding_layout> layout)
+        binding_set(core::device& dev, nvrhi::BindingSetHandle handle, ref<binding_layout> layout)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_layout(layout)
         {}
 
         core::device& m_device;
-        nvrhi::IBindingSet* m_handle;
+        nvrhi::BindingSetHandle m_handle;
         ref<binding_layout> m_layout;
     };
 
