@@ -5,15 +5,15 @@
 
 namespace lumina::core
 {
-    std::mutex uuid::s_mutex;
-
     uint64_t uuid::generate()
     {
-        std::lock_guard<std::mutex> lock(s_mutex);
+        thread_local std::mt19937_64 generator = []() {
+            std::random_device rd;
+            return std::mt19937_64(rd());
+        }();
+
         auto now = std::chrono::high_resolution_clock::now().time_since_epoch().count();
-        std::random_device rd;
-        std::mt19937_64 gen(rd());
-        uint64_t random_value = gen();
+        uint64_t random_value = generator();
         return now ^ random_value;
     }
 }

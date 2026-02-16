@@ -1,7 +1,6 @@
 #pragma once
 
 #include <cstdint>
-#include <mutex>
 
 namespace lumina::core
 {
@@ -9,8 +8,5 @@ namespace lumina::core
     {
     public:
         static uint64_t generate();
-
-    private:
-        static std::mutex s_mutex;
     };
 }
