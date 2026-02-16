@@ -4,12 +4,13 @@
 
 #include <lumina/core/base.h>
 
+#include <nvrhi/nvrhi.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <span>
 #include <string_view>
 
-namespace nvrhi { class IBuffer; }
 namespace lumina::core { class device; }
 
 namespace lumina::graphics
@@ -58,18 +59,18 @@ namespace lumina::graphics
         [[nodiscard]] size_t get_byte_size() const noexcept { return m_count * m_index_size; }
         [[nodiscard]] bool is_32bit() const noexcept { return m_index_size == 4; }
         [[nodiscard]] bool is_16bit() const noexcept { return m_index_size == 2; }
-        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle; }
+        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle.Get(); }
 
     private:
-        index_buffer(core::device& dev, nvrhi::IBuffer* handle, size_t count, size_t index_size)
+        index_buffer(core::device& dev, nvrhi::BufferHandle handle, size_t count, size_t index_size)
             : m_device(dev)
-            , m_handle(handle)
+            , m_handle(std::move(handle))
             , m_count(count)
             , m_index_size(index_size)
         {}
 
         core::device& m_device;
-        nvrhi::IBuffer* m_handle;
+        nvrhi::BufferHandle m_handle;
         size_t m_count;
         size_t m_index_size;
     };

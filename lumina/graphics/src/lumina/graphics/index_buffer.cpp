@@ -3,28 +3,19 @@
 #include <lumina/core/device.h>
 #include <lumina/core/log.h>
 
-#include <nvrhi/nvrhi.h>
-
 #include <string>
+#include <utility>
 
 namespace lumina::graphics
 {
-    index_buffer::~index_buffer()
-    {
-        if (m_handle)
-        {
-            m_handle->Release();
-            m_handle = nullptr;
-        }
-    }
+    index_buffer::~index_buffer() = default;
 
     index_buffer::index_buffer(index_buffer&& other) noexcept
         : m_device(other.m_device)
-        , m_handle(other.m_handle)
+        , m_handle(std::move(other.m_handle))
         , m_count(other.m_count)
         , m_index_size(other.m_index_size)
     {
-        other.m_handle = nullptr;
         other.m_count = 0;
     }
 
@@ -81,7 +72,6 @@ namespace lumina::graphics
             nvrhi_device->waitForIdle();
         }
 
-        buffer->AddRef();
-        return ref<index_buffer>(new index_buffer(dev, buffer.Get(), count, index_size));
+        return ref<index_buffer>(new index_buffer(dev, std::move(buffer), count, index_size));
     }
 }
