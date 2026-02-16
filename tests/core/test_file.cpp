@@ -30,12 +30,13 @@ TEST_CASE("File write_text and read_text roundtrip", "[file]")
     temp_file_cleanup cleanup(path);
 
     std::string content = "Hello, World!\nThis is a test.\n";
-    file::write_text(path, content);
+    REQUIRE(file::write_text(path, content));
 
     REQUIRE(file::exists(path) == true);
 
-    std::string read_content = file::read_text(path);
-    REQUIRE(read_content == content);
+    auto read_result = file::read_text(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value() == content);
 }
 
 TEST_CASE("File write_binary and read_binary roundtrip", "[file]")
@@ -44,12 +45,13 @@ TEST_CASE("File write_binary and read_binary roundtrip", "[file]")
     temp_file_cleanup cleanup(path);
 
     std::vector<uint8_t> data = {0x00, 0x01, 0x02, 0xFF, 0xFE, 0x42};
-    file::write_binary(path, data);
+    REQUIRE(file::write_binary(path, data));
 
     REQUIRE(file::exists(path) == true);
 
-    std::vector<uint8_t> read_data = file::read_binary(path);
-    REQUIRE(read_data == data);
+    auto read_result = file::read_binary(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value() == data);
 }
 
 TEST_CASE("File write_binary with raw pointer", "[file]")
@@ -58,14 +60,15 @@ TEST_CASE("File write_binary with raw pointer", "[file]")
     temp_file_cleanup cleanup(path);
 
     uint8_t data[] = {0xAA, 0xBB, 0xCC, 0xDD};
-    file::write_binary(path, data, sizeof(data));
+    REQUIRE(file::write_binary(path, data, sizeof(data)));
 
     REQUIRE(file::exists(path) == true);
 
-    std::vector<uint8_t> read_data = file::read_binary(path);
-    REQUIRE(read_data.size() == 4);
-    REQUIRE(read_data[0] == 0xAA);
-    REQUIRE(read_data[3] == 0xDD);
+    auto read_result = file::read_binary(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value().size() == 4);
+    REQUIRE(read_result.value()[0] == 0xAA);
+    REQUIRE(read_result.value()[3] == 0xDD);
 }
 
 TEST_CASE("File write_text overwrites existing", "[file]")
@@ -73,11 +76,12 @@ TEST_CASE("File write_text overwrites existing", "[file]")
     std::string path = get_temp_path("overwrite_test.txt");
     temp_file_cleanup cleanup(path);
 
-    file::write_text(path, "First content");
-    file::write_text(path, "Second content");
+    REQUIRE(file::write_text(path, "First content"));
+    REQUIRE(file::write_text(path, "Second content"));
 
-    std::string content = file::read_text(path);
-    REQUIRE(content == "Second content");
+    auto read_result = file::read_text(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value() == "Second content");
 }
 
 TEST_CASE("File read_text empty file", "[file]")
@@ -85,10 +89,11 @@ TEST_CASE("File read_text empty file", "[file]")
     std::string path = get_temp_path("empty_test.txt");
     temp_file_cleanup cleanup(path);
 
-    file::write_text(path, "");
+    REQUIRE(file::write_text(path, ""));
 
-    std::string content = file::read_text(path);
-    REQUIRE(content.empty());
+    auto read_result = file::read_text(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value().empty());
 }
 
 TEST_CASE("File read_binary empty file", "[file]")
@@ -96,10 +101,11 @@ TEST_CASE("File read_binary empty file", "[file]")
     std::string path = get_temp_path("empty_binary_test.bin");
     temp_file_cleanup cleanup(path);
 
-    file::write_binary(path, std::vector<uint8_t>{});
+    REQUIRE(file::write_binary(path, std::vector<uint8_t>{}));
 
-    std::vector<uint8_t> data = file::read_binary(path);
-    REQUIRE(data.empty());
+    auto read_result = file::read_binary(path);
+    REQUIRE(read_result.has_value());
+    REQUIRE(read_result.value().empty());
 }
 
 TEST_CASE("File exists returns true after write", "[file]")
@@ -109,7 +115,21 @@ TEST_CASE("File exists returns true after write", "[file]")
 
     REQUIRE(file::exists(path) == false);
 
-    file::write_text(path, "test");
+    REQUIRE(file::write_text(path, "test"));
 
     REQUIRE(file::exists(path) == true);
+}
+
+TEST_CASE("File read_text returns error for non-existent file", "[file]")
+{
+    auto result = file::read_text("this_file_definitely_does_not_exist_12345.txt");
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE_FALSE(result.error().empty());
+}
+
+TEST_CASE("File read_binary returns error for non-existent file", "[file]")
+{
+    auto result = file::read_binary("this_file_definitely_does_not_exist_12345.bin");
+    REQUIRE_FALSE(result.has_value());
+    REQUIRE_FALSE(result.error().empty());
 }
