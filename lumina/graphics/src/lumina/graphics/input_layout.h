@@ -14,28 +14,32 @@ namespace lumina::graphics
 {
     class shader;
 
+    /// Semantic hint for vertex attributes.
     enum class vertex_semantic
     {
-		position,   // Vertex position
-		color,      // Vertex color
-		texcoord,   // Texture coordinates
-		normal,     // Vertex normal
-		tangent,    // Vertex tangent
-		custom      // Custom attribute 
+        position,   // Vertex position
+        color,      // Vertex color
+        texcoord,   // Texture coordinates
+        normal,     // Vertex normal
+        tangent,    // Vertex tangent
+        custom      // Custom attribute
     };
 
+    /// Describes a single vertex attribute within a vertex buffer.
     struct vertex_attribute
     {
         std::string name;                                   // Shader input name (e.g., "POSITION", "COLOR")
         format attr_format;                                 // Data format (e.g., format::rgba32_float)
         uint32_t offset = 0;                                // Byte offset within vertex
-		vertex_semantic semantic = vertex_semantic::custom; // Semantic hint
+        vertex_semantic semantic = vertex_semantic::custom; // Semantic hint
 
         vertex_attribute() = default;
         vertex_attribute(const std::string& name, format fmt, uint32_t offset = 0, vertex_semantic sem = vertex_semantic::custom)
             : name(name), attr_format(fmt), offset(offset), semantic(sem) {}
     };
 
+    /// Configuration for vertex input layout.
+    /// Use the builder methods to construct layouts incrementally.
     struct input_layout_desc
     {
         std::vector<vertex_attribute> attributes;
@@ -70,6 +74,8 @@ namespace lumina::graphics
         }
     };
 
+    /// GPU input layout describing vertex data format for the vertex shader.
+    /// Defines how vertex buffer data maps to shader input attributes.
     class input_layout
     {
     public:
@@ -78,13 +84,16 @@ namespace lumina::graphics
         input_layout(const input_layout&) = delete;
         input_layout& operator=(const input_layout&) = delete;
 
-        static ref<input_layout> create(core::device& dev, const input_layout_desc& desc, ref<shader> vertex_shader);
+        /// Creates an input layout. Returns nullptr on failure.
+        [[nodiscard]] static ref<input_layout> create(
+            core::device& dev,
+            const input_layout_desc& desc,
+            ref<shader> vertex_shader);
 
-        const input_layout_desc& get_desc() const { return m_desc; }
-        uint32_t get_stride() const { return m_desc.stride; }
-        size_t get_attribute_count() const { return m_desc.attributes.size(); }
-
-        nvrhi::IInputLayout* get_layout() const { return m_handle; }
+        [[nodiscard]] const input_layout_desc& get_desc() const noexcept { return m_desc; }
+        [[nodiscard]] uint32_t get_stride() const noexcept { return m_desc.stride; }
+        [[nodiscard]] size_t get_attribute_count() const noexcept { return m_desc.attributes.size(); }
+        [[nodiscard]] nvrhi::IInputLayout* get_layout() const noexcept { return m_handle; }
 
     private:
         input_layout(core::device& dev, nvrhi::IInputLayout* handle, const input_layout_desc& desc)
@@ -98,18 +107,19 @@ namespace lumina::graphics
         input_layout_desc m_desc;
     };
 
+    /// Common predefined vertex layouts.
     namespace vertex_layouts
     {
-        // Position only (3 floats)
-        inline input_layout_desc position()
+        /// Position only (4 floats for xyzw)
+        [[nodiscard]] inline input_layout_desc position() noexcept
         {
             input_layout_desc desc;
             desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
             return desc;
         }
 
-        // Position + Color (3 + 4 floats)
-        inline input_layout_desc position_color()
+        /// Position + Color (4 + 4 floats)
+        [[nodiscard]] inline input_layout_desc position_color() noexcept
         {
             input_layout_desc desc;
             desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
@@ -117,8 +127,8 @@ namespace lumina::graphics
             return desc;
         }
 
-        // Position + TexCoord (3 + 2 floats)
-        inline input_layout_desc position_texcoord()
+        /// Position + TexCoord (4 + 2 floats)
+        [[nodiscard]] inline input_layout_desc position_texcoord() noexcept
         {
             input_layout_desc desc;
             desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
@@ -126,8 +136,8 @@ namespace lumina::graphics
             return desc;
         }
 
-        // Position + Color + TexCoord (3 + 4 + 2 floats) - common for 2D
-        inline input_layout_desc position_color_texcoord()
+        /// Position + Color + TexCoord (4 + 4 + 2 floats) - common for 2D
+        [[nodiscard]] inline input_layout_desc position_color_texcoord() noexcept
         {
             input_layout_desc desc;
             desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
@@ -136,8 +146,8 @@ namespace lumina::graphics
             return desc;
         }
 
-        // Full 3D vertex (position + normal + texcoord)
-        inline input_layout_desc position_normal_texcoord()
+        /// Full 3D vertex (position + normal + texcoord)
+        [[nodiscard]] inline input_layout_desc position_normal_texcoord() noexcept
         {
             input_layout_desc desc;
             desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
