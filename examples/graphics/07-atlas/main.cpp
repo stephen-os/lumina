@@ -1,4 +1,4 @@
-// 09-atlas: Texture Atlas and Camera2D Demo
+// 07-atlas: Texture Atlas and Camera2D Demo
 // Demonstrates: texture_atlas, camera2d, sprite rendering with the new optimizations
 
 #include <lumina/core/core.h>

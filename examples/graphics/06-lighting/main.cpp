@@ -1,4 +1,4 @@
-// 07-lighting: 2D Lighting Demo
+// 06-lighting: 2D Lighting Demo
 // Demonstrates: Point lights with various attenuation models, ambient light
 
 #include <lumina/core/core.h>
