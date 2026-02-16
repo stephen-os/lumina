@@ -10,6 +10,10 @@
 #include <GLFW/glfw3.h>
 
 #ifdef LUMINA_PLATFORM_WINDOWS
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <Windows.h>
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <GLFW/glfw3native.h>
 #include <d3dcompiler.h>
@@ -158,6 +162,50 @@ namespace lumina::core::imgui
     static nvrhi::GraphicsAPI s_graphics_api = nvrhi::GraphicsAPI::D3D12;
 
 #ifdef LUMINA_PLATFORM_WINDOWS
+    // Helper to execute a process safely without invoking the shell
+    static bool execute_process(const std::string& command, const std::string& args, DWORD& exit_code)
+    {
+        STARTUPINFOA si = {};
+        si.cb = sizeof(si);
+        si.dwFlags = STARTF_USESHOWWINDOW;
+        si.wShowWindow = SW_HIDE;
+
+        PROCESS_INFORMATION pi = {};
+
+        // CreateProcess requires a mutable command line buffer
+        std::string cmd_line = command + " " + args;
+        std::vector<char> cmd_buffer(cmd_line.begin(), cmd_line.end());
+        cmd_buffer.push_back('\0');
+
+        BOOL success = CreateProcessA(
+            nullptr,           // Application name (null = use command line)
+            cmd_buffer.data(), // Command line (mutable)
+            nullptr,           // Process security attributes
+            nullptr,           // Thread security attributes
+            FALSE,             // Inherit handles
+            CREATE_NO_WINDOW,  // Creation flags
+            nullptr,           // Environment (inherit)
+            nullptr,           // Current directory (inherit)
+            &si,
+            &pi
+        );
+
+        if (!success)
+        {
+            LUMINA_LOG_ERROR("Failed to create process: {}", GetLastError());
+            return false;
+        }
+
+        // Wait for the process to complete
+        WaitForSingleObject(pi.hProcess, INFINITE);
+        GetExitCodeProcess(pi.hProcess, &exit_code);
+
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+
+        return true;
+    }
+
     // Helper to compile GLSL to SPIR-V using glslc (Vulkan SDK)
     static bool compile_glsl_to_spirv(const char* source, const char* shader_type, std::vector<uint8_t>& spirv_out)
     {
@@ -177,28 +225,21 @@ namespace lumina::core::imgui
             input_file.write(source, strlen(source));
         }
 
-        // Convert paths to use forward slashes for command line compatibility
-        std::string input_str = input_path.string();
-        std::string output_str = output_path.string();
-        std::replace(input_str.begin(), input_str.end(), '\\', '/');
-        std::replace(output_str.begin(), output_str.end(), '\\', '/');
-
-        // Build glslc command
-        // -fshader-stage specifies the shader type
-        // -o specifies output file
+        // Build glslc arguments
         std::string stage = (strcmp(shader_type, "vert") == 0) ? "vertex" : "fragment";
-        std::string command = "glslc.exe -fshader-stage=" + stage + " \"" + input_str + "\" -o \"" + output_str + "\" 2>&1";
+        std::string args = "-fshader-stage=" + stage + " \"" + input_path.string() + "\" -o \"" + output_path.string() + "\"";
 
         LUMINA_LOG_INFO("Compiling {} shader with glslc...", stage);
 
-        // Execute glslc using system() which is more reliable on Windows
-        int result = system(command.c_str());
+        // Execute glslc using CreateProcess (safer than system())
+        DWORD exit_code = 0;
+        bool process_ok = execute_process("glslc.exe", args, exit_code);
 
         std::filesystem::remove(input_path);
 
-        if (result != 0)
+        if (!process_ok || exit_code != 0)
         {
-            LUMINA_LOG_ERROR("glslc compilation failed with exit code: {}", result);
+            LUMINA_LOG_ERROR("glslc compilation failed with exit code: {}", exit_code);
             return false;
         }
 
