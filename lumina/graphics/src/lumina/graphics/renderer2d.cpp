@@ -1576,6 +1576,17 @@ namespace lumina::graphics
         flush_triangles(layer_id);
         flush_pixels(layer_id);
         flush_grids(layer_id);
+
+        // Reset texture slots after all primitives are flushed
+        // This ensures all primitive types can access textures added during the batch
+        auto it = m_layers.find(layer_id);
+        if (it != m_layers.end())
+        {
+            auto& batch = it->second;
+            batch.texture_slots.fill(nullptr);
+            batch.texture_slots[0] = m_white_texture;
+            batch.texture_slot_index = 1;
+        }
     }
 
     void renderer2d::flush_layers_up_to(uint32_t layer_id)
@@ -1675,11 +1686,7 @@ namespace lumina::graphics
 
         batch.quad_vertices.clear();
         batch.quad_count = 0;
-
-        // Reset texture slots after flush so next batch starts fresh
-        batch.texture_slots.fill(nullptr);
-        batch.texture_slots[0] = m_white_texture;
-        batch.texture_slot_index = 1;
+        // Note: texture slots are reset at end of flush_layer, not here
     }
 
     void renderer2d::flush_circles(uint32_t layer_id)
