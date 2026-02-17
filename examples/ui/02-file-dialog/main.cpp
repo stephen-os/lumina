@@ -5,6 +5,7 @@
 #include <lumina/core/entry_point.h>
 #include <lumina/ui/ui.h>
 
+#include <glm/glm.hpp>
 #include <string>
 #include <map>
 
@@ -30,7 +31,7 @@ public:
             if (!m_selected_file.empty())
             {
                 ui::text("Selected:");
-                ui::text_colored(ImVec4(0.4f, 0.8f, 0.4f, 1.0f), m_selected_file.c_str());
+                ui::text_colored(glm::vec4(0.4f, 0.8f, 0.4f, 1.0f), m_selected_file.c_str());
             }
             ui::end_section();
         }
@@ -45,7 +46,7 @@ public:
             {
                 ui::text_fmt("Selected {} files:", m_selected_files.size());
                 for (const auto& [name, path] : m_selected_files)
-                    ui::text_colored(ImVec4(0.4f, 0.8f, 0.4f, 1.0f), name.c_str());
+                    ui::text_colored(glm::vec4(0.4f, 0.8f, 0.4f, 1.0f), name.c_str());
             }
             ui::end_section();
         }
@@ -59,7 +60,7 @@ public:
             if (!m_save_path.empty())
             {
                 ui::text("Save path:");
-                ui::text_colored(ImVec4(0.4f, 0.6f, 1.0f, 1.0f), m_save_path.c_str());
+                ui::text_colored(glm::vec4(0.4f, 0.6f, 1.0f, 1.0f), m_save_path.c_str());
             }
             ui::end_section();
         }
@@ -73,7 +74,7 @@ public:
             if (!m_selected_folder.empty())
             {
                 ui::text("Selected folder:");
-                ui::text_colored(ImVec4(1.0f, 0.8f, 0.4f, 1.0f), m_selected_folder.c_str());
+                ui::text_colored(glm::vec4(1.0f, 0.8f, 0.4f, 1.0f), m_selected_folder.c_str());
             }
             ui::end_section();
         }
