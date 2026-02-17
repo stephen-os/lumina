@@ -39,8 +39,14 @@ namespace lumina::graphics
         /// Initialize with explicit size
         static void init(uint32_t width, uint32_t height);
 
+        /// Initialize with explicit size and MSAA sample count
+        static void init(uint32_t width, uint32_t height, uint32_t sample_count);
+
 		/// Initialize with glm::uvec2 size
 		static void init(const glm::uvec2& size);
+
+        /// Initialize with glm::uvec2 size and MSAA sample count
+        static void init(const glm::uvec2& size, uint32_t sample_count);
 
         /// Shutdown and cleanup all resources
         static void shutdown();
@@ -54,6 +60,9 @@ namespace lumina::graphics
 
         /// Create an additional render context
         [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height);
+
+        /// Create an additional render context with MSAA
+        [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height, uint32_t sample_count);
 
         /// Destroy a render context
         static void destroy_context(render_context ctx);

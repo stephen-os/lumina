@@ -829,6 +829,12 @@ namespace lumina::graphics
             flush_lights();
             composite_scene();
         }
+
+        // Resolve MSAA if the current render target uses it
+        if (m_current_target && m_current_target->is_msaa())
+        {
+            m_current_target->resolve(m_context->get_command_list());
+        }
     }
 
     void renderer2d::set_render_target(ref<render_target> target)
@@ -844,6 +850,7 @@ namespace lumina::graphics
             {
                 m_current_color_format = target->get_color_format();
                 m_current_depth_format = target->get_depth_format();
+                m_current_sample_count = target->get_sample_count();
 
                 // Set viewport to match render target size
                 m_context->set_viewport(0, 0,
@@ -1625,6 +1632,7 @@ namespace lumina::graphics
         desc.state.primitive = topology::triangles;
         desc.color_format = m_current_color_format;
         desc.depth_format = m_current_depth_format;
+        desc.sample_count = m_current_sample_count;
 
         m_quad_pipeline = m_pipeline_cache->get_or_create(desc);
         if (!m_quad_pipeline)
@@ -1699,10 +1707,11 @@ namespace lumina::graphics
         if (batch.circle_count == 0)
             return;
 
-        // Ensure pipeline exists with correct blend mode
+        // Ensure pipeline exists with correct blend mode and sample count
         if (!m_circle_pipeline ||
             m_circle_pipeline->get_desc().color_format != m_current_color_format ||
             m_circle_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_circle_pipeline->get_desc().sample_count != m_current_sample_count ||
             m_circle_pipeline->get_desc().state.blend != batch.circle_blend)
         {
             pipeline_desc desc;
@@ -1715,6 +1724,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_circle_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_circle_pipeline)
@@ -1788,7 +1798,8 @@ namespace lumina::graphics
         // Ensure pipeline exists
         if (!m_line_pipeline ||
             m_line_pipeline->get_desc().color_format != m_current_color_format ||
-            m_line_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_line_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_line_pipeline->get_desc().sample_count != m_current_sample_count)
         {
             pipeline_desc desc;
             desc.shader_program = m_line_shader;
@@ -1800,6 +1811,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::lines;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_line_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_line_pipeline)
@@ -1864,7 +1876,8 @@ namespace lumina::graphics
         // Ensure pipeline exists
         if (!m_text_pipeline ||
             m_text_pipeline->get_desc().color_format != m_current_color_format ||
-            m_text_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_text_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_text_pipeline->get_desc().sample_count != m_current_sample_count)
         {
             pipeline_desc desc;
             desc.shader_program = m_text_shader;
@@ -1876,6 +1889,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_text_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_text_pipeline)
@@ -1950,6 +1964,7 @@ namespace lumina::graphics
         if (!m_triangle_pipeline ||
             m_triangle_pipeline->get_desc().color_format != m_current_color_format ||
             m_triangle_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_triangle_pipeline->get_desc().sample_count != m_current_sample_count ||
             m_triangle_pipeline->get_desc().state.blend != batch.triangle_blend)
         {
             pipeline_desc desc;
@@ -1962,6 +1977,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_triangle_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_triangle_pipeline)
@@ -2034,7 +2050,8 @@ namespace lumina::graphics
         // Ensure pipeline exists
         if (!m_pixel_pipeline ||
             m_pixel_pipeline->get_desc().color_format != m_current_color_format ||
-            m_pixel_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_pixel_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_pixel_pipeline->get_desc().sample_count != m_current_sample_count)
         {
             pipeline_desc desc;
             desc.shader_program = m_pixel_shader;
@@ -2046,6 +2063,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::points;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_pixel_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_pixel_pipeline)
@@ -2110,7 +2128,8 @@ namespace lumina::graphics
         // Ensure pipeline exists
         if (!m_grid_pipeline ||
             m_grid_pipeline->get_desc().color_format != m_current_color_format ||
-            m_grid_pipeline->get_desc().depth_format != m_current_depth_format)
+            m_grid_pipeline->get_desc().depth_format != m_current_depth_format ||
+            m_grid_pipeline->get_desc().sample_count != m_current_sample_count)
         {
             pipeline_desc desc;
             desc.shader_program = m_grid_shader;
@@ -2122,6 +2141,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_grid_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_grid_pipeline)
@@ -2463,6 +2483,7 @@ namespace lumina::graphics
             desc.state.primitive = topology::triangles;
             desc.color_format = m_current_color_format;
             desc.depth_format = m_current_depth_format;
+            desc.sample_count = m_current_sample_count;
 
             m_composite_pipeline = m_pipeline_cache->get_or_create(desc);
             if (!m_composite_pipeline)

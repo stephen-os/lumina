@@ -46,6 +46,9 @@ namespace lumina::graphics
         hash_combine(h, static_cast<size_t>(color_format));
         hash_combine(h, static_cast<size_t>(depth_format));
 
+        // Hash MSAA sample count
+        hash_combine(h, static_cast<size_t>(sample_count));
+
         return h;
     }
 
@@ -210,6 +213,7 @@ namespace lumina::graphics
         {
             fb_info.depthFormat = to_nvrhi_format(desc.depth_format);
         }
+        fb_info.sampleCount = desc.sample_count;
 
         nvrhi::GraphicsPipelineHandle pso = nvrhi_device->createGraphicsPipeline(pso_desc, fb_info);
         if (!pso)

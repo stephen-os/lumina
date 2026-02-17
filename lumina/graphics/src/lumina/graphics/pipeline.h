@@ -29,6 +29,7 @@ namespace lumina::graphics
         render_state state;
         format color_format = format::rgba8_unorm;
         format depth_format = format::unknown;
+        uint32_t sample_count = 1;  // MSAA sample count (1 = no MSAA)
 
         /// Generates a hash for pipeline caching.
         [[nodiscard]] size_t hash() const;

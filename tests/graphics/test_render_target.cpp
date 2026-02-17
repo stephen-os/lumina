@@ -224,3 +224,76 @@ TEST_CASE("render_target multiple instances", "[graphics][render_target]")
         REQUIRE(rt2->get_framebuffer() != rt3->get_framebuffer());
     }
 }
+
+TEST_CASE("render_target MSAA", "[graphics][render_target]")
+{
+    REQUIRE_GRAPHICS();
+    auto& fixture = graphics_fixture::get();
+    auto& dev = fixture.device();
+
+    SECTION("no MSAA by default")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm);
+
+        REQUIRE(rt != nullptr);
+        REQUIRE_FALSE(rt->is_msaa());
+        REQUIRE(rt->get_sample_count() == 1);
+    }
+
+    SECTION("create with 4x MSAA")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm, format::unknown, 4);
+
+        REQUIRE(rt != nullptr);
+        REQUIRE(rt->is_msaa());
+        REQUIRE(rt->get_sample_count() == 4);
+        REQUIRE(rt->get_width() == 256);
+        REQUIRE(rt->get_height() == 256);
+    }
+
+    SECTION("create with 8x MSAA")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm, format::unknown, 8);
+
+        REQUIRE(rt != nullptr);
+        REQUIRE(rt->is_msaa());
+        REQUIRE(rt->get_sample_count() == 8);
+    }
+
+    SECTION("MSAA with depth buffer")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm, format::d32_float, 4);
+
+        REQUIRE(rt != nullptr);
+        REQUIRE(rt->is_msaa());
+        REQUIRE(rt->get_sample_count() == 4);
+        REQUIRE(rt->has_depth());
+        REQUIRE(rt->get_depth_format() == format::d32_float);
+    }
+
+    SECTION("MSAA color texture accessible for sampling")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm, format::unknown, 4);
+
+        REQUIRE(rt != nullptr);
+        // get_color_texture should return the resolved texture for MSAA
+        REQUIRE(rt->get_color_texture() != nullptr);
+        REQUIRE(rt->get_color_texture()->get_width() == 256);
+        REQUIRE(rt->get_color_texture()->get_height() == 256);
+    }
+
+    SECTION("resize maintains MSAA sample count")
+    {
+        auto rt = render_target::create(dev, 256, 256, format::rgba8_unorm, format::unknown, 4);
+
+        REQUIRE(rt != nullptr);
+        REQUIRE(rt->get_sample_count() == 4);
+
+        rt->resize(512, 512);
+
+        REQUIRE(rt->get_width() == 512);
+        REQUIRE(rt->get_height() == 512);
+        REQUIRE(rt->is_msaa());
+        REQUIRE(rt->get_sample_count() == 4);
+    }
+}

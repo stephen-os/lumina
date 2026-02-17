@@ -701,6 +701,7 @@ namespace lumina::graphics
         ref<render_target> m_current_target;
         format m_current_color_format = format::rgba8_unorm;
         format m_current_depth_format = format::unknown;
+        uint32_t m_current_sample_count = 1;  // MSAA sample count
 
         // Stats
         renderer2d_stats m_stats;
