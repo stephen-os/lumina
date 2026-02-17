@@ -20,6 +20,7 @@ local function create_example(name, folder)
             "%{wks.location}/lumina/core/src",
             "%{wks.location}/lumina/ui/src",
             "%{wks.location}/lumina/graphics/src",
+            "%{wks.location}/lumina/physics/src",
             "%{wks.location}/dependencies/glfw/include",
             "%{wks.location}/dependencies/glm",
             "%{wks.location}/dependencies/imgui",
@@ -30,12 +31,14 @@ local function create_example(name, folder)
             "%{wks.location}/dependencies/nvrhi/include",
             "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
             "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
+            "%{wks.location}/dependencies/box2d/include",
         }
 
         links {
             "core",
             "ui",
             "graphics",
+            "physics",
             "glfw",
             "imgui",
             "imgui-node-editor",
@@ -43,6 +46,7 @@ local function create_example(name, folder)
             "nvrhi",
             "nvrhi-d3d12",
             "nvrhi-vk",
+            "box2d",
         }
 
         defines {
