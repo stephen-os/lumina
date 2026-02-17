@@ -29,6 +29,7 @@ group "Lumina"
     include "lumina/core"
     include "lumina/ui"
     include "lumina/graphics"
+    include "lumina/physics"
 group ""
 
 -- Examples
@@ -56,12 +57,14 @@ group "Sandbox"
             "lumina/core/src",
             "lumina/ui/src",
             "lumina/graphics/src",
+            "lumina/physics/src",
             "dependencies/glfw/include",
             "dependencies/glm",
             "dependencies/imgui",
             "dependencies/imgui/backends",
             "dependencies/imgui-node-editor",
             "dependencies/imgui-file-dialog",
+            "dependencies/box2d/include",
             "dependencies/spdlog/include",
             "dependencies/nvrhi/include",
             "dependencies/nvrhi/thirdparty/DirectX-Headers/include",
@@ -72,6 +75,8 @@ group "Sandbox"
             "core",
             "ui",
             "graphics",
+            "physics",
+            "box2d",
             "glfw",
             "imgui",
             "imgui-node-editor",
