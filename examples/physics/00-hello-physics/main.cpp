@@ -56,7 +56,7 @@ public:
 
     void on_attach() override
     {
-        gfx::renderer::init(600, 600);
+        gfx::renderer::init(600, 600, 4);
 
         // Create physics world with gravity pointing down
         physics::world_def world_def;
