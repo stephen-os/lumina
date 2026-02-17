@@ -5,6 +5,7 @@
 #include <lumina/core/entry_point.h>
 #include <lumina/ui/ui.h>
 
+#include <glm/glm.hpp>
 #include <vector>
 #include <string>
 #include <algorithm>
@@ -18,7 +19,7 @@ struct Node
     std::string name;
     std::vector<ui::pin_id> inputs;
     std::vector<ui::pin_id> outputs;
-    ImVec2 initial_position = ImVec2(0, 0);
+    glm::vec2 initial_position{0, 0};
     bool position_set = false;
 };
 
@@ -43,11 +44,11 @@ public:
         m_context = std::make_unique<ui::node_editor_context>(&config);
 
         // Create some example nodes
-        create_node("Start", 0, 1, ImVec2(50, 100));
-        create_node("Process A", 1, 1, ImVec2(250, 50));
-        create_node("Process B", 1, 1, ImVec2(250, 200));
-        create_node("Combine", 2, 1, ImVec2(450, 125));
-        create_node("Output", 1, 0, ImVec2(650, 125));
+        create_node("Start", 0, 1, {50, 100});
+        create_node("Process A", 1, 1, {250, 50});
+        create_node("Process B", 1, 1, {250, 200});
+        create_node("Combine", 2, 1, {450, 125});
+        create_node("Output", 1, 0, {650, 125});
 
         // Create some example links
         create_link(m_nodes[0].outputs[0], m_nodes[1].inputs[0]);
@@ -69,13 +70,13 @@ public:
         ui::separator();
 
         m_context->set_current();
-        ui::ne_begin("Node Editor", ImVec2(0, 0));
+        ui::ne_begin("Node Editor", glm::vec2(0, 0));
 
         for (auto& node : m_nodes)
             draw_node(node);
 
         for (auto& link : m_links)
-            ui::ne_link(link.id, link.start_pin, link.end_pin, ImVec4(1, 1, 1, 1), 2.0f);
+            ui::ne_link(link.id, link.start_pin, link.end_pin, glm::vec4(1, 1, 1, 1), 2.0f);
 
         // Handle link creation
         if (ui::ne_begin_create())
@@ -171,7 +172,8 @@ private:
         }
         else if (ui::ne_show_background_context_menu())
         {
-            m_context_menu_pos = ImGui::GetMousePos();
+            auto mouse = ImGui::GetMousePos();
+            m_context_menu_pos = {mouse.x, mouse.y};
             ImGui::OpenPopup("Background Context Menu");
         }
 
@@ -191,7 +193,7 @@ private:
 
         if (ImGui::BeginPopup("Background Context Menu"))
         {
-            ImVec2 canvas_pos = ui::ne_screen_to_canvas(m_context_menu_pos);
+            glm::vec2 canvas_pos = ui::ne_screen_to_canvas(m_context_menu_pos);
             if (ImGui::MenuItem("Add Process Node"))
                 create_node("Process", 1, 1, canvas_pos);
             if (ImGui::MenuItem("Add Input Node"))
@@ -205,7 +207,7 @@ private:
         }
     }
 
-    void create_node(const std::string& name, int input_count, int output_count, ImVec2 position)
+    void create_node(const std::string& name, int input_count, int output_count, glm::vec2 position)
     {
         Node node;
         node.id = ui::node_id(m_next_id++);
@@ -293,7 +295,7 @@ private:
     int m_next_id = 1;
     ui::node_id m_context_node;
     ui::link_id m_context_link;
-    ImVec2 m_context_menu_pos;
+    glm::vec2 m_context_menu_pos{0, 0};
 };
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)

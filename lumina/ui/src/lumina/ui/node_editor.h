@@ -1,6 +1,7 @@
 #pragma once
 
 #include <imgui_node_editor.h>
+#include <glm/glm.hpp>
 
 #include <memory>
 
@@ -67,6 +68,7 @@ namespace lumina::ui
     [[nodiscard]] inline ne_style& ne_get_style() { return ne::GetStyle(); }
 
     inline void ne_begin(const char* id, const ImVec2& size = ImVec2(0, 0)) { ne::Begin(id, size); }
+    inline void ne_begin(const char* id, const glm::vec2& size) { ne::Begin(id, ImVec2(size.x, size.y)); }
     inline void ne_end() { ne::End(); }
 
     inline void ne_begin_node(node_id id) { ne::BeginNode(id); }
@@ -80,11 +82,20 @@ namespace lumina::ui
     {
         return ne::Link(id, start, end, color, thickness);
     }
+    [[nodiscard]] inline bool ne_link(link_id id, pin_id start, pin_id end,
+                        const glm::vec4& color, float thickness = 1.0f)
+    {
+        return ne::Link(id, start, end, ImVec4(color.x, color.y, color.z, color.w), thickness);
+    }
 
     // Creation
     [[nodiscard]] inline bool ne_begin_create(const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f)
     {
         return ne::BeginCreate(color, thickness);
+    }
+    [[nodiscard]] inline bool ne_begin_create(const glm::vec4& color, float thickness = 1.0f)
+    {
+        return ne::BeginCreate(ImVec4(color.x, color.y, color.z, color.w), thickness);
     }
     [[nodiscard]] inline bool ne_query_new_link(pin_id* start, pin_id* end) { return ne::QueryNewLink(start, end); }
     [[nodiscard]] inline bool ne_query_new_node(pin_id* pin) { return ne::QueryNewNode(pin); }
@@ -105,8 +116,11 @@ namespace lumina::ui
 
     // Node manipulation
     inline void ne_set_node_position(node_id id, const ImVec2& pos) { ne::SetNodePosition(id, pos); }
+    inline void ne_set_node_position(node_id id, const glm::vec2& pos) { ne::SetNodePosition(id, ImVec2(pos.x, pos.y)); }
     [[nodiscard]] inline ImVec2 ne_get_node_position(node_id id) { return ne::GetNodePosition(id); }
+    [[nodiscard]] inline glm::vec2 ne_get_node_position_vec2(node_id id) { auto p = ne::GetNodePosition(id); return {p.x, p.y}; }
     [[nodiscard]] inline ImVec2 ne_get_node_size(node_id id) { return ne::GetNodeSize(id); }
+    [[nodiscard]] inline glm::vec2 ne_get_node_size_vec2(node_id id) { auto s = ne::GetNodeSize(id); return {s.x, s.y}; }
     inline void ne_center_node_on_screen(node_id id) { ne::CenterNodeOnScreen(id); }
 
     // Selection
@@ -146,7 +160,9 @@ namespace lumina::ui
 
     // Coordinate conversion
     [[nodiscard]] inline ImVec2 ne_screen_to_canvas(const ImVec2& pos) { return ne::ScreenToCanvas(pos); }
+    [[nodiscard]] inline glm::vec2 ne_screen_to_canvas(const glm::vec2& pos) { auto r = ne::ScreenToCanvas(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
     [[nodiscard]] inline ImVec2 ne_canvas_to_screen(const ImVec2& pos) { return ne::CanvasToScreen(pos); }
+    [[nodiscard]] inline glm::vec2 ne_canvas_to_screen(const glm::vec2& pos) { auto r = ne::CanvasToScreen(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
 
     // Flow animation
     inline void ne_flow(link_id id, ne::FlowDirection dir = ne::FlowDirection::Forward) { ne::Flow(id, dir); }
