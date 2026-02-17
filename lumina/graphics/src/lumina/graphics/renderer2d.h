@@ -401,7 +401,7 @@ namespace lumina::graphics
             float thickness;
             float fade;
             float z_index;              // Depth within layer (0.0-1.0)
-            float _pad[2];
+            // Total: 72 bytes - must match input layout stride
         };
 
         struct line_vertex

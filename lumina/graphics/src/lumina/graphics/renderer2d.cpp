@@ -1064,10 +1064,10 @@ namespace lumina::graphics
         glm::vec4 local3 = glm::vec4(-1.0f,  1.0f, 0.0f, 0.0f);
 
         // Add vertices with z_index from desc
-        circle_vertex v0 = { world0, local0, desc.color, desc.uv_min, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
-        circle_vertex v1 = { world1, local1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
-        circle_vertex v2 = { world2, local2, desc.color, desc.uv_max, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
-        circle_vertex v3 = { world3, local3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.thickness, desc.fade, desc.z, {0, 0} };
+        circle_vertex v0 = { world0, local0, desc.color, desc.uv_min, tex_index, desc.thickness, desc.fade, desc.z };
+        circle_vertex v1 = { world1, local1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.thickness, desc.fade, desc.z };
+        circle_vertex v2 = { world2, local2, desc.color, desc.uv_max, tex_index, desc.thickness, desc.fade, desc.z };
+        circle_vertex v3 = { world3, local3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.thickness, desc.fade, desc.z };
 
         batch.circle_vertices.push_back(v0);
         batch.circle_vertices.push_back(v1);
