@@ -13,8 +13,8 @@ namespace lumina::physics
     b2ShapeDef body::make_shape_def(const shape_def& def) const
     {
         b2ShapeDef sd = b2DefaultShapeDef();
-        sd.friction = def.material.friction;
-        sd.restitution = def.material.restitution;
+        sd.material.friction = def.material.friction;
+        sd.material.restitution = def.material.restitution;
         sd.density = def.material.density;
         sd.filter.categoryBits = def.filter.category_bits;
         sd.filter.maskBits = def.filter.mask_bits;

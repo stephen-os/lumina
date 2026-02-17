@@ -79,11 +79,6 @@ namespace lumina::physics
         return b2Shape_IsSensor(m_shape_id);
     }
 
-    void shape::set_sensor(bool sensor)
-    {
-        b2Shape_SetSensor(m_shape_id, sensor);
-    }
-
     void shape::enable_contact_events(bool enable)
     {
         b2Shape_EnableContactEvents(m_shape_id, enable);

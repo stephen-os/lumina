@@ -65,9 +65,8 @@ namespace lumina::physics
         [[nodiscard]] collision_filter get_filter() const;
         void set_filter(const collision_filter& filter);
 
-        // Sensor
+        // Sensor (can only be set at creation time via shape_def::is_sensor)
         [[nodiscard]] bool is_sensor() const;
-        void set_sensor(bool sensor);
 
         // Events
         void enable_contact_events(bool enable);

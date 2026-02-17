@@ -51,14 +51,12 @@ namespace lumina::physics::query
         overlap_callback callback,
         query_filter filter)
     {
-        b2Circle circle;
-        circle.center = to_b2(center);
-        circle.radius = radius;
-
-        b2Transform transform = b2Transform_identity;
+        // Create a shape proxy for a circle (single point with radius)
+        b2Vec2 point = to_b2(center);
+        b2ShapeProxy proxy = b2MakeProxy(&point, 1, radius);
 
         overlap_context ctx{ &callback };
-        b2World_OverlapCircle(w.get_native_id(), &circle, transform, filter.to_b2(), overlap_callback_wrapper, &ctx);
+        b2World_OverlapShape(w.get_native_id(), &proxy, filter.to_b2(), overlap_callback_wrapper, &ctx);
     }
 
     void ray_cast(
