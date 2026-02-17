@@ -282,7 +282,7 @@ namespace lumina::ui
 
             text("dummy() - invisible spacer:");
             button("Before");
-            dummy(ImVec2(50, 20));
+            dummy(50, 20);
             same_line();
             text("<- 50x20 dummy");
             button("After");
