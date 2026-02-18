@@ -89,7 +89,7 @@ public:
 
     void on_attach() override
     {
-        gfx::renderer::init(600, 400);
+        gfx::renderer::init({.width = 600, .height = 400});
 
         auto& device = lumina::core::application::get().get_device();
 

@@ -24,6 +24,22 @@ namespace lumina::graphics
         bool operator!=(const render_context& other) const { return id != other.id; }
     };
 
+    enum class msaa_mode
+    {
+        none = 1,   /// No multisampling
+        x2   = 2,   /// 2 samples per pixel
+        x4   = 4,   /// 4 samples per pixel
+        x8   = 8,   /// 8 samples per pixel
+        x16  = 16   /// 16 samples per pixel
+    };
+
+    struct renderer_config
+    {
+        uint32_t width = 800;              /// Initial width of the default render context
+        uint32_t height = 600;             /// Initial height of the default render context
+        msaa_mode msaa = msaa_mode::none;  /// MSAA sample count for the default context
+    };
+
     /// Static 2D renderer with simplified API
     /// Wraps renderer2d and manages render contexts internally
     class renderer
@@ -33,20 +49,8 @@ namespace lumina::graphics
         // Initialization
         // ========================================================================
 
-        /// Initialize with default size (800x600)
-        static void init();
-
-        /// Initialize with explicit size
-        static void init(uint32_t width, uint32_t height);
-
-        /// Initialize with explicit size and MSAA sample count
-        static void init(uint32_t width, uint32_t height, uint32_t sample_count);
-
-		/// Initialize with glm::uvec2 size
-		static void init(const glm::uvec2& size);
-
-        /// Initialize with glm::uvec2 size and MSAA sample count
-        static void init(const glm::uvec2& size, uint32_t sample_count);
+        /// Initialize with default configuration
+        static void init(renderer_config config = {});
 
         /// Shutdown and cleanup all resources
         static void shutdown();
@@ -62,7 +66,7 @@ namespace lumina::graphics
         [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height);
 
         /// Create an additional render context with MSAA
-        [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height, uint32_t sample_count);
+        [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height, msaa_mode msaa);
 
         /// Destroy a render context
         static void destroy_context(render_context ctx);

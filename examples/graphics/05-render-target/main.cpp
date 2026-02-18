@@ -18,7 +18,7 @@ public:
 
     void on_attach() override
     {
-        gfx::renderer::init(512, 512);
+        gfx::renderer::init({.width = 512, .height = 512});
     }
 
     void on_detach() override

@@ -16,7 +16,10 @@ public:
 
     void on_attach() override
     {
-        gfx::renderer::init(m_viewport_size);
+        gfx::renderer::init({
+            .width = static_cast<uint32_t>(m_viewport_size.x),
+            .height = static_cast<uint32_t>(m_viewport_size.y)
+        });
     }
 
     void on_detach() override

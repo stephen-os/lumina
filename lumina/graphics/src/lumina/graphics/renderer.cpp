@@ -94,17 +94,7 @@ namespace lumina::graphics
     // Initialization
     // ============================================================================
 
-    void renderer::init()
-    {
-        init(800, 600, 1);
-    }
-
-    void renderer::init(uint32_t width, uint32_t height)
-    {
-        init(width, height, 1);
-    }
-
-    void renderer::init(uint32_t width, uint32_t height, uint32_t sample_count)
+    void renderer::init(renderer_config config)
     {
         if (s_state != nullptr)
         {
@@ -122,24 +112,14 @@ namespace lumina::graphics
 
         // Create default context with MSAA
         s_state->default_context.target = render_target::create(
-            device, width, height, format::rgba8_unorm, format::unknown, sample_count
+            device, config.width, config.height, format::rgba8_unorm, format::unknown, static_cast<uint32_t>(config.msaa)
         );
-        s_state->default_context.width = width;
-        s_state->default_context.height = height;
-        s_state->default_context.sample_count = sample_count;
+        s_state->default_context.width = config.width;
+        s_state->default_context.height = config.height;
+        s_state->default_context.sample_count = static_cast<uint32_t>(config.msaa);
 
         // Set default projection
-        s_state->current_projection = make_default_projection(width, height);
-    }
-
-    void renderer::init(const glm::uvec2& size)
-    {
-        init(size.x, size.y, 1);
-	}
-
-    void renderer::init(const glm::uvec2& size, uint32_t sample_count)
-    {
-        init(size.x, size.y, sample_count);
+        s_state->current_projection = make_default_projection(config.width, config.height);
     }
 
     void renderer::shutdown()
@@ -169,20 +149,20 @@ namespace lumina::graphics
 
     render_context renderer::create_context(uint32_t width, uint32_t height)
     {
-        return create_context(width, height, 1);
+        return create_context(width, height, msaa_mode::none);
     }
 
-    render_context renderer::create_context(uint32_t width, uint32_t height, uint32_t sample_count)
+    render_context renderer::create_context(uint32_t width, uint32_t height, msaa_mode msaa)
     {
         RENDERER_CHECK_INIT_RET(render_context{0});
 
         auto& device = core::application::get().get_device();
 
         renderer_state::context_data ctx_data;
-        ctx_data.target = render_target::create(device, width, height, format::rgba8_unorm, format::unknown, sample_count);
+        ctx_data.target = render_target::create(device, width, height, format::rgba8_unorm, format::unknown, static_cast<uint32_t>(msaa));
         ctx_data.width = width;
         ctx_data.height = height;
-        ctx_data.sample_count = sample_count;
+        ctx_data.sample_count = static_cast<uint32_t>(msaa);
 
         uint32_t id = s_state->next_context_id++;
         s_state->contexts[id] = std::move(ctx_data);
