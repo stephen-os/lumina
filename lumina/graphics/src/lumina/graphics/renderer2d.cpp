@@ -712,12 +712,19 @@ namespace lumina::graphics
 
         // Clear binding layouts
         m_quad_binding_layout.reset();
-        // Others share with quad
+        m_circle_binding_layout.reset();
+        m_line_binding_layout.reset();
+        m_text_binding_layout.reset();
+        m_triangle_binding_layout.reset();
+        m_pixel_binding_layout.reset();
+        m_grid_binding_layout.reset();
 
         // Clear input layouts
         m_quad_input_layout.reset();
         m_circle_input_layout.reset();
         m_line_input_layout.reset();
+        m_text_input_layout.reset();
+        m_triangle_input_layout.reset();
         m_pixel_input_layout.reset();
         m_grid_input_layout.reset();
 
@@ -741,11 +748,24 @@ namespace lumina::graphics
         m_quad_vertex_buffer.reset();
         m_quad_index_buffer.reset();
         m_circle_vertex_buffer.reset();
+        m_circle_index_buffer.reset();
         m_line_vertex_buffer.reset();
         m_text_vertex_buffer.reset();
+        m_text_index_buffer.reset();
         m_triangle_vertex_buffer.reset();
         m_pixel_vertex_buffer.reset();
         m_grid_vertex_buffer.reset();
+        m_camera_buffer.reset();
+
+        // Clear binding sets that may hold texture references
+        m_frame_binding_sets.clear();
+
+        // Clear render target reference
+        m_current_target.reset();
+
+        // Clear context and pipeline cache
+        m_context.reset();
+        m_pipeline_cache.reset();
 
         // Clear layer data
         m_layers.clear();
