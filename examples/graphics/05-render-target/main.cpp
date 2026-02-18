@@ -135,8 +135,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/05-render-target");
+    application_specifications specs;
+    specs.title = "graphics/05-render-target";
+    auto* app = new application(specs);
     app->push_layer<render_target_layer>();
     return app;
 }

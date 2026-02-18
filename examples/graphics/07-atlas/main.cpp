@@ -279,8 +279,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/07-atlas");
+    application_specifications specs;
+    specs.title = "graphics/07-atlas";
+    auto* app = new application(specs);
     app->push_layer<atlas_layer>();
     return app;
 }

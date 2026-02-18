@@ -23,9 +23,10 @@ namespace lumina::core
         return *s_instance;
     }
 
-    application::application(graphics_api api) : m_api(api)
+    application::application(application_specifications specifications) :
+        m_title(specifications.title), m_api(specifications.api)
     {
-        log::init("Lumina Application");
+        log::init(specifications.log_name);
 
         LUMINA_ASSERT(!s_instance, "Application already exists");
         s_instance = this;
@@ -35,6 +36,7 @@ namespace lumina::core
         // Create window with defaults
         m_window = make_scope<window>(window_spec{});
         m_window->set_event_callback([this](event& e) { on_event(e); });
+		m_window->set_title(m_title);
         LUMINA_ASSERT(m_window, "Failed to create application window");
 
         // Initialize device
@@ -264,7 +266,6 @@ namespace lumina::core
     void application::set_title(const std::string& title)
     {
         m_window->set_title(title);
-        log::set_name(title);
     }
 
     void application::set_icon(const std::string& icon_path)

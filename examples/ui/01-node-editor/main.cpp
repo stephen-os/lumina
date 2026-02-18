@@ -300,8 +300,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("ui/01-node-editor");
+    application_specifications specs;
+    specs.title = "ui/01-node-editor";
+    auto* app = new application(specs);
     app->push_layer<node_editor_layer>();
     return app;
 }

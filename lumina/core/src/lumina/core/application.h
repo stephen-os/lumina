@@ -13,10 +13,17 @@
 
 namespace lumina::core
 {
+    struct application_specifications
+    {
+        std::string title = "Lumina Application";
+        std::string log_name = "Lumina";
+        graphics_api api = graphics_api::vulkan;
+    };
+
     class application
     {
     public:
-        application(graphics_api api = graphics_api::vulkan);
+        application(application_specifications specifications);
         ~application();
 
         application(const application&) = delete;
@@ -79,7 +86,9 @@ namespace lumina::core
         friend void input::set_cursor_mode(input::cursor_mode);
         friend input::mouse_position input::get_mouse_position();
 
+		std::string m_title;
         graphics_api m_api;
+        
         scope<window> m_window;
         scope<device> m_device;
 

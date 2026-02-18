@@ -468,8 +468,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("physics/00-hello-physics");
+    application_specifications specs;
+    specs.title = "physics/00-hello-physics";
+    auto* app = new application(specs);
     app->push_layer<hello_physics_layer>();
     return app;
 }

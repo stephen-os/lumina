@@ -382,8 +382,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/10-animation");
+    application_specifications specs;
+    specs.title = "graphics/10-animation";
+    auto* app = new application(specs);
     app->push_layer<animation_layer>();
     return app;
 }

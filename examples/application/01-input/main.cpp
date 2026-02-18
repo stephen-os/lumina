@@ -211,8 +211,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("application/01-input");
+    application_specifications specs;
+    specs.title = "application/01-input";
+    auto* app = new application(specs);
     app->push_layer<input_layer>();
     return app;
 }

@@ -128,8 +128,9 @@ public:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/02-colors");
+    application_specifications specs;
+    specs.title = "graphics/02-colors";
+    auto* app = new application(specs);
     app->push_layer<colors_layer>();
     return app;
 }

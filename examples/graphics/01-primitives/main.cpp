@@ -97,8 +97,9 @@ public:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/01-primitives");
+    application_specifications specs;
+    specs.title = "graphics/01-primitives";
+    auto* app = new application(specs);
     app->push_layer<primitives_layer>();
     return app;
 }

@@ -154,8 +154,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("graphics/03-transforms");
+    application_specifications specs;
+    specs.title = "graphics/03-transforms";
+    auto* app = new application(specs);
     app->push_layer<transforms_layer>();
     return app;
 }

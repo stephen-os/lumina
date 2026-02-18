@@ -148,8 +148,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("ui/02-file-dialog");
+    application_specifications specs;
+    specs.title = "ui/02-file-dialog";
+    auto* app = new application(specs);
     app->push_layer<file_dialog_layer>();
     return app;
 }

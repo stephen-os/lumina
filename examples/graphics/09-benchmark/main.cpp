@@ -745,8 +745,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new application(graphics_api::vulkan);
-    app->set_title("graphics/09-benchmark");
+    application_specifications specs;
+    specs.title = "graphics/09-benchmark";
+    auto* app = new application(specs);
     app->push_layer<benchmark_layer>();
     return app;
 }
