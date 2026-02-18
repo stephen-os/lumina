@@ -18,9 +18,7 @@ namespace lumina::graphics
         if (!handle)
             return nullptr;
 
-        // AddRef the external handle so our TextureHandle can safely release it later
-        // This gives us a shared reference to the external resource
-        handle->AddRef();
+        // TextureHandle constructor AddRefs automatically, no explicit AddRef needed
         return ref<texture>(new texture(dev, nvrhi::TextureHandle(handle), width, height, fmt));
     }
 
