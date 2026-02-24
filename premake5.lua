@@ -13,7 +13,7 @@ workspace "Lumina"
     flags { "MultiProcessorCompile" }
 
 -- Dependencies (external libraries)
-group "Dependencies"
+group "dependencies"
     include "premake/dep-configs/glfw"
     include "premake/dep-configs/imgui"
     include "premake/dep-configs/imgui-node-editor"
@@ -25,7 +25,7 @@ group "Dependencies"
 group ""
 
 -- Lumina Modules
-group "Lumina"
+group "lumina"
     include "lumina/core"
     include "lumina/ui"
     include "lumina/graphics"
@@ -33,12 +33,12 @@ group "Lumina"
 group ""
 
 -- Examples
-group "Examples"
+group "examples"
     include "examples"
 group ""
 
 -- Sandbox/Test Application
-group "Sandbox"
+group "sandbox"
     project "sandbox"
         kind "ConsoleApp"
         language "C++"
@@ -129,6 +129,6 @@ group "Sandbox"
 group ""
 
 -- Tests
-group "Tests"
+group "tests"
     include "tests"
 group ""
