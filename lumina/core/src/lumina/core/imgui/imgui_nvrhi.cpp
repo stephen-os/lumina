@@ -1343,6 +1343,9 @@ namespace lumina::core::imgui
             VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
             vkQueueWaitIdle(queue);
 
+            // Run garbage collection to free staging buffers from viewport rendering
+            s_device->runGarbageCollection();
+
             VkPresentInfoKHR present_info{};
             present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
             present_info.swapchainCount = 1;
@@ -1362,6 +1365,9 @@ namespace lumina::core::imgui
             cmd_queue->Signal(vd->dx_fence.Get(), fence_val);
             vd->dx_fence_values[vd->frame_index] = fence_val;
             vd->dx_current_fence_value++;
+
+            // Run garbage collection to free staging buffers from viewport rendering
+            s_device->runGarbageCollection();
 
             vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
         }

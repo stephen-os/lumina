@@ -589,6 +589,10 @@ namespace lumina::core::platform::vulkan
         // Wait for any previous work to complete before acquiring
         vkQueueWaitIdle(m_graphics_queue);
 
+        // Run garbage collection to free staging buffers from previous frames
+        // This must be called after GPU sync to safely release resources
+        m_nvrhi_device->runGarbageCollection();
+
         // Reset fence before using it for acquire
         vkResetFences(m_device, 1, &m_in_flight_fences[m_frame_index]);
 

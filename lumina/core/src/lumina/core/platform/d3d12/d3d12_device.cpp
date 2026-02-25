@@ -331,6 +331,10 @@ namespace lumina::core::platform::d3d12
             WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
         }
 
+        // Run garbage collection to free staging buffers from previous frames
+        // This must be called after GPU sync to safely release resources
+        m_nvrhi_device->runGarbageCollection();
+
         m_command_list->open();
     }
 
