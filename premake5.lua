@@ -21,6 +21,7 @@ group "dependencies"
     include "premake/dep-configs/nvrhi"
     include "premake/dep-configs/catch2"
     include "premake/dep-configs/box2d"
+    include "premake/dep-configs/tracy"
     -- spdlog is header-only, no build needed
 group ""
 

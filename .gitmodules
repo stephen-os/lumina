@@ -25,3 +25,6 @@
 [submodule "dependencies/box2d"]
 	path = dependencies/box2d
 	url = https://github.com/stephen-os/box2d.git
+[submodule "dependencies/tracy"]
+	path = dependencies/tracy
+	url = https://github.com/wolfpld/tracy.git
