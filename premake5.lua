@@ -14,14 +14,14 @@ workspace "Lumina"
 
 -- Dependencies (external libraries)
 group "dependencies"
-    include "premake/dep-configs/glfw"
-    include "premake/dep-configs/imgui"
-    include "premake/dep-configs/imgui-node-editor"
-    include "premake/dep-configs/imgui-file-dialog"
-    include "premake/dep-configs/nvrhi"
-    include "premake/dep-configs/catch2"
-    include "premake/dep-configs/box2d"
-    include "premake/dep-configs/tracy"
+    include "dependencies/config/glfw"
+    include "dependencies/config/imgui"
+    include "dependencies/config/imgui-node-editor"
+    include "dependencies/config/imgui-file-dialog"
+    include "dependencies/config/nvrhi"
+    include "dependencies/config/catch2"
+    include "dependencies/config/box2d"
+    include "dependencies/config/tracy"
     -- spdlog is header-only, no build needed
 group ""
 

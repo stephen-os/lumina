@@ -2,7 +2,7 @@
 -- Builds NVRHI as static libraries
 
 local nvrhi_root = "%{wks.location}/dependencies/nvrhi"
-local config_dir = "%{wks.location}/premake/dep-configs/nvrhi"
+local config_dir = "%{wks.location}/dependencies/config/nvrhi"
 
 -- Common NVRHI library (core + validation)
 project "nvrhi"
