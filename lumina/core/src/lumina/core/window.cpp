@@ -11,7 +11,6 @@
     #include <GLFW/glfw3native.h>
     #include <dwmapi.h>
 
-    // These may not be defined in older Windows SDK versions
     #ifndef DWMWA_CAPTION_COLOR
         #define DWMWA_CAPTION_COLOR 35
     #endif
@@ -34,7 +33,12 @@ namespace lumina::core
     }
 
     window::window(const window_spec& spec)
-        : m_spec(spec)
+        : m_width(spec.width)
+        , m_height(spec.height)
+        , m_windowed_width(spec.width)
+        , m_windowed_height(spec.height)
+        , m_vsync(spec.vsync)
+        , m_fullscreen(spec.fullscreen)
     {
         if (!s_glfw_initialized)
         {
@@ -48,14 +52,16 @@ namespace lumina::core
             s_glfw_initialized = true;
         }
 
-        // No graphics API - NVRHI will handle this
+        // Window hints
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
         glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+        glfwWindowHint(GLFW_RESIZABLE, spec.resizable ? GLFW_TRUE : GLFW_FALSE);
+        glfwWindowHint(GLFW_DECORATED, spec.decorated ? GLFW_TRUE : GLFW_FALSE);
 
         m_window = glfwCreateWindow(
-            static_cast<int>(m_spec.width),
-            static_cast<int>(m_spec.height),
-            m_spec.title.c_str(),
+            static_cast<int>(spec.width),
+            static_cast<int>(spec.height),
+            spec.title.c_str(),
             nullptr,
             nullptr
         );
@@ -66,33 +72,33 @@ namespace lumina::core
             return;
         }
 
-        // Position window
-        glfwSetWindowPos(m_window, m_spec.position_x, m_spec.position_y);
-
         // Set window icon (custom or default)
-        if (!m_spec.icon_path.empty())
+        if (!spec.icon_path.empty())
         {
-            set_icon(m_spec.icon_path);
+            set_icon(spec.icon_path);
         }
         else
         {
-            // Apply default Lumina icon
             set_default_icon();
         }
 
         setup_callbacks();
 
-        // Apply fullscreen or maximized state
-        if (m_spec.fullscreen)
+        // Apply initial window state
+        if (spec.fullscreen)
         {
             set_fullscreen(true);
         }
-        else if (m_spec.maximized)
+        else if (spec.maximized)
         {
             maximize();
         }
+        else if (spec.centered)
+        {
+            center_on_monitor();
+        }
 
-        LUMINA_LOG_INFO("Window created: {}x{}", m_spec.width, m_spec.height);
+        LUMINA_LOG_INFO("Window created: {}x{}", m_width, m_height);
     }
 
     window::~window()
@@ -120,8 +126,8 @@ namespace lumina::core
         glfwSetWindowSizeCallback(m_window, [](GLFWwindow* glfw_window, int width, int height)
         {
             window* win = static_cast<window*>(glfwGetWindowUserPointer(glfw_window));
-            win->m_spec.width = static_cast<uint32_t>(width);
-            win->m_spec.height = static_cast<uint32_t>(height);
+            win->m_width = static_cast<uint32_t>(width);
+            win->m_height = static_cast<uint32_t>(height);
 
             if (win->m_event_callback)
             {
@@ -265,24 +271,23 @@ namespace lumina::core
 
     void window::set_vsync(bool enabled)
     {
-        // VSync is handled by NVRHI swapchain, not GLFW
-        m_spec.vsync = enabled;
+        m_vsync = enabled;
     }
 
     void window::set_fullscreen(bool fullscreen)
     {
-        if (m_spec.fullscreen == fullscreen)
+        if (m_fullscreen == fullscreen)
             return;
 
         if (fullscreen)
         {
-            // Store window position and size before going fullscreen
-            glfwGetWindowPos(m_window, &m_spec.position_x, &m_spec.position_y);
-
-            int width, height;
-            glfwGetWindowSize(m_window, &width, &height);
-            m_spec.width = static_cast<uint32_t>(width);
-            m_spec.height = static_cast<uint32_t>(height);
+            // Store windowed position and size before going fullscreen
+            int x, y;
+            glfwGetWindowPos(m_window, &x, &y);
+            m_windowed_x = x;
+            m_windowed_y = y;
+            m_windowed_width = m_width;
+            m_windowed_height = m_height;
 
             GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             LUMINA_ASSERT(monitor, "Failed to get primary monitor");
@@ -296,23 +301,80 @@ namespace lumina::core
         else
         {
             glfwSetWindowMonitor(m_window, nullptr,
-                m_spec.position_x, m_spec.position_y,
-                m_spec.width, m_spec.height, 0);
+                m_windowed_x, m_windowed_y,
+                static_cast<int>(m_windowed_width), static_cast<int>(m_windowed_height), 0);
         }
 
-        m_spec.fullscreen = fullscreen;
+        m_fullscreen = fullscreen;
+    }
+
+    void window::set_position(int32_t x, int32_t y)
+    {
+        glfwSetWindowPos(m_window, x, y);
     }
 
     void window::maximize()
     {
-        m_spec.maximized = true;
         glfwMaximizeWindow(m_window);
+    }
+
+    void window::minimize()
+    {
+        glfwIconifyWindow(m_window);
+    }
+
+    void window::restore()
+    {
+        glfwRestoreWindow(m_window);
+    }
+
+    void window::show()
+    {
+        glfwShowWindow(m_window);
+    }
+
+    void window::center_on_monitor()
+    {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        if (!monitor)
+        {
+            LUMINA_LOG_WARN("Failed to get primary monitor for centering");
+            return;
+        }
+
+        const GLFWvidmode* mode = glfwGetVideoMode(monitor);
+        if (!mode)
+        {
+            LUMINA_LOG_WARN("Failed to get video mode for centering");
+            return;
+        }
+
+        int monitor_x, monitor_y;
+        glfwGetMonitorPos(monitor, &monitor_x, &monitor_y);
+
+        int window_width, window_height;
+        glfwGetWindowSize(m_window, &window_width, &window_height);
+
+        int center_x = monitor_x + (mode->width - window_width) / 2;
+        int center_y = monitor_y + (mode->height - window_height) / 2;
+
+        glfwSetWindowPos(m_window, center_x, center_y);
+        m_windowed_x = center_x;
+        m_windowed_y = center_y;
+    }
+
+    bool window::is_maximized() const
+    {
+        return glfwGetWindowAttrib(m_window, GLFW_MAXIMIZED) == GLFW_TRUE;
+    }
+
+    bool window::is_minimized() const
+    {
+        return glfwGetWindowAttrib(m_window, GLFW_ICONIFIED) == GLFW_TRUE;
     }
 
     void window::set_icon(const std::string& icon_path)
     {
-        m_spec.icon_path = icon_path;
-
         int width, height, channels;
         unsigned char* pixels = stbi_load(icon_path.c_str(), &width, &height, &channels, 4);
 
@@ -357,12 +419,6 @@ namespace lumina::core
         stbi_image_free(pixels);
     }
 
-    void window::set_title(const std::string& title)
-    {
-        m_spec.title = title;
-        glfwSetWindowTitle(m_window, title.c_str());
-    }
-
     void window::set_titlebar_color(uint8_t r, uint8_t g, uint8_t b)
     {
 #ifdef LUMINA_PLATFORM_WINDOWS
@@ -393,17 +449,5 @@ namespace lumina::core
         LUMINA_LOG_WARN("Titlebar text color customization is only supported on Windows");
         (void)r; (void)g; (void)b;
 #endif
-    }
-
-    void window::set_position(int32_t x, int32_t y)
-    {
-        m_spec.position_x = x;
-        m_spec.position_y = y;
-        glfwSetWindowPos(m_window, x, y);
-    }
-
-    void window::show()
-    {
-        glfwShowWindow(m_window);
     }
 }

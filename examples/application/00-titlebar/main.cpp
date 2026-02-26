@@ -29,9 +29,11 @@ lumina::core::application* lumina::core::create_application(int argc, char** arg
 {
     application_specifications specs;
     specs.title = "application/00-titlebar";
+    specs.titlebar = application_specifications::titlebar_theme{
+        .background = {30.0f / 255.0f, 30.0f / 255.0f, 30.0f / 255.0f},
+        .text = {1.0f, 128.0f / 255.0f, 0.0f}
+    };
     auto* app = new application(specs);
-    app->set_titlebar_color(30, 30, 30);
-    app->set_titlebar_text_color(255, 128, 0);
     app->push_layer<titlebar_layer>();
     return app;
 }

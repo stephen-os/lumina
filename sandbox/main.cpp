@@ -57,8 +57,9 @@ private:
 
 lumina::core::application* lumina::core::create_application(int argc, char** argv)
 {
-    auto* app = new lumina::core::application();
-    app->set_title("Sandbox");
+    lumina::core::application_specifications specs;
+    specs.title = "Sandbox";
+    auto* app = new lumina::core::application(specs);
     app->push_layer<sandbox_layer>();
     return app;
 }

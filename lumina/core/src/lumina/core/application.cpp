@@ -23,32 +23,67 @@ namespace lumina::core
         return *s_instance;
     }
 
-    application::application(application_specifications specifications) :
-        m_title(specifications.title), m_api(specifications.api)
+    application::application(const application_specifications& specifications)
+        : m_specs(specifications)
     {
-        log::init(specifications.log_name);
+        // TODO: Different loggers for different subsystems
+        // For example, we should have a core logger and a client logger.
+        log::init("Lumina");
 
         LUMINA_ASSERT(!s_instance, "Application already exists");
         s_instance = this;
 
-        LUMINA_LOG_INFO("Starting Lumina Application");
+        // Set working directory if specified
+        if (!m_specs.working_directory.empty())
+        {
+            std::filesystem::current_path(m_specs.working_directory);
+        }
 
-        // Create window with defaults
-        m_window = make_scope<window>(window_spec{});
+        LUMINA_LOG_INFO("Starting Lumina Application: {}", m_specs.title);
+
+        // Build window spec from application specifications
+        window_spec win_spec;
+        win_spec.title = m_specs.title;
+        win_spec.icon_path = m_specs.icon_path.string();
+        win_spec.width = m_specs.width;
+        win_spec.height = m_specs.height;
+        win_spec.fullscreen = m_specs.fullscreen;
+        win_spec.maximized = (m_specs.start_mode == window_start_mode::maximized);
+        win_spec.centered = (m_specs.start_mode == window_start_mode::centered);
+        win_spec.resizable = m_specs.resizable;
+        win_spec.decorated = m_specs.decorated;
+        win_spec.vsync = m_specs.vsync;
+
+        m_window = make_scope<window>(win_spec);
         m_window->set_event_callback([this](event& e) { on_event(e); });
-		m_window->set_title(m_title);
         LUMINA_ASSERT(m_window, "Failed to create application window");
 
+        // Apply titlebar theme if specified (Windows only)
+        if (m_specs.titlebar.has_value())
+        {
+            const auto& theme = m_specs.titlebar.value();
+            m_window->set_titlebar_color(
+                static_cast<uint8_t>(theme.background.r * 255.0f),
+                static_cast<uint8_t>(theme.background.g * 255.0f),
+                static_cast<uint8_t>(theme.background.b * 255.0f)
+            );
+            m_window->set_titlebar_text_color(
+                static_cast<uint8_t>(theme.text.r * 255.0f),
+                static_cast<uint8_t>(theme.text.g * 255.0f),
+                static_cast<uint8_t>(theme.text.b * 255.0f)
+            );
+        }
+
         // Initialize device
-        m_device = device::create(m_api);
+        m_device = device::create(m_specs.api);
         LUMINA_ASSERT(m_device, "Failed to create device");
 
         device_desc dev_desc;
         dev_desc.window = m_window->get_native_window();
         dev_desc.width = m_window->get_width();
         dev_desc.height = m_window->get_height();
-        dev_desc.vsync = true;
-        dev_desc.app_name = "Lumina Application";
+        dev_desc.vsync = m_specs.vsync;
+        dev_desc.app_name = m_specs.title.c_str();
 #ifdef LUMINA_DEBUG
         dev_desc.enable_debug_layer = true;
 #endif
@@ -56,7 +91,10 @@ namespace lumina::core
         bool dev_init = m_device->init(dev_desc);
         LUMINA_ASSERT(dev_init, "Failed to initialize device");
 
-        init_imgui();
+        if (m_specs.enable_imgui)
+        {
+            init_imgui();
+        }
     }
 
     application::~application()
@@ -68,7 +106,10 @@ namespace lumina::core
 
         m_layer_stack.clear();
 
-        shutdown_imgui();
+        if (m_specs.enable_imgui)
+        {
+            shutdown_imgui();
+        }
 
         m_device->shutdown();
         m_device.reset();
@@ -132,32 +173,46 @@ namespace lumina::core
         auto cmd = m_device->get_command_list();
         auto fb = m_device->get_current_framebuffer();
 
-        nvrhi::utils::ClearColorAttachment(cmd, fb, 0, nvrhi::Color(0.1f, 0.1f, 0.1f, 1.0f));
+        nvrhi::utils::ClearColorAttachment(cmd, fb, 0, nvrhi::Color(
+            m_specs.clear_color.r,
+            m_specs.clear_color.g,
+            m_specs.clear_color.b,
+            m_specs.clear_color.a
+        ));
 
-        imgui::new_frame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        if (m_specs.enable_imgui)
+        {
+            imgui::new_frame();
+            ImGui_ImplGlfw_NewFrame();
+            ImGui::NewFrame();
+        }
     }
 
     void application::end_frame()
     {
-        ImGui::Render();
+        if (m_specs.enable_imgui)
+        {
+            ImGui::Render();
 
-        // Render ImGui draw data using NVRHI
-        auto cmd = m_device->get_command_list();
-        auto fb = m_device->get_current_framebuffer();
-        imgui::render_draw_data(cmd, fb, ImGui::GetDrawData());
+            // Render ImGui draw data using NVRHI
+            auto cmd = m_device->get_command_list();
+            auto fb = m_device->get_current_framebuffer();
+            imgui::render_draw_data(cmd, fb, ImGui::GetDrawData());
+        }
 
         // Present the main window first — this closes and executes the main command list.
         // Viewport rendering must happen after, since NVRHI only allows one immediate
         // command list open at a time.
         m_device->present();
 
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        if (m_specs.enable_imgui)
         {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
+            ImGuiIO& io = ImGui::GetIO();
+            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+            {
+                ImGui::UpdatePlatformWindows();
+                ImGui::RenderPlatformWindowsDefault();
+            }
         }
     }
 
@@ -228,59 +283,45 @@ namespace lumina::core
 
             begin_frame();
 
-            // Setup dockspace
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(viewport->WorkSize);
-            ImGui::SetNextWindowViewport(viewport->ID);
+            if (m_specs.enable_imgui)
+            {
+                // Setup dockspace
+                ImGuiViewport* viewport = ImGui::GetMainViewport();
+                ImGui::SetNextWindowPos(viewport->WorkPos);
+                ImGui::SetNextWindowSize(viewport->WorkSize);
+                ImGui::SetNextWindowViewport(viewport->ID);
 
-            ImGuiWindowFlags window_flags =
-                ImGuiWindowFlags_NoTitleBar |
-                ImGuiWindowFlags_NoCollapse |
-                ImGuiWindowFlags_NoResize |
-                ImGuiWindowFlags_NoMove |
-                ImGuiWindowFlags_NoBringToFrontOnFocus |
-                ImGuiWindowFlags_NoNavFocus |
-                ImGuiWindowFlags_NoBackground;
+                ImGuiWindowFlags window_flags =
+                    ImGuiWindowFlags_NoTitleBar |
+                    ImGuiWindowFlags_NoCollapse |
+                    ImGuiWindowFlags_NoResize |
+                    ImGuiWindowFlags_NoMove |
+                    ImGuiWindowFlags_NoBringToFrontOnFocus |
+                    ImGuiWindowFlags_NoNavFocus |
+                    ImGuiWindowFlags_NoBackground;
 
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-            ImGui::Begin("lumina_dockspace", nullptr, window_flags);
-            ImGui::PopStyleVar(3);
+                ImGui::Begin("lumina_dockspace", nullptr, window_flags);
+                ImGui::PopStyleVar(3);
 
-            ImGuiID dockspace_id = ImGui::GetID("lumina_dockspace_id");
-            ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+                ImGuiID dockspace_id = ImGui::GetID("lumina_dockspace_id");
+                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+            }
 
             // Render layers
             for (auto& layer : m_layer_stack)
                 layer->on_render();
 
-            ImGui::End();
+            if (m_specs.enable_imgui)
+            {
+                ImGui::End();
+            }
 
             end_frame();
         }
-    }
-
-    void application::set_title(const std::string& title)
-    {
-        m_window->set_title(title);
-    }
-
-    void application::set_icon(const std::string& icon_path)
-    {
-        m_window->set_icon(icon_path);
-    }
-
-    void application::set_titlebar_color(uint8_t r, uint8_t g, uint8_t b)
-    {
-        m_window->set_titlebar_color(r, g, b);
-    }
-
-    void application::set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b)
-    {
-        m_window->set_titlebar_text_color(r, g, b);
     }
 
     void application::set_fullscreen(bool fullscreen)
@@ -301,6 +342,46 @@ namespace lumina::core
     void application::maximize()
     {
         m_window->maximize();
+    }
+
+    void application::minimize()
+    {
+        m_window->minimize();
+    }
+
+    void application::restore()
+    {
+        m_window->restore();
+    }
+
+    uint32_t application::get_width() const
+    {
+        return m_window->get_width();
+    }
+
+    uint32_t application::get_height() const
+    {
+        return m_window->get_height();
+    }
+
+    bool application::is_fullscreen() const
+    {
+        return m_window->is_fullscreen();
+    }
+
+    bool application::is_vsync() const
+    {
+        return m_window->is_vsync();
+    }
+
+    bool application::is_maximized() const
+    {
+        return m_window->is_maximized();
+    }
+
+    bool application::is_minimized() const
+    {
+        return m_window->is_minimized();
     }
 
     float application::get_time()
