@@ -14,6 +14,12 @@
 #include <d3d12.h>
 #include <wrl/client.h>
 
+// Include profiler and Tracy D3D12 GPU header
+#include "../../profiler.h"
+#ifdef TRACY_ENABLE
+    #include <tracy/TracyD3D12.hpp>
+#endif
+
 #include <vector>
 
 namespace lumina::core::platform::d3d12
@@ -93,6 +99,10 @@ namespace lumina::core::platform::d3d12
         // Swapchain textures and framebuffers
         std::vector<nvrhi::TextureHandle> m_swapchain_textures;
         std::vector<nvrhi::FramebufferHandle> m_swapchain_framebuffers;
+
+#ifdef TRACY_ENABLE
+        TracyD3D12Ctx m_tracy_ctx = nullptr;
+#endif
     };
 }
 

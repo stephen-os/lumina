@@ -90,6 +90,11 @@ namespace lumina::core::platform::d3d12
             return false;
         }
 
+#ifdef TRACY_ENABLE
+        m_tracy_ctx = LUMINA_PROFILE_GPU_D3D12_CONTEXT(m_device.Get(), m_command_queue.Get());
+        LUMINA_PROFILE_GPU_D3D12_CONTEXT_NAME(m_tracy_ctx, "D3D12 Main Queue");
+#endif
+
         LUMINA_LOG_INFO("D3D12 graphics device initialized successfully");
         return true;
     }
@@ -100,6 +105,14 @@ namespace lumina::core::platform::d3d12
         {
             wait_for_gpu();
         }
+
+#ifdef TRACY_ENABLE
+        if (m_tracy_ctx)
+        {
+            LUMINA_PROFILE_GPU_D3D12_DESTROY(m_tracy_ctx);
+            m_tracy_ctx = nullptr;
+        }
+#endif
 
         destroy_framebuffers();
 
@@ -322,6 +335,8 @@ namespace lumina::core::platform::d3d12
 
     void d3d12_device::begin_frame()
     {
+        LUMINA_PROFILE_SCOPE_NC("D3D12::BeginFrame", profiler::colors::gpu);
+
         m_frame_index = m_swapchain->GetCurrentBackBufferIndex();
 
         // Wait for the previous frame to complete
@@ -330,6 +345,10 @@ namespace lumina::core::platform::d3d12
             m_fence->SetEventOnCompletion(m_fence_values[m_frame_index], m_fence_event);
             WaitForSingleObjectEx(m_fence_event, INFINITE, FALSE);
         }
+
+#ifdef TRACY_ENABLE
+        LUMINA_PROFILE_GPU_D3D12_COLLECT(m_tracy_ctx);
+#endif
 
         // Run garbage collection to free staging buffers from previous frames
         // This must be called after GPU sync to safely release resources
@@ -340,6 +359,8 @@ namespace lumina::core::platform::d3d12
 
     void d3d12_device::present()
     {
+        LUMINA_PROFILE_SCOPE_NC("D3D12::Present", profiler::colors::gpu);
+
         m_command_list->close();
         m_nvrhi_device->executeCommandList(m_command_list);
 

@@ -64,6 +64,7 @@ project "graphics"
         "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
         "%{wks.location}/dependencies/stb_truetype",
         "%{wks.location}/dependencies/stb_image",
+        "%{wks.location}/dependencies/tracy/public",
     }
 
     links {
@@ -72,6 +73,7 @@ project "graphics"
         "nvrhi",
         "nvrhi-d3d12",
         "nvrhi-vk",
+        "tracy",
     }
 
     defines {
@@ -101,12 +103,20 @@ project "graphics"
         }
 
     filter "configurations:Debug"
-        defines { "LUMINA_DEBUG" }
+        defines {
+            "LUMINA_DEBUG",
+            "TRACY_ENABLE",
+            "TRACY_ON_DEMAND",
+        }
         runtime "Debug"
         symbols "On"
 
     filter "configurations:Release"
-        defines { "LUMINA_RELEASE" }
+        defines {
+            "LUMINA_RELEASE",
+            "TRACY_ENABLE",
+            "TRACY_ON_DEMAND",
+        }
         runtime "Release"
         optimize "On"
         symbols "On"

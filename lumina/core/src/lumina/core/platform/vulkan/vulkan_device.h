@@ -15,6 +15,12 @@
 
 #include <nvrhi/vulkan.h>
 
+// Include profiler and Tracy Vulkan GPU header
+#include "../../profiler.h"
+#ifdef TRACY_ENABLE
+    #include <tracy/TracyVulkan.hpp>
+#endif
+
 #include <vector>
 
 namespace lumina::core::platform::vulkan
@@ -97,5 +103,10 @@ namespace lumina::core::platform::vulkan
         // Swapchain textures and framebuffers
         std::vector<nvrhi::TextureHandle> m_swapchain_textures;
         std::vector<nvrhi::FramebufferHandle> m_swapchain_framebuffers;
+
+#ifdef TRACY_ENABLE
+        TracyVkCtx m_tracy_ctx = nullptr;
+        VkCommandPool m_tracy_command_pool = VK_NULL_HANDLE;
+#endif
     };
 }

@@ -16,4 +16,5 @@
 #include "timer.h"
 #include "uuid.h"
 #include "random.h"
+#include "profiler.h"
 #include "application.h"

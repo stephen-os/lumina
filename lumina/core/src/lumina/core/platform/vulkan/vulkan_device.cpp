@@ -138,6 +138,30 @@ namespace lumina::core::platform::vulkan
             return false;
         }
 
+#ifdef TRACY_ENABLE
+        // Create command pool for Tracy
+        VkCommandPoolCreateInfo pool_info{};
+        pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        pool_info.queueFamilyIndex = m_graphics_queue_family;
+        pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+
+        if (vkCreateCommandPool(m_device, &pool_info, nullptr, &m_tracy_command_pool) == VK_SUCCESS)
+        {
+            VkCommandBufferAllocateInfo alloc_info{};
+            alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            alloc_info.commandPool = m_tracy_command_pool;
+            alloc_info.commandBufferCount = 1;
+
+            VkCommandBuffer tracy_cmd;
+            if (vkAllocateCommandBuffers(m_device, &alloc_info, &tracy_cmd) == VK_SUCCESS)
+            {
+                m_tracy_ctx = LUMINA_PROFILE_GPU_VK_CONTEXT(m_physical_device, m_device, m_graphics_queue, tracy_cmd);
+                LUMINA_PROFILE_GPU_VK_CONTEXT_NAME(m_tracy_ctx, "Vulkan Main Queue");
+            }
+        }
+#endif
+
         LUMINA_LOG_INFO("Vulkan graphics device initialized successfully");
         return true;
     }
@@ -148,6 +172,19 @@ namespace lumina::core::platform::vulkan
         {
             vkDeviceWaitIdle(m_device);
         }
+
+#ifdef TRACY_ENABLE
+        if (m_tracy_ctx)
+        {
+            LUMINA_PROFILE_GPU_VK_DESTROY(m_tracy_ctx);
+            m_tracy_ctx = nullptr;
+        }
+        if (m_tracy_command_pool)
+        {
+            vkDestroyCommandPool(m_device, m_tracy_command_pool, nullptr);
+            m_tracy_command_pool = VK_NULL_HANDLE;
+        }
+#endif
 
         destroy_framebuffers();
         destroy_swapchain();
@@ -586,6 +623,8 @@ namespace lumina::core::platform::vulkan
 
     void vulkan_device::begin_frame()
     {
+        LUMINA_PROFILE_SCOPE_NC("Vulkan::BeginFrame", profiler::colors::gpu);
+
         // Wait for any previous work to complete before acquiring
         vkQueueWaitIdle(m_graphics_queue);
 
@@ -614,6 +653,8 @@ namespace lumina::core::platform::vulkan
 
     void vulkan_device::present()
     {
+        LUMINA_PROFILE_SCOPE_NC("Vulkan::Present", profiler::colors::gpu);
+
         m_command_list->close();
         m_nvrhi_device->executeCommandList(m_command_list);
 

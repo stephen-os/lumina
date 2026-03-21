@@ -1,6 +1,7 @@
 #include "imgui_nvrhi.h"
 #include "../log.h"
 #include "../device.h"
+#include "../profiler.h"
 
 #include <imgui.h>
 
@@ -717,6 +718,8 @@ namespace lumina::core::imgui
 
     void render_draw_data(nvrhi::ICommandList* command_list, nvrhi::IFramebuffer* framebuffer, ImDrawData* draw_data)
     {
+        LUMINA_PROFILE_SCOPE_NC("ImGui::RenderDrawData", profiler::colors::ui);
+
         if (!draw_data || draw_data->TotalVtxCount == 0)
             return;
 

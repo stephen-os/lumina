@@ -2,6 +2,7 @@
 #include "log.h"
 #include "assert.h"
 #include "theme.h"
+#include "profiler.h"
 #include "imgui/imgui_nvrhi.h"
 
 #include <imgui.h>
@@ -167,6 +168,8 @@ namespace lumina::core
 
     void application::begin_frame()
     {
+        LUMINA_PROFILE_SCOPE_NC("Application::BeginFrame", profiler::colors::frame);
+
         m_device->begin_frame();
 
         // Clear the framebuffer
@@ -190,6 +193,8 @@ namespace lumina::core
 
     void application::end_frame()
     {
+        LUMINA_PROFILE_SCOPE_NC("Application::EndFrame", profiler::colors::frame);
+
         if (m_specs.enable_imgui)
         {
             ImGui::Render();
@@ -260,6 +265,8 @@ namespace lumina::core
 
         while (m_running)
         {
+            LUMINA_PROFILE_SCOPE_NC("Application::Frame", profiler::colors::frame);
+
             m_window->update();
 
             if (m_window->should_close())
@@ -269,17 +276,23 @@ namespace lumina::core
             }
 
             // Process queued events
-            for (auto& e : m_event_queue)
-                on_event(*e);
-            m_event_queue.clear();
+            {
+                LUMINA_PROFILE_SCOPE_N("Application::ProcessEvents");
+                for (auto& e : m_event_queue)
+                    on_event(*e);
+                m_event_queue.clear();
+            }
 
             float current_time = get_time();
             float timestep = std::clamp(current_time - last_time, 0.001f, 0.1f);
             last_time = current_time;
 
             // Update layers
-            for (auto& layer : m_layer_stack)
-                layer->on_update(timestep);
+            {
+                LUMINA_PROFILE_SCOPE_N("Application::UpdateLayers");
+                for (auto& layer : m_layer_stack)
+                    layer->on_update(timestep);
+            }
 
             begin_frame();
 
@@ -312,8 +325,11 @@ namespace lumina::core
             }
 
             // Render layers
-            for (auto& layer : m_layer_stack)
-                layer->on_render();
+            {
+                LUMINA_PROFILE_SCOPE_N("Application::RenderLayers");
+                for (auto& layer : m_layer_stack)
+                    layer->on_render();
+            }
 
             if (m_specs.enable_imgui)
             {
@@ -321,6 +337,8 @@ namespace lumina::core
             }
 
             end_frame();
+
+            LUMINA_PROFILE_FRAME();
         }
     }
 

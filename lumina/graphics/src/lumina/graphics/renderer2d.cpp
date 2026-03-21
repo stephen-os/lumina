@@ -3,6 +3,7 @@
 #include "format_utils.h"
 
 #include <lumina/core/device.h>
+#include <lumina/core/profiler.h>
 #include "embedded_font.h"
 
 #include <lumina/core/log.h>
@@ -781,6 +782,8 @@ namespace lumina::graphics
 
     void renderer2d::begin(const glm::mat4& view, const glm::mat4& projection)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::Begin", 0x44FF44);
+
         // Set up context with current frame's command list
         m_context->set_command_list(m_device.get_command_list());
 
@@ -841,6 +844,8 @@ namespace lumina::graphics
 
     void renderer2d::end()
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::End", 0x44FF44);
+
         flush_all();
 
         // If lighting is enabled, render lights and composite
@@ -1583,6 +1588,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_all()
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushAll", 0x44FF44);
+
         // Iterate layers in sorted order (std::map is ordered by key)
         for (auto& [layer_id, batch] : m_layers)
         {
@@ -1595,6 +1602,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_layer(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLayer", 0x44FF44);
+
         // Flush all primitive types for this layer in order
         flush_quads(layer_id);
         flush_circles(layer_id);
@@ -1633,6 +1642,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_quads(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushQuads", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -1719,6 +1730,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_circles(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushCircles", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -1807,6 +1820,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_lines(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLines", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -1885,6 +1900,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_text(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushText", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -1972,6 +1989,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_triangles(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushTriangles", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -2059,6 +2078,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_pixels(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushPixels", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -2137,6 +2158,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_grids(uint32_t layer_id)
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushGrids", 0x44FF44);
+
         auto it = m_layers.find(layer_id);
         if (it == m_layers.end())
             return;
@@ -2397,6 +2420,8 @@ namespace lumina::graphics
 
     void renderer2d::flush_lights()
     {
+        LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLights", 0x44FF44);
+
         if (m_point_lights.empty())
             return;
 
