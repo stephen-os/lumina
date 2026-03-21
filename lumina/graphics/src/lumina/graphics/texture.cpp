@@ -69,6 +69,12 @@ namespace lumina::graphics
             tex_desc.isUAV = true;
         }
 
+        if (desc.allow_uav)
+        {
+            tex_desc.isUAV = true;
+            tex_desc.initialState = nvrhi::ResourceStates::UnorderedAccess;
+        }
+
         nvrhi::TextureHandle tex = nvrhi_device->createTexture(tex_desc);
         if (!tex)
         {
@@ -89,6 +95,21 @@ namespace lumina::graphics
         }
 
         return ref<texture>(new texture(dev, std::move(tex), desc.width, desc.height, desc.pixel_format));
+    }
+
+    ref<texture> texture::create_storage(
+        core::device& dev,
+        uint32_t width,
+        uint32_t height,
+        format fmt,
+        std::string_view debug_name)
+    {
+        texture_desc desc;
+        desc.width = width;
+        desc.height = height;
+        desc.pixel_format = fmt;
+        desc.allow_uav = true;
+        return create(dev, desc, nullptr, debug_name);
     }
 
     ref<texture> texture::load_from_file(core::device& dev, const std::string& path, std::string_view debug_name)

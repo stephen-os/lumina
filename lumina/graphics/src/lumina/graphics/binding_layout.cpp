@@ -4,6 +4,7 @@
 #include "texture.h"
 #include "sampler.h"
 #include "uniform_buffer.h"
+#include "storage_buffer.h"
 
 #include <lumina/core/log.h>
 
@@ -21,8 +22,9 @@ namespace lumina::graphics
             case binding_type::sampler:         return nvrhi::ResourceType::Sampler;
             case binding_type::constant_buffer: return nvrhi::ResourceType::ConstantBuffer;
             case binding_type::storage_texture: return nvrhi::ResourceType::Texture_UAV;
-            case binding_type::storage_buffer:  return nvrhi::ResourceType::StructuredBuffer_UAV;
-            default:                            return nvrhi::ResourceType::None;
+            case binding_type::storage_buffer:     return nvrhi::ResourceType::StructuredBuffer_UAV;
+            case binding_type::structured_buffer:  return nvrhi::ResourceType::StructuredBuffer_SRV;
+            default:                               return nvrhi::ResourceType::None;
         }
     }
 
@@ -52,6 +54,24 @@ namespace lumina::graphics
         return *this;
     }
 
+    binding_set_desc& binding_set_desc::add_storage_texture(uint32_t slot, ref<texture> tex)
+    {
+        bindings.push_back({ slot, binding_type::storage_texture, tex ? tex->get_texture() : nullptr, 0 });
+        return *this;
+    }
+
+    binding_set_desc& binding_set_desc::add_storage_buffer(uint32_t slot, ref<storage_buffer> buf)
+    {
+        bindings.push_back({ slot, binding_type::storage_buffer, buf ? buf->get_buffer() : nullptr, 0 });
+        return *this;
+    }
+
+    binding_set_desc& binding_set_desc::add_structured_buffer(uint32_t slot, ref<storage_buffer> buf)
+    {
+        bindings.push_back({ slot, binding_type::structured_buffer, buf ? buf->get_buffer() : nullptr, 0 });
+        return *this;
+    }
+
     // --- binding_layout ---
 
     binding_layout::~binding_layout() = default;
@@ -71,6 +91,8 @@ namespace lumina::graphics
             visibility = visibility | nvrhi::ShaderType::Vertex;
         if (desc.pixel_shader_visible)
             visibility = visibility | nvrhi::ShaderType::Pixel;
+        if (desc.compute_shader_visible)
+            visibility = visibility | nvrhi::ShaderType::Compute;
 
         nvrhi::BindingLayoutDesc nvrhi_desc;
         nvrhi_desc.visibility = visibility;
@@ -156,6 +178,12 @@ namespace lumina::graphics
                 {
                     auto* buf = static_cast<nvrhi::IBuffer*>(item.resource);
                     nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_UAV(item.slot, buf));
+                    break;
+                }
+                case binding_type::structured_buffer:
+                {
+                    auto* buf = static_cast<nvrhi::IBuffer*>(item.resource);
+                    nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_SRV(item.slot, buf));
                     break;
                 }
                 default:

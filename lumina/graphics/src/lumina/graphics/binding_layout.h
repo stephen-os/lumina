@@ -15,6 +15,7 @@ namespace lumina::graphics
 {
     class texture;
     class uniform_buffer;
+    class storage_buffer;
 
     /// Types of shader resource bindings.
     enum class binding_type
@@ -23,7 +24,8 @@ namespace lumina::graphics
         sampler,            // Texture sampler
         constant_buffer,    // Uniform/constant buffer
         storage_texture,    // Read-write texture (UAV)
-        storage_buffer      // Read-write buffer (UAV)
+        storage_buffer,     // Read-write buffer (UAV)
+        structured_buffer   // Read-only structured buffer (SRV)
     };
 
     /// Describes a single binding slot in a binding layout.
@@ -40,6 +42,9 @@ namespace lumina::graphics
         [[nodiscard]] static binding_item texture_array(uint32_t slot, uint32_t count) noexcept { return { slot, binding_type::texture, count }; }
         [[nodiscard]] static binding_item sampler(uint32_t slot) noexcept { return { slot, binding_type::sampler, 1 }; }
         [[nodiscard]] static binding_item constant_buffer(uint32_t slot) noexcept { return { slot, binding_type::constant_buffer, 1 }; }
+        [[nodiscard]] static binding_item storage_texture(uint32_t slot) noexcept { return { slot, binding_type::storage_texture, 1 }; }
+        [[nodiscard]] static binding_item storage_buffer(uint32_t slot) noexcept { return { slot, binding_type::storage_buffer, 1 }; }
+        [[nodiscard]] static binding_item structured_buffer(uint32_t slot) noexcept { return { slot, binding_type::structured_buffer, 1 }; }
     };
 
     /// Configuration for binding layout creation.
@@ -48,6 +53,7 @@ namespace lumina::graphics
         std::vector<binding_item> bindings;
         bool vertex_shader_visible = true;
         bool pixel_shader_visible = true;
+        bool compute_shader_visible = false;
 
         binding_layout_desc& add_texture(uint32_t slot)
         {
@@ -70,6 +76,42 @@ namespace lumina::graphics
         binding_layout_desc& add_constant_buffer(uint32_t slot)
         {
             bindings.push_back(binding_item::constant_buffer(slot));
+            return *this;
+        }
+
+        binding_layout_desc& add_storage_texture(uint32_t slot)
+        {
+            bindings.push_back(binding_item::storage_texture(slot));
+            return *this;
+        }
+
+        binding_layout_desc& add_storage_buffer(uint32_t slot)
+        {
+            bindings.push_back(binding_item::storage_buffer(slot));
+            return *this;
+        }
+
+        binding_layout_desc& add_structured_buffer(uint32_t slot)
+        {
+            bindings.push_back(binding_item::structured_buffer(slot));
+            return *this;
+        }
+
+        /// Sets visibility for compute shaders only.
+        binding_layout_desc& for_compute()
+        {
+            vertex_shader_visible = false;
+            pixel_shader_visible = false;
+            compute_shader_visible = true;
+            return *this;
+        }
+
+        /// Sets visibility for all shader stages.
+        binding_layout_desc& for_all_stages()
+        {
+            vertex_shader_visible = true;
+            pixel_shader_visible = true;
+            compute_shader_visible = true;
             return *this;
         }
     };
@@ -128,6 +170,9 @@ namespace lumina::graphics
         binding_set_desc& add_texture_array_element(uint32_t slot, uint32_t array_index, ref<texture> tex);
         binding_set_desc& add_sampler(uint32_t slot, ref<sampler> samp);
         binding_set_desc& add_constant_buffer(uint32_t slot, ref<uniform_buffer> ubo);
+        binding_set_desc& add_storage_texture(uint32_t slot, ref<texture> tex);
+        binding_set_desc& add_storage_buffer(uint32_t slot, ref<storage_buffer> buf);
+        binding_set_desc& add_structured_buffer(uint32_t slot, ref<storage_buffer> buf);
     };
 
     /// GPU binding set containing actual resource bindings.
