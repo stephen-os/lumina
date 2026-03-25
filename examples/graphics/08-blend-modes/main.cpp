@@ -1,11 +1,11 @@
 // 08-blend-modes: Blend Modes Demo
 // Demonstrates: Opaque, alpha, additive, multiply blend modes with scissor clipping
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/core/input.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/core/Input.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <cmath>

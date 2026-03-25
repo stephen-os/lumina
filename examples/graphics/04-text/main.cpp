@@ -1,10 +1,10 @@
 // graphics/04-text: Text rendering
 // Demonstrates: TrueType fonts, scales, colors, alignment
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 

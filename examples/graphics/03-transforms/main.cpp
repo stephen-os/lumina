@@ -1,10 +1,10 @@
 // 03-transforms: Transformation demonstration
 // Demonstrates: Rotation, scaling, rotation origin points
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 

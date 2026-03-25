@@ -1,10 +1,10 @@
 // 02-colors: Color system demonstration
 // Demonstrates: RGBA colors, transparency, alpha blending, color mixing
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 namespace UI = Lumina::UI;
 namespace Gfx = Lumina::Graphics;

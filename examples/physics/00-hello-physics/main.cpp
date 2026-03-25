@@ -1,12 +1,12 @@
 // physics/00-hello-physics: Basic Physics Demo
 // Demonstrates: Physics world, dynamic/static bodies, basic collision
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/core/input.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/physics/physics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/core/Input.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/physics/Physics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <vector>

@@ -1,9 +1,9 @@
 // ui/00-demo: Lumina UI Demo Window
 // Demonstrates: All UI:: functions in one place
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/ui/UI.h>
 
 namespace UI = Lumina::UI;
 

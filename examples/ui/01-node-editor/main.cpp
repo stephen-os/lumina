@@ -1,9 +1,9 @@
 // ui/01-node-editor: Node-based visual editor
 // Demonstrates: Node editor, nodes, pins, links, context menus
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <vector>

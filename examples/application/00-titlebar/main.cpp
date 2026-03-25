@@ -1,9 +1,9 @@
 // application/00-titlebar: Custom window titlebar colors
 // Demonstrates: Windows 11+ titlebar color customization
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/ui/UI.h>
 
 namespace UI = Lumina::UI;
 

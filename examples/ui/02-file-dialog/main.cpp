@@ -1,9 +1,9 @@
 // ui/02-file-dialog: File picker dialogs
 // Demonstrates: Open file, save file, folder picker, multi-select
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <string>

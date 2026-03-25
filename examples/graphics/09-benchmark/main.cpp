@@ -1,11 +1,11 @@
 // 09-benchmark: Performance Benchmark Suite
 // Demonstrates: Stress tests for renderer2d batching, draw calls, and throughput
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/core/input.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/core/Input.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <cmath>

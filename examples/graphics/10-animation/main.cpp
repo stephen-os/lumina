@@ -1,11 +1,11 @@
 // graphics/10-animation: Sprite Animation Demo
 // Demonstrates: Frame-based animation, animation states, procedural animation
 
-#include <lumina/core/core.h>
-#include <lumina/core/entry_point.h>
-#include <lumina/core/input.h>
-#include <lumina/graphics/graphics.h>
-#include <lumina/ui/ui.h>
+#include <lumina/core/Core.h>
+#include <lumina/core/EntryPoint.h>
+#include <lumina/core/Input.h>
+#include <lumina/graphics/Graphics.h>
+#include <lumina/ui/UI.h>
 
 #include <glm/glm.hpp>
 #include <filesystem>
