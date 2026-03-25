@@ -1,0 +1,217 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Dist|x64">
+      <Configuration>Dist</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4E40957C-3A77-960D-E363-7C10CF79120F}</ProjectGuid>
+    <IgnoreWarnCompileDuplicatedFilename>true</IgnoreWarnCompileDuplicatedFilename>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>core</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <OutDir>$(ProjectDir)..\..\bin\Debug-windows-x86_64\core\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Debug-windows-x86_64\core\</IntDir>
+    <TargetName>core</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <OutDir>$(ProjectDir)..\..\bin\Release-windows-x86_64\core\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Release-windows-x86_64\core\</IntDir>
+    <TargetName>core</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <OutDir>$(ProjectDir)..\..\bin\Dist-windows-x86_64\core\</OutDir>
+    <IntDir>$(ProjectDir)..\..\bin-int\Dist-windows-x86_64\core\</IntDir>
+    <TargetName>core</TargetName>
+    <TargetExt>.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;NVRHI_WITH_DX12=1;NVRHI_WITH_VULKAN=1;VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1;LUMINA_PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;NOMINMAX;VK_USE_PLATFORM_WIN32_KHR;LUMINA_DEBUG;TRACY_ENABLE;TRACY_ON_DEMAND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;..\..\dependencies\glfw\include;..\..\dependencies\imgui;..\..\dependencies\imgui\backends;..\..\dependencies\glm;..\..\dependencies\spdlog\include;..\..\dependencies\nvrhi\include;..\..\dependencies\nvrhi\thirdparty\DirectX-Headers\include;..\..\dependencies\nvrhi\thirdparty\Vulkan-Headers\include;..\..\dependencies\stb_image;..\..\dependencies\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>false</MinimalRebuild>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;dwmapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;NVRHI_WITH_DX12=1;NVRHI_WITH_VULKAN=1;VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1;LUMINA_PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;NOMINMAX;VK_USE_PLATFORM_WIN32_KHR;LUMINA_RELEASE;TRACY_ENABLE;TRACY_ON_DEMAND;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;..\..\dependencies\glfw\include;..\..\dependencies\imgui;..\..\dependencies\imgui\backends;..\..\dependencies\glm;..\..\dependencies\spdlog\include;..\..\dependencies\nvrhi\include;..\..\dependencies\nvrhi\thirdparty\DirectX-Headers\include;..\..\dependencies\nvrhi\thirdparty\Vulkan-Headers\include;..\..\dependencies\stb_image;..\..\dependencies\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;dwmapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Dist|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <PreprocessorDefinitions>GLFW_INCLUDE_NONE;IMGUI_DEFINE_MATH_OPERATORS;NVRHI_WITH_DX12=1;NVRHI_WITH_VULKAN=1;VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1;LUMINA_PLATFORM_WINDOWS;WIN32_LEAN_AND_MEAN;NOMINMAX;VK_USE_PLATFORM_WIN32_KHR;LUMINA_DIST;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>src;..\..\dependencies\glfw\include;..\..\dependencies\imgui;..\..\dependencies\imgui\backends;..\..\dependencies\glm;..\..\dependencies\spdlog\include;..\..\dependencies\nvrhi\include;..\..\dependencies\nvrhi\thirdparty\DirectX-Headers\include;..\..\dependencies\nvrhi\thirdparty\Vulkan-Headers\include;..\..\dependencies\stb_image;..\..\dependencies\tracy\public;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <DebugInformationFormat>None</DebugInformationFormat>
+      <Optimization>Full</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <MinimalRebuild>false</MinimalRebuild>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <ExternalWarningLevel>Level3</ExternalWarningLevel>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+    <Lib>
+      <AdditionalDependencies>d3d12.lib;dxgi.lib;dxguid.lib;dwmapi.lib;vulkan-1.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(VULKAN_SDK)\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="src\lumina\core\application.h" />
+    <ClInclude Include="src\lumina\core\assert.h" />
+    <ClInclude Include="src\lumina\core\base.h" />
+    <ClInclude Include="src\lumina\core\core.h" />
+    <ClInclude Include="src\lumina\core\default_icon.h" />
+    <ClInclude Include="src\lumina\core\device.h" />
+    <ClInclude Include="src\lumina\core\duration.h" />
+    <ClInclude Include="src\lumina\core\entry_point.h" />
+    <ClInclude Include="src\lumina\core\event.h" />
+    <ClInclude Include="src\lumina\core\file.h" />
+    <ClInclude Include="src\lumina\core\imgui\imgui_nvrhi.h" />
+    <ClInclude Include="src\lumina\core\input.h" />
+    <ClInclude Include="src\lumina\core\layer.h" />
+    <ClInclude Include="src\lumina\core\log.h" />
+    <ClInclude Include="src\lumina\core\platform\d3d12\d3d12_device.h" />
+    <ClInclude Include="src\lumina\core\platform\vulkan\vulkan_device.h" />
+    <ClInclude Include="src\lumina\core\profiler.h" />
+    <ClInclude Include="src\lumina\core\random.h" />
+    <ClInclude Include="src\lumina\core\theme.h" />
+    <ClInclude Include="src\lumina\core\timer.h" />
+    <ClInclude Include="src\lumina\core\uuid.h" />
+    <ClInclude Include="src\lumina\core\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\lumina\core\application.cpp" />
+    <ClCompile Include="src\lumina\core\device.cpp" />
+    <ClCompile Include="src\lumina\core\file.cpp" />
+    <ClCompile Include="src\lumina\core\imgui\imgui_nvrhi.cpp" />
+    <ClCompile Include="src\lumina\core\input.cpp" />
+    <ClCompile Include="src\lumina\core\layer.cpp" />
+    <ClCompile Include="src\lumina\core\log.cpp" />
+    <ClCompile Include="src\lumina\core\platform\d3d12\d3d12_device.cpp" />
+    <ClCompile Include="src\lumina\core\platform\vulkan\vulkan_device.cpp" />
+    <ClCompile Include="src\lumina\core\theme.cpp" />
+    <ClCompile Include="src\lumina\core\uuid.cpp" />
+    <ClCompile Include="src\lumina\core\window.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\dependencies\config\glfw\glfw.vcxproj">
+      <Project>{9563977C-819A-980D-2A87-7E10169D140F}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dependencies\config\imgui\imgui.vcxproj">
+      <Project>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dependencies\config\nvrhi\nvrhi.vcxproj">
+      <Project>{0C2F0810-7843-30C1-41C5-D320AD982CF2}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dependencies\config\nvrhi\nvrhi-d3d12.vcxproj">
+      <Project>{F7A511F3-635B-8AE8-EC4F-84BF580481EC}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dependencies\config\nvrhi\nvrhi-vk.vcxproj">
+      <Project>{9A32D58C-86FF-2F98-AF18-1E409B446526}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\dependencies\config\tracy\tracy.vcxproj">
+      <Project>{A8477210-145C-9AC1-DDDD-3D2149B196F2}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,67 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="imgui">
+      <UniqueIdentifier>{0098A80F-6CAC-D0C0-352E-7420A101CDF1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform">
+      <UniqueIdentifier>{4A63C33C-3630-1E48-5F49-0CF04B7553D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\d3d12">
+      <UniqueIdentifier>{F7E1A8FD-E3AF-9C03-CC43-0D2AB8B07868}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="platform\vulkan">
+      <UniqueIdentifier>{AAAD71E1-1639-DFA5-1F4A-629A8B543BA6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\lumina\core\application.h" />
+    <ClInclude Include="src\lumina\core\assert.h" />
+    <ClInclude Include="src\lumina\core\base.h" />
+    <ClInclude Include="src\lumina\core\core.h" />
+    <ClInclude Include="src\lumina\core\default_icon.h" />
+    <ClInclude Include="src\lumina\core\device.h" />
+    <ClInclude Include="src\lumina\core\duration.h" />
+    <ClInclude Include="src\lumina\core\entry_point.h" />
+    <ClInclude Include="src\lumina\core\event.h" />
+    <ClInclude Include="src\lumina\core\file.h" />
+    <ClInclude Include="src\lumina\core\imgui\imgui_nvrhi.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lumina\core\input.h" />
+    <ClInclude Include="src\lumina\core\layer.h" />
+    <ClInclude Include="src\lumina\core\log.h" />
+    <ClInclude Include="src\lumina\core\platform\d3d12\d3d12_device.h">
+      <Filter>platform\d3d12</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lumina\core\platform\vulkan\vulkan_device.h">
+      <Filter>platform\vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="src\lumina\core\profiler.h" />
+    <ClInclude Include="src\lumina\core\random.h" />
+    <ClInclude Include="src\lumina\core\theme.h" />
+    <ClInclude Include="src\lumina\core\timer.h" />
+    <ClInclude Include="src\lumina\core\uuid.h" />
+    <ClInclude Include="src\lumina\core\window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\lumina\core\application.cpp" />
+    <ClCompile Include="src\lumina\core\device.cpp" />
+    <ClCompile Include="src\lumina\core\file.cpp" />
+    <ClCompile Include="src\lumina\core\imgui\imgui_nvrhi.cpp">
+      <Filter>imgui</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lumina\core\input.cpp" />
+    <ClCompile Include="src\lumina\core\layer.cpp" />
+    <ClCompile Include="src\lumina\core\log.cpp" />
+    <ClCompile Include="src\lumina\core\platform\d3d12\d3d12_device.cpp">
+      <Filter>platform\d3d12</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lumina\core\platform\vulkan\vulkan_device.cpp">
+      <Filter>platform\vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="src\lumina\core\theme.cpp" />
+    <ClCompile Include="src\lumina\core\uuid.cpp" />
+    <ClCompile Include="src\lumina\core\window.cpp" />
+  </ItemGroup>
+</Project>
