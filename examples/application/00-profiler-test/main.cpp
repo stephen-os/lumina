@@ -12,309 +12,309 @@
 #include <random>
 #include <chrono>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class profiler_test_layer : public lumina::core::layer
+class ProfilerTestLayer : public Lumina::Layer
 {
 public:
-    profiler_test_layer() : layer("profiler_test") {}
+    ProfilerTestLayer() : Layer("ProfilerTest") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        auto& device = lumina::core::application::get().get_device();
-        m_renderer = std::make_unique<gfx::renderer2d>(device);
-        m_renderer->init();
+        auto& device = Lumina::Application::Get().GetDevice();
+        m_Renderer = std::make_unique<Gfx::Renderer2D>(device);
+        m_Renderer->Init();
 
         // Create render target
-        m_render_target = gfx::render_target::create(
-            device, 1280, 720, gfx::format::rgba8_unorm
+        m_RenderTarget = Gfx::RenderTarget::Create(
+            device, 1280, 720, Gfx::Format::RGBA8_UNORM
         );
 
         // Initialize camera
-        m_camera = gfx::camera2d(720.0f, 1.0f);
-        m_camera.set_position({0.0f, 0.0f});
-        m_camera.update(0.0f);
+        m_Camera = Gfx::Camera2D(720.0f, 1.0f);
+        m_Camera.SetPosition({0.0f, 0.0f});
+        m_Camera.Update(0.0f);
 
         // Initialize random positions
-        init_random_positions();
+        InitRandomPositions();
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_render_target.reset();
-        m_renderer.reset();
+        m_RenderTarget.reset();
+        m_Renderer.reset();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
         LUMINA_PROFILE_SCOPE_NC("ProfilerTest::Update", 0x44FF44);
 
-        m_time += dt;
-        m_camera.update(dt);
+        m_Time += dt;
+        m_Camera.Update(dt);
 
         // Track frame times for display
-        m_frame_times.push_back(dt * 1000.0f);
-        if (m_frame_times.size() > 120)
-            m_frame_times.pop_front();
+        m_FrameTimes.push_back(dt * 1000.0f);
+        if (m_FrameTimes.size() > 120)
+            m_FrameTimes.pop_front();
     }
 
-    void on_render() override
+    void OnRender() override
     {
         LUMINA_PROFILE_SCOPE_NC("ProfilerTest::Render", 0x44FF44);
 
-        if (!m_renderer || !m_render_target) return;
+        if (!m_Renderer || !m_RenderTarget) return;
 
         auto start = std::chrono::high_resolution_clock::now();
 
-        m_renderer->begin(m_camera);
-        m_renderer->set_render_target(m_render_target);
-        m_renderer->clear({0.05f, 0.05f, 0.08f, 1.0f});
+        m_Renderer->Begin(m_Camera);
+        m_Renderer->SetRenderTarget(m_RenderTarget);
+        m_Renderer->Clear({0.05f, 0.05f, 0.08f, 1.0f});
 
         // Run selected stress test
-        run_stress_test();
+        RunStressTest();
 
-        m_renderer->end();
+        m_Renderer->End();
 
         auto end = std::chrono::high_resolution_clock::now();
-        m_render_time_ms = std::chrono::duration<float, std::milli>(end - start).count();
+        m_RenderTimeMs = std::chrono::duration<float, std::milli>(end - start).count();
 
         // Cache stats before reset
-        m_last_stats = m_renderer->get_stats();
-        m_renderer->reset_stats();
+        m_LastStats = m_Renderer->GetStats();
+        m_Renderer->ResetStats();
 
-        render_ui();
+        RenderUI();
     }
 
 private:
-    void init_random_positions()
+    void InitRandomPositions()
     {
         std::mt19937 rng(42);
-        std::uniform_real_distribution<float> dist_x(-600.0f, 600.0f);
-        std::uniform_real_distribution<float> dist_y(-350.0f, 350.0f);
+        std::uniform_real_distribution<float> distX(-600.0f, 600.0f);
+        std::uniform_real_distribution<float> distY(-350.0f, 350.0f);
 
-        m_positions.resize(m_max_primitives);
-        for (auto& pos : m_positions)
+        m_Positions.resize(m_MaxPrimitives);
+        for (auto& pos : m_Positions)
         {
-            pos = {dist_x(rng), dist_y(rng)};
+            pos = {distX(rng), distY(rng)};
         }
     }
 
-    void run_stress_test()
+    void RunStressTest()
     {
         LUMINA_PROFILE_SCOPE_NC("ProfilerTest::StressTest", 0x44FF44);
 
-        if (m_enable_quads)
+        if (m_EnableQuads)
         {
             LUMINA_PROFILE_SCOPE_NC("ProfilerTest::DrawQuads", 0x44FF44);
-            for (int i = 0; i < m_quad_count; i++)
+            for (int i = 0; i < m_QuadCount; i++)
             {
-                m_renderer->draw_quad({
-                    .position = {m_positions[i].x, m_positions[i].y, 0.0f},
-                    .size = {m_primitive_size, m_primitive_size},
-                    .color = {0.8f, 0.3f, 0.3f, 0.8f}
+                m_Renderer->DrawQuad({
+                    .Position = {m_Positions[i].x, m_Positions[i].y, 0.0f},
+                    .Size = {m_PrimitiveSize, m_PrimitiveSize},
+                    .Color = {0.8f, 0.3f, 0.3f, 0.8f}
                 });
             }
         }
 
-        if (m_enable_circles)
+        if (m_EnableCircles)
         {
             LUMINA_PROFILE_SCOPE_NC("ProfilerTest::DrawCircles", 0x44FF44);
-            int offset = m_max_primitives / 4;
-            for (int i = 0; i < m_circle_count; i++)
+            int offset = m_MaxPrimitives / 4;
+            for (int i = 0; i < m_CircleCount; i++)
             {
-                int idx = (offset + i) % m_max_primitives;
-                m_renderer->draw_circle({
-                    .position = {m_positions[idx].x, m_positions[idx].y, 0.0f},
-                    .radius = {m_primitive_size / 2, m_primitive_size / 2},
-                    .color = {0.3f, 0.8f, 0.3f, 0.8f}
+                int idx = (offset + i) % m_MaxPrimitives;
+                m_Renderer->DrawCircle({
+                    .Position = {m_Positions[idx].x, m_Positions[idx].y, 0.0f},
+                    .Radius = {m_PrimitiveSize / 2, m_PrimitiveSize / 2},
+                    .Color = {0.3f, 0.8f, 0.3f, 0.8f}
                 });
             }
         }
 
-        if (m_enable_lines)
+        if (m_EnableLines)
         {
             LUMINA_PROFILE_SCOPE_NC("ProfilerTest::DrawLines", 0x44FF44);
-            int offset = m_max_primitives / 2;
-            for (int i = 0; i < m_line_count; i++)
+            int offset = m_MaxPrimitives / 2;
+            for (int i = 0; i < m_LineCount; i++)
             {
-                int idx = (offset + i) % m_max_primitives;
-                m_renderer->draw_line({
-                    .start = {m_positions[idx].x, m_positions[idx].y, 0.0f},
-                    .end = {m_positions[idx].x + 50.0f, m_positions[idx].y + 30.0f, 0.0f},
-                    .color = {0.3f, 0.3f, 0.8f, 0.8f},
-                    .thickness = 2.0f
+                int idx = (offset + i) % m_MaxPrimitives;
+                m_Renderer->DrawLine({
+                    .Start = {m_Positions[idx].x, m_Positions[idx].y, 0.0f},
+                    .End = {m_Positions[idx].x + 50.0f, m_Positions[idx].y + 30.0f, 0.0f},
+                    .Color = {0.3f, 0.3f, 0.8f, 0.8f},
+                    .Thickness = 2.0f
                 });
             }
         }
 
-        if (m_enable_text)
+        if (m_EnableText)
         {
             LUMINA_PROFILE_SCOPE_NC("ProfilerTest::DrawText", 0x44FF44);
-            int offset = (m_max_primitives * 3) / 4;
-            for (int i = 0; i < m_text_count; i++)
+            int offset = (m_MaxPrimitives * 3) / 4;
+            for (int i = 0; i < m_TextCount; i++)
             {
-                int idx = (offset + i) % m_max_primitives;
-                m_renderer->draw_text({
-                    .text = "Test",
-                    .position = {m_positions[idx].x, m_positions[idx].y, 0.0f},
-                    .scale = 0.5f,
-                    .color = {0.8f, 0.8f, 0.3f, 0.8f}
+                int idx = (offset + i) % m_MaxPrimitives;
+                m_Renderer->DrawText({
+                    .Text = "Test",
+                    .Position = {m_Positions[idx].x, m_Positions[idx].y, 0.0f},
+                    .Scale = 0.5f,
+                    .Color = {0.8f, 0.8f, 0.3f, 0.8f}
                 });
             }
         }
     }
 
-    void render_ui()
+    void RenderUI()
     {
-        ui::begin_window("Profiler Test Controls");
+        UI::BeginWindow("Profiler Test Controls");
 
         // Tracy connection info
-        ui::text("Tracy Profiler Integration Test");
-        ui::separator();
+        UI::Text("Tracy Profiler Integration Test");
+        UI::Separator();
 
 #ifdef TRACY_ENABLE
-        ui::text("Tracy Status: ENABLED");
-        ui::text("Connect Tracy Profiler to view detailed zones.");
+        UI::Text("Tracy Status: ENABLED");
+        UI::Text("Connect Tracy Profiler to view detailed zones.");
 #else
-        ui::text("Tracy Status: DISABLED");
-        ui::text("Build with TRACY_ENABLE to enable profiling.");
+        UI::Text("Tracy Status: DISABLED");
+        UI::Text("Build with TRACY_ENABLE to enable profiling.");
 #endif
-        ui::separator();
+        UI::Separator();
 
         // Frame time graph
-        ui::text("Frame Time History:");
-        if (!m_frame_times.empty())
+        UI::Text("Frame Time History:");
+        if (!m_FrameTimes.empty())
         {
-            std::vector<float> times(m_frame_times.begin(), m_frame_times.end());
+            std::vector<float> times(m_FrameTimes.begin(), m_FrameTimes.end());
             ImGui::PlotLines("##frametime", times.data(), static_cast<int>(times.size()),
                 0, nullptr, 0.0f, 33.3f, ImVec2(0, 60));
         }
 
         // Performance metrics
-        float avg_frame_time = 0.0f;
-        if (!m_frame_times.empty())
+        float avgFrameTime = 0.0f;
+        if (!m_FrameTimes.empty())
         {
-            for (float t : m_frame_times)
-                avg_frame_time += t;
-            avg_frame_time /= m_frame_times.size();
+            for (float t : m_FrameTimes)
+                avgFrameTime += t;
+            avgFrameTime /= m_FrameTimes.size();
         }
-        float fps = avg_frame_time > 0 ? 1000.0f / avg_frame_time : 0.0f;
+        float fps = avgFrameTime > 0 ? 1000.0f / avgFrameTime : 0.0f;
 
-        ui::text_fmt("FPS: {:.1f}", fps);
-        ui::text_fmt("Frame Time: {:.2f} ms", avg_frame_time);
-        ui::text_fmt("Render Time: {:.2f} ms", m_render_time_ms);
-        ui::separator();
+        UI::TextFmt("FPS: {:.1f}", fps);
+        UI::TextFmt("Frame Time: {:.2f} ms", avgFrameTime);
+        UI::TextFmt("Render Time: {:.2f} ms", m_RenderTimeMs);
+        UI::Separator();
 
         // Renderer stats
-        ui::text("Renderer Stats:");
-        ui::text_fmt("Draw Calls: {}", m_last_stats.draw_calls);
-        ui::text_fmt("Total Primitives: {}", m_last_stats.get_total_primitives());
-        ui::text_fmt("Quads: {}", m_last_stats.quad_count);
-        ui::text_fmt("Circles: {}", m_last_stats.circle_count);
-        ui::text_fmt("Lines: {}", m_last_stats.line_count);
-        ui::text_fmt("Text Chars: {}", m_last_stats.text_char_count);
-        ui::separator();
+        UI::Text("Renderer Stats:");
+        UI::TextFmt("Draw Calls: {}", m_LastStats.DrawCalls);
+        UI::TextFmt("Total Primitives: {}", m_LastStats.GetTotalPrimitives());
+        UI::TextFmt("Quads: {}", m_LastStats.QuadCount);
+        UI::TextFmt("Circles: {}", m_LastStats.CircleCount);
+        UI::TextFmt("Lines: {}", m_LastStats.LineCount);
+        UI::TextFmt("Text Chars: {}", m_LastStats.TextCharCount);
+        UI::Separator();
 
         // Stress test controls
-        ui::text("Stress Test Controls:");
+        UI::Text("Stress Test Controls:");
 
-        ImGui::Checkbox("Quads", &m_enable_quads);
-        if (m_enable_quads)
+        ImGui::Checkbox("Quads", &m_EnableQuads);
+        if (m_EnableQuads)
         {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(150);
-            ImGui::SliderInt("##quads", &m_quad_count, 0, m_max_primitives / 4);
+            ImGui::SliderInt("##quads", &m_QuadCount, 0, m_MaxPrimitives / 4);
         }
 
-        ImGui::Checkbox("Circles", &m_enable_circles);
-        if (m_enable_circles)
+        ImGui::Checkbox("Circles", &m_EnableCircles);
+        if (m_EnableCircles)
         {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(150);
-            ImGui::SliderInt("##circles", &m_circle_count, 0, m_max_primitives / 4);
+            ImGui::SliderInt("##circles", &m_CircleCount, 0, m_MaxPrimitives / 4);
         }
 
-        ImGui::Checkbox("Lines", &m_enable_lines);
-        if (m_enable_lines)
+        ImGui::Checkbox("Lines", &m_EnableLines);
+        if (m_EnableLines)
         {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(150);
-            ImGui::SliderInt("##lines", &m_line_count, 0, m_max_primitives / 4);
+            ImGui::SliderInt("##lines", &m_LineCount, 0, m_MaxPrimitives / 4);
         }
 
-        ImGui::Checkbox("Text", &m_enable_text);
-        if (m_enable_text)
+        ImGui::Checkbox("Text", &m_EnableText);
+        if (m_EnableText)
         {
             ImGui::SameLine();
             ImGui::SetNextItemWidth(150);
-            ImGui::SliderInt("##text", &m_text_count, 0, 500);
+            ImGui::SliderInt("##text", &m_TextCount, 0, 500);
         }
 
-        ui::separator();
-        ImGui::SliderFloat("Primitive Size", &m_primitive_size, 5.0f, 50.0f);
+        UI::Separator();
+        ImGui::SliderFloat("Primitive Size", &m_PrimitiveSize, 5.0f, 50.0f);
 
-        ui::separator();
+        UI::Separator();
         if (ImGui::Button("Reset to Defaults"))
         {
-            m_enable_quads = true;
-            m_enable_circles = true;
-            m_enable_lines = true;
-            m_enable_text = false;
-            m_quad_count = 1000;
-            m_circle_count = 500;
-            m_line_count = 500;
-            m_text_count = 100;
-            m_primitive_size = 20.0f;
+            m_EnableQuads = true;
+            m_EnableCircles = true;
+            m_EnableLines = true;
+            m_EnableText = false;
+            m_QuadCount = 1000;
+            m_CircleCount = 500;
+            m_LineCount = 500;
+            m_TextCount = 100;
+            m_PrimitiveSize = 20.0f;
         }
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Viewport
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
-        ui::begin_window("Viewport");
+        UI::PushStyleVar(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
+        UI::BeginWindow("Viewport");
 
-        auto content_size = ui::get_content_size();
-        if (auto tex = m_render_target->get_color_texture())
+        auto contentSize = UI::GetContentSize();
+        if (auto tex = m_RenderTarget->GetColorTexture())
         {
-            ui::image(tex->get_texture(), content_size);
+            UI::Image(tex->GetTexture(), contentSize);
         }
 
-        ui::end_window();
-        ui::pop_style_var();
+        UI::EndWindow();
+        UI::PopStyleVar();
     }
 
 private:
-    lumina::scope<gfx::renderer2d> m_renderer;
-    lumina::ref<gfx::render_target> m_render_target;
-    gfx::camera2d m_camera;
+    Lumina::Scope<Gfx::Renderer2D> m_Renderer;
+    Lumina::Ref<Gfx::RenderTarget> m_RenderTarget;
+    Gfx::Camera2D m_Camera;
 
-    float m_time = 0.0f;
-    std::deque<float> m_frame_times;
-    float m_render_time_ms = 0.0f;
-    gfx::renderer2d_stats m_last_stats;
+    float m_Time = 0.0f;
+    std::deque<float> m_FrameTimes;
+    float m_RenderTimeMs = 0.0f;
+    Gfx::Renderer2DStats m_LastStats;
 
     // Random positions for primitives
-    static constexpr int m_max_primitives = 20000;
-    std::vector<glm::vec2> m_positions;
+    static constexpr int m_MaxPrimitives = 20000;
+    std::vector<glm::vec2> m_Positions;
 
     // Stress test controls
-    bool m_enable_quads = true;
-    bool m_enable_circles = true;
-    bool m_enable_lines = true;
-    bool m_enable_text = false;
-    int m_quad_count = 1000;
-    int m_circle_count = 500;
-    int m_line_count = 500;
-    int m_text_count = 100;
-    float m_primitive_size = 20.0f;
+    bool m_EnableQuads = true;
+    bool m_EnableCircles = true;
+    bool m_EnableLines = true;
+    bool m_EnableText = false;
+    int m_QuadCount = 1000;
+    int m_CircleCount = 500;
+    int m_LineCount = 500;
+    int m_TextCount = 100;
+    float m_PrimitiveSize = 20.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "application/00-profiler-test";
-    auto* app = new application(specs);
-    app->push_layer<profiler_test_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "application/00-profiler-test";
+    auto* app = new Application(specs);
+    app->PushLayer<ProfilerTestLayer>();
     return app;
 }

@@ -11,90 +11,90 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-namespace ui = lumina::ui;
-namespace input = lumina::core::input;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Input = Lumina::Input;
+namespace Gfx = Lumina::Graphics;
 
-class lighting_layer : public lumina::core::layer
+class LightingLayer : public Lumina::Layer
 {
 public:
-    lighting_layer() : layer("lighting") {}
+    LightingLayer() : Layer("Lighting") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        auto& device = lumina::core::application::get().get_device();
-        m_renderer = std::make_unique<gfx::renderer2d>(device);
-        m_renderer->init();
+        auto& device = Lumina::Application::Get().GetDevice();
+        m_Renderer = std::make_unique<Gfx::Renderer2D>(device);
+        m_Renderer->Init();
 
         // Create initial render target (will be resized to match viewport)
-        m_render_target = gfx::render_target::create(
-            device, 800, 600, gfx::format::rgba8_unorm
+        m_RenderTarget = Gfx::RenderTarget::Create(
+            device, 800, 600, Gfx::Format::RGBA8_UNORM
         );
 
         LUMINA_LOG_INFO("Lighting demo attached");
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_render_target.reset();
-        m_renderer.reset();
+        m_RenderTarget.reset();
+        m_Renderer.reset();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_time += dt;
+        m_Time += dt;
 
         // Camera controls
-        float move_speed = 200.0f * dt;
-        if (input::is_key_pressed(input::key_code::w))
-            m_camera_pos.y -= move_speed / m_zoom;
-        if (input::is_key_pressed(input::key_code::s))
-            m_camera_pos.y += move_speed / m_zoom;
-        if (input::is_key_pressed(input::key_code::a))
-            m_camera_pos.x -= move_speed / m_zoom;
-        if (input::is_key_pressed(input::key_code::d))
-            m_camera_pos.x += move_speed / m_zoom;
+        float moveSpeed = 200.0f * dt;
+        if (Input::IsKeyPressed(Input::KeyCode::W))
+            m_CameraPos.y -= moveSpeed / m_Zoom;
+        if (Input::IsKeyPressed(Input::KeyCode::S))
+            m_CameraPos.y += moveSpeed / m_Zoom;
+        if (Input::IsKeyPressed(Input::KeyCode::A))
+            m_CameraPos.x -= moveSpeed / m_Zoom;
+        if (Input::IsKeyPressed(Input::KeyCode::D))
+            m_CameraPos.x += moveSpeed / m_Zoom;
 
         // Animate mouse light position towards cursor (when in viewport)
-        if (m_follow_mouse)
+        if (m_FollowMouse)
         {
-            m_mouse_light_pos = m_mouse_world_pos;
+            m_MouseLightPos = m_MouseWorldPos;
         }
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        if (!m_renderer) return;
+        if (!m_Renderer) return;
 
         // UI Controls window
-        render_controls_ui();
+        RenderControlsUI();
 
         // Viewport window - handles render target sizing, rendering, and display
-        render_viewport();
+        RenderViewport();
     }
 
-    void render_scene(float width, float height)
+    void RenderScene(float width, float height)
     {
         // Create view matrix from camera position and zoom
         glm::mat4 view = glm::mat4(1.0f);
         view = glm::translate(view, glm::vec3(width / 2.0f, height / 2.0f, 0.0f));
-        view = glm::scale(view, glm::vec3(m_zoom, m_zoom, 1.0f));
-        view = glm::translate(view, glm::vec3(-m_camera_pos.x, -m_camera_pos.y, 0.0f));
+        view = glm::scale(view, glm::vec3(m_Zoom, m_Zoom, 1.0f));
+        view = glm::translate(view, glm::vec3(-m_CameraPos.x, -m_CameraPos.y, 0.0f));
 
         glm::mat4 projection = glm::ortho(0.0f, width, height, 0.0f, -1.0f, 1.0f);
 
         // Enable lighting
-        m_renderer->set_lighting_enabled(m_lighting_enabled);
-        m_renderer->set_ambient_light(m_ambient_color, m_ambient_intensity);
+        m_Renderer->SetLightingEnabled(m_LightingEnabled);
+        m_Renderer->SetAmbientLight(m_AmbientColor, m_AmbientIntensity);
 
-        m_renderer->begin(view, projection);
-        m_renderer->set_render_target(m_render_target);
+        m_Renderer->Begin(view, projection);
+        m_Renderer->SetRenderTarget(m_RenderTarget);
 
         // Draw background - extends beyond viewport for camera panning
-        m_renderer->draw_quad({
-            .position = {m_camera_pos.x - width * 2, m_camera_pos.y - height * 2, -0.1f},
-            .size = {width * 5, height * 5},
-            .color = {0.15f, 0.15f, 0.2f, 1.0f}
+        m_Renderer->DrawQuad({
+            .Position = {m_CameraPos.x - width * 2, m_CameraPos.y - height * 2, -0.1f},
+            .Size = {width * 5, height * 5},
+            .Color = {0.15f, 0.15f, 0.2f, 1.0f}
         });
 
         // Draw a grid pattern to show lighting better
@@ -109,239 +109,239 @@ public:
                     ? glm::vec4(0.4f, 0.4f, 0.5f, 1.0f)
                     : glm::vec4(0.3f, 0.3f, 0.4f, 1.0f);
 
-                m_renderer->draw_quad({
-                    .position = {px, py, 0},
-                    .size = {70, 70},
-                    .color = color
+                m_Renderer->DrawQuad({
+                    .Position = {px, py, 0},
+                    .Size = {70, 70},
+                    .Color = color
                 });
             }
         }
 
         // Draw some colored objects
-        m_renderer->draw_circle({
-            .position = {300, 200, 0},
-            .radius = {50, 50},
-            .color = {0.8f, 0.2f, 0.2f, 1.0f}
+        m_Renderer->DrawCircle({
+            .Position = {300, 200, 0},
+            .Radius = {50, 50},
+            .Color = {0.8f, 0.2f, 0.2f, 1.0f}
         });
 
-        m_renderer->draw_circle({
-            .position = {width / 2, height / 2, 0},
-            .radius = {70, 70},
-            .color = {0.2f, 0.8f, 0.2f, 1.0f}
+        m_Renderer->DrawCircle({
+            .Position = {width / 2, height / 2, 0},
+            .Radius = {70, 70},
+            .Color = {0.2f, 0.8f, 0.2f, 1.0f}
         });
 
-        m_renderer->draw_quad({
-            .position = {width - 330, height - 200, 0},
-            .size = {120, 100},
-            .color = {0.2f, 0.2f, 0.8f, 1.0f},
-            .rotation = m_time * 0.5f
+        m_Renderer->DrawQuad({
+            .Position = {width - 330, height - 200, 0},
+            .Size = {120, 100},
+            .Color = {0.2f, 0.2f, 0.8f, 1.0f},
+            .Rotation = m_Time * 0.5f
         });
 
-        m_renderer->draw_triangle({
-            .p0 = {450, 480, 0},
-            .p1 = {380, 600, 0},
-            .p2 = {520, 600, 0},
-            .color = {0.8f, 0.8f, 0.2f, 1.0f}
+        m_Renderer->DrawTriangle({
+            .P0 = {450, 480, 0},
+            .P1 = {380, 600, 0},
+            .P2 = {520, 600, 0},
+            .Color = {0.8f, 0.8f, 0.2f, 1.0f}
         });
 
         // Add point lights
-        if (m_lighting_enabled)
+        if (m_LightingEnabled)
         {
-            float center_x = width / 2;
-            float center_y = height / 2;
+            float centerX = width / 2;
+            float centerY = height / 2;
 
             // Orbiting red light
-            float orbit_x = center_x + std::cos(m_time) * 250;
-            float orbit_y = center_y + std::sin(m_time) * 180;
-            m_renderer->draw_point_light({
-                .position = {orbit_x, orbit_y, 0},
-                .color = {1.0f, 0.3f, 0.3f},
-                .intensity = m_light_intensity,
-                .radius = m_light_radius,
-                .attenuation = m_attenuation_model
+            float orbitX = centerX + std::cos(m_Time) * 250;
+            float orbitY = centerY + std::sin(m_Time) * 180;
+            m_Renderer->DrawPointLight({
+                .Position = {orbitX, orbitY, 0},
+                .Color = {1.0f, 0.3f, 0.3f},
+                .Intensity = m_LightIntensity,
+                .Radius = m_LightRadius,
+                .Attenuation = m_AttenuationModel
             });
 
             // Orbiting blue light (opposite phase)
-            float orbit_x2 = center_x + std::cos(m_time + 3.14159f) * 250;
-            float orbit_y2 = center_y + std::sin(m_time + 3.14159f) * 180;
-            m_renderer->draw_point_light({
-                .position = {orbit_x2, orbit_y2, 0},
-                .color = {0.3f, 0.3f, 1.0f},
-                .intensity = m_light_intensity,
-                .radius = m_light_radius,
-                .attenuation = m_attenuation_model
+            float orbitX2 = centerX + std::cos(m_Time + 3.14159f) * 250;
+            float orbitY2 = centerY + std::sin(m_Time + 3.14159f) * 180;
+            m_Renderer->DrawPointLight({
+                .Position = {orbitX2, orbitY2, 0},
+                .Color = {0.3f, 0.3f, 1.0f},
+                .Intensity = m_LightIntensity,
+                .Radius = m_LightRadius,
+                .Attenuation = m_AttenuationModel
             });
 
             // Static green light at center
-            m_renderer->draw_point_light({
-                .position = {center_x, center_y, 0},
-                .color = {0.3f, 1.0f, 0.3f},
-                .intensity = m_light_intensity * 0.5f,
-                .radius = m_light_radius * 1.5f,
-                .attenuation = m_attenuation_model
+            m_Renderer->DrawPointLight({
+                .Position = {centerX, centerY, 0},
+                .Color = {0.3f, 1.0f, 0.3f},
+                .Intensity = m_LightIntensity * 0.5f,
+                .Radius = m_LightRadius * 1.5f,
+                .Attenuation = m_AttenuationModel
             });
 
             // Mouse-following light
-            if (m_show_mouse_light)
+            if (m_ShowMouseLight)
             {
-                m_renderer->draw_point_light({
-                    .position = {m_mouse_light_pos.x, m_mouse_light_pos.y, 0},
-                    .color = m_mouse_light_color,
-                    .intensity = m_light_intensity,
-                    .radius = m_light_radius,
-                    .attenuation = m_attenuation_model
+                m_Renderer->DrawPointLight({
+                    .Position = {m_MouseLightPos.x, m_MouseLightPos.y, 0},
+                    .Color = m_MouseLightColor,
+                    .Intensity = m_LightIntensity,
+                    .Radius = m_LightRadius,
+                    .Attenuation = m_AttenuationModel
                 });
             }
         }
 
-        m_renderer->end();
+        m_Renderer->End();
     }
 
-    void render_controls_ui()
+    void RenderControlsUI()
     {
-        ui::begin_window("Lighting Controls");
-        ui::text("2D Lighting Demo");
-        ui::separator();
+        UI::BeginWindow("Lighting Controls");
+        UI::Text("2D Lighting Demo");
+        UI::Separator();
 
-        ui::text("Controls: WASD = Pan");
-        ui::text_fmt("Camera: ({:.0f}, {:.0f})", m_camera_pos.x, m_camera_pos.y);
-        ui::text_fmt("Viewport: {}x{}", m_viewport_width, m_viewport_height);
-        ui::separator();
+        UI::Text("Controls: WASD = Pan");
+        UI::TextFmt("Camera: ({:.0f}, {:.0f})", m_CameraPos.x, m_CameraPos.y);
+        UI::TextFmt("Viewport: {}x{}", m_ViewportWidth, m_ViewportHeight);
+        UI::Separator();
 
-        ui::checkbox("Enable Lighting", m_lighting_enabled);
-        ui::separator();
+        UI::Checkbox("Enable Lighting", m_LightingEnabled);
+        UI::Separator();
 
-        if (m_lighting_enabled)
+        if (m_LightingEnabled)
         {
-            ui::text("Ambient Light");
-            ui::property_color3("Ambient Color", glm::value_ptr(m_ambient_color));
-            ui::property_slider("Ambient Intensity", m_ambient_intensity, 0.0f, 2.0f);
-            ui::separator();
+            UI::Text("Ambient Light");
+            UI::PropertyColor3("Ambient Color", glm::value_ptr(m_AmbientColor));
+            UI::PropertySlider("Ambient Intensity", m_AmbientIntensity, 0.0f, 2.0f);
+            UI::Separator();
 
-            ui::text("Point Lights");
-            ui::property_slider("Radius", m_light_radius, 50.0f, 500.0f);
-            ui::property_slider("Light Intensity", m_light_intensity, 0.1f, 5.0f);
+            UI::Text("Point Lights");
+            UI::PropertySlider("Radius", m_LightRadius, 50.0f, 500.0f);
+            UI::PropertySlider("Light Intensity", m_LightIntensity, 0.1f, 5.0f);
 
             // Attenuation model dropdown
-            static const char* attenuation_names[] = {
+            static const char* attenuationNames[] = {
                 "None", "Linear", "Quadratic", "Inverse Square",
                 "Exponential", "Smoothstep", "Realistic"
             };
-            int current = static_cast<int>(m_attenuation_model);
-            if (ui::property_dropdown("Attenuation", current, attenuation_names, 7))
+            int current = static_cast<int>(m_AttenuationModel);
+            if (UI::PropertyDropdown("Attenuation", current, attenuationNames, 7))
             {
-                m_attenuation_model = static_cast<gfx::attenuation_model>(current);
+                m_AttenuationModel = static_cast<Gfx::AttenuationModel>(current);
             }
-            ui::separator();
+            UI::Separator();
 
-            ui::text("Mouse Light");
-            ui::checkbox("Show Mouse Light", m_show_mouse_light);
-            ui::checkbox("Follow Mouse", m_follow_mouse);
-            if (m_show_mouse_light)
+            UI::Text("Mouse Light");
+            UI::Checkbox("Show Mouse Light", m_ShowMouseLight);
+            UI::Checkbox("Follow Mouse", m_FollowMouse);
+            if (m_ShowMouseLight)
             {
-                ui::property_color3("Mouse Color", glm::value_ptr(m_mouse_light_color));
+                UI::PropertyColor3("Mouse Color", glm::value_ptr(m_MouseLightColor));
             }
         }
-        ui::separator();
+        UI::Separator();
 
-        const auto& stats = m_renderer->get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("Point Lights: {}", stats.point_light_count);
-        m_renderer->reset_stats();
+        const auto& stats = m_Renderer->GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("Point Lights: {}", stats.PointLightCount);
+        m_Renderer->ResetStats();
 
-        ui::end_window();
+        UI::EndWindow();
     }
 
-    void render_viewport()
+    void RenderViewport()
     {
         // Viewport window - remove padding for clean image display
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
-        ui::begin_window("Viewport");
+        UI::PushStyleVar(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
+        UI::BeginWindow("Viewport");
 
         // Get available content size
-        auto content_size = ui::get_content_size();
-        uint32_t new_width = static_cast<uint32_t>(std::max(1.0f, content_size.x));
-        uint32_t new_height = static_cast<uint32_t>(std::max(1.0f, content_size.y));
+        auto contentSize = UI::GetContentSize();
+        uint32_t newWidth = static_cast<uint32_t>(std::max(1.0f, contentSize.x));
+        uint32_t newHeight = static_cast<uint32_t>(std::max(1.0f, contentSize.y));
 
         // Resize render target if viewport size changed
-        if (new_width != m_viewport_width || new_height != m_viewport_height)
+        if (newWidth != m_ViewportWidth || newHeight != m_ViewportHeight)
         {
-            m_viewport_width = new_width;
-            m_viewport_height = new_height;
+            m_ViewportWidth = newWidth;
+            m_ViewportHeight = newHeight;
 
-            if (m_render_target)
+            if (m_RenderTarget)
             {
-                m_render_target->resize(m_viewport_width, m_viewport_height);
+                m_RenderTarget->Resize(m_ViewportWidth, m_ViewportHeight);
             }
         }
 
         // Render the scene at viewport size
-        if (m_render_target && m_viewport_width > 0 && m_viewport_height > 0)
+        if (m_RenderTarget && m_ViewportWidth > 0 && m_ViewportHeight > 0)
         {
-            render_scene(static_cast<float>(m_viewport_width), static_cast<float>(m_viewport_height));
+            RenderScene(static_cast<float>(m_ViewportWidth), static_cast<float>(m_ViewportHeight));
         }
 
         // Display at 1:1 scale
-        auto tex = m_render_target ? m_render_target->get_color_texture() : nullptr;
-        ui::image_rect img_rect = {};
+        auto tex = m_RenderTarget ? m_RenderTarget->GetColorTexture() : nullptr;
+        UI::ImageRect imgRect = {};
         if (tex)
         {
-            img_rect = ui::image_with_rect(tex->get_texture(), content_size);
+            imgRect = UI::ImageWithRect(tex->GetTexture(), contentSize);
         }
 
         // Calculate mouse position in world coordinates
-        auto mouse_pos = ui::get_mouse_pos();
-        if (ui::is_item_hovered())
+        auto mousePos = UI::GetMousePos();
+        if (UI::IsItemHovered())
         {
             // At 1:1 scale, local position IS render target position
-            float rt_x = mouse_pos.x - img_rect.pos.x;
-            float rt_y = mouse_pos.y - img_rect.pos.y;
+            float rtX = mousePos.x - imgRect.Pos.x;
+            float rtY = mousePos.y - imgRect.Pos.y;
 
             // Convert to world coordinates considering camera
-            float half_width = static_cast<float>(m_viewport_width) / 2.0f;
-            float half_height = static_cast<float>(m_viewport_height) / 2.0f;
-            m_mouse_world_pos.x = m_camera_pos.x + (rt_x - half_width) / m_zoom;
-            m_mouse_world_pos.y = m_camera_pos.y + (rt_y - half_height) / m_zoom;
+            float halfWidth = static_cast<float>(m_ViewportWidth) / 2.0f;
+            float halfHeight = static_cast<float>(m_ViewportHeight) / 2.0f;
+            m_MouseWorldPos.x = m_CameraPos.x + (rtX - halfWidth) / m_Zoom;
+            m_MouseWorldPos.y = m_CameraPos.y + (rtY - halfHeight) / m_Zoom;
         }
 
-        ui::end_window();
-        ui::pop_style_var();
+        UI::EndWindow();
+        UI::PopStyleVar();
     }
 
 private:
-    std::unique_ptr<gfx::renderer2d> m_renderer;
-    lumina::ref<gfx::render_target> m_render_target;
-    float m_time = 0.0f;
+    std::unique_ptr<Gfx::Renderer2D> m_Renderer;
+    Lumina::Ref<Gfx::RenderTarget> m_RenderTarget;
+    float m_Time = 0.0f;
 
     // Viewport state
-    uint32_t m_viewport_width = 0;
-    uint32_t m_viewport_height = 0;
+    uint32_t m_ViewportWidth = 0;
+    uint32_t m_ViewportHeight = 0;
 
     // Camera state
-    glm::vec2 m_camera_pos = {400.0f, 300.0f};
-    float m_zoom = 1.0f;
+    glm::vec2 m_CameraPos = {400.0f, 300.0f};
+    float m_Zoom = 1.0f;
 
     // Lighting settings
-    bool m_lighting_enabled = true;
-    glm::vec3 m_ambient_color = {0.1f, 0.1f, 0.15f};
-    float m_ambient_intensity = 1.0f;
-    float m_light_radius = 200.0f;
-    float m_light_intensity = 1.5f;
-    gfx::attenuation_model m_attenuation_model = gfx::attenuation_model::quadratic;
+    bool m_LightingEnabled = true;
+    glm::vec3 m_AmbientColor = {0.1f, 0.1f, 0.15f};
+    float m_AmbientIntensity = 1.0f;
+    float m_LightRadius = 200.0f;
+    float m_LightIntensity = 1.5f;
+    Gfx::AttenuationModel m_AttenuationModel = Gfx::AttenuationModel::Quadratic;
 
     // Mouse light
-    bool m_show_mouse_light = true;
-    bool m_follow_mouse = true;
-    glm::vec3 m_mouse_light_color = {1.0f, 0.9f, 0.7f};
-    glm::vec2 m_mouse_light_pos = {400, 300};
-    glm::vec2 m_mouse_world_pos = {400, 300};
+    bool m_ShowMouseLight = true;
+    bool m_FollowMouse = true;
+    glm::vec3 m_MouseLightColor = {1.0f, 0.9f, 0.7f};
+    glm::vec2 m_MouseLightPos = {400, 300};
+    glm::vec2 m_MouseWorldPos = {400, 300};
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/06-lighting";
-    auto* app = new application(specs);
-    app->push_layer<lighting_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/06-lighting";
+    auto* app = new Application(specs);
+    app->PushLayer<LightingLayer>();
     return app;
 }

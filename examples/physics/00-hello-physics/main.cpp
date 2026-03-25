@@ -12,412 +12,412 @@
 #include <vector>
 #include <random>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
-namespace input = lumina::core::input;
-namespace physics = lumina::physics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
+namespace Input = Lumina::Input;
+namespace Physics = Lumina::Physics;
 
 // Scale factor: pixels per meter (Box2D works in meters)
 constexpr float PIXELS_PER_METER = 50.0f;
 
 // Convert physics coords to render coords
-inline glm::vec2 to_render(const glm::vec2& physics_pos, float render_size)
+inline glm::vec2 ToRender(const glm::vec2& physicsPos, float renderSize)
 {
     return {
-        physics_pos.x * PIXELS_PER_METER,
-        render_size - (physics_pos.y * PIXELS_PER_METER)  // Flip Y axis
+        physicsPos.x * PIXELS_PER_METER,
+        renderSize - (physicsPos.y * PIXELS_PER_METER)  // Flip Y axis
     };
 }
 
 // Convert render coords to physics coords
-inline glm::vec2 to_physics(const glm::vec2& render_pos, float render_size)
+inline glm::vec2 ToPhysics(const glm::vec2& renderPos, float renderSize)
 {
     return {
-        render_pos.x / PIXELS_PER_METER,
-        (render_size - render_pos.y) / PIXELS_PER_METER
+        renderPos.x / PIXELS_PER_METER,
+        (renderSize - renderPos.y) / PIXELS_PER_METER
     };
 }
 
 // Simple body wrapper with color
-struct colored_body
+struct ColoredBody
 {
-    lumina::ref<physics::body> body;
-    glm::vec4 color;
-    bool is_circle = false;
-    float half_width = 0.5f;
-    float half_height = 0.5f;
-    float radius = 0.5f;
+    Lumina::Ref<Physics::Body> Body;
+    glm::vec4 Color;
+    bool IsCircle = false;
+    float HalfWidth = 0.5f;
+    float HalfHeight = 0.5f;
+    float Radius = 0.5f;
 };
 
-class hello_physics_layer : public lumina::core::layer
+class HelloPhysicsLayer : public Lumina::Layer
 {
 public:
-    hello_physics_layer() : layer("hello_physics") {}
+    HelloPhysicsLayer() : Layer("HelloPhysicsLayer") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 600, .height = 600, .msaa = gfx::msaa_mode::x4});
+        Gfx::Renderer::Init({.Width = 600, .Height = 600, .MSAA = Gfx::MSAAMode::X4});
 
         // Create physics world with gravity pointing down
-        physics::world_def world_def;
-        world_def.gravity = {0.0f, -9.81f};
-        m_world = std::make_unique<physics::world>(world_def);
+        Physics::WorldDef worldDef;
+        worldDef.Gravity = {0.0f, -9.81f};
+        m_World = std::make_unique<Physics::World>(worldDef);
 
         // Create ground (static body)
-        create_ground();
+        CreateGround();
 
         // Create some initial boxes
         for (int i = 0; i < 5; i++)
         {
-            spawn_box({3.0f + i * 1.2f, 8.0f + i * 0.5f});
+            SpawnBox({3.0f + i * 1.2f, 8.0f + i * 0.5f});
         }
 
         LUMINA_LOG_INFO("Hello Physics demo loaded");
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_bodies.clear();
-        m_world.reset();
-        gfx::renderer::shutdown();
+        m_Bodies.clear();
+        m_World.reset();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
         // Step physics
-        if (!m_paused)
+        if (!m_Paused)
         {
-            m_world->step(dt);
+            m_World->Step(dt);
         }
 
         // Spawn with mouse click (only when viewport is hovered)
-        if (input::is_mouse_button_pressed(input::mouse_code::left))
+        if (Input::IsMouseButtonPressed(Input::MouseCode::Left))
         {
-            if (!m_mouse_down && m_viewport_hovered)
+            if (!m_MouseDown && m_ViewportHovered)
             {
                 // Convert viewport-relative position to physics position
-                glm::vec2 physics_pos = to_physics(m_viewport_mouse_pos, 600.0f);
+                glm::vec2 physicsPos = ToPhysics(m_ViewportMousePos, 600.0f);
 
-                if (m_spawn_circles)
-                    spawn_circle(physics_pos);
+                if (m_SpawnCircles)
+                    SpawnCircle(physicsPos);
                 else
-                    spawn_box(physics_pos);
+                    SpawnBox(physicsPos);
             }
-            m_mouse_down = true;
+            m_MouseDown = true;
         }
         else
         {
-            m_mouse_down = false;
+            m_MouseDown = false;
         }
 
         // Reset with R key
-        if (input::is_key_pressed(input::key_code::r))
+        if (Input::IsKeyPressed(Input::KeyCode::R))
         {
-            if (!m_r_down)
+            if (!m_RDown)
             {
-                reset_simulation();
+                ResetSimulation();
             }
-            m_r_down = true;
+            m_RDown = true;
         }
         else
         {
-            m_r_down = false;
+            m_RDown = false;
         }
 
         // Pause with space
-        if (input::is_key_pressed(input::key_code::space))
+        if (Input::IsKeyPressed(Input::KeyCode::Space))
         {
-            if (!m_space_down)
+            if (!m_SpaceDown)
             {
-                m_paused = !m_paused;
+                m_Paused = !m_Paused;
             }
-            m_space_down = true;
+            m_SpaceDown = true;
         }
         else
         {
-            m_space_down = false;
+            m_SpaceDown = false;
         }
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        const float render_size = 600.0f;
+        const float renderSize = 600.0f;
 
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.12f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.12f, 1.0f});
 
         // Draw ground
-        glm::vec2 ground_render = to_render(m_ground_pos, render_size);
-        gfx::renderer::draw_quad({
-            .position = {ground_render.x, ground_render.y, 0},
-            .size = {m_ground_width * PIXELS_PER_METER * 2, m_ground_height * PIXELS_PER_METER * 2},
-            .color = {0.3f, 0.3f, 0.35f, 1.0f}
+        glm::vec2 groundRender = ToRender(m_GroundPos, renderSize);
+        Gfx::Renderer::DrawQuad({
+            .Position = {groundRender.x, groundRender.y, 0},
+            .Size = {m_GroundWidth * PIXELS_PER_METER * 2, m_GroundHeight * PIXELS_PER_METER * 2},
+            .Color = {0.3f, 0.3f, 0.35f, 1.0f}
         });
 
         // Draw walls
-        glm::vec2 left_wall_render = to_render(m_left_wall_pos, render_size);
-        gfx::renderer::draw_quad({
-            .position = {left_wall_render.x, left_wall_render.y, 0},
-            .size = {m_wall_thickness * PIXELS_PER_METER * 2, m_wall_height * PIXELS_PER_METER * 2},
-            .color = {0.3f, 0.3f, 0.35f, 1.0f}
+        glm::vec2 leftWallRender = ToRender(m_LeftWallPos, renderSize);
+        Gfx::Renderer::DrawQuad({
+            .Position = {leftWallRender.x, leftWallRender.y, 0},
+            .Size = {m_WallThickness * PIXELS_PER_METER * 2, m_WallHeight * PIXELS_PER_METER * 2},
+            .Color = {0.3f, 0.3f, 0.35f, 1.0f}
         });
 
-        glm::vec2 right_wall_render = to_render(m_right_wall_pos, render_size);
-        gfx::renderer::draw_quad({
-            .position = {right_wall_render.x, right_wall_render.y, 0},
-            .size = {m_wall_thickness * PIXELS_PER_METER * 2, m_wall_height * PIXELS_PER_METER * 2},
-            .color = {0.3f, 0.3f, 0.35f, 1.0f}
+        glm::vec2 rightWallRender = ToRender(m_RightWallPos, renderSize);
+        Gfx::Renderer::DrawQuad({
+            .Position = {rightWallRender.x, rightWallRender.y, 0},
+            .Size = {m_WallThickness * PIXELS_PER_METER * 2, m_WallHeight * PIXELS_PER_METER * 2},
+            .Color = {0.3f, 0.3f, 0.35f, 1.0f}
         });
 
         // Draw dynamic bodies
-        for (const auto& cb : m_bodies)
+        for (const auto& cb : m_Bodies)
         {
-            if (!cb.body || !cb.body->is_valid()) continue;
+            if (!cb.Body || !cb.Body->IsValid()) continue;
 
-            glm::vec2 pos = cb.body->get_position();
-            float rotation = cb.body->get_rotation();
-            glm::vec2 render_pos = to_render(pos, render_size);
+            glm::vec2 pos = cb.Body->GetPosition();
+            float rotation = cb.Body->GetRotation();
+            glm::vec2 renderPos = ToRender(pos, renderSize);
 
-            if (cb.is_circle)
+            if (cb.IsCircle)
             {
-                gfx::renderer::draw_circle({
-                    .position = {render_pos.x, render_pos.y, 0},
-                    .radius = {cb.radius * PIXELS_PER_METER, cb.radius * PIXELS_PER_METER},
-                    .color = cb.color
+                Gfx::Renderer::DrawCircle({
+                    .Position = {renderPos.x, renderPos.y, 0},
+                    .Radius = {cb.Radius * PIXELS_PER_METER, cb.Radius * PIXELS_PER_METER},
+                    .Color = cb.Color
                 });
 
                 // Draw a line to show rotation
-                float line_len = cb.radius * PIXELS_PER_METER * 0.8f;
-                glm::vec2 line_end = {
-                    render_pos.x + std::cos(-rotation) * line_len,
-                    render_pos.y + std::sin(-rotation) * line_len
+                float lineLen = cb.Radius * PIXELS_PER_METER * 0.8f;
+                glm::vec2 lineEnd = {
+                    renderPos.x + std::cos(-rotation) * lineLen,
+                    renderPos.y + std::sin(-rotation) * lineLen
                 };
-                gfx::renderer::draw_line({
-                    .start = {render_pos.x, render_pos.y, 0.1f},
-                    .end = {line_end.x, line_end.y, 0.1f},
-                    .color = {1, 1, 1, 0.8f},
-                    .thickness = 2.0f
+                Gfx::Renderer::DrawLine({
+                    .Start = {renderPos.x, renderPos.y, 0.1f},
+                    .End = {lineEnd.x, lineEnd.y, 0.1f},
+                    .Color = {1, 1, 1, 0.8f},
+                    .Thickness = 2.0f
                 });
             }
             else
             {
-                gfx::renderer::draw_quad({
-                    .position = {render_pos.x, render_pos.y, 0},
-                    .size = {cb.half_width * PIXELS_PER_METER * 2, cb.half_height * PIXELS_PER_METER * 2},
-                    .color = cb.color,
-                    .rotation = -rotation  // Flip rotation for render coords
+                Gfx::Renderer::DrawQuad({
+                    .Position = {renderPos.x, renderPos.y, 0},
+                    .Size = {cb.HalfWidth * PIXELS_PER_METER * 2, cb.HalfHeight * PIXELS_PER_METER * 2},
+                    .Color = cb.Color,
+                    .Rotation = -rotation  // Flip rotation for render coords
                 });
             }
         }
 
         // Draw title
-        gfx::renderer::draw_text({
-            .text = "Hello Physics!",
-            .position = {300, 30, 0},
-            .scale = 1.5f,
-            .color = {1, 1, 1, 1},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Hello Physics!",
+            .Position = {300, 30, 0},
+            .Scale = 1.5f,
+            .Color = {1, 1, 1, 1},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Draw instructions
-        gfx::renderer::draw_text({
-            .text = "Click to spawn | R = Reset | Space = Pause",
-            .position = {300, 580, 0},
-            .scale = 0.9f,
-            .color = {0.6f, 0.6f, 0.6f, 1},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Click to spawn | R = Reset | Space = Pause",
+            .Position = {300, 580, 0},
+            .Scale = 0.9f,
+            .Color = {0.6f, 0.6f, 0.6f, 1},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        render_ui();
+        RenderUI();
     }
 
-    void render_ui()
+    void RenderUI()
     {
-        ui::begin_window("Physics Controls");
-        ui::text("Hello Physics Demo");
-        ui::separator();
+        UI::BeginWindow("Physics Controls");
+        UI::Text("Hello Physics Demo");
+        UI::Separator();
 
-        ui::text_fmt("Bodies: {}", m_bodies.size());
-        ui::text_fmt("Paused: {}", m_paused ? "Yes" : "No");
-        ui::separator();
+        UI::TextFmt("Bodies: {}", m_Bodies.size());
+        UI::TextFmt("Paused: {}", m_Paused ? "Yes" : "No");
+        UI::Separator();
 
-        ui::text("Spawn Settings:");
-        ui::checkbox("Spawn Circles", m_spawn_circles);
-        ui::property_slider("Box Size", m_spawn_size, 0.3f, 1.5f);
-        ui::property_slider("Restitution", m_spawn_restitution, 0.0f, 1.0f);
-        ui::separator();
+        UI::Text("Spawn Settings:");
+        UI::Checkbox("Spawn Circles", m_SpawnCircles);
+        UI::PropertySlider("Box Size", m_SpawnSize, 0.3f, 1.5f);
+        UI::PropertySlider("Restitution", m_SpawnRestitution, 0.0f, 1.0f);
+        UI::Separator();
 
-        ui::text("World Settings:");
-        glm::vec2 gravity = m_world->get_gravity();
-        if (ui::property_slider("Gravity Y", gravity.y, -20.0f, 20.0f))
+        UI::Text("World Settings:");
+        glm::vec2 gravity = m_World->GetGravity();
+        if (UI::PropertySlider("Gravity Y", gravity.y, -20.0f, 20.0f))
         {
-            m_world->set_gravity(gravity);
+            m_World->SetGravity(gravity);
         }
-        ui::separator();
+        UI::Separator();
 
-        if (ui::button("Spawn Box"))
+        if (UI::Button("Spawn Box"))
         {
-            spawn_box({6.0f, 10.0f});
+            SpawnBox({6.0f, 10.0f});
         }
-        ui::same_line();
-        if (ui::button("Spawn Circle"))
+        UI::SameLine();
+        if (UI::Button("Spawn Circle"))
         {
-            spawn_circle({6.0f, 10.0f});
+            SpawnCircle({6.0f, 10.0f});
         }
 
-        if (ui::button("Spawn 10 Random"))
+        if (UI::Button("Spawn 10 Random"))
         {
             for (int i = 0; i < 10; i++)
             {
-                float x = 2.0f + m_rng() % 80 / 10.0f;
-                float y = 8.0f + m_rng() % 30 / 10.0f;
-                if (m_rng() % 2 == 0)
-                    spawn_box({x, y});
+                float x = 2.0f + m_Rng() % 80 / 10.0f;
+                float y = 8.0f + m_Rng() % 30 / 10.0f;
+                if (m_Rng() % 2 == 0)
+                    SpawnBox({x, y});
                 else
-                    spawn_circle({x, y});
+                    SpawnCircle({x, y});
             }
         }
-        ui::same_line();
-        if (ui::button("Clear All"))
+        UI::SameLine();
+        if (UI::Button("Clear All"))
         {
-            m_bodies.clear();
+            m_Bodies.clear();
         }
 
-        ui::separator();
-        const auto& stats = gfx::renderer::get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        gfx::renderer::reset_stats();
+        UI::Separator();
+        const auto& stats = Gfx::Renderer::GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        Gfx::Renderer::ResetStats();
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Viewport - maintain 1:1 aspect ratio
-        ui::begin_window("Viewport");
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Viewport");
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            auto content_size = ui::get_content_size();
-            float size = std::min(content_size.x, content_size.y);
-            auto img_rect = ui::image_with_rect(tex->get_texture(), size, size);
+            auto contentSize = UI::GetContentSize();
+            float size = std::min(contentSize.x, contentSize.y);
+            auto imgRect = UI::ImageWithRect(tex->GetTexture(), size, size);
 
             // Track viewport hover and mouse position for spawning
-            m_viewport_hovered = ui::is_item_hovered();
-            if (m_viewport_hovered)
+            m_ViewportHovered = UI::IsItemHovered();
+            if (m_ViewportHovered)
             {
-                auto mouse_pos = ui::get_mouse_pos();
+                auto mousePos = UI::GetMousePos();
                 // Calculate position relative to viewport image, scaled to render target size
                 float scale = 600.0f / size;
-                m_viewport_mouse_pos = {
-                    (mouse_pos.x - img_rect.pos.x) * scale,
-                    (mouse_pos.y - img_rect.pos.y) * scale
+                m_ViewportMousePos = {
+                    (mousePos.x - imgRect.Pos.x) * scale,
+                    (mousePos.y - imgRect.Pos.y) * scale
                 };
             }
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    void create_ground()
+    void CreateGround()
     {
         // Ground
-        physics::body_def ground_def;
-        ground_def.type = physics::body_type::static_body;
-        ground_def.position = m_ground_pos;
-        auto ground = m_world->create_body(ground_def);
-        ground->add_box(m_ground_width, m_ground_height);
+        Physics::BodyDef groundDef;
+        groundDef.Type = Physics::BodyType::StaticBody;
+        groundDef.Position = m_GroundPos;
+        auto ground = m_World->CreateBody(groundDef);
+        ground->AddBox(m_GroundWidth, m_GroundHeight);
 
         // Left wall
-        physics::body_def left_wall_def;
-        left_wall_def.type = physics::body_type::static_body;
-        left_wall_def.position = m_left_wall_pos;
-        auto left_wall = m_world->create_body(left_wall_def);
-        left_wall->add_box(m_wall_thickness, m_wall_height);
+        Physics::BodyDef leftWallDef;
+        leftWallDef.Type = Physics::BodyType::StaticBody;
+        leftWallDef.Position = m_LeftWallPos;
+        auto leftWall = m_World->CreateBody(leftWallDef);
+        leftWall->AddBox(m_WallThickness, m_WallHeight);
 
         // Right wall
-        physics::body_def right_wall_def;
-        right_wall_def.type = physics::body_type::static_body;
-        right_wall_def.position = m_right_wall_pos;
-        auto right_wall = m_world->create_body(right_wall_def);
-        right_wall->add_box(m_wall_thickness, m_wall_height);
+        Physics::BodyDef rightWallDef;
+        rightWallDef.Type = Physics::BodyType::StaticBody;
+        rightWallDef.Position = m_RightWallPos;
+        auto rightWall = m_World->CreateBody(rightWallDef);
+        rightWall->AddBox(m_WallThickness, m_WallHeight);
     }
 
-    void spawn_box(const glm::vec2& pos)
+    void SpawnBox(const glm::vec2& pos)
     {
-        physics::body_def def;
-        def.type = physics::body_type::dynamic;
-        def.position = pos;
-        def.rotation = (m_rng() % 100) / 100.0f * 0.5f;  // Small random rotation
+        Physics::BodyDef def;
+        def.Type = Physics::BodyType::Dynamic;
+        def.Position = pos;
+        def.Rotation = (m_Rng() % 100) / 100.0f * 0.5f;  // Small random rotation
 
-        auto body = m_world->create_body(def);
+        auto body = m_World->CreateBody(def);
 
-        physics::shape_def shape_def;
-        shape_def.material.restitution = m_spawn_restitution;
-        shape_def.material.friction = 0.5f;
-        shape_def.material.density = 1.0f;
+        Physics::ShapeDef shapeDef;
+        shapeDef.Material.Restitution = m_SpawnRestitution;
+        shapeDef.Material.Friction = 0.5f;
+        shapeDef.Material.Density = 1.0f;
 
-        float half_size = m_spawn_size * 0.5f;
-        body->add_box(half_size, half_size, {}, 0.0f, shape_def);
+        float halfSize = m_SpawnSize * 0.5f;
+        body->AddBox(halfSize, halfSize, {}, 0.0f, shapeDef);
 
-        colored_body cb;
-        cb.body = body;
-        cb.color = random_color();
-        cb.is_circle = false;
-        cb.half_width = half_size;
-        cb.half_height = half_size;
+        ColoredBody cb;
+        cb.Body = body;
+        cb.Color = RandomColor();
+        cb.IsCircle = false;
+        cb.HalfWidth = halfSize;
+        cb.HalfHeight = halfSize;
 
-        m_bodies.push_back(cb);
+        m_Bodies.push_back(cb);
     }
 
-    void spawn_circle(const glm::vec2& pos)
+    void SpawnCircle(const glm::vec2& pos)
     {
-        physics::body_def def;
-        def.type = physics::body_type::dynamic;
-        def.position = pos;
+        Physics::BodyDef def;
+        def.Type = Physics::BodyType::Dynamic;
+        def.Position = pos;
 
-        auto body = m_world->create_body(def);
+        auto body = m_World->CreateBody(def);
 
-        physics::shape_def shape_def;
-        shape_def.material.restitution = m_spawn_restitution;
-        shape_def.material.friction = 0.5f;
-        shape_def.material.density = 1.0f;
+        Physics::ShapeDef shapeDef;
+        shapeDef.Material.Restitution = m_SpawnRestitution;
+        shapeDef.Material.Friction = 0.5f;
+        shapeDef.Material.Density = 1.0f;
 
-        float radius = m_spawn_size * 0.5f;
-        body->add_circle(radius, {}, shape_def);
+        float radius = m_SpawnSize * 0.5f;
+        body->AddCircle(radius, {}, shapeDef);
 
-        colored_body cb;
-        cb.body = body;
-        cb.color = random_color();
-        cb.is_circle = true;
-        cb.radius = radius;
+        ColoredBody cb;
+        cb.Body = body;
+        cb.Color = RandomColor();
+        cb.IsCircle = true;
+        cb.Radius = radius;
 
-        m_bodies.push_back(cb);
+        m_Bodies.push_back(cb);
     }
 
-    void reset_simulation()
+    void ResetSimulation()
     {
-        m_bodies.clear();
+        m_Bodies.clear();
 
         // Recreate world
-        physics::world_def world_def;
-        world_def.gravity = m_world->get_gravity();
-        m_world = std::make_unique<physics::world>(world_def);
+        Physics::WorldDef worldDef;
+        worldDef.Gravity = m_World->GetGravity();
+        m_World = std::make_unique<Physics::World>(worldDef);
 
-        create_ground();
+        CreateGround();
 
         // Spawn initial boxes
         for (int i = 0; i < 5; i++)
         {
-            spawn_box({3.0f + i * 1.2f, 8.0f + i * 0.5f});
+            SpawnBox({3.0f + i * 1.2f, 8.0f + i * 0.5f});
         }
     }
 
-    glm::vec4 random_color()
+    glm::vec4 RandomColor()
     {
-        float h = (m_rng() % 100) / 100.0f;
-        float s = 0.6f + (m_rng() % 40) / 100.0f;
-        float v = 0.7f + (m_rng() % 30) / 100.0f;
+        float h = (m_Rng() % 100) / 100.0f;
+        float s = 0.6f + (m_Rng() % 40) / 100.0f;
+        float v = 0.7f + (m_Rng() % 30) / 100.0f;
 
         // HSV to RGB
         float c = v * s;
@@ -434,43 +434,43 @@ private:
         return {r + m, g + m, b + m, 1.0f};
     }
 
-    std::unique_ptr<physics::world> m_world;
-    std::vector<colored_body> m_bodies;
+    std::unique_ptr<Physics::World> m_World;
+    std::vector<ColoredBody> m_Bodies;
 
     // Ground dimensions (in meters) - 12m x 12m world
-    glm::vec2 m_ground_pos = {6.0f, 0.5f};
-    float m_ground_width = 5.5f;
-    float m_ground_height = 0.5f;
+    glm::vec2 m_GroundPos = {6.0f, 0.5f};
+    float m_GroundWidth = 5.5f;
+    float m_GroundHeight = 0.5f;
 
     // Wall dimensions
-    glm::vec2 m_left_wall_pos = {0.5f, 6.0f};
-    glm::vec2 m_right_wall_pos = {11.5f, 6.0f};
-    float m_wall_thickness = 0.5f;
-    float m_wall_height = 6.0f;
+    glm::vec2 m_LeftWallPos = {0.5f, 6.0f};
+    glm::vec2 m_RightWallPos = {11.5f, 6.0f};
+    float m_WallThickness = 0.5f;
+    float m_WallHeight = 6.0f;
 
     // Spawn settings
-    bool m_spawn_circles = false;
-    float m_spawn_size = 0.8f;
-    float m_spawn_restitution = 0.3f;
+    bool m_SpawnCircles = false;
+    float m_SpawnSize = 0.8f;
+    float m_SpawnRestitution = 0.3f;
 
     // State
-    bool m_paused = false;
-    bool m_mouse_down = false;
-    bool m_r_down = false;
-    bool m_space_down = false;
+    bool m_Paused = false;
+    bool m_MouseDown = false;
+    bool m_RDown = false;
+    bool m_SpaceDown = false;
 
     // Viewport tracking
-    bool m_viewport_hovered = false;
-    glm::vec2 m_viewport_mouse_pos{0, 0};
+    bool m_ViewportHovered = false;
+    glm::vec2 m_ViewportMousePos{0, 0};
 
-    std::minstd_rand m_rng{42};
+    std::minstd_rand m_Rng{42};
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "physics/00-hello-physics";
-    auto* app = new application(specs);
-    app->push_layer<hello_physics_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "physics/00-hello-physics";
+    auto* app = new Application(specs);
+    app->PushLayer<HelloPhysicsLayer>();
     return app;
 }

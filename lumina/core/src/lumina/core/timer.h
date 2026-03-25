@@ -1,54 +1,54 @@
 #pragma once
 
-#include "log.h"
+#include "Log.h"
 
 #include <chrono>
 #include <string>
 
-namespace lumina::core
+namespace Lumina
 {
-    class timer
-    {
-    public:
-        timer() { reset(); }
+	class Timer
+	{
+	public:
+		Timer() { Reset(); }
 
-        void reset()
-        {
-            m_start = std::chrono::high_resolution_clock::now();
-        }
+		void Reset()
+		{
+			m_Start = std::chrono::high_resolution_clock::now();
+		}
 
-        [[nodiscard]] float elapsed() const
-        {
-            auto now = std::chrono::high_resolution_clock::now();
-            return std::chrono::duration<float>(now - m_start).count();
-        }
+		[[nodiscard]] float Elapsed() const
+		{
+			auto now = std::chrono::high_resolution_clock::now();
+			return std::chrono::duration<float>(now - m_Start).count();
+		}
 
-        [[nodiscard]] float elapsed_millis() const
-        {
-            return elapsed() * 1000.0f;
-        }
+		[[nodiscard]] float ElapsedMillis() const
+		{
+			return Elapsed() * 1000.0f;
+		}
 
-    private:
-        std::chrono::time_point<std::chrono::high_resolution_clock> m_start;
-    };
+	private:
+		std::chrono::time_point<std::chrono::high_resolution_clock> m_Start;
+	};
 
-    class scoped_timer
-    {
-    public:
-        explicit scoped_timer(const std::string& name)
-            : m_name(name) {}
+	class ScopedTimer
+	{
+	public:
+		explicit ScopedTimer(const std::string& name)
+			: m_Name(name) {}
 
-        ~scoped_timer()
-        {
-            float ms = m_timer.elapsed_millis();
-            LUMINA_LOG_TRACE("[TIMER] {} - {:.3f}ms", m_name, ms);
-        }
+		~ScopedTimer()
+		{
+			float ms = m_Timer.ElapsedMillis();
+			LUMINA_LOG_TRACE("[TIMER] {} - {:.3f}ms", m_Name, ms);
+		}
 
-        scoped_timer(const scoped_timer&) = delete;
-        scoped_timer& operator=(const scoped_timer&) = delete;
+		ScopedTimer(const ScopedTimer&) = delete;
+		ScopedTimer& operator=(const ScopedTimer&) = delete;
 
-    private:
-        std::string m_name;
-        timer m_timer;
-    };
+	private:
+		std::string m_Name;
+		Timer m_Timer;
+	};
 }

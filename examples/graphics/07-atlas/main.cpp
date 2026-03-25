@@ -10,278 +10,278 @@
 #include <glm/glm.hpp>
 #include <filesystem>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
-namespace input = lumina::core::input;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
+namespace Input = Lumina::Input;
 
 // Get asset path relative to this source file
-static std::string get_asset_path(const std::string& filename)
+static std::string GetAssetPath(const std::string& filename)
 {
-    std::filesystem::path source_dir = std::filesystem::path(__FILE__).parent_path();
-    return (source_dir / filename).string();
+    std::filesystem::path sourceDir = std::filesystem::path(__FILE__).parent_path();
+    return (sourceDir / filename).string();
 }
 
-class atlas_layer : public lumina::core::layer
+class AtlasLayer : public Lumina::Layer
 {
 public:
-    atlas_layer() : layer("atlas") {}
+    AtlasLayer() : Layer("Atlas") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        auto& device = lumina::core::application::get().get_device();
-        m_renderer = std::make_unique<gfx::renderer2d>(device);
-        m_renderer->init();
+        auto& device = Lumina::Application::Get().GetDevice();
+        m_Renderer = std::make_unique<Gfx::Renderer2D>(device);
+        m_Renderer->Init();
 
         // Create render target for the viewport (square)
-        m_render_target = gfx::render_target::create(
-            device, 600, 600, gfx::format::rgba8_unorm
+        m_RenderTarget = Gfx::RenderTarget::Create(
+            device, 600, 600, Gfx::Format::RGBA8_UNORM
         );
 
         // Load the factory atlas texture (relative to source file)
-        m_atlas_texture = gfx::texture::load_from_file(device, get_asset_path("factory_atlas.png"));
-        if (!m_atlas_texture)
+        m_AtlasTexture = Gfx::Texture::LoadFromFile(device, GetAssetPath("factory_atlas.png"));
+        if (!m_AtlasTexture)
         {
             LUMINA_LOG_ERROR("Failed to load factory_atlas.png");
             return;
         }
 
         // Create texture atlas from the texture
-        m_atlas = gfx::texture_atlas::create(m_atlas_texture);
-        if (!m_atlas)
+        m_Atlas = Gfx::TextureAtlas::Create(m_AtlasTexture);
+        if (!m_Atlas)
         {
             LUMINA_LOG_ERROR("Failed to create texture atlas");
             return;
         }
 
         // Get tile size from texture dimensions (16x16 grid)
-        uint32_t tex_width = m_atlas_texture->get_width();
-        uint32_t tex_height = m_atlas_texture->get_height();
-        m_tile_size = glm::vec2(tex_width / 16.0f, tex_height / 16.0f);
+        uint32_t texWidth = m_AtlasTexture->GetWidth();
+        uint32_t texHeight = m_AtlasTexture->GetHeight();
+        m_TileSize = glm::vec2(texWidth / 16.0f, texHeight / 16.0f);
 
         // Add a 16x16 grid of tiles to the atlas
-        m_atlas->add_grid("tile_", 16, 16, m_tile_size);
+        m_Atlas->AddGrid("tile_", 16, 16, m_TileSize);
 
         LUMINA_LOG_INFO("Atlas created: {}x{} texture, {:.0f}x{:.0f} tile size, {} regions",
-            tex_width, tex_height, m_tile_size.x, m_tile_size.y, m_atlas->get_region_count());
+            texWidth, texHeight, m_TileSize.x, m_TileSize.y, m_Atlas->GetRegionCount());
 
         // Initialize camera (square aspect ratio)
-        m_camera = gfx::camera2d(600.0f, 1.0f);
-        m_camera.set_position({300.0f, 300.0f});
-        m_camera.update(0.0f);  // Process dirty flags
+        m_Camera = Gfx::Camera2D(600.0f, 1.0f);
+        m_Camera.SetPosition({300.0f, 300.0f});
+        m_Camera.Update(0.0f);  // Process dirty flags
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_atlas.reset();
-        m_atlas_texture.reset();
-        m_render_target.reset();
-        m_renderer.reset();
+        m_Atlas.reset();
+        m_AtlasTexture.reset();
+        m_RenderTarget.reset();
+        m_Renderer.reset();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_time += dt;
+        m_Time += dt;
 
         // Camera controls
-        float move_speed = 300.0f * dt;
+        float moveSpeed = 300.0f * dt;
 
-        glm::vec2 move_dir{0.0f};
-        if (input::is_key_pressed(input::key_code::w) || input::is_key_pressed(input::key_code::up))
-            move_dir.y += 1.0f;
-        if (input::is_key_pressed(input::key_code::s) || input::is_key_pressed(input::key_code::down))
-            move_dir.y -= 1.0f;
-        if (input::is_key_pressed(input::key_code::a) || input::is_key_pressed(input::key_code::left))
-            move_dir.x -= 1.0f;
-        if (input::is_key_pressed(input::key_code::d) || input::is_key_pressed(input::key_code::right))
-            move_dir.x += 1.0f;
+        glm::vec2 moveDir{0.0f};
+        if (Input::IsKeyPressed(Input::KeyCode::W) || Input::IsKeyPressed(Input::KeyCode::Up))
+            moveDir.y += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::S) || Input::IsKeyPressed(Input::KeyCode::Down))
+            moveDir.y -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::A) || Input::IsKeyPressed(Input::KeyCode::Left))
+            moveDir.x -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::D) || Input::IsKeyPressed(Input::KeyCode::Right))
+            moveDir.x += 1.0f;
 
-        if (glm::length(move_dir) > 0.0f)
+        if (glm::length(moveDir) > 0.0f)
         {
-            move_dir = glm::normalize(move_dir);
-            m_camera.move(move_dir * move_speed / m_camera.get_zoom());
+            moveDir = glm::normalize(moveDir);
+            m_Camera.Move(moveDir * moveSpeed / m_Camera.GetZoom());
         }
 
         // Zoom controls
-        if (input::is_key_pressed(input::key_code::q))
-            m_camera.set_zoom(m_camera.get_zoom() * (1.0f + dt));
-        if (input::is_key_pressed(input::key_code::e))
-            m_camera.set_zoom(m_camera.get_zoom() * (1.0f - dt));
+        if (Input::IsKeyPressed(Input::KeyCode::Q))
+            m_Camera.SetZoom(m_Camera.GetZoom() * (1.0f + dt));
+        if (Input::IsKeyPressed(Input::KeyCode::E))
+            m_Camera.SetZoom(m_Camera.GetZoom() * (1.0f - dt));
 
         // Rotation controls
-        if (input::is_key_pressed(input::key_code::z))
-            m_camera.set_rotation(m_camera.get_rotation() + dt);
-        if (input::is_key_pressed(input::key_code::x))
-            m_camera.set_rotation(m_camera.get_rotation() - dt);
+        if (Input::IsKeyPressed(Input::KeyCode::Z))
+            m_Camera.SetRotation(m_Camera.GetRotation() + dt);
+        if (Input::IsKeyPressed(Input::KeyCode::X))
+            m_Camera.SetRotation(m_Camera.GetRotation() - dt);
 
         // Camera shake (space key)
-        if (input::is_key_pressed(input::key_code::space) && !m_camera.is_shaking())
+        if (Input::IsKeyPressed(Input::KeyCode::Space) && !m_Camera.IsShaking())
         {
-            m_camera.start_shake(10.0f, 0.3f);
+            m_Camera.StartShake(10.0f, 0.3f);
         }
 
         // Update camera
-        m_camera.update(dt);
+        m_Camera.Update(dt);
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        if (!m_renderer || !m_render_target || !m_atlas) return;
+        if (!m_Renderer || !m_RenderTarget || !m_Atlas) return;
 
         // Begin rendering with the camera
-        m_renderer->begin(m_camera);
-        m_renderer->set_render_target(m_render_target);
+        m_Renderer->Begin(m_Camera);
+        m_Renderer->SetRenderTarget(m_RenderTarget);
 
         // Use point filtering for pixel art
-        m_renderer->set_filter_mode(gfx::filter_mode::point);
+        m_Renderer->SetFilterMode(Gfx::FilterMode::Point);
 
         // Draw background
-        m_renderer->draw_quad({
-            .position = {400, 300, -0.1f},
-            .size = {2000, 2000},
-            .color = {0.15f, 0.15f, 0.2f, 1.0f},
-            .layer = gfx::render_layer::background
+        m_Renderer->DrawQuad({
+            .Position = {400, 300, -0.1f},
+            .Size = {2000, 2000},
+            .Color = {0.15f, 0.15f, 0.2f, 1.0f},
+            .Layer = Gfx::RenderLayer::Background
         });
 
         // Draw a grid of tiles from the atlas
-        float spacing = m_tile_size.x * 1.2f;
-        int grid_cols = 8;
-        int grid_rows = 4;
-        float start_x = 400.0f - (grid_cols * spacing) / 2.0f + spacing / 2.0f;
-        float start_y = 300.0f - (grid_rows * spacing) / 2.0f + spacing / 2.0f;
+        float spacing = m_TileSize.x * 1.2f;
+        int gridCols = 8;
+        int gridRows = 4;
+        float startX = 400.0f - (gridCols * spacing) / 2.0f + spacing / 2.0f;
+        float startY = 300.0f - (gridRows * spacing) / 2.0f + spacing / 2.0f;
 
-        int tile_index = 0;
-        for (int row = 0; row < grid_rows; row++)
+        int tileIndex = 0;
+        for (int row = 0; row < gridRows; row++)
         {
-            for (int col = 0; col < grid_cols; col++)
+            for (int col = 0; col < gridCols; col++)
             {
-                float x = start_x + col * spacing;
-                float y = start_y + row * spacing;
+                float x = startX + col * spacing;
+                float y = startY + row * spacing;
 
                 // Use the tile from atlas
-                m_renderer->draw_sprite(*m_atlas, static_cast<uint32_t>(tile_index), {
-                    .position = {x, y, 0.0f},
-                    .size = m_tile_size,
-                    .color = {1.0f, 1.0f, 1.0f, 1.0f},
-                    .layer = gfx::render_layer::sprites
+                m_Renderer->DrawSprite(*m_Atlas, static_cast<uint32_t>(tileIndex), {
+                    .Position = {x, y, 0.0f},
+                    .Size = m_TileSize,
+                    .Color = {1.0f, 1.0f, 1.0f, 1.0f},
+                    .Layer = Gfx::RenderLayer::Sprites
                 });
 
-                tile_index++;
+                tileIndex++;
             }
         }
 
         // Draw some animated sprites
-        float anim_offset = std::sin(m_time * 2.0f) * 50.0f;
+        float animOffset = std::sin(m_Time * 2.0f) * 50.0f;
 
         // Sprite 1 - bouncing
-        m_renderer->draw_sprite(*m_atlas, 0, {
-            .position = {150.0f, 150.0f + anim_offset, 0.1f},
-            .size = m_tile_size * 2.0f,
-            .color = {1.0f, 0.8f, 0.8f, 1.0f},
-            .rotation = m_time,
-            .layer = gfx::render_layer::sprites
+        m_Renderer->DrawSprite(*m_Atlas, 0, {
+            .Position = {150.0f, 150.0f + animOffset, 0.1f},
+            .Size = m_TileSize * 2.0f,
+            .Color = {1.0f, 0.8f, 0.8f, 1.0f},
+            .Rotation = m_Time,
+            .Layer = Gfx::RenderLayer::Sprites
         });
 
         // Sprite 2 - flipped
-        m_renderer->draw_sprite(*m_atlas, 1, {
-            .position = {650.0f, 150.0f - anim_offset, 0.1f},
-            .size = m_tile_size * 2.0f,
-            .color = {0.8f, 1.0f, 0.8f, 1.0f},
-            .flip_x = true,
-            .layer = gfx::render_layer::sprites
+        m_Renderer->DrawSprite(*m_Atlas, 1, {
+            .Position = {650.0f, 150.0f - animOffset, 0.1f},
+            .Size = m_TileSize * 2.0f,
+            .Color = {0.8f, 1.0f, 0.8f, 1.0f},
+            .FlipX = true,
+            .Layer = Gfx::RenderLayer::Sprites
         });
 
         // Sprite 3 - pulsing
-        float pulse = 1.0f + std::sin(m_time * 4.0f) * 0.2f;
-        m_renderer->draw_sprite(*m_atlas, 16, {
-            .position = {300.0f, 500.0f, 0.1f},
-            .size = m_tile_size * pulse * 1.5f,
-            .color = {0.8f, 0.8f, 1.0f, 1.0f},
-            .layer = gfx::render_layer::sprites
+        float pulse = 1.0f + std::sin(m_Time * 4.0f) * 0.2f;
+        m_Renderer->DrawSprite(*m_Atlas, 16, {
+            .Position = {300.0f, 500.0f, 0.1f},
+            .Size = m_TileSize * pulse * 1.5f,
+            .Color = {0.8f, 0.8f, 1.0f, 1.0f},
+            .Layer = Gfx::RenderLayer::Sprites
         });
 
         // Blend mode demonstrations
-        float blend_y = 500.0f;
+        float blendY = 500.0f;
 
         // Additive blend (glow effect)
-        m_renderer->draw_sprite(*m_atlas, 17, {
-            .position = {400.0f, blend_y, 0.2f},
-            .size = m_tile_size * 1.5f,
-            .color = {1.0f, 0.8f, 0.2f, 0.8f},
-            .layer = gfx::render_layer::effects,
-            .blend = gfx::blend_mode::additive
+        m_Renderer->DrawSprite(*m_Atlas, 17, {
+            .Position = {400.0f, blendY, 0.2f},
+            .Size = m_TileSize * 1.5f,
+            .Color = {1.0f, 0.8f, 0.2f, 0.8f},
+            .Layer = Gfx::RenderLayer::Effects,
+            .Blend = Gfx::BlendMode::Additive
         });
 
         // Multiply blend (shadow/darken)
-        m_renderer->draw_sprite(*m_atlas, 18, {
-            .position = {500.0f, blend_y, 0.2f},
-            .size = m_tile_size * 1.5f,
-            .color = {0.5f, 0.5f, 0.8f, 1.0f},
-            .layer = gfx::render_layer::effects,
-            .blend = gfx::blend_mode::multiply
+        m_Renderer->DrawSprite(*m_Atlas, 18, {
+            .Position = {500.0f, blendY, 0.2f},
+            .Size = m_TileSize * 1.5f,
+            .Color = {0.5f, 0.5f, 0.8f, 1.0f},
+            .Layer = Gfx::RenderLayer::Effects,
+            .Blend = Gfx::BlendMode::Multiply
         });
 
-        m_renderer->end();
+        m_Renderer->End();
 
         // UI
-        ui::begin_window("Atlas Demo");
-        ui::text("Texture Atlas & Camera2D Demo");
-        ui::separator();
+        UI::BeginWindow("Atlas Demo");
+        UI::Text("Texture Atlas & Camera2D Demo");
+        UI::Separator();
 
-        ui::text("Controls:");
-        ui::text("  WASD/Arrows - Pan camera");
-        ui::text("  Q/E - Zoom in/out");
-        ui::text("  Z/X - Rotate camera");
-        ui::text("  Space - Camera shake");
-        ui::separator();
+        UI::Text("Controls:");
+        UI::Text("  WASD/Arrows - Pan camera");
+        UI::Text("  Q/E - Zoom in/out");
+        UI::Text("  Z/X - Rotate camera");
+        UI::Text("  Space - Camera shake");
+        UI::Separator();
 
-        auto pos = m_camera.get_position();
-        ui::text_fmt("Camera Pos: ({:.0f}, {:.0f})", pos.x, pos.y);
-        ui::text_fmt("Zoom: {:.2f}x", m_camera.get_zoom());
-        ui::text_fmt("Rotation: {:.1f} deg", glm::degrees(m_camera.get_rotation()));
-        ui::text_fmt("Shaking: {}", m_camera.is_shaking() ? "Yes" : "No");
-        ui::separator();
+        auto pos = m_Camera.GetPosition();
+        UI::TextFmt("Camera Pos: ({:.0f}, {:.0f})", pos.x, pos.y);
+        UI::TextFmt("Zoom: {:.2f}x", m_Camera.GetZoom());
+        UI::TextFmt("Rotation: {:.1f} deg", glm::degrees(m_Camera.GetRotation()));
+        UI::TextFmt("Shaking: {}", m_Camera.IsShaking() ? "Yes" : "No");
+        UI::Separator();
 
-        ui::text_fmt("Atlas Regions: {}", m_atlas->get_region_count());
-        ui::text_fmt("Tile Size: {:.0f}x{:.0f}", m_tile_size.x, m_tile_size.y);
-        ui::separator();
+        UI::TextFmt("Atlas Regions: {}", m_Atlas->GetRegionCount());
+        UI::TextFmt("Tile Size: {:.0f}x{:.0f}", m_TileSize.x, m_TileSize.y);
+        UI::Separator();
 
-        ui::text("Blend Modes:");
-        ui::text("  Yellow sprite - Additive (glow)");
-        ui::text("  Blue sprite - Multiply (darken)");
-        ui::separator();
+        UI::Text("Blend Modes:");
+        UI::Text("  Yellow sprite - Additive (glow)");
+        UI::Text("  Blue sprite - Multiply (darken)");
+        UI::Separator();
 
-        const auto& stats = m_renderer->get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("Quads: {}", stats.quad_count);
-        m_renderer->reset_stats();
-        ui::end_window();
+        const auto& stats = m_Renderer->GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("Quads: {}", stats.QuadCount);
+        m_Renderer->ResetStats();
+        UI::EndWindow();
 
         // Viewport
-        ui::begin_window("Viewport");
-        auto tex = m_render_target->get_color_texture();
+        UI::BeginWindow("Viewport");
+        auto tex = m_RenderTarget->GetColorTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), ui::get_content_size());
+            UI::Image(tex->GetTexture(), UI::GetContentSize());
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    std::unique_ptr<gfx::renderer2d> m_renderer;
-    lumina::ref<gfx::render_target> m_render_target;
-    lumina::ref<gfx::texture> m_atlas_texture;
-    lumina::ref<gfx::texture_atlas> m_atlas;
-    gfx::camera2d m_camera;
+    std::unique_ptr<Gfx::Renderer2D> m_Renderer;
+    Lumina::Ref<Gfx::RenderTarget> m_RenderTarget;
+    Lumina::Ref<Gfx::Texture> m_AtlasTexture;
+    Lumina::Ref<Gfx::TextureAtlas> m_Atlas;
+    Gfx::Camera2D m_Camera;
 
-    glm::vec2 m_tile_size{32.0f};
-    float m_time = 0.0f;
+    glm::vec2 m_TileSize{32.0f};
+    float m_Time = 0.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/07-atlas";
-    auto* app = new application(specs);
-    app->push_layer<atlas_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/07-atlas";
+    auto* app = new Application(specs);
+    app->PushLayer<AtlasLayer>();
     return app;
 }

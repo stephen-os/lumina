@@ -12,346 +12,346 @@
 #include <vector>
 #include <cmath>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
-namespace input = lumina::core::input;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
+namespace Input = Lumina::Input;
 
 // Simple animation class
-class sprite_animation
+class SpriteAnimation
 {
 public:
-    sprite_animation() = default;
+    SpriteAnimation() = default;
 
-    void add_frame(uint32_t region_index)
+    void AddFrame(uint32_t regionIndex)
     {
-        m_frames.push_back(region_index);
+        m_Frames.push_back(regionIndex);
     }
 
-    void set_frame_duration(float duration)
+    void SetFrameDuration(float duration)
     {
-        m_frame_duration = duration;
+        m_FrameDuration = duration;
     }
 
-    void update(float dt)
+    void Update(float dt)
     {
-        if (m_frames.empty() || m_paused) return;
+        if (m_Frames.empty() || m_Paused) return;
 
-        m_time += dt * m_speed;
-        while (m_time >= m_frame_duration)
+        m_Time += dt * m_Speed;
+        while (m_Time >= m_FrameDuration)
         {
-            m_time -= m_frame_duration;
-            m_current_frame = (m_current_frame + 1) % m_frames.size();
+            m_Time -= m_FrameDuration;
+            m_CurrentFrame = (m_CurrentFrame + 1) % m_Frames.size();
         }
     }
 
-    [[nodiscard]] uint32_t get_current_region() const
+    [[nodiscard]] uint32_t GetCurrentRegion() const
     {
-        if (m_frames.empty()) return 0;
-        return m_frames[m_current_frame];
+        if (m_Frames.empty()) return 0;
+        return m_Frames[m_CurrentFrame];
     }
 
-    [[nodiscard]] size_t get_frame_count() const { return m_frames.size(); }
-    [[nodiscard]] size_t get_current_frame_index() const { return m_current_frame; }
+    [[nodiscard]] size_t GetFrameCount() const { return m_Frames.size(); }
+    [[nodiscard]] size_t GetCurrentFrameIndex() const { return m_CurrentFrame; }
 
-    void set_speed(float speed) { m_speed = speed; }
-    [[nodiscard]] float get_speed() const { return m_speed; }
+    void SetSpeed(float speed) { m_Speed = speed; }
+    [[nodiscard]] float GetSpeed() const { return m_Speed; }
 
-    void set_paused(bool paused) { m_paused = paused; }
-    [[nodiscard]] bool is_paused() const { return m_paused; }
+    void SetPaused(bool paused) { m_Paused = paused; }
+    [[nodiscard]] bool IsPaused() const { return m_Paused; }
 
-    void reset()
+    void Reset()
     {
-        m_current_frame = 0;
-        m_time = 0.0f;
+        m_CurrentFrame = 0;
+        m_Time = 0.0f;
     }
 
 private:
-    std::vector<uint32_t> m_frames;
-    float m_frame_duration = 0.1f;
-    float m_time = 0.0f;
-    float m_speed = 1.0f;
-    size_t m_current_frame = 0;
-    bool m_paused = false;
+    std::vector<uint32_t> m_Frames;
+    float m_FrameDuration = 0.1f;
+    float m_Time = 0.0f;
+    float m_Speed = 1.0f;
+    size_t m_CurrentFrame = 0;
+    bool m_Paused = false;
 };
 
 // Get asset path relative to source file
-static std::string get_asset_path(const std::string& filename)
+static std::string GetAssetPath(const std::string& filename)
 {
-    std::filesystem::path source_dir = std::filesystem::path(__FILE__).parent_path();
+    std::filesystem::path sourceDir = std::filesystem::path(__FILE__).parent_path();
     // Use the atlas from 07-atlas example
-    return (source_dir / ".." / "07-atlas" / filename).string();
+    return (sourceDir / ".." / "07-atlas" / filename).string();
 }
 
-class animation_layer : public lumina::core::layer
+class AnimationLayer : public Lumina::Layer
 {
 public:
-    animation_layer() : layer("animation") {}
+    AnimationLayer() : Layer("animation") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 600, .height = 400});
+        Gfx::Renderer::Init({.Width = 600, .Height = 400});
 
-        auto& device = lumina::core::application::get().get_device();
+        auto& device = Lumina::Application::Get().GetDevice();
 
         // Load atlas texture
-        m_atlas_texture = gfx::texture::load_from_file(device, get_asset_path("factory_atlas.png"));
-        if (!m_atlas_texture)
+        m_AtlasTexture = Gfx::Texture::LoadFromFile(device, GetAssetPath("factory_atlas.png"));
+        if (!m_AtlasTexture)
         {
             LUMINA_LOG_ERROR("Failed to load atlas texture");
             return;
         }
 
         // Create atlas with grid
-        m_atlas = gfx::texture_atlas::create(m_atlas_texture);
-        uint32_t tex_width = m_atlas_texture->get_width();
-        uint32_t tex_height = m_atlas_texture->get_height();
-        m_tile_size = glm::vec2(tex_width / 16.0f, tex_height / 16.0f);
-        m_atlas->add_grid("tile_", 16, 16, m_tile_size);
+        m_Atlas = Gfx::TextureAtlas::Create(m_AtlasTexture);
+        uint32_t texWidth = m_AtlasTexture->GetWidth();
+        uint32_t texHeight = m_AtlasTexture->GetHeight();
+        m_TileSize = glm::vec2(texWidth / 16.0f, texHeight / 16.0f);
+        m_Atlas->AddGrid("tile_", 16, 16, m_TileSize);
 
         // Create animations using atlas tiles as frames
         // Animation 1: Cycle through first row (frames 0-7)
-        m_anim_row.set_frame_duration(0.15f);
+        m_AnimRow.SetFrameDuration(0.15f);
         for (int i = 0; i < 8; i++)
-            m_anim_row.add_frame(i);
+            m_AnimRow.AddFrame(i);
 
         // Animation 2: Cycle through first column (frames 0, 16, 32, 48)
-        m_anim_col.set_frame_duration(0.2f);
+        m_AnimCol.SetFrameDuration(0.2f);
         for (int i = 0; i < 4; i++)
-            m_anim_col.add_frame(i * 16);
+            m_AnimCol.AddFrame(i * 16);
 
         // Animation 3: Diagonal pattern
-        m_anim_diag.set_frame_duration(0.12f);
+        m_AnimDiag.SetFrameDuration(0.12f);
         for (int i = 0; i < 8; i++)
-            m_anim_diag.add_frame(i * 17);  // 0, 17, 34, 51...
+            m_AnimDiag.AddFrame(i * 17);  // 0, 17, 34, 51...
 
         LUMINA_LOG_INFO("Animation demo loaded");
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_atlas.reset();
-        m_atlas_texture.reset();
-        gfx::renderer::shutdown();
+        m_Atlas.reset();
+        m_AtlasTexture.reset();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_time += dt;
+        m_Time += dt;
 
         // Update animations
-        m_anim_row.update(dt);
-        m_anim_col.update(dt);
-        m_anim_diag.update(dt);
+        m_AnimRow.Update(dt);
+        m_AnimCol.Update(dt);
+        m_AnimDiag.Update(dt);
 
         // Speed controls
-        if (input::is_key_pressed(input::key_code::up))
-            m_animation_speed = std::min(m_animation_speed + dt * 2.0f, 5.0f);
-        if (input::is_key_pressed(input::key_code::down))
-            m_animation_speed = std::max(m_animation_speed - dt * 2.0f, 0.1f);
+        if (Input::IsKeyPressed(Input::KeyCode::Up))
+            m_AnimationSpeed = std::min(m_AnimationSpeed + dt * 2.0f, 5.0f);
+        if (Input::IsKeyPressed(Input::KeyCode::Down))
+            m_AnimationSpeed = std::max(m_AnimationSpeed - dt * 2.0f, 0.1f);
 
-        m_anim_row.set_speed(m_animation_speed);
-        m_anim_col.set_speed(m_animation_speed);
-        m_anim_diag.set_speed(m_animation_speed);
+        m_AnimRow.SetSpeed(m_AnimationSpeed);
+        m_AnimCol.SetSpeed(m_AnimationSpeed);
+        m_AnimDiag.SetSpeed(m_AnimationSpeed);
 
         // Pause toggle
-        if (input::is_key_pressed(input::key_code::space))
+        if (Input::IsKeyPressed(Input::KeyCode::Space))
         {
-            if (!m_space_held)
+            if (!m_SpaceHeld)
             {
-                m_paused = !m_paused;
-                m_anim_row.set_paused(m_paused);
-                m_anim_col.set_paused(m_paused);
-                m_anim_diag.set_paused(m_paused);
+                m_Paused = !m_Paused;
+                m_AnimRow.SetPaused(m_Paused);
+                m_AnimCol.SetPaused(m_Paused);
+                m_AnimDiag.SetPaused(m_Paused);
             }
-            m_space_held = true;
+            m_SpaceHeld = true;
         }
         else
         {
-            m_space_held = false;
+            m_SpaceHeld = false;
         }
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        if (!m_atlas) return;
+        if (!m_Atlas) return;
 
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.12f, 0.12f, 0.15f, 1.0f});
-        gfx::renderer::set_filter_mode(gfx::filter_mode::point);
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.12f, 0.12f, 0.15f, 1.0f});
+        Gfx::Renderer::SetFilterMode(Gfx::FilterMode::Point);
 
-        float y_offset = 80.0f;
-        float sprite_scale = 2.0f;
-        glm::vec2 display_size = m_tile_size * sprite_scale;
+        float yOffset = 80.0f;
+        float spriteScale = 2.0f;
+        glm::vec2 displaySize = m_TileSize * spriteScale;
 
         // Row animation
-        draw_animation_demo("Row Animation", {100.0f, y_offset}, m_anim_row, display_size);
+        DrawAnimationDemo("Row Animation", {100.0f, yOffset}, m_AnimRow, displaySize);
 
         // Column animation
-        draw_animation_demo("Column Animation", {300.0f, y_offset}, m_anim_col, display_size);
+        DrawAnimationDemo("Column Animation", {300.0f, yOffset}, m_AnimCol, displaySize);
 
         // Diagonal animation
-        draw_animation_demo("Diagonal Animation", {500.0f, y_offset}, m_anim_diag, display_size);
+        DrawAnimationDemo("Diagonal Animation", {500.0f, yOffset}, m_AnimDiag, displaySize);
 
         // Procedural animation section
-        float proc_y = 220.0f;
+        float procY = 220.0f;
 
         // Bouncing circle
-        float bounce = std::abs(std::sin(m_time * 3.0f)) * 30.0f;
-        gfx::renderer::draw_circle({
-            .position = {100.0f, proc_y + 50.0f - bounce, 0},
-            .radius = {20, 20},
-            .color = {0.2f, 0.8f, 0.4f, 1.0f}
+        float bounce = std::abs(std::sin(m_Time * 3.0f)) * 30.0f;
+        Gfx::Renderer::DrawCircle({
+            .Position = {100.0f, procY + 50.0f - bounce, 0},
+            .Radius = {20, 20},
+            .Color = {0.2f, 0.8f, 0.4f, 1.0f}
         });
-        gfx::renderer::draw_text({
-            .text = "Bounce",
-            .position = {100.0f, proc_y + 90.0f, 0},
-            .scale = 0.8f,
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Bounce",
+            .Position = {100.0f, procY + 90.0f, 0},
+            .Scale = 0.8f,
+            .Color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Pulsing square
-        float pulse = 1.0f + std::sin(m_time * 4.0f) * 0.3f;
-        gfx::renderer::draw_quad({
-            .position = {250.0f, proc_y + 50.0f, 0},
-            .size = {30.0f * pulse, 30.0f * pulse},
-            .color = {0.8f, 0.4f, 0.2f, 1.0f}
+        float pulse = 1.0f + std::sin(m_Time * 4.0f) * 0.3f;
+        Gfx::Renderer::DrawQuad({
+            .Position = {250.0f, procY + 50.0f, 0},
+            .Size = {30.0f * pulse, 30.0f * pulse},
+            .Color = {0.8f, 0.4f, 0.2f, 1.0f}
         });
-        gfx::renderer::draw_text({
-            .text = "Pulse",
-            .position = {250.0f, proc_y + 90.0f, 0},
-            .scale = 0.8f,
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Pulse",
+            .Position = {250.0f, procY + 90.0f, 0},
+            .Scale = 0.8f,
+            .Color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Rotating square
-        gfx::renderer::draw_quad({
-            .position = {400.0f, proc_y + 50.0f, 0},
-            .size = {35.0f, 35.0f},
-            .color = {0.4f, 0.4f, 0.9f, 1.0f},
-            .rotation = m_time * 2.0f
+        Gfx::Renderer::DrawQuad({
+            .Position = {400.0f, procY + 50.0f, 0},
+            .Size = {35.0f, 35.0f},
+            .Color = {0.4f, 0.4f, 0.9f, 1.0f},
+            .Rotation = m_Time * 2.0f
         });
-        gfx::renderer::draw_text({
-            .text = "Rotate",
-            .position = {400.0f, proc_y + 90.0f, 0},
-            .scale = 0.8f,
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Rotate",
+            .Position = {400.0f, procY + 90.0f, 0},
+            .Scale = 0.8f,
+            .Color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Color cycling
-        float hue = std::fmod(m_time * 0.5f, 1.0f);
-        glm::vec4 rainbow = hsv_to_rgb(hue, 0.8f, 1.0f);
-        gfx::renderer::draw_quad({
-            .position = {550.0f, proc_y + 50.0f, 0},
-            .size = {35.0f, 35.0f},
-            .color = rainbow
+        float hue = std::fmod(m_Time * 0.5f, 1.0f);
+        glm::vec4 rainbow = HsvToRgb(hue, 0.8f, 1.0f);
+        Gfx::Renderer::DrawQuad({
+            .Position = {550.0f, procY + 50.0f, 0},
+            .Size = {35.0f, 35.0f},
+            .Color = rainbow
         });
-        gfx::renderer::draw_text({
-            .text = "Color",
-            .position = {550.0f, proc_y + 90.0f, 0},
-            .scale = 0.8f,
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Color",
+            .Position = {550.0f, procY + 90.0f, 0},
+            .Scale = 0.8f,
+            .Color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Section labels
-        gfx::renderer::draw_text({
-            .text = "Frame-based Animation (Atlas Tiles)",
-            .position = {300.0f, 20.0f, 0},
-            .scale = 1.2f,
-            .color = {1.0f, 0.9f, 0.5f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Frame-based Animation (Atlas Tiles)",
+            .Position = {300.0f, 20.0f, 0},
+            .Scale = 1.2f,
+            .Color = {1.0f, 0.9f, 0.5f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
-        gfx::renderer::draw_text({
-            .text = "Procedural Animation",
-            .position = {300.0f, proc_y - 20.0f, 0},
-            .scale = 1.2f,
-            .color = {1.0f, 0.9f, 0.5f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Procedural Animation",
+            .Position = {300.0f, procY - 20.0f, 0},
+            .Scale = 1.2f,
+            .Color = {1.0f, 0.9f, 0.5f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Controls hint
-        gfx::renderer::draw_text({
-            .text = "Up/Down: Speed | Space: Pause",
-            .position = {300.0f, 380.0f, 0},
-            .scale = 0.9f,
-            .color = {0.5f, 0.5f, 0.5f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Up/Down: Speed | Space: Pause",
+            .Position = {300.0f, 380.0f, 0},
+            .Scale = 0.9f,
+            .Color = {0.5f, 0.5f, 0.5f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        render_ui();
+        RenderUI();
     }
 
-    void draw_animation_demo(const char* label, glm::vec2 pos, const sprite_animation& anim, glm::vec2 size)
+    void DrawAnimationDemo(const char* label, glm::vec2 pos, const SpriteAnimation& anim, glm::vec2 size)
     {
         // Draw current frame
-        gfx::renderer::draw_sprite(*m_atlas, anim.get_current_region(), {
-            .position = {pos.x, pos.y, 0},
-            .size = size,
-            .color = {1.0f, 1.0f, 1.0f, 1.0f}
+        Gfx::Renderer::DrawSprite(*m_Atlas, anim.GetCurrentRegion(), {
+            .Position = {pos.x, pos.y, 0},
+            .Size = size,
+            .Color = {1.0f, 1.0f, 1.0f, 1.0f}
         });
 
         // Draw label
-        gfx::renderer::draw_text({
-            .text = label,
-            .position = {pos.x, pos.y + size.y / 2.0f + 20.0f, 0},
-            .scale = 0.8f,
-            .color = {0.7f, 0.7f, 0.7f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = label,
+            .Position = {pos.x, pos.y + size.y / 2.0f + 20.0f, 0},
+            .Scale = 0.8f,
+            .Color = {0.7f, 0.7f, 0.7f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
         // Draw frame indicator
-        std::string frame_text = std::to_string(anim.get_current_frame_index() + 1) + "/" +
-                                  std::to_string(anim.get_frame_count());
-        gfx::renderer::draw_text({
-            .text = frame_text.c_str(),
-            .position = {pos.x, pos.y + size.y / 2.0f + 40.0f, 0},
-            .scale = 0.7f,
-            .color = {0.5f, 0.5f, 0.5f, 1.0f},
-            .alignment = gfx::text_alignment::center
+        std::string frameText = std::to_string(anim.GetCurrentFrameIndex() + 1) + "/" +
+                                  std::to_string(anim.GetFrameCount());
+        Gfx::Renderer::DrawText({
+            .Text = frameText.c_str(),
+            .Position = {pos.x, pos.y + size.y / 2.0f + 40.0f, 0},
+            .Scale = 0.7f,
+            .Color = {0.5f, 0.5f, 0.5f, 1.0f},
+            .Alignment = Gfx::TextAlignment::Center
         });
     }
 
-    void render_ui()
+    void RenderUI()
     {
-        ui::begin_window("Animation Demo");
-        ui::text("Sprite Animation Demo");
-        ui::separator();
+        UI::BeginWindow("Animation Demo");
+        UI::Text("Sprite Animation Demo");
+        UI::Separator();
 
-        ui::text_fmt("Speed: {:.1f}x", m_animation_speed);
-        ui::text_fmt("Paused: {}", m_paused ? "Yes" : "No");
-        ui::separator();
+        UI::TextFmt("Speed: {:.1f}x", m_AnimationSpeed);
+        UI::TextFmt("Paused: {}", m_Paused ? "Yes" : "No");
+        UI::Separator();
 
-        ui::text("Controls:");
-        ui::text("  Up/Down - Adjust speed");
-        ui::text("  Space - Pause/Resume");
-        ui::separator();
+        UI::Text("Controls:");
+        UI::Text("  Up/Down - Adjust speed");
+        UI::Text("  Space - Pause/Resume");
+        UI::Separator();
 
-        const auto& stats = gfx::renderer::get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("Quads: {}", stats.quad_count);
-        gfx::renderer::reset_stats();
+        const auto& stats = Gfx::Renderer::GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("Quads: {}", stats.QuadCount);
+        Gfx::Renderer::ResetStats();
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Viewport
-        ui::begin_window("Viewport");
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Viewport");
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), ui::get_content_size());
+            UI::Image(tex->GetTexture(), UI::GetContentSize());
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    glm::vec4 hsv_to_rgb(float h, float s, float v)
+    glm::vec4 HsvToRgb(float h, float s, float v)
     {
         float c = v * s;
         float x = c * (1 - std::abs(std::fmod(h * 6.0f, 2.0f) - 1));
@@ -366,25 +366,25 @@ private:
         return {r + m, g + m, b + m, 1.0f};
     }
 
-    lumina::ref<gfx::texture> m_atlas_texture;
-    lumina::ref<gfx::texture_atlas> m_atlas;
-    glm::vec2 m_tile_size{32.0f};
+    Lumina::Ref<Gfx::Texture> m_AtlasTexture;
+    Lumina::Ref<Gfx::TextureAtlas> m_Atlas;
+    glm::vec2 m_TileSize{32.0f};
 
-    sprite_animation m_anim_row;
-    sprite_animation m_anim_col;
-    sprite_animation m_anim_diag;
+    SpriteAnimation m_AnimRow;
+    SpriteAnimation m_AnimCol;
+    SpriteAnimation m_AnimDiag;
 
-    float m_time = 0.0f;
-    float m_animation_speed = 1.0f;
-    bool m_paused = false;
-    bool m_space_held = false;
+    float m_Time = 0.0f;
+    float m_AnimationSpeed = 1.0f;
+    bool m_Paused = false;
+    bool m_SpaceHeld = false;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/10-animation";
-    auto* app = new application(specs);
-    app->push_layer<animation_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/10-animation";
+    auto* app = new Application(specs);
+    app->PushLayer<AnimationLayer>();
     return app;
 }

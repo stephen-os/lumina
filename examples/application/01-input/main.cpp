@@ -10,210 +10,210 @@
 #include <glm/glm.hpp>
 #include <algorithm>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
-namespace input = lumina::core::input;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
+namespace Input = Lumina::Input;
 
-class input_layer : public lumina::core::layer
+class InputLayer : public Lumina::Layer
 {
 public:
-    input_layer() : layer("input") {}
+    InputLayer() : Layer("Input") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 512, .height = 512});
+        Gfx::Renderer::Init({.Width = 512, .Height = 512});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
         // Move player with WASD or arrow keys
         float speed = 200.0f * dt;
-        glm::vec2 move_dir{0.0f};
+        glm::vec2 moveDir{0.0f};
 
-        if (input::is_key_pressed(input::key_code::w) || input::is_key_pressed(input::key_code::up))
-            move_dir.y -= 1.0f;
-        if (input::is_key_pressed(input::key_code::s) || input::is_key_pressed(input::key_code::down))
-            move_dir.y += 1.0f;
-        if (input::is_key_pressed(input::key_code::a) || input::is_key_pressed(input::key_code::left))
-            move_dir.x -= 1.0f;
-        if (input::is_key_pressed(input::key_code::d) || input::is_key_pressed(input::key_code::right))
-            move_dir.x += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::W) || Input::IsKeyPressed(Input::KeyCode::Up))
+            moveDir.y -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::S) || Input::IsKeyPressed(Input::KeyCode::Down))
+            moveDir.y += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::A) || Input::IsKeyPressed(Input::KeyCode::Left))
+            moveDir.x -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::D) || Input::IsKeyPressed(Input::KeyCode::Right))
+            moveDir.x += 1.0f;
 
         // Normalize diagonal movement
-        if (glm::length(move_dir) > 0.0f)
+        if (glm::length(moveDir) > 0.0f)
         {
-            move_dir = glm::normalize(move_dir);
-            m_player_pos += move_dir * speed;
+            moveDir = glm::normalize(moveDir);
+            m_PlayerPos += moveDir * speed;
         }
 
         // Clamp to bounds
-        m_player_pos.x = std::clamp(m_player_pos.x, 25.0f, 487.0f);
-        m_player_pos.y = std::clamp(m_player_pos.y, 25.0f, 487.0f);
+        m_PlayerPos.x = std::clamp(m_PlayerPos.x, 25.0f, 487.0f);
+        m_PlayerPos.y = std::clamp(m_PlayerPos.y, 25.0f, 487.0f);
 
         // Track modifier keys
-        m_shift_held = input::is_key_pressed(input::key_code::left_shift) ||
-                       input::is_key_pressed(input::key_code::right_shift);
-        m_ctrl_held = input::is_key_pressed(input::key_code::left_control) ||
-                      input::is_key_pressed(input::key_code::right_control);
-        m_alt_held = input::is_key_pressed(input::key_code::left_alt) ||
-                     input::is_key_pressed(input::key_code::right_alt);
+        m_ShiftHeld = Input::IsKeyPressed(Input::KeyCode::LeftShift) ||
+                      Input::IsKeyPressed(Input::KeyCode::RightShift);
+        m_CtrlHeld = Input::IsKeyPressed(Input::KeyCode::LeftControl) ||
+                     Input::IsKeyPressed(Input::KeyCode::RightControl);
+        m_AltHeld = Input::IsKeyPressed(Input::KeyCode::LeftAlt) ||
+                    Input::IsKeyPressed(Input::KeyCode::RightAlt);
 
         // Track mouse buttons
-        m_mouse_left = input::is_mouse_button_pressed(input::mouse_code::left);
-        m_mouse_right = input::is_mouse_button_pressed(input::mouse_code::right);
-        m_mouse_middle = input::is_mouse_button_pressed(input::mouse_code::middle);
+        m_MouseLeft = Input::IsMouseButtonPressed(Input::MouseCode::Left);
+        m_MouseRight = Input::IsMouseButtonPressed(Input::MouseCode::Right);
+        m_MouseMiddle = Input::IsMouseButtonPressed(Input::MouseCode::Middle);
 
         // Get mouse position
-        auto mouse = input::get_mouse_position();
-        m_mouse_pos = {mouse.x, mouse.y};
+        auto mouse = Input::GetMousePosition();
+        m_MousePos = {mouse.x, mouse.y};
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.12f, 0.12f, 0.15f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.12f, 0.12f, 0.15f, 1.0f});
 
         // Draw grid for reference
         for (int i = 0; i <= 8; i++)
         {
             float pos = i * 64.0f;
-            gfx::renderer::draw_line({
-                .start = {pos, 0, 0},
-                .end = {pos, 512, 0},
-                .color = {0.2f, 0.2f, 0.25f, 1.0f}
+            Gfx::Renderer::DrawLine({
+                .Start = {pos, 0, 0},
+                .End = {pos, 512, 0},
+                .Color = {0.2f, 0.2f, 0.25f, 1.0f}
             });
-            gfx::renderer::draw_line({
-                .start = {0, pos, 0},
-                .end = {512, pos, 0},
-                .color = {0.2f, 0.2f, 0.25f, 1.0f}
+            Gfx::Renderer::DrawLine({
+                .Start = {0, pos, 0},
+                .End = {512, pos, 0},
+                .Color = {0.2f, 0.2f, 0.25f, 1.0f}
             });
         }
 
         // Draw player square (changes color based on modifiers)
-        glm::vec4 player_color = {0.2f, 0.6f, 1.0f, 1.0f};  // Blue
-        if (m_shift_held) player_color = {1.0f, 0.6f, 0.2f, 1.0f};  // Orange
-        if (m_ctrl_held) player_color = {0.2f, 1.0f, 0.6f, 1.0f};   // Green
-        if (m_alt_held) player_color = {1.0f, 0.2f, 0.6f, 1.0f};    // Pink
+        glm::vec4 playerColor = {0.2f, 0.6f, 1.0f, 1.0f};  // Blue
+        if (m_ShiftHeld) playerColor = {1.0f, 0.6f, 0.2f, 1.0f};  // Orange
+        if (m_CtrlHeld) playerColor = {0.2f, 1.0f, 0.6f, 1.0f};   // Green
+        if (m_AltHeld) playerColor = {1.0f, 0.2f, 0.6f, 1.0f};    // Pink
 
-        float player_size = 40.0f;
-        if (m_mouse_left) player_size = 50.0f;  // Grow when clicking
+        float playerSize = 40.0f;
+        if (m_MouseLeft) playerSize = 50.0f;  // Grow when clicking
 
-        gfx::renderer::draw_quad({
-            .position = {m_player_pos.x, m_player_pos.y, 0.1f},
-            .size = {player_size, player_size},
-            .color = player_color
+        Gfx::Renderer::DrawQuad({
+            .Position = {m_PlayerPos.x, m_PlayerPos.y, 0.1f},
+            .Size = {playerSize, playerSize},
+            .Color = playerColor
         });
 
         // Draw mouse cursor indicator (in render target space)
         // This won't match exactly since mouse is in window coords, but shows the concept
-        if (m_mouse_right)
+        if (m_MouseRight)
         {
-            gfx::renderer::draw_circle({
-                .position = {m_player_pos.x, m_player_pos.y, 0.2f},
-                .radius = {30, 30},
-                .color = {1.0f, 1.0f, 0.0f, 0.5f},
-                .thickness = 0.1f
+            Gfx::Renderer::DrawCircle({
+                .Position = {m_PlayerPos.x, m_PlayerPos.y, 0.2f},
+                .Radius = {30, 30},
+                .Color = {1.0f, 1.0f, 0.0f, 0.5f},
+                .Thickness = 0.1f
             });
         }
 
         // Draw direction indicator based on arrow keys
-        glm::vec2 indicator_dir{0.0f};
-        if (input::is_key_pressed(input::key_code::up)) indicator_dir.y -= 1.0f;
-        if (input::is_key_pressed(input::key_code::down)) indicator_dir.y += 1.0f;
-        if (input::is_key_pressed(input::key_code::left)) indicator_dir.x -= 1.0f;
-        if (input::is_key_pressed(input::key_code::right)) indicator_dir.x += 1.0f;
+        glm::vec2 indicatorDir{0.0f};
+        if (Input::IsKeyPressed(Input::KeyCode::Up)) indicatorDir.y -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::Down)) indicatorDir.y += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::Left)) indicatorDir.x -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::Right)) indicatorDir.x += 1.0f;
 
-        if (glm::length(indicator_dir) > 0.0f)
+        if (glm::length(indicatorDir) > 0.0f)
         {
-            indicator_dir = glm::normalize(indicator_dir) * 40.0f;
-            gfx::renderer::draw_line({
-                .start = {m_player_pos.x, m_player_pos.y, 0.3f},
-                .end = {m_player_pos.x + indicator_dir.x, m_player_pos.y + indicator_dir.y, 0.3f},
-                .color = {1.0f, 1.0f, 1.0f, 0.8f},
-                .thickness = 3.0f
+            indicatorDir = glm::normalize(indicatorDir) * 40.0f;
+            Gfx::Renderer::DrawLine({
+                .Start = {m_PlayerPos.x, m_PlayerPos.y, 0.3f},
+                .End = {m_PlayerPos.x + indicatorDir.x, m_PlayerPos.y + indicatorDir.y, 0.3f},
+                .Color = {1.0f, 1.0f, 1.0f, 0.8f},
+                .Thickness = 3.0f
             });
         }
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        render_ui();
+        RenderUI();
     }
 
-    void render_ui()
+    void RenderUI()
     {
-        ui::begin_window("Input Demo");
-        ui::text("Input System Demo");
-        ui::separator();
+        UI::BeginWindow("Input Demo");
+        UI::Text("Input System Demo");
+        UI::Separator();
 
-        ui::text("Keyboard:");
-        ui::text("  WASD/Arrows - Move square");
-        ui::text("  Shift - Orange color");
-        ui::text("  Ctrl - Green color");
-        ui::text("  Alt - Pink color");
-        ui::separator();
+        UI::Text("Keyboard:");
+        UI::Text("  WASD/Arrows - Move square");
+        UI::Text("  Shift - Orange color");
+        UI::Text("  Ctrl - Green color");
+        UI::Text("  Alt - Pink color");
+        UI::Separator();
 
-        ui::text("Mouse:");
-        ui::text("  Left click - Enlarge square");
-        ui::text("  Right click - Show ring");
-        ui::separator();
+        UI::Text("Mouse:");
+        UI::Text("  Left click - Enlarge square");
+        UI::Text("  Right click - Show ring");
+        UI::Separator();
 
-        ui::text("State:");
-        ui::text_fmt("  Position: ({:.0f}, {:.0f})", m_player_pos.x, m_player_pos.y);
-        ui::text_fmt("  Mouse: ({:.0f}, {:.0f})", m_mouse_pos.x, m_mouse_pos.y);
-        ui::separator();
+        UI::Text("State:");
+        UI::TextFmt("  Position: ({:.0f}, {:.0f})", m_PlayerPos.x, m_PlayerPos.y);
+        UI::TextFmt("  Mouse: ({:.0f}, {:.0f})", m_MousePos.x, m_MousePos.y);
+        UI::Separator();
 
-        ui::text("Modifiers:");
-        ui::text_fmt("  Shift: {}", m_shift_held ? "HELD" : "-");
-        ui::text_fmt("  Ctrl: {}", m_ctrl_held ? "HELD" : "-");
-        ui::text_fmt("  Alt: {}", m_alt_held ? "HELD" : "-");
-        ui::separator();
+        UI::Text("Modifiers:");
+        UI::TextFmt("  Shift: {}", m_ShiftHeld ? "HELD" : "-");
+        UI::TextFmt("  Ctrl: {}", m_CtrlHeld ? "HELD" : "-");
+        UI::TextFmt("  Alt: {}", m_AltHeld ? "HELD" : "-");
+        UI::Separator();
 
-        ui::text("Mouse Buttons:");
-        ui::text_fmt("  Left: {}", m_mouse_left ? "PRESSED" : "-");
-        ui::text_fmt("  Right: {}", m_mouse_right ? "PRESSED" : "-");
-        ui::text_fmt("  Middle: {}", m_mouse_middle ? "PRESSED" : "-");
-        ui::separator();
+        UI::Text("Mouse Buttons:");
+        UI::TextFmt("  Left: {}", m_MouseLeft ? "PRESSED" : "-");
+        UI::TextFmt("  Right: {}", m_MouseRight ? "PRESSED" : "-");
+        UI::TextFmt("  Middle: {}", m_MouseMiddle ? "PRESSED" : "-");
+        UI::Separator();
 
-        const auto& stats = gfx::renderer::get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        gfx::renderer::reset_stats();
+        const auto& stats = Gfx::Renderer::GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        Gfx::Renderer::ResetStats();
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Viewport
-        ui::begin_window("Viewport");
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Viewport");
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), ui::get_content_size());
+            UI::Image(tex->GetTexture(), UI::GetContentSize());
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    glm::vec2 m_player_pos{256.0f, 256.0f};
-    glm::vec2 m_mouse_pos{0.0f, 0.0f};
+    glm::vec2 m_PlayerPos{256.0f, 256.0f};
+    glm::vec2 m_MousePos{0.0f, 0.0f};
 
-    bool m_shift_held = false;
-    bool m_ctrl_held = false;
-    bool m_alt_held = false;
+    bool m_ShiftHeld = false;
+    bool m_CtrlHeld = false;
+    bool m_AltHeld = false;
 
-    bool m_mouse_left = false;
-    bool m_mouse_right = false;
-    bool m_mouse_middle = false;
+    bool m_MouseLeft = false;
+    bool m_MouseRight = false;
+    bool m_MouseMiddle = false;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "application/01-input";
-    auto* app = new application(specs);
-    app->push_layer<input_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "application/01-input";
+    auto* app = new Application(specs);
+    app->PushLayer<InputLayer>();
     return app;
 }

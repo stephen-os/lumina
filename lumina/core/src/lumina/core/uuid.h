@@ -2,11 +2,11 @@
 
 #include <cstdint>
 
-namespace lumina::core
+namespace Lumina
 {
-    class uuid
-    {
-    public:
-        [[nodiscard]] static uint64_t generate();
-    };
+	class UUID
+	{
+	public:
+		[[nodiscard]] static uint64_t Generate();
+	};
 }

@@ -1,322 +1,322 @@
 #pragma once
 
-#include "input.h"
+#include "Input.h"
 
 #include <string>
 #include <string_view>
 #include <format>
 #include <functional>
 
-namespace lumina::core
+namespace Lumina
 {
-    constexpr uint32_t bit(uint32_t x) { return 1u << x; }
+	constexpr uint32_t Bit(uint32_t x) { return 1u << x; }
 
-    enum class event_type
-    {
-        none = 0,
+	enum class EventType
+	{
+		None = 0,
 
-        window_close,
-        window_resize,
-        window_focus,
-        window_lost_focus,
-        window_moved,
+		WindowClose,
+		WindowResize,
+		WindowFocus,
+		WindowLostFocus,
+		WindowMoved,
 
-        key_pressed,
-        key_released,
-        key_typed,
+		KeyPressed,
+		KeyReleased,
+		KeyTyped,
 
-        mouse_button_pressed,
-        mouse_button_released,
-        mouse_moved,
-        mouse_scrolled,
-    };
+		MouseButtonPressed,
+		MouseButtonReleased,
+		MouseMoved,
+		MouseScrolled,
+	};
 
-    constexpr std::string_view event_type_to_string(event_type type)
-    {
-        switch (type)
-        {
-        case event_type::none: return "none";
-        case event_type::window_close: return "window_close";
-        case event_type::window_resize: return "window_resize";
-        case event_type::window_focus: return "window_focus";
-        case event_type::window_lost_focus: return "window_lost_focus";
-        case event_type::window_moved: return "window_moved";
-        case event_type::key_pressed: return "key_pressed";
-        case event_type::key_released: return "key_released";
-        case event_type::key_typed: return "key_typed";
-        case event_type::mouse_button_pressed: return "mouse_button_pressed";
-        case event_type::mouse_button_released: return "mouse_button_released";
-        case event_type::mouse_moved: return "mouse_moved";
-        case event_type::mouse_scrolled: return "mouse_scrolled";
-        default: return "unknown";
-        }
-    }
+	constexpr std::string_view EventTypeToString(EventType type)
+	{
+		switch (type)
+		{
+		case EventType::None: return "None";
+		case EventType::WindowClose: return "WindowClose";
+		case EventType::WindowResize: return "WindowResize";
+		case EventType::WindowFocus: return "WindowFocus";
+		case EventType::WindowLostFocus: return "WindowLostFocus";
+		case EventType::WindowMoved: return "WindowMoved";
+		case EventType::KeyPressed: return "KeyPressed";
+		case EventType::KeyReleased: return "KeyReleased";
+		case EventType::KeyTyped: return "KeyTyped";
+		case EventType::MouseButtonPressed: return "MouseButtonPressed";
+		case EventType::MouseButtonReleased: return "MouseButtonReleased";
+		case EventType::MouseMoved: return "MouseMoved";
+		case EventType::MouseScrolled: return "MouseScrolled";
+		default: return "Unknown";
+		}
+	}
 
-    enum class event_category : uint32_t
-    {
-        none = 0,
-        application = bit(0),
-        input = bit(1),
-        keyboard = bit(2),
-        mouse = bit(3),
-        mouse_button = bit(4)
-    };
+	enum class EventCategory : uint32_t
+	{
+		None = 0,
+		Application = Bit(0),
+		Input = Bit(1),
+		Keyboard = Bit(2),
+		Mouse = Bit(3),
+		MouseButton = Bit(4)
+	};
 
-    constexpr event_category operator|(event_category a, event_category b)
-    {
-        return static_cast<event_category>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
-    }
+	constexpr EventCategory operator|(EventCategory a, EventCategory b)
+	{
+		return static_cast<EventCategory>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+	}
 
-    constexpr event_category operator&(event_category a, event_category b)
-    {
-        return static_cast<event_category>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
-    }
+	constexpr EventCategory operator&(EventCategory a, EventCategory b)
+	{
+		return static_cast<EventCategory>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+	}
 
-    constexpr bool operator!=(event_category a, event_category b)
-    {
-        return static_cast<uint32_t>(a) != static_cast<uint32_t>(b);
-    }
+	constexpr bool operator!=(EventCategory a, EventCategory b)
+	{
+		return static_cast<uint32_t>(a) != static_cast<uint32_t>(b);
+	}
 
-    class event
-    {
-    public:
-        event() = default;
-        event(const event&) = delete;
-        event& operator=(const event&) = delete;
-        event(event&&) = default;
-        event& operator=(event&&) = default;
-        virtual ~event() = default;
+	class Event
+	{
+	public:
+		Event() = default;
+		Event(const Event&) = delete;
+		Event& operator=(const Event&) = delete;
+		Event(Event&&) = default;
+		Event& operator=(Event&&) = default;
+		virtual ~Event() = default;
 
-        virtual event_type get_type() const = 0;
-        virtual event_category get_categories() const = 0;
-        virtual std::string_view get_name() const = 0;
-        virtual std::string to_string() const { return std::string(get_name()); }
+		virtual EventType GetType() const = 0;
+		virtual EventCategory GetCategories() const = 0;
+		virtual std::string_view GetName() const = 0;
+		virtual std::string ToString() const { return std::string(GetName()); }
 
-        bool is_in_category(event_category category) const
-        {
-            return (get_categories() & category) != event_category::none;
-        }
+		bool IsInCategory(EventCategory category) const
+		{
+			return (GetCategories() & category) != EventCategory::None;
+		}
 
-        bool is_handled() const { return m_handled; }
-        void mark_handled() { m_handled = true; }
+		bool IsHandled() const { return m_Handled; }
+		void MarkHandled() { m_Handled = true; }
 
-    private:
-        bool m_handled = false;
-    };
+	private:
+		bool m_Handled = false;
+	};
 
-    template<typename Derived, event_type Type, event_category Categories>
-    class event_base : public event
-    {
-    public:
-        static constexpr event_type static_type() { return Type; }
-        static constexpr event_category static_categories() { return Categories; }
+	template<typename Derived, EventType Type, EventCategory Categories>
+	class EventBase : public Event
+	{
+	public:
+		static constexpr EventType StaticType() { return Type; }
+		static constexpr EventCategory StaticCategories() { return Categories; }
 
-        event_type get_type() const override { return Type; }
-        event_category get_categories() const override { return Categories; }
-        std::string_view get_name() const override { return event_type_to_string(Type); }
-    };
+		EventType GetType() const override { return Type; }
+		EventCategory GetCategories() const override { return Categories; }
+		std::string_view GetName() const override { return EventTypeToString(Type); }
+	};
 
-    template<typename Derived, event_type Type>
-    class key_event_base : public event_base<Derived, Type, event_category::input | event_category::keyboard>
-    {
-    public:
-        key_event_base(input::key_code key) : m_key(key) {}
+	template<typename Derived, EventType Type>
+	class KeyEventBase : public EventBase<Derived, Type, EventCategory::Input | EventCategory::Keyboard>
+	{
+	public:
+		KeyEventBase(Input::KeyCode key) : m_Key(key) {}
 
-        input::key_code get_key() const { return m_key; }
+		Input::KeyCode GetKey() const { return m_Key; }
 
-        std::string to_string() const override
-        {
-            return std::string(this->get_name()) + ": " + std::string(input::key_code_to_string(m_key));
-        }
+		std::string ToString() const override
+		{
+			return std::string(this->GetName()) + ": " + std::string(Input::KeyCodeToString(m_Key));
+		}
 
-    protected:
-        input::key_code m_key;
-    };
+	protected:
+		Input::KeyCode m_Key;
+	};
 
-    template<typename Derived, event_type Type>
-    class mouse_button_event_base : public event_base<Derived, Type, event_category::input | event_category::mouse | event_category::mouse_button>
-    {
-    public:
-        mouse_button_event_base(input::mouse_code button) : m_button(button) {}
+	template<typename Derived, EventType Type>
+	class MouseButtonEventBase : public EventBase<Derived, Type, EventCategory::Input | EventCategory::Mouse | EventCategory::MouseButton>
+	{
+	public:
+		MouseButtonEventBase(Input::MouseCode button) : m_Button(button) {}
 
-        input::mouse_code get_button() const { return m_button; }
+		Input::MouseCode GetButton() const { return m_Button; }
 
-        std::string to_string() const override
-        {
-            return std::string(this->get_name()) + ": " + std::string(input::mouse_code_to_string(m_button));
-        }
+		std::string ToString() const override
+		{
+			return std::string(this->GetName()) + ": " + std::string(Input::MouseCodeToString(m_Button));
+		}
 
-    protected:
-        input::mouse_code m_button;
-    };
+	protected:
+		Input::MouseCode m_Button;
+	};
 
-    // Window events
-    class window_close_event final : public event_base<window_close_event, event_type::window_close, event_category::application>
-    {
-    public:
-        window_close_event() = default;
-    };
+	// Window events
+	class WindowCloseEvent final : public EventBase<WindowCloseEvent, EventType::WindowClose, EventCategory::Application>
+	{
+	public:
+		WindowCloseEvent() = default;
+	};
 
-    class window_resize_event final : public event_base<window_resize_event, event_type::window_resize, event_category::application>
-    {
-    public:
-        window_resize_event(uint32_t width, uint32_t height) : m_width(width), m_height(height) {}
+	class WindowResizeEvent final : public EventBase<WindowResizeEvent, EventType::WindowResize, EventCategory::Application>
+	{
+	public:
+		WindowResizeEvent(uint32_t width, uint32_t height) : m_Width(width), m_Height(height) {}
 
-        uint32_t get_width() const { return m_width; }
-        uint32_t get_height() const { return m_height; }
+		uint32_t GetWidth() const { return m_Width; }
+		uint32_t GetHeight() const { return m_Height; }
 
-        std::string to_string() const override
-        {
-            return std::format("{}: {}x{}", get_name(), m_width, m_height);
-        }
+		std::string ToString() const override
+		{
+			return std::format("{}: {}x{}", GetName(), m_Width, m_Height);
+		}
 
-    private:
-        uint32_t m_width, m_height;
-    };
+	private:
+		uint32_t m_Width, m_Height;
+	};
 
-    class window_focus_event final : public event_base<window_focus_event, event_type::window_focus, event_category::application>
-    {
-    public:
-        window_focus_event() = default;
-    };
+	class WindowFocusEvent final : public EventBase<WindowFocusEvent, EventType::WindowFocus, EventCategory::Application>
+	{
+	public:
+		WindowFocusEvent() = default;
+	};
 
-    class window_lost_focus_event final : public event_base<window_lost_focus_event, event_type::window_lost_focus, event_category::application>
-    {
-    public:
-        window_lost_focus_event() = default;
-    };
+	class WindowLostFocusEvent final : public EventBase<WindowLostFocusEvent, EventType::WindowLostFocus, EventCategory::Application>
+	{
+	public:
+		WindowLostFocusEvent() = default;
+	};
 
-    class window_moved_event final : public event_base<window_moved_event, event_type::window_moved, event_category::application>
-    {
-    public:
-        window_moved_event(int32_t x, int32_t y) : m_x(x), m_y(y) {}
+	class WindowMovedEvent final : public EventBase<WindowMovedEvent, EventType::WindowMoved, EventCategory::Application>
+	{
+	public:
+		WindowMovedEvent(int32_t x, int32_t y) : m_X(x), m_Y(y) {}
 
-        int32_t get_x() const { return m_x; }
-        int32_t get_y() const { return m_y; }
+		int32_t GetX() const { return m_X; }
+		int32_t GetY() const { return m_Y; }
 
-        std::string to_string() const override
-        {
-            return std::format("{}: {}, {}", get_name(), m_x, m_y);
-        }
+		std::string ToString() const override
+		{
+			return std::format("{}: {}, {}", GetName(), m_X, m_Y);
+		}
 
-    private:
-        int32_t m_x, m_y;
-    };
+	private:
+		int32_t m_X, m_Y;
+	};
 
-    // Keyboard events
-    class key_pressed_event final : public key_event_base<key_pressed_event, event_type::key_pressed>
-    {
-    public:
-        key_pressed_event(input::key_code key, bool is_repeat = false)
-            : key_event_base(key), m_is_repeat(is_repeat) {}
+	// Keyboard events
+	class KeyPressedEvent final : public KeyEventBase<KeyPressedEvent, EventType::KeyPressed>
+	{
+	public:
+		KeyPressedEvent(Input::KeyCode key, bool isRepeat = false)
+			: KeyEventBase(key), m_IsRepeat(isRepeat) {}
 
-        bool is_repeat() const { return m_is_repeat; }
+		bool IsRepeat() const { return m_IsRepeat; }
 
-        std::string to_string() const override
-        {
-            return std::string(this->get_name()) + ": " +
-                   std::string(input::key_code_to_string(m_key)) +
-                   (m_is_repeat ? " (repeat)" : "");
-        }
+		std::string ToString() const override
+		{
+			return std::string(this->GetName()) + ": " +
+			       std::string(Input::KeyCodeToString(m_Key)) +
+			       (m_IsRepeat ? " (repeat)" : "");
+		}
 
-    private:
-        bool m_is_repeat;
-    };
+	private:
+		bool m_IsRepeat;
+	};
 
-    class key_released_event final : public key_event_base<key_released_event, event_type::key_released>
-    {
-    public:
-        key_released_event(input::key_code key) : key_event_base(key) {}
-    };
+	class KeyReleasedEvent final : public KeyEventBase<KeyReleasedEvent, EventType::KeyReleased>
+	{
+	public:
+		KeyReleasedEvent(Input::KeyCode key) : KeyEventBase(key) {}
+	};
 
-    class key_typed_event final : public event_base<key_typed_event, event_type::key_typed, event_category::input | event_category::keyboard>
-    {
-    public:
-        key_typed_event(uint32_t character) : m_character(character) {}
+	class KeyTypedEvent final : public EventBase<KeyTypedEvent, EventType::KeyTyped, EventCategory::Input | EventCategory::Keyboard>
+	{
+	public:
+		KeyTypedEvent(uint32_t character) : m_Character(character) {}
 
-        uint32_t get_character() const { return m_character; }
+		uint32_t GetCharacter() const { return m_Character; }
 
-        std::string to_string() const override
-        {
-            return std::string(this->get_name()) + ": " + std::to_string(m_character);
-        }
+		std::string ToString() const override
+		{
+			return std::string(this->GetName()) + ": " + std::to_string(m_Character);
+		}
 
-    private:
-        uint32_t m_character;
-    };
+	private:
+		uint32_t m_Character;
+	};
 
-    // Mouse events
-    class mouse_button_pressed_event final : public mouse_button_event_base<mouse_button_pressed_event, event_type::mouse_button_pressed>
-    {
-    public:
-        mouse_button_pressed_event(input::mouse_code button) : mouse_button_event_base(button) {}
-    };
+	// Mouse events
+	class MouseButtonPressedEvent final : public MouseButtonEventBase<MouseButtonPressedEvent, EventType::MouseButtonPressed>
+	{
+	public:
+		MouseButtonPressedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
+	};
 
-    class mouse_button_released_event final : public mouse_button_event_base<mouse_button_released_event, event_type::mouse_button_released>
-    {
-    public:
-        mouse_button_released_event(input::mouse_code button) : mouse_button_event_base(button) {}
-    };
+	class MouseButtonReleasedEvent final : public MouseButtonEventBase<MouseButtonReleasedEvent, EventType::MouseButtonReleased>
+	{
+	public:
+		MouseButtonReleasedEvent(Input::MouseCode button) : MouseButtonEventBase(button) {}
+	};
 
-    class mouse_moved_event final : public event_base<mouse_moved_event, event_type::mouse_moved, event_category::input | event_category::mouse>
-    {
-    public:
-        mouse_moved_event(float x, float y) : m_x(x), m_y(y) {}
+	class MouseMovedEvent final : public EventBase<MouseMovedEvent, EventType::MouseMoved, EventCategory::Input | EventCategory::Mouse>
+	{
+	public:
+		MouseMovedEvent(float x, float y) : m_X(x), m_Y(y) {}
 
-        float get_x() const { return m_x; }
-        float get_y() const { return m_y; }
+		float GetX() const { return m_X; }
+		float GetY() const { return m_Y; }
 
-        std::string to_string() const override
-        {
-            return std::format("{}: {}, {}", get_name(), m_x, m_y);
-        }
+		std::string ToString() const override
+		{
+			return std::format("{}: {}, {}", GetName(), m_X, m_Y);
+		}
 
-    private:
-        float m_x, m_y;
-    };
+	private:
+		float m_X, m_Y;
+	};
 
-    class mouse_scrolled_event final : public event_base<mouse_scrolled_event, event_type::mouse_scrolled, event_category::input | event_category::mouse>
-    {
-    public:
-        mouse_scrolled_event(float x_offset, float y_offset)
-            : m_x_offset(x_offset), m_y_offset(y_offset) {}
+	class MouseScrolledEvent final : public EventBase<MouseScrolledEvent, EventType::MouseScrolled, EventCategory::Input | EventCategory::Mouse>
+	{
+	public:
+		MouseScrolledEvent(float xOffset, float yOffset)
+			: m_XOffset(xOffset), m_YOffset(yOffset) {}
 
-        float get_x_offset() const { return m_x_offset; }
-        float get_y_offset() const { return m_y_offset; }
+		float GetXOffset() const { return m_XOffset; }
+		float GetYOffset() const { return m_YOffset; }
 
-        std::string to_string() const override
-        {
-            return std::format("{}: {}, {}", get_name(), m_x_offset, m_y_offset);
-        }
+		std::string ToString() const override
+		{
+			return std::format("{}: {}, {}", GetName(), m_XOffset, m_YOffset);
+		}
 
-    private:
-        float m_x_offset, m_y_offset;
-    };
+	private:
+		float m_XOffset, m_YOffset;
+	};
 
-    // Event dispatcher
-    template<typename T>
-    concept is_event = std::is_base_of_v<event, T>;
+	// Event dispatcher
+	template<typename T>
+	concept IsEvent = std::is_base_of_v<Event, T>;
 
-    class event_dispatcher
-    {
-    public:
-        explicit event_dispatcher(event& e) : m_event(e) {}
+	class EventDispatcher
+	{
+	public:
+		explicit EventDispatcher(Event& e) : m_Event(e) {}
 
-        template<is_event T, typename F>
-        requires std::invocable<F, T&>
-        bool dispatch(F&& func)
-        {
-            if (m_event.get_type() == T::static_type())
-            {
-                bool handled = std::invoke(std::forward<F>(func), static_cast<T&>(m_event));
-                if (handled)
-                    m_event.mark_handled();
-                return true;
-            }
-            return false;
-        }
+		template<IsEvent T, typename F>
+		requires std::invocable<F, T&>
+		bool Dispatch(F&& func)
+		{
+			if (m_Event.GetType() == T::StaticType())
+			{
+				bool handled = std::invoke(std::forward<F>(func), static_cast<T&>(m_Event));
+				if (handled)
+					m_Event.MarkHandled();
+				return true;
+			}
+			return false;
+		}
 
-    private:
-        event& m_event;
-    };
+	private:
+		Event& m_Event;
+	};
 }

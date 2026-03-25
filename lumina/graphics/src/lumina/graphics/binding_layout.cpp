@@ -11,55 +11,55 @@
 
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    static nvrhi::ResourceType to_nvrhi_resource_type(binding_type type)
+    static nvrhi::ResourceType ToNvrhiResourceType(BindingType type)
     {
         switch (type)
         {
-            case binding_type::texture:         return nvrhi::ResourceType::Texture_SRV;
-            case binding_type::sampler:         return nvrhi::ResourceType::Sampler;
-            case binding_type::constant_buffer: return nvrhi::ResourceType::ConstantBuffer;
-            case binding_type::storage_texture: return nvrhi::ResourceType::Texture_UAV;
-            case binding_type::storage_buffer:  return nvrhi::ResourceType::StructuredBuffer_UAV;
-            default:                            return nvrhi::ResourceType::None;
+            case BindingType::Texture:         return nvrhi::ResourceType::Texture_SRV;
+            case BindingType::Sampler:         return nvrhi::ResourceType::Sampler;
+            case BindingType::ConstantBuffer:  return nvrhi::ResourceType::ConstantBuffer;
+            case BindingType::StorageTexture:  return nvrhi::ResourceType::Texture_UAV;
+            case BindingType::StorageBuffer:   return nvrhi::ResourceType::StructuredBuffer_UAV;
+            default:                           return nvrhi::ResourceType::None;
         }
     }
 
-    // --- binding_set_desc helpers ---
+    // --- BindingSetDesc helpers ---
 
-    binding_set_desc& binding_set_desc::add_texture(uint32_t slot, ref<texture> tex)
+    BindingSetDesc& BindingSetDesc::AddTexture(uint32_t slot, Ref<Texture> tex)
     {
-        bindings.push_back({ slot, binding_type::texture, tex ? tex->get_texture() : nullptr, 0 });
+        Bindings.push_back({ slot, BindingType::Texture, tex ? tex->GetTexture() : nullptr, 0 });
         return *this;
     }
 
-    binding_set_desc& binding_set_desc::add_texture_array_element(uint32_t slot, uint32_t array_index, ref<texture> tex)
+    BindingSetDesc& BindingSetDesc::AddTextureArrayElement(uint32_t slot, uint32_t arrayIndex, Ref<Texture> tex)
     {
-        bindings.push_back({ slot, binding_type::texture, tex ? tex->get_texture() : nullptr, array_index });
+        Bindings.push_back({ slot, BindingType::Texture, tex ? tex->GetTexture() : nullptr, arrayIndex });
         return *this;
     }
 
-    binding_set_desc& binding_set_desc::add_sampler(uint32_t slot, ref<sampler> samp)
+    BindingSetDesc& BindingSetDesc::AddSampler(uint32_t slot, Ref<Sampler> samp)
     {
-        bindings.push_back({ slot, binding_type::sampler, samp ? samp->get_sampler() : nullptr });
+        Bindings.push_back({ slot, BindingType::Sampler, samp ? samp->GetSampler() : nullptr });
         return *this;
     }
 
-    binding_set_desc& binding_set_desc::add_constant_buffer(uint32_t slot, ref<uniform_buffer> ubo)
+    BindingSetDesc& BindingSetDesc::AddConstantBuffer(uint32_t slot, Ref<UniformBuffer> ubo)
     {
-        bindings.push_back({ slot, binding_type::constant_buffer, ubo ? ubo->get_buffer() : nullptr });
+        Bindings.push_back({ slot, BindingType::ConstantBuffer, ubo ? ubo->GetBuffer() : nullptr });
         return *this;
     }
 
-    // --- binding_layout ---
+    // --- BindingLayout ---
 
-    binding_layout::~binding_layout() = default;
+    BindingLayout::~BindingLayout() = default;
 
-    ref<binding_layout> binding_layout::create(core::device& dev, const binding_layout_desc& desc)
+    Ref<BindingLayout> BindingLayout::Create(Core::Device& dev, const BindingLayoutDesc& desc)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create binding layout: no device");
             return nullptr;
@@ -67,95 +67,95 @@ namespace lumina::graphics
 
         // Determine shader visibility
         nvrhi::ShaderType visibility = nvrhi::ShaderType::None;
-        if (desc.vertex_shader_visible)
+        if (desc.VertexShaderVisible)
             visibility = visibility | nvrhi::ShaderType::Vertex;
-        if (desc.pixel_shader_visible)
+        if (desc.PixelShaderVisible)
             visibility = visibility | nvrhi::ShaderType::Pixel;
 
-        nvrhi::BindingLayoutDesc nvrhi_desc;
-        nvrhi_desc.visibility = visibility;
+        nvrhi::BindingLayoutDesc nvrhiDesc;
+        nvrhiDesc.visibility = visibility;
 
         // Binding offsets must match DXC SPIR-V compilation flags
         // Leave room for multiple textures before samplers start
-        nvrhi_desc.bindingOffsets.shaderResource = 0;
-        nvrhi_desc.bindingOffsets.sampler = 32;     // Space for up to 32 textures
-        nvrhi_desc.bindingOffsets.constantBuffer = 64;
-        nvrhi_desc.bindingOffsets.unorderedAccess = 128;
+        nvrhiDesc.bindingOffsets.shaderResource = 0;
+        nvrhiDesc.bindingOffsets.sampler = 32;     // Space for up to 32 textures
+        nvrhiDesc.bindingOffsets.constantBuffer = 64;
+        nvrhiDesc.bindingOffsets.unorderedAccess = 128;
 
-        for (const auto& item : desc.bindings)
+        for (const auto& item : desc.Bindings)
         {
-            nvrhi::BindingLayoutItem nvrhi_item;
-            nvrhi_item.slot = item.slot;
-            nvrhi_item.type = to_nvrhi_resource_type(item.type);
-            nvrhi_item.size = item.array_size;
-            nvrhi_desc.bindings.push_back(nvrhi_item);
+            nvrhi::BindingLayoutItem nvrhiItem;
+            nvrhiItem.slot = item.Slot;
+            nvrhiItem.type = ToNvrhiResourceType(item.Type);
+            nvrhiItem.size = item.ArraySize;
+            nvrhiDesc.bindings.push_back(nvrhiItem);
         }
 
-        nvrhi::BindingLayoutHandle layout = nvrhi_device->createBindingLayout(nvrhi_desc);
+        nvrhi::BindingLayoutHandle layout = nvrhiDevice->createBindingLayout(nvrhiDesc);
         if (!layout)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI binding layout");
             return nullptr;
         }
 
-        return ref<binding_layout>(new binding_layout(dev, std::move(layout), desc));
+        return Ref<BindingLayout>(new BindingLayout(dev, std::move(layout), desc));
     }
 
-    // --- binding_set ---
+    // --- BindingSet ---
 
-    binding_set::~binding_set() = default;
+    BindingSet::~BindingSet() = default;
 
-    ref<binding_set> binding_set::create(core::device& dev, const binding_set_desc& desc)
+    Ref<BindingSet> BindingSet::Create(Core::Device& dev, const BindingSetDesc& desc)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create binding set: no device");
             return nullptr;
         }
 
-        if (!desc.layout)
+        if (!desc.Layout)
         {
             LUMINA_LOG_ERROR("Failed to create binding set: layout required");
             return nullptr;
         }
 
-        nvrhi::BindingSetDesc nvrhi_desc;
+        nvrhi::BindingSetDesc nvrhiDesc;
 
-        for (const auto& item : desc.bindings)
+        for (const auto& item : desc.Bindings)
         {
-            switch (item.type)
+            switch (item.Type)
             {
-                case binding_type::texture:
+                case BindingType::Texture:
                 {
-                    auto* tex = static_cast<nvrhi::ITexture*>(item.resource);
-                    auto binding = nvrhi::BindingSetItem::Texture_SRV(item.slot, tex);
-                    binding.arrayElement = item.array_index;
-                    nvrhi_desc.bindings.push_back(binding);
+                    auto* tex = static_cast<nvrhi::ITexture*>(item.Resource);
+                    auto binding = nvrhi::BindingSetItem::Texture_SRV(item.Slot, tex);
+                    binding.arrayElement = item.ArrayIndex;
+                    nvrhiDesc.bindings.push_back(binding);
                     break;
                 }
-                case binding_type::storage_texture:
+                case BindingType::StorageTexture:
                 {
-                    auto* tex = static_cast<nvrhi::ITexture*>(item.resource);
-                    nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::Texture_UAV(item.slot, tex));
+                    auto* tex = static_cast<nvrhi::ITexture*>(item.Resource);
+                    nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::Texture_UAV(item.Slot, tex));
                     break;
                 }
-                case binding_type::constant_buffer:
+                case BindingType::ConstantBuffer:
                 {
-                    auto* buf = static_cast<nvrhi::IBuffer*>(item.resource);
-                    nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::ConstantBuffer(item.slot, buf));
+                    auto* buf = static_cast<nvrhi::IBuffer*>(item.Resource);
+                    nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::ConstantBuffer(item.Slot, buf));
                     break;
                 }
-                case binding_type::sampler:
+                case BindingType::Sampler:
                 {
-                    auto* samp = static_cast<nvrhi::ISampler*>(item.resource);
-                    nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::Sampler(item.slot, samp));
+                    auto* samp = static_cast<nvrhi::ISampler*>(item.Resource);
+                    nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::Sampler(item.Slot, samp));
                     break;
                 }
-                case binding_type::storage_buffer:
+                case BindingType::StorageBuffer:
                 {
-                    auto* buf = static_cast<nvrhi::IBuffer*>(item.resource);
-                    nvrhi_desc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_UAV(item.slot, buf));
+                    auto* buf = static_cast<nvrhi::IBuffer*>(item.Resource);
+                    nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_UAV(item.Slot, buf));
                     break;
                 }
                 default:
@@ -163,13 +163,13 @@ namespace lumina::graphics
             }
         }
 
-        nvrhi::BindingSetHandle set = nvrhi_device->createBindingSet(nvrhi_desc, desc.layout->get_layout());
+        nvrhi::BindingSetHandle set = nvrhiDevice->createBindingSet(nvrhiDesc, desc.Layout->GetLayout());
         if (!set)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI binding set");
             return nullptr;
         }
 
-        return ref<binding_set>(new binding_set(dev, std::move(set), desc.layout));
+        return Ref<BindingSet>(new BindingSet(dev, std::move(set), desc.Layout));
     }
 }

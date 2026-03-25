@@ -5,63 +5,63 @@
 #include <box2d/box2d.h>
 #include <vector>
 
-namespace lumina::physics
+namespace Lumina
 {
-    class body;
-    class shape;
+    class Body;
+    class Shape;
 
     // Contact point information
-    struct contact_point
+    struct ContactPoint
     {
-        glm::vec2 position;
-        glm::vec2 normal;
-        float separation;
-        float normal_impulse;
-        float tangent_impulse;
+        glm::vec2 Position;
+        glm::vec2 Normal;
+        float Separation;
+        float NormalImpulse;
+        float TangentImpulse;
     };
 
     // Full contact information between two shapes
-    struct contact_info
+    struct ContactInfo
     {
-        ref<shape> shape_a;
-        ref<shape> shape_b;
-        ref<body> body_a;
-        ref<body> body_b;
-        std::vector<contact_point> points;
-        bool is_touching;
+        ref<Shape> ShapeA;
+        ref<Shape> ShapeB;
+        ref<Body> BodyA;
+        ref<Body> BodyB;
+        std::vector<ContactPoint> Points;
+        bool IsTouching;
     };
 
     // Contact event types
-    enum class contact_event_type
+    enum class ContactEventType
     {
-        begin,  // Contact started
-        end,    // Contact ended
-        hit     // High-speed collision
+        Begin,  // Contact started
+        End,    // Contact ended
+        Hit     // High-speed collision
     };
 
     // Contact event (generated each physics step)
-    struct contact_event
+    struct ContactEvent
     {
-        contact_event_type type;
-        b2ShapeId shape_id_a;
-        b2ShapeId shape_id_b;
-        glm::vec2 point;
-        glm::vec2 normal;
-        float approach_speed;
+        ContactEventType Type;
+        b2ShapeId ShapeIdA;
+        b2ShapeId ShapeIdB;
+        glm::vec2 Point;
+        glm::vec2 Normal;
+        float ApproachSpeed;
     };
 
     // Sensor event types
-    enum class sensor_event_type
+    enum class SensorEventType
     {
-        begin,  // Shape entered sensor
-        end     // Shape exited sensor
+        Begin,  // Shape entered sensor
+        End     // Shape exited sensor
     };
 
     // Sensor event (generated each physics step)
-    struct sensor_event
+    struct SensorEvent
     {
-        sensor_event_type type;
-        b2ShapeId sensor_shape_id;
-        b2ShapeId visitor_shape_id;
+        SensorEventType Type;
+        b2ShapeId SensorShapeId;
+        b2ShapeId VisitorShapeId;
     };
 }

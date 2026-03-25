@@ -1,6 +1,6 @@
 #pragma once
 
-#include "base.h"
+#include "Base.h"
 
 #include <nvrhi/nvrhi.h>
 
@@ -9,69 +9,69 @@
 
 struct GLFWwindow;
 
-namespace lumina::core
+namespace Lumina
 {
-    enum class graphics_api
-    {
-        d3d12,
-        vulkan
-    };
+	enum class GraphicsAPI
+	{
+		D3D12,
+		Vulkan
+	};
 
-    struct device_desc
-    {
-        GLFWwindow* window = nullptr;
-        uint32_t width = 1600;
-        uint32_t height = 900;
-        uint32_t backbuffer_count = 2;
-        bool vsync = true;
-        bool enable_debug_layer = false;
-        std::string app_name = "Lumina Application";
-    };
+	struct DeviceDesc
+	{
+		GLFWwindow* Window = nullptr;
+		uint32_t Width = 1600;
+		uint32_t Height = 900;
+		uint32_t BackbufferCount = 2;
+		bool VSync = true;
+		bool EnableDebugLayer = false;
+		std::string AppName = "Lumina Application";
+	};
 
-    // Native handle structs for viewport support (void* to avoid leaking API headers)
-    struct vulkan_native_handles
-    {
-        void* instance = nullptr;           // VkInstance
-        void* physical_device = nullptr;    // VkPhysicalDevice
-        void* device = nullptr;             // VkDevice
-        void* graphics_queue = nullptr;     // VkQueue
-        uint32_t graphics_queue_family = 0;
-    };
+	// Native handle structs for viewport support (void* to avoid leaking API headers)
+	struct VulkanNativeHandles
+	{
+		void* Instance = nullptr;           // VkInstance
+		void* PhysicalDevice = nullptr;     // VkPhysicalDevice
+		void* Device = nullptr;             // VkDevice
+		void* GraphicsQueue = nullptr;      // VkQueue
+		uint32_t GraphicsQueueFamily = 0;
+	};
 
-    struct d3d12_native_handles
-    {
-        void* device = nullptr;             // ID3D12Device*
-        void* command_queue = nullptr;      // ID3D12CommandQueue*
-        void* dxgi_factory = nullptr;       // IDXGIFactory6*
-    };
+	struct D3D12NativeHandles
+	{
+		void* Device = nullptr;             // ID3D12Device*
+		void* CommandQueue = nullptr;       // ID3D12CommandQueue*
+		void* DXGIFactory = nullptr;        // IDXGIFactory6*
+	};
 
-    class device
-    {
-    public:
-        virtual ~device() = default;
+	class Device
+	{
+	public:
+		virtual ~Device() = default;
 
-        [[nodiscard]] virtual bool init(const device_desc& desc) = 0;
-        virtual void shutdown() = 0;
+		[[nodiscard]] virtual bool Init(const DeviceDesc& desc) = 0;
+		virtual void Shutdown() = 0;
 
-        virtual void begin_frame() = 0;
-        virtual void present() = 0;
+		virtual void BeginFrame() = 0;
+		virtual void Present() = 0;
 
-        virtual void resize(uint32_t width, uint32_t height) = 0;
+		virtual void Resize(uint32_t width, uint32_t height) = 0;
 
-        [[nodiscard]] virtual nvrhi::IDevice* get_nvrhi_device() const = 0;
-        [[nodiscard]] virtual nvrhi::ICommandList* get_command_list() const = 0;
-        [[nodiscard]] virtual nvrhi::IFramebuffer* get_current_framebuffer() const = 0;
+		[[nodiscard]] virtual nvrhi::IDevice* GetNvrhiDevice() const = 0;
+		[[nodiscard]] virtual nvrhi::ICommandList* GetCommandList() const = 0;
+		[[nodiscard]] virtual nvrhi::IFramebuffer* GetCurrentFramebuffer() const = 0;
 
-        [[nodiscard]] virtual uint32_t get_width() const = 0;
-        [[nodiscard]] virtual uint32_t get_height() const = 0;
-        [[nodiscard]] virtual uint32_t get_frame_index() const = 0;
+		[[nodiscard]] virtual uint32_t GetWidth() const = 0;
+		[[nodiscard]] virtual uint32_t GetHeight() const = 0;
+		[[nodiscard]] virtual uint32_t GetFrameIndex() const = 0;
 
-        [[nodiscard]] virtual graphics_api get_api() const = 0;
-        [[nodiscard]] virtual nvrhi::Format get_swapchain_format() const = 0;
+		[[nodiscard]] virtual GraphicsAPI GetAPI() const = 0;
+		[[nodiscard]] virtual nvrhi::Format GetSwapchainFormat() const = 0;
 
-        [[nodiscard]] virtual vulkan_native_handles get_vulkan_handles() const { return {}; }
-        [[nodiscard]] virtual d3d12_native_handles get_d3d12_handles() const { return {}; }
+		[[nodiscard]] virtual VulkanNativeHandles GetVulkanHandles() const { return {}; }
+		[[nodiscard]] virtual D3D12NativeHandles GetD3D12Handles() const { return {}; }
 
-        [[nodiscard]] static scope<device> create(graphics_api api);
-    };
+		[[nodiscard]] static Scope<Device> Create(GraphicsAPI api);
+	};
 }

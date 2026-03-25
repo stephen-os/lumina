@@ -3,256 +3,256 @@
 #include <cstdint>
 #include <cstddef>
 
-namespace lumina::graphics
+namespace Lumina
 {
     // --- Backend ---
 
-    enum class backend
+    enum class Backend
     {
-        d3d12,
-        vulkan
+        D3D12,
+        Vulkan
     };
 
     // --- Texture formats ---
 
-    enum class format
+    enum class Format
     {
-        unknown,
+        Unknown,
 
         // 8-bit
-        r8_unorm,
-        r8_snorm,
-        r8_uint,
-        r8_sint,
+        R8_UNORM,
+        R8_SNORM,
+        R8_UINT,
+        R8_SINT,
 
         // 16-bit
-        r16_float,
-        r16_unorm,
-        r16_uint,
-        r16_sint,
-        rg8_unorm,
-        rg8_snorm,
+        R16_Float,
+        R16_UNORM,
+        R16_UINT,
+        R16_SINT,
+        RG8_UNORM,
+        RG8_SNORM,
 
         // 32-bit
-        r32_float,
-        r32_uint,
-        r32_sint,
-        rg16_float,
-        rg16_unorm,
-        rgba8_unorm,
-        rgba8_unorm_srgb,
-        rgba8_snorm,
-        bgra8_unorm,
-        bgra8_unorm_srgb,
+        R32_Float,
+        R32_UINT,
+        R32_SINT,
+        RG16_Float,
+        RG16_UNORM,
+        RGBA8_UNORM,
+        RGBA8_UNORM_SRGB,
+        RGBA8_SNORM,
+        BGRA8_UNORM,
+        BGRA8_UNORM_SRGB,
 
         // 64-bit
-        rg32_float,
-        rgba16_float,
-        rgba16_unorm,
+        RG32_Float,
+        RGBA16_Float,
+        RGBA16_UNORM,
 
         // 128-bit
-        rgba32_float,
+        RGBA32_Float,
 
         // Depth/stencil
-        d16_unorm,
-        d24_unorm_s8_uint,
-        d32_float,
-        d32_float_s8_uint,
+        D16_UNORM,
+        D24_UNORM_S8_UINT,
+        D32_Float,
+        D32_Float_S8_UINT,
     };
 
     // --- Blend modes ---
 
-    enum class blend_mode
+    enum class BlendMode
     {
-        opaque,      // No blending
-        alpha,       // Standard alpha blending: src * src_alpha + dst * (1 - src_alpha)
-        additive,    // Additive: src + dst
-        multiply     // Multiply: src * dst
+        Opaque,      // No blending
+        Alpha,       // Standard alpha blending: src * src_alpha + dst * (1 - src_alpha)
+        Additive,    // Additive: src + dst
+        Multiply     // Multiply: src * dst
     };
 
     // --- Depth modes ---
 
-    enum class depth_mode
+    enum class DepthMode
     {
-        none,        // No depth testing or writing
-        read_only,   // Depth test enabled, no writing
-        read_write   // Depth test and write enabled
+        None,        // No depth testing or writing
+        ReadOnly,    // Depth test enabled, no writing
+        ReadWrite    // Depth test and write enabled
     };
 
     // --- Cull modes ---
 
-    enum class cull_mode
+    enum class CullMode
     {
-        none,
-        back,
-        front
+        None,
+        Back,
+        Front
     };
 
     // --- Primitive topology ---
 
-    enum class topology
+    enum class Topology
     {
-        triangles,
-        triangle_strip,
-        lines,
-        line_strip,
-        points
+        Triangles,
+        TriangleStrip,
+        Lines,
+        LineStrip,
+        Points
     };
 
     // --- Buffer usage hints ---
 
-    enum class buffer_usage
+    enum class BufferUsage
     {
-        immutable,   // Data set once at creation, never updated
-        dynamic      // Data updated frequently (per-frame)
+        Immutable,   // Data set once at creation, never updated
+        Dynamic      // Data updated frequently (per-frame)
     };
 
     // --- Texture usage flags ---
 
-    enum class texture_usage : uint32_t
+    enum class TextureUsage : uint32_t
     {
-        none            = 0,
-        shader_resource = 1 << 0,   // Can be sampled in shaders
-        render_target   = 1 << 1,   // Can be used as render target
-        depth_stencil   = 1 << 2,   // Can be used as depth buffer
+        None            = 0,
+        ShaderResource  = 1 << 0,   // Can be sampled in shaders
+        RenderTarget    = 1 << 1,   // Can be used as render target
+        DepthStencil    = 1 << 2,   // Can be used as depth buffer
     };
 
-    [[nodiscard]] inline texture_usage operator|(texture_usage a, texture_usage b) noexcept
+    [[nodiscard]] inline TextureUsage operator|(TextureUsage a, TextureUsage b) noexcept
     {
-        return static_cast<texture_usage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
     }
 
-    [[nodiscard]] inline texture_usage operator&(texture_usage a, texture_usage b) noexcept
+    [[nodiscard]] inline TextureUsage operator&(TextureUsage a, TextureUsage b) noexcept
     {
-        return static_cast<texture_usage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+        return static_cast<TextureUsage>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
     }
 
-    [[nodiscard]] inline bool has_flag(texture_usage value, texture_usage flag) noexcept
+    [[nodiscard]] inline bool HasFlag(TextureUsage value, TextureUsage flag) noexcept
     {
         return (static_cast<uint32_t>(value) & static_cast<uint32_t>(flag)) != 0;
     }
 
     // --- Filter modes ---
 
-    enum class filter_mode
+    enum class FilterMode
     {
-        point,       // Nearest neighbor
-        linear,      // Bilinear filtering
-        anisotropic  // Anisotropic filtering
+        Point,       // Nearest neighbor
+        Linear,      // Bilinear filtering
+        Anisotropic  // Anisotropic filtering
     };
 
     // --- Address modes ---
 
-    enum class address_mode
+    enum class AddressMode
     {
-        wrap,
-        clamp,
-        mirror,
-        border
+        Wrap,
+        Clamp,
+        Mirror,
+        Border
     };
 
     // --- Shader stage ---
 
-    enum class shader_stage
+    enum class ShaderStage
     {
-        vertex,
-        pixel,
-        compute
+        Vertex,
+        Pixel,
+        Compute
     };
 
     // --- Render state ---
 
-    struct render_state
+    struct RenderState
     {
-        blend_mode blend = blend_mode::alpha;
-        depth_mode depth = depth_mode::none;
-        cull_mode cull = cull_mode::none;
-        topology primitive = topology::triangles;
+        BlendMode Blend = BlendMode::Alpha;
+        DepthMode Depth = DepthMode::None;
+        CullMode Cull = CullMode::None;
+        Topology Primitive = Topology::Triangles;
     };
 
     // --- Viewport ---
 
-    struct viewport
+    struct Viewport
     {
-        float x = 0.0f;
-        float y = 0.0f;
-        float width = 0.0f;
-        float height = 0.0f;
-        float min_depth = 0.0f;
-        float max_depth = 1.0f;
+        float X = 0.0f;
+        float Y = 0.0f;
+        float Width = 0.0f;
+        float Height = 0.0f;
+        float MinDepth = 0.0f;
+        float MaxDepth = 1.0f;
     };
 
     // --- Scissor rect ---
 
-    struct scissor_rect
+    struct ScissorRect
     {
-        int32_t x = 0;
-        int32_t y = 0;
-        int32_t width = 0;
-        int32_t height = 0;
+        int32_t X = 0;
+        int32_t Y = 0;
+        int32_t Width = 0;
+        int32_t Height = 0;
     };
 
     // --- Clear values ---
 
-    struct clear_color
+    struct ClearColor
     {
-        float r = 0.0f;
-        float g = 0.0f;
-        float b = 0.0f;
-        float a = 1.0f;
+        float R = 0.0f;
+        float G = 0.0f;
+        float B = 0.0f;
+        float A = 1.0f;
 
-        clear_color() = default;
-        clear_color(float r, float g, float b, float a = 1.0f) : r(r), g(g), b(b), a(a) {}
+        ClearColor() = default;
+        ClearColor(float r, float g, float b, float a = 1.0f) : R(r), G(g), B(b), A(a) {}
     };
 
-    struct clear_depth_stencil
+    struct ClearDepthStencil
     {
-        float depth = 1.0f;
-        uint8_t stencil = 0;
+        float Depth = 1.0f;
+        uint8_t Stencil = 0;
     };
 
     // --- Utility functions ---
 
-    constexpr size_t format_bytes_per_pixel(format fmt)
+    constexpr size_t FormatBytesPerPixel(Format fmt)
     {
         switch (fmt)
         {
-            case format::r8_unorm:
-            case format::r8_snorm:
-            case format::r8_uint:
-            case format::r8_sint:
+            case Format::R8_UNORM:
+            case Format::R8_SNORM:
+            case Format::R8_UINT:
+            case Format::R8_SINT:
                 return 1;
 
-            case format::r16_float:
-            case format::r16_unorm:
-            case format::r16_uint:
-            case format::r16_sint:
-            case format::rg8_unorm:
-            case format::rg8_snorm:
-            case format::d16_unorm:
+            case Format::R16_Float:
+            case Format::R16_UNORM:
+            case Format::R16_UINT:
+            case Format::R16_SINT:
+            case Format::RG8_UNORM:
+            case Format::RG8_SNORM:
+            case Format::D16_UNORM:
                 return 2;
 
-            case format::r32_float:
-            case format::r32_uint:
-            case format::r32_sint:
-            case format::rg16_float:
-            case format::rg16_unorm:
-            case format::rgba8_unorm:
-            case format::rgba8_unorm_srgb:
-            case format::rgba8_snorm:
-            case format::bgra8_unorm:
-            case format::bgra8_unorm_srgb:
-            case format::d24_unorm_s8_uint:
-            case format::d32_float:
+            case Format::R32_Float:
+            case Format::R32_UINT:
+            case Format::R32_SINT:
+            case Format::RG16_Float:
+            case Format::RG16_UNORM:
+            case Format::RGBA8_UNORM:
+            case Format::RGBA8_UNORM_SRGB:
+            case Format::RGBA8_SNORM:
+            case Format::BGRA8_UNORM:
+            case Format::BGRA8_UNORM_SRGB:
+            case Format::D24_UNORM_S8_UINT:
+            case Format::D32_Float:
                 return 4;
 
-            case format::rg32_float:
-            case format::rgba16_float:
-            case format::rgba16_unorm:
-            case format::d32_float_s8_uint:
+            case Format::RG32_Float:
+            case Format::RGBA16_Float:
+            case Format::RGBA16_UNORM:
+            case Format::D32_Float_S8_UINT:
                 return 8;
 
-            case format::rgba32_float:
+            case Format::RGBA32_Float:
                 return 16;
 
             default:
@@ -260,26 +260,26 @@ namespace lumina::graphics
         }
     }
 
-    constexpr bool format_is_depth(format fmt)
+    constexpr bool FormatIsDepth(Format fmt)
     {
         switch (fmt)
         {
-            case format::d16_unorm:
-            case format::d24_unorm_s8_uint:
-            case format::d32_float:
-            case format::d32_float_s8_uint:
+            case Format::D16_UNORM:
+            case Format::D24_UNORM_S8_UINT:
+            case Format::D32_Float:
+            case Format::D32_Float_S8_UINT:
                 return true;
             default:
                 return false;
         }
     }
 
-    constexpr bool format_has_stencil(format fmt)
+    constexpr bool FormatHasStencil(Format fmt)
     {
         switch (fmt)
         {
-            case format::d24_unorm_s8_uint:
-            case format::d32_float_s8_uint:
+            case Format::D24_UNORM_S8_UINT:
+            case Format::D32_Float_S8_UINT:
                 return true;
             default:
                 return false;

@@ -2,348 +2,348 @@
 #include "shapes.h"
 #include "conversions.h"
 
-namespace lumina::physics
+namespace Lumina
 {
-    body::body(b2BodyId id, const body_def& def)
-        : m_body_id(id)
-        , m_user_data(def.user_data)
+    Body::Body(b2BodyId id, const BodyDef& def)
+        : m_BodyId(id)
+        , m_UserData(def.UserData)
     {
     }
 
-    b2ShapeDef body::make_shape_def(const shape_def& def) const
+    b2ShapeDef Body::MakeShapeDef(const ShapeDef& def) const
     {
         b2ShapeDef sd = b2DefaultShapeDef();
-        sd.material.friction = def.material.friction;
-        sd.material.restitution = def.material.restitution;
-        sd.density = def.material.density;
-        sd.filter.categoryBits = def.filter.category_bits;
-        sd.filter.maskBits = def.filter.mask_bits;
-        sd.filter.groupIndex = def.filter.group_index;
-        sd.isSensor = def.is_sensor;
-        sd.enableContactEvents = def.enable_contact_events;
-        sd.enableSensorEvents = def.enable_sensor_events;
-        sd.enableHitEvents = def.enable_hit_events;
+        sd.material.friction = def.Material.Friction;
+        sd.material.restitution = def.Material.Restitution;
+        sd.density = def.Material.Density;
+        sd.filter.categoryBits = def.Filter.CategoryBits;
+        sd.filter.maskBits = def.Filter.MaskBits;
+        sd.filter.groupIndex = def.Filter.GroupIndex;
+        sd.isSensor = def.IsSensor;
+        sd.enableContactEvents = def.EnableContactEvents;
+        sd.enableSensorEvents = def.EnableSensorEvents;
+        sd.enableHitEvents = def.EnableHitEvents;
         return sd;
     }
 
-    ref<shape> body::add_circle(float radius, const glm::vec2& offset)
+    Ref<Shape> Body::AddCircle(float radius, const glm::vec2& offset)
     {
-        return add_circle(radius, offset, shape_def{});
+        return AddCircle(radius, offset, ShapeDef{});
     }
 
-    ref<shape> body::add_circle(float radius, const glm::vec2& offset, const shape_def& def)
+    Ref<Shape> Body::AddCircle(float radius, const glm::vec2& offset, const ShapeDef& def)
     {
         b2Circle circle;
-        circle.center = to_b2(offset);
+        circle.center = ToB2(offset);
         circle.radius = radius;
 
-        b2ShapeDef sd = make_shape_def(def);
-        b2ShapeId id = b2CreateCircleShape(m_body_id, &sd, &circle);
+        b2ShapeDef sd = MakeShapeDef(def);
+        b2ShapeId id = b2CreateCircleShape(m_BodyId, &sd, &circle);
 
-        auto s = ref<shape>(new shape(id, shared_from_this(), def));
-        m_shapes.push_back(s);
+        auto s = Ref<Shape>(new Shape(id, shared_from_this(), def));
+        m_Shapes.push_back(s);
         return s;
     }
 
-    ref<shape> body::add_box(float half_width, float half_height, const glm::vec2& offset, float rotation)
+    Ref<Shape> Body::AddBox(float halfWidth, float halfHeight, const glm::vec2& offset, float rotation)
     {
-        return add_box(half_width, half_height, offset, rotation, shape_def{});
+        return AddBox(halfWidth, halfHeight, offset, rotation, ShapeDef{});
     }
 
-    ref<shape> body::add_box(float half_width, float half_height, const glm::vec2& offset, float rotation, const shape_def& def)
+    Ref<Shape> Body::AddBox(float halfWidth, float halfHeight, const glm::vec2& offset, float rotation, const ShapeDef& def)
     {
-        b2Polygon polygon = b2MakeOffsetBox(half_width, half_height, to_b2(offset), to_b2_rot(rotation));
+        b2Polygon polygon = b2MakeOffsetBox(halfWidth, halfHeight, ToB2(offset), ToB2Rot(rotation));
 
-        b2ShapeDef sd = make_shape_def(def);
-        b2ShapeId id = b2CreatePolygonShape(m_body_id, &sd, &polygon);
+        b2ShapeDef sd = MakeShapeDef(def);
+        b2ShapeId id = b2CreatePolygonShape(m_BodyId, &sd, &polygon);
 
-        auto s = ref<shape>(new shape(id, shared_from_this(), def));
-        m_shapes.push_back(s);
+        auto s = Ref<Shape>(new Shape(id, shared_from_this(), def));
+        m_Shapes.push_back(s);
         return s;
     }
 
-    ref<shape> body::add_polygon(const std::vector<glm::vec2>& vertices)
+    Ref<Shape> Body::AddPolygon(const std::vector<glm::vec2>& vertices)
     {
-        return add_polygon(vertices, shape_def{});
+        return AddPolygon(vertices, ShapeDef{});
     }
 
-    ref<shape> body::add_polygon(const std::vector<glm::vec2>& vertices, const shape_def& def)
+    Ref<Shape> Body::AddPolygon(const std::vector<glm::vec2>& vertices, const ShapeDef& def)
     {
-        std::vector<b2Vec2> b2_vertices;
-        b2_vertices.reserve(vertices.size());
+        std::vector<b2Vec2> b2Vertices;
+        b2Vertices.reserve(vertices.size());
         for (const auto& v : vertices)
         {
-            b2_vertices.push_back(to_b2(v));
+            b2Vertices.push_back(ToB2(v));
         }
 
-        b2Hull hull = b2ComputeHull(b2_vertices.data(), static_cast<int>(b2_vertices.size()));
+        b2Hull hull = b2ComputeHull(b2Vertices.data(), static_cast<int>(b2Vertices.size()));
         b2Polygon polygon = b2MakePolygon(&hull, 0.0f);
 
-        b2ShapeDef sd = make_shape_def(def);
-        b2ShapeId id = b2CreatePolygonShape(m_body_id, &sd, &polygon);
+        b2ShapeDef sd = MakeShapeDef(def);
+        b2ShapeId id = b2CreatePolygonShape(m_BodyId, &sd, &polygon);
 
-        auto s = ref<shape>(new shape(id, shared_from_this(), def));
-        m_shapes.push_back(s);
+        auto s = Ref<Shape>(new Shape(id, shared_from_this(), def));
+        m_Shapes.push_back(s);
         return s;
     }
 
-    ref<shape> body::add_capsule(const glm::vec2& center1, const glm::vec2& center2, float radius)
+    Ref<Shape> Body::AddCapsule(const glm::vec2& center1, const glm::vec2& center2, float radius)
     {
-        return add_capsule(center1, center2, radius, shape_def{});
+        return AddCapsule(center1, center2, radius, ShapeDef{});
     }
 
-    ref<shape> body::add_capsule(const glm::vec2& center1, const glm::vec2& center2, float radius, const shape_def& def)
+    Ref<Shape> Body::AddCapsule(const glm::vec2& center1, const glm::vec2& center2, float radius, const ShapeDef& def)
     {
         b2Capsule capsule;
-        capsule.center1 = to_b2(center1);
-        capsule.center2 = to_b2(center2);
+        capsule.center1 = ToB2(center1);
+        capsule.center2 = ToB2(center2);
         capsule.radius = radius;
 
-        b2ShapeDef sd = make_shape_def(def);
-        b2ShapeId id = b2CreateCapsuleShape(m_body_id, &sd, &capsule);
+        b2ShapeDef sd = MakeShapeDef(def);
+        b2ShapeId id = b2CreateCapsuleShape(m_BodyId, &sd, &capsule);
 
-        auto s = ref<shape>(new shape(id, shared_from_this(), def));
-        m_shapes.push_back(s);
+        auto s = Ref<Shape>(new Shape(id, shared_from_this(), def));
+        m_Shapes.push_back(s);
         return s;
     }
 
-    ref<shape> body::add_segment(const glm::vec2& point1, const glm::vec2& point2)
+    Ref<Shape> Body::AddSegment(const glm::vec2& point1, const glm::vec2& point2)
     {
-        return add_segment(point1, point2, shape_def{});
+        return AddSegment(point1, point2, ShapeDef{});
     }
 
-    ref<shape> body::add_segment(const glm::vec2& point1, const glm::vec2& point2, const shape_def& def)
+    Ref<Shape> Body::AddSegment(const glm::vec2& point1, const glm::vec2& point2, const ShapeDef& def)
     {
         b2Segment segment;
-        segment.point1 = to_b2(point1);
-        segment.point2 = to_b2(point2);
+        segment.point1 = ToB2(point1);
+        segment.point2 = ToB2(point2);
 
-        b2ShapeDef sd = make_shape_def(def);
-        b2ShapeId id = b2CreateSegmentShape(m_body_id, &sd, &segment);
+        b2ShapeDef sd = MakeShapeDef(def);
+        b2ShapeId id = b2CreateSegmentShape(m_BodyId, &sd, &segment);
 
-        auto s = ref<shape>(new shape(id, shared_from_this(), def));
-        m_shapes.push_back(s);
+        auto s = Ref<Shape>(new Shape(id, shared_from_this(), def));
+        m_Shapes.push_back(s);
         return s;
     }
 
-    void body::remove_shape(ref<shape>& s)
+    void Body::RemoveShape(Ref<Shape>& s)
     {
-        if (s && s->is_valid())
+        if (s && s->IsValid())
         {
-            b2DestroyShape(s->get_native_id(), true);
+            b2DestroyShape(s->GetNativeId(), true);
         }
-        m_shapes.erase(std::remove(m_shapes.begin(), m_shapes.end(), s), m_shapes.end());
+        m_Shapes.erase(std::remove(m_Shapes.begin(), m_Shapes.end(), s), m_Shapes.end());
         s.reset();
     }
 
-    glm::vec2 body::get_position() const
+    glm::vec2 Body::GetPosition() const
     {
-        return to_glm(b2Body_GetPosition(m_body_id));
+        return ToGlm(b2Body_GetPosition(m_BodyId));
     }
 
-    float body::get_rotation() const
+    float Body::GetRotation() const
     {
-        return to_radians(b2Body_GetRotation(m_body_id));
+        return ToRadians(b2Body_GetRotation(m_BodyId));
     }
 
-    void body::set_transform(const glm::vec2& position, float rotation)
+    void Body::SetTransform(const glm::vec2& position, float rotation)
     {
-        b2Body_SetTransform(m_body_id, to_b2(position), to_b2_rot(rotation));
+        b2Body_SetTransform(m_BodyId, ToB2(position), ToB2Rot(rotation));
     }
 
-    void body::set_position(const glm::vec2& position)
+    void Body::SetPosition(const glm::vec2& position)
     {
-        set_transform(position, get_rotation());
+        SetTransform(position, GetRotation());
     }
 
-    void body::set_rotation(float rotation)
+    void Body::SetRotation(float rotation)
     {
-        set_transform(get_position(), rotation);
+        SetTransform(GetPosition(), rotation);
     }
 
-    glm::vec2 body::get_linear_velocity() const
+    glm::vec2 Body::GetLinearVelocity() const
     {
-        return to_glm(b2Body_GetLinearVelocity(m_body_id));
+        return ToGlm(b2Body_GetLinearVelocity(m_BodyId));
     }
 
-    float body::get_angular_velocity() const
+    float Body::GetAngularVelocity() const
     {
-        return b2Body_GetAngularVelocity(m_body_id);
+        return b2Body_GetAngularVelocity(m_BodyId);
     }
 
-    void body::set_linear_velocity(const glm::vec2& velocity)
+    void Body::SetLinearVelocity(const glm::vec2& velocity)
     {
-        b2Body_SetLinearVelocity(m_body_id, to_b2(velocity));
+        b2Body_SetLinearVelocity(m_BodyId, ToB2(velocity));
     }
 
-    void body::set_angular_velocity(float velocity)
+    void Body::SetAngularVelocity(float velocity)
     {
-        b2Body_SetAngularVelocity(m_body_id, velocity);
+        b2Body_SetAngularVelocity(m_BodyId, velocity);
     }
 
-    void body::apply_force(const glm::vec2& force, const glm::vec2& point, bool wake)
+    void Body::ApplyForce(const glm::vec2& force, const glm::vec2& point, bool wake)
     {
-        b2Body_ApplyForce(m_body_id, to_b2(force), to_b2(point), wake);
+        b2Body_ApplyForce(m_BodyId, ToB2(force), ToB2(point), wake);
     }
 
-    void body::apply_force_to_center(const glm::vec2& force, bool wake)
+    void Body::ApplyForceToCenter(const glm::vec2& force, bool wake)
     {
-        b2Body_ApplyForceToCenter(m_body_id, to_b2(force), wake);
+        b2Body_ApplyForceToCenter(m_BodyId, ToB2(force), wake);
     }
 
-    void body::apply_torque(float torque, bool wake)
+    void Body::ApplyTorque(float torque, bool wake)
     {
-        b2Body_ApplyTorque(m_body_id, torque, wake);
+        b2Body_ApplyTorque(m_BodyId, torque, wake);
     }
 
-    void body::apply_linear_impulse(const glm::vec2& impulse, const glm::vec2& point, bool wake)
+    void Body::ApplyLinearImpulse(const glm::vec2& impulse, const glm::vec2& point, bool wake)
     {
-        b2Body_ApplyLinearImpulse(m_body_id, to_b2(impulse), to_b2(point), wake);
+        b2Body_ApplyLinearImpulse(m_BodyId, ToB2(impulse), ToB2(point), wake);
     }
 
-    void body::apply_linear_impulse_to_center(const glm::vec2& impulse, bool wake)
+    void Body::ApplyLinearImpulseToCenter(const glm::vec2& impulse, bool wake)
     {
-        b2Body_ApplyLinearImpulseToCenter(m_body_id, to_b2(impulse), wake);
+        b2Body_ApplyLinearImpulseToCenter(m_BodyId, ToB2(impulse), wake);
     }
 
-    void body::apply_angular_impulse(float impulse, bool wake)
+    void Body::ApplyAngularImpulse(float impulse, bool wake)
     {
-        b2Body_ApplyAngularImpulse(m_body_id, impulse, wake);
+        b2Body_ApplyAngularImpulse(m_BodyId, impulse, wake);
     }
 
-    float body::get_mass() const
+    float Body::GetMass() const
     {
-        return b2Body_GetMass(m_body_id);
+        return b2Body_GetMass(m_BodyId);
     }
 
-    float body::get_inertia() const
+    float Body::GetInertia() const
     {
-        return b2Body_GetRotationalInertia(m_body_id);
+        return b2Body_GetRotationalInertia(m_BodyId);
     }
 
-    glm::vec2 body::get_center_of_mass() const
+    glm::vec2 Body::GetCenterOfMass() const
     {
-        return to_glm(b2Body_GetWorldCenterOfMass(m_body_id));
+        return ToGlm(b2Body_GetWorldCenterOfMass(m_BodyId));
     }
 
-    void body::set_mass_data(float mass, const glm::vec2& center, float inertia)
+    void Body::SetMassData(float mass, const glm::vec2& center, float inertia)
     {
         b2MassData data;
         data.mass = mass;
-        data.center = to_b2(center);
+        data.center = ToB2(center);
         data.rotationalInertia = inertia;
-        b2Body_SetMassData(m_body_id, data);
+        b2Body_SetMassData(m_BodyId, data);
     }
 
-    void body::reset_mass_data()
+    void Body::ResetMassData()
     {
-        b2Body_ApplyMassFromShapes(m_body_id);
+        b2Body_ApplyMassFromShapes(m_BodyId);
     }
 
-    body_type body::get_type() const
+    BodyType Body::GetType() const
     {
-        b2BodyType t = b2Body_GetType(m_body_id);
+        b2BodyType t = b2Body_GetType(m_BodyId);
         switch (t)
         {
-        case b2_staticBody:    return body_type::static_body;
-        case b2_kinematicBody: return body_type::kinematic;
+        case b2_staticBody:    return BodyType::StaticBody;
+        case b2_kinematicBody: return BodyType::Kinematic;
         case b2_dynamicBody:
-        default:               return body_type::dynamic;
+        default:               return BodyType::Dynamic;
         }
     }
 
-    void body::set_type(body_type type)
+    void Body::SetType(BodyType type)
     {
         b2BodyType t = b2_dynamicBody;
         switch (type)
         {
-        case body_type::static_body: t = b2_staticBody; break;
-        case body_type::kinematic:   t = b2_kinematicBody; break;
-        case body_type::dynamic:     t = b2_dynamicBody; break;
+        case BodyType::StaticBody: t = b2_staticBody; break;
+        case BodyType::Kinematic:   t = b2_kinematicBody; break;
+        case BodyType::Dynamic:     t = b2_dynamicBody; break;
         }
-        b2Body_SetType(m_body_id, t);
+        b2Body_SetType(m_BodyId, t);
     }
 
-    bool body::is_awake() const
+    bool Body::IsAwake() const
     {
-        return b2Body_IsAwake(m_body_id);
+        return b2Body_IsAwake(m_BodyId);
     }
 
-    void body::set_awake(bool awake)
+    void Body::SetAwake(bool awake)
     {
-        b2Body_SetAwake(m_body_id, awake);
+        b2Body_SetAwake(m_BodyId, awake);
     }
 
-    bool body::is_enabled() const
+    bool Body::IsEnabled() const
     {
-        return b2Body_IsEnabled(m_body_id);
+        return b2Body_IsEnabled(m_BodyId);
     }
 
-    void body::set_enabled(bool enabled)
+    void Body::SetEnabled(bool enabled)
     {
         if (enabled)
-            b2Body_Enable(m_body_id);
+            b2Body_Enable(m_BodyId);
         else
-            b2Body_Disable(m_body_id);
+            b2Body_Disable(m_BodyId);
     }
 
-    bool body::is_bullet() const
+    bool Body::IsBullet() const
     {
-        return b2Body_IsBullet(m_body_id);
+        return b2Body_IsBullet(m_BodyId);
     }
 
-    void body::set_bullet(bool bullet)
+    void Body::SetBullet(bool bullet)
     {
-        b2Body_SetBullet(m_body_id, bullet);
+        b2Body_SetBullet(m_BodyId, bullet);
     }
 
-    float body::get_gravity_scale() const
+    float Body::GetGravityScale() const
     {
-        return b2Body_GetGravityScale(m_body_id);
+        return b2Body_GetGravityScale(m_BodyId);
     }
 
-    void body::set_gravity_scale(float scale)
+    void Body::SetGravityScale(float scale)
     {
-        b2Body_SetGravityScale(m_body_id, scale);
+        b2Body_SetGravityScale(m_BodyId, scale);
     }
 
-    float body::get_linear_damping() const
+    float Body::GetLinearDamping() const
     {
-        return b2Body_GetLinearDamping(m_body_id);
+        return b2Body_GetLinearDamping(m_BodyId);
     }
 
-    void body::set_linear_damping(float damping)
+    void Body::SetLinearDamping(float damping)
     {
-        b2Body_SetLinearDamping(m_body_id, damping);
+        b2Body_SetLinearDamping(m_BodyId, damping);
     }
 
-    float body::get_angular_damping() const
+    float Body::GetAngularDamping() const
     {
-        return b2Body_GetAngularDamping(m_body_id);
+        return b2Body_GetAngularDamping(m_BodyId);
     }
 
-    void body::set_angular_damping(float damping)
+    void Body::SetAngularDamping(float damping)
     {
-        b2Body_SetAngularDamping(m_body_id, damping);
+        b2Body_SetAngularDamping(m_BodyId, damping);
     }
 
-    glm::vec2 body::get_world_point(const glm::vec2& local_point) const
+    glm::vec2 Body::GetWorldPoint(const glm::vec2& localPoint) const
     {
-        return to_glm(b2Body_GetWorldPoint(m_body_id, to_b2(local_point)));
+        return ToGlm(b2Body_GetWorldPoint(m_BodyId, ToB2(localPoint)));
     }
 
-    glm::vec2 body::get_local_point(const glm::vec2& world_point) const
+    glm::vec2 Body::GetLocalPoint(const glm::vec2& worldPoint) const
     {
-        return to_glm(b2Body_GetLocalPoint(m_body_id, to_b2(world_point)));
+        return ToGlm(b2Body_GetLocalPoint(m_BodyId, ToB2(worldPoint)));
     }
 
-    glm::vec2 body::get_world_vector(const glm::vec2& local_vector) const
+    glm::vec2 Body::GetWorldVector(const glm::vec2& localVector) const
     {
-        return to_glm(b2Body_GetWorldVector(m_body_id, to_b2(local_vector)));
+        return ToGlm(b2Body_GetWorldVector(m_BodyId, ToB2(localVector)));
     }
 
-    glm::vec2 body::get_local_vector(const glm::vec2& world_vector) const
+    glm::vec2 Body::GetLocalVector(const glm::vec2& worldVector) const
     {
-        return to_glm(b2Body_GetLocalVector(m_body_id, to_b2(world_vector)));
+        return ToGlm(b2Body_GetLocalVector(m_BodyId, ToB2(worldVector)));
     }
 }

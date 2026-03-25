@@ -10,79 +10,79 @@
 #include <string>
 #include <string_view>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// Configuration for texture creation.
     /// Note: filter and address modes are sampler properties in modern graphics APIs.
     /// Use the sampler class to configure how textures are sampled.
-    struct texture_desc
+    struct TextureDesc
     {
-        uint32_t width = 1;
-        uint32_t height = 1;
-        format pixel_format = format::rgba8_unorm;
-        bool generate_mips = false;
+        uint32_t Width = 1;
+        uint32_t Height = 1;
+        Format PixelFormat = Format::RGBA8Unorm;
+        bool GenerateMips = false;
     };
 
     /// GPU texture for storing 2D image data.
     /// Textures hold the actual pixel data; use sampler for filtering/addressing.
-    class texture
+    class Texture
     {
     public:
-        ~texture();
+        ~Texture();
 
-        texture(const texture&) = delete;
-        texture& operator=(const texture&) = delete;
+        Texture(const Texture&) = delete;
+        Texture& operator=(const Texture&) = delete;
 
         /// Creates a texture with the specified dimensions and format. Returns nullptr on failure.
-        [[nodiscard]] static ref<texture> create(
-            core::device& dev,
+        [[nodiscard]] static Ref<Texture> Create(
+            Device& dev,
             uint32_t width,
             uint32_t height,
-            format fmt,
+            Format fmt,
             const void* data = nullptr,
-            std::string_view debug_name = "Lumina Texture");
+            std::string_view debugName = "Lumina Texture");
 
         /// Creates a texture from a descriptor. Returns nullptr on failure.
-        [[nodiscard]] static ref<texture> create(
-            core::device& dev,
-            const texture_desc& desc,
+        [[nodiscard]] static Ref<Texture> Create(
+            Device& dev,
+            const TextureDesc& desc,
             const void* data = nullptr,
-            std::string_view debug_name = "Lumina Texture");
+            std::string_view debugName = "Lumina Texture");
 
         /// Loads a texture from an image file (PNG, JPG, BMP, etc.). Returns nullptr on failure.
-        [[nodiscard]] static ref<texture> load_from_file(
-            core::device& dev,
+        [[nodiscard]] static Ref<Texture> LoadFromFile(
+            Device& dev,
             const std::string& path,
-            std::string_view debug_name = "");
+            std::string_view debugName = "");
 
         /// Wraps an existing NVRHI texture handle. The texture does NOT take ownership.
-        [[nodiscard]] static ref<texture> wrap(
-            core::device& dev,
+        [[nodiscard]] static Ref<Texture> Wrap(
+            Device& dev,
             nvrhi::ITexture* handle,
             uint32_t width,
             uint32_t height,
-            format fmt);
+            Format fmt);
 
-        [[nodiscard]] uint32_t get_width() const noexcept { return m_width; }
-        [[nodiscard]] uint32_t get_height() const noexcept { return m_height; }
-        [[nodiscard]] format get_format() const noexcept { return m_format; }
-        [[nodiscard]] nvrhi::ITexture* get_texture() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] uint32_t GetWidth() const noexcept { return m_Width; }
+        [[nodiscard]] uint32_t GetHeight() const noexcept { return m_Height; }
+        [[nodiscard]] Format GetFormat() const noexcept { return m_Format; }
+        [[nodiscard]] nvrhi::ITexture* GetTexture() const noexcept { return m_Handle.Get(); }
 
     private:
-        texture(core::device& dev, nvrhi::TextureHandle handle, uint32_t width, uint32_t height, format fmt)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_width(width)
-            , m_height(height)
-            , m_format(fmt)
+        Texture(Device& dev, nvrhi::TextureHandle handle, uint32_t width, uint32_t height, Format fmt)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Width(width)
+            , m_Height(height)
+            , m_Format(fmt)
         {}
 
-        core::device& m_device;
-        nvrhi::TextureHandle m_handle;
-        uint32_t m_width;
-        uint32_t m_height;
-        format m_format;
+        Device& m_Device;
+        nvrhi::TextureHandle m_Handle;
+        uint32_t m_Width;
+        uint32_t m_Height;
+        Format m_Format;
     };
 }

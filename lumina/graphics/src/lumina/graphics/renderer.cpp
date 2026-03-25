@@ -6,7 +6,7 @@
 
 #include <unordered_map>
 
-namespace lumina::graphics
+namespace Lumina
 {
     // ============================================================================
     // Internal Validation Macros
@@ -15,7 +15,7 @@ namespace lumina::graphics
     // Check that renderer is initialized, return early if not
     #define RENDERER_CHECK_INIT() \
         do { \
-            if (!s_state) { \
+            if (!s_State) { \
                 LUMINA_LOG_ERROR("Renderer not initialized"); \
                 return; \
             } \
@@ -24,7 +24,7 @@ namespace lumina::graphics
     // Check that renderer is initialized, return value if not
     #define RENDERER_CHECK_INIT_RET(ret) \
         do { \
-            if (!s_state) { \
+            if (!s_State) { \
                 LUMINA_LOG_ERROR("Renderer not initialized"); \
                 return ret; \
             } \
@@ -34,56 +34,56 @@ namespace lumina::graphics
     // Static State
     // ============================================================================
 
-    struct renderer_state
+    struct RendererState
     {
-        scope<renderer2d> renderer;
+        Scope<Renderer2D> Renderer;
 
         // Context management
-        struct context_data
+        struct ContextData
         {
-            ref<render_target> target;
-            uint32_t width = 0;
-            uint32_t height = 0;
-            uint32_t sample_count = 1;
+            Ref<RenderTarget> Target;
+            uint32_t Width = 0;
+            uint32_t Height = 0;
+            uint32_t SampleCount = 1;
         };
 
-        std::unordered_map<uint32_t, context_data> contexts;
-        uint32_t next_context_id = 1;  // 0 is reserved for default
+        std::unordered_map<uint32_t, ContextData> Contexts;
+        uint32_t NextContextId = 1;  // 0 is reserved for default
 
         // Default context
-        context_data default_context;
+        ContextData DefaultContext;
 
         // Current state
-        uint32_t current_context_id = 0;
-        bool in_frame = false;
+        uint32_t CurrentContextId = 0;
+        bool InFrame = false;
 
         // Default projection (orthographic, top-left origin)
-        glm::mat4 current_projection{1.0f};
-        bool use_custom_projection = false;
+        glm::mat4 CurrentProjection{1.0f};
+        bool UseCustomProjection = false;
     };
 
-    static renderer_state* s_state = nullptr;
+    static RendererState* s_State = nullptr;
 
     // ============================================================================
     // Helper Functions
     // ============================================================================
 
-    static glm::mat4 make_default_projection(uint32_t width, uint32_t height)
+    static glm::mat4 MakeDefaultProjection(uint32_t width, uint32_t height)
     {
         return glm::ortho(0.0f, static_cast<float>(width),
                           static_cast<float>(height), 0.0f,
                           -1.0f, 1.0f);
     }
 
-    static renderer_state::context_data* get_context_data(uint32_t id)
+    static RendererState::ContextData* GetContextData(uint32_t id)
     {
         if (id == 0)
         {
-            return &s_state->default_context;
+            return &s_State->DefaultContext;
         }
 
-        auto it = s_state->contexts.find(id);
-        if (it != s_state->contexts.end())
+        auto it = s_State->Contexts.find(id);
+        if (it != s_State->Contexts.end())
         {
             return &it->second;
         }
@@ -94,444 +94,444 @@ namespace lumina::graphics
     // Initialization
     // ============================================================================
 
-    void renderer::init(renderer_config config)
+    void Renderer::Init(RendererConfig config)
     {
-        if (s_state != nullptr)
+        if (s_State != nullptr)
         {
             LUMINA_LOG_WARN("Renderer already initialized");
             return;
         }
 
-        s_state = new renderer_state();
+        s_State = new RendererState();
 
-        auto& device = core::application::get().get_device();
+        auto& device = Core::Application::Get().GetDevice();
 
-        // Create renderer2d
-        s_state->renderer = make_scope<renderer2d>(device);
-        s_state->renderer->init();
+        // Create Renderer2D
+        s_State->Renderer = MakeScope<Renderer2D>(device);
+        s_State->Renderer->Init();
 
         // Create default context with MSAA
-        s_state->default_context.target = render_target::create(
-            device, config.width, config.height, format::rgba8_unorm, format::unknown, static_cast<uint32_t>(config.msaa)
+        s_State->DefaultContext.Target = RenderTarget::Create(
+            device, config.Width, config.Height, Format::RGBA8Unorm, Format::Unknown, static_cast<uint32_t>(config.Msaa)
         );
-        s_state->default_context.width = config.width;
-        s_state->default_context.height = config.height;
-        s_state->default_context.sample_count = static_cast<uint32_t>(config.msaa);
+        s_State->DefaultContext.Width = config.Width;
+        s_State->DefaultContext.Height = config.Height;
+        s_State->DefaultContext.SampleCount = static_cast<uint32_t>(config.Msaa);
 
         // Set default projection
-        s_state->current_projection = make_default_projection(config.width, config.height);
+        s_State->CurrentProjection = MakeDefaultProjection(config.Width, config.Height);
     }
 
-    void renderer::shutdown()
+    void Renderer::Shutdown()
     {
         RENDERER_CHECK_INIT();
 
         // Cleanup contexts
-        s_state->contexts.clear();
-        s_state->default_context.target.reset();
+        s_State->Contexts.clear();
+        s_State->DefaultContext.Target.reset();
 
         // Shutdown renderer
-        s_state->renderer->shutdown();
-        s_state->renderer.reset();
+        s_State->Renderer->Shutdown();
+        s_State->Renderer.reset();
 
-        delete s_state;
-        s_state = nullptr;
+        delete s_State;
+        s_State = nullptr;
     }
 
-    bool renderer::is_initialized()
+    bool Renderer::IsInitialized()
     {
-        return s_state != nullptr;
+        return s_State != nullptr;
     }
 
     // ============================================================================
     // Context Management
     // ============================================================================
 
-    render_context renderer::create_context(uint32_t width, uint32_t height)
+    RenderContext Renderer::CreateContext(uint32_t width, uint32_t height)
     {
-        return create_context(width, height, msaa_mode::none);
+        return CreateContext(width, height, MsaaMode::None);
     }
 
-    render_context renderer::create_context(uint32_t width, uint32_t height, msaa_mode msaa)
+    RenderContext Renderer::CreateContext(uint32_t width, uint32_t height, MsaaMode msaa)
     {
-        RENDERER_CHECK_INIT_RET(render_context{0});
+        RENDERER_CHECK_INIT_RET(RenderContext{0});
 
-        auto& device = core::application::get().get_device();
+        auto& device = Core::Application::Get().GetDevice();
 
-        renderer_state::context_data ctx_data;
-        ctx_data.target = render_target::create(device, width, height, format::rgba8_unorm, format::unknown, static_cast<uint32_t>(msaa));
-        ctx_data.width = width;
-        ctx_data.height = height;
-        ctx_data.sample_count = static_cast<uint32_t>(msaa);
+        RendererState::ContextData ctxData;
+        ctxData.Target = RenderTarget::Create(device, width, height, Format::RGBA8Unorm, Format::Unknown, static_cast<uint32_t>(msaa));
+        ctxData.Width = width;
+        ctxData.Height = height;
+        ctxData.SampleCount = static_cast<uint32_t>(msaa);
 
-        uint32_t id = s_state->next_context_id++;
-        s_state->contexts[id] = std::move(ctx_data);
+        uint32_t id = s_State->NextContextId++;
+        s_State->Contexts[id] = std::move(ctxData);
 
-        return render_context{id};
+        return RenderContext{id};
     }
 
-    void renderer::destroy_context(render_context ctx)
+    void Renderer::DestroyContext(RenderContext ctx)
     {
         RENDERER_CHECK_INIT();
 
-        if (ctx.id == 0)
+        if (ctx.Id == 0)
         {
             LUMINA_LOG_WARN("Cannot destroy default context");
             return;
         }
 
-        s_state->contexts.erase(ctx.id);
+        s_State->Contexts.erase(ctx.Id);
     }
 
-    void renderer::resize(uint32_t width, uint32_t height)
+    void Renderer::Resize(uint32_t width, uint32_t height)
     {
         RENDERER_CHECK_INIT();
 
         if (width == 0 || height == 0) return;
-        if (s_state->default_context.width == width &&
-            s_state->default_context.height == height) return;
+        if (s_State->DefaultContext.Width == width &&
+            s_State->DefaultContext.Height == height) return;
 
-        auto& device = core::application::get().get_device();
+        auto& device = Core::Application::Get().GetDevice();
 
         // Preserve MSAA sample count when resizing
-        uint32_t sample_count = s_state->default_context.sample_count;
-        s_state->default_context.target = render_target::create(
-            device, width, height, format::rgba8_unorm, format::unknown, sample_count
+        uint32_t sampleCount = s_State->DefaultContext.SampleCount;
+        s_State->DefaultContext.Target = RenderTarget::Create(
+            device, width, height, Format::RGBA8Unorm, Format::Unknown, sampleCount
         );
-        s_state->default_context.width = width;
-        s_state->default_context.height = height;
+        s_State->DefaultContext.Width = width;
+        s_State->DefaultContext.Height = height;
     }
 
-    void renderer::resize(render_context ctx, uint32_t width, uint32_t height)
+    void Renderer::Resize(RenderContext ctx, uint32_t width, uint32_t height)
     {
         RENDERER_CHECK_INIT();
 
-        if (ctx.id == 0)
+        if (ctx.Id == 0)
         {
-            resize(width, height);
+            Resize(width, height);
             return;
         }
 
         if (width == 0 || height == 0) return;
 
-        auto* ctx_data = get_context_data(ctx.id);
-        if (!ctx_data) return;
+        auto* ctxData = GetContextData(ctx.Id);
+        if (!ctxData) return;
 
-        if (ctx_data->width == width && ctx_data->height == height) return;
+        if (ctxData->Width == width && ctxData->Height == height) return;
 
-        auto& device = core::application::get().get_device();
+        auto& device = Core::Application::Get().GetDevice();
 
         // Preserve MSAA sample count when resizing
-        ctx_data->target = render_target::create(device, width, height, format::rgba8_unorm, format::unknown, ctx_data->sample_count);
-        ctx_data->width = width;
-        ctx_data->height = height;
+        ctxData->Target = RenderTarget::Create(device, width, height, Format::RGBA8Unorm, Format::Unknown, ctxData->SampleCount);
+        ctxData->Width = width;
+        ctxData->Height = height;
     }
 
-    glm::uvec2 renderer::get_size()
+    glm::uvec2 Renderer::GetSize()
     {
         RENDERER_CHECK_INIT_RET(glm::uvec2(0, 0));
-        return {s_state->default_context.width, s_state->default_context.height};
+        return {s_State->DefaultContext.Width, s_State->DefaultContext.Height};
     }
 
-    glm::uvec2 renderer::get_size(render_context ctx)
+    glm::uvec2 Renderer::GetSize(RenderContext ctx)
     {
         RENDERER_CHECK_INIT_RET(glm::uvec2(0, 0));
 
-        auto* ctx_data = get_context_data(ctx.id);
-        if (!ctx_data) return {0, 0};
+        auto* ctxData = GetContextData(ctx.Id);
+        if (!ctxData) return {0, 0};
 
-        return {ctx_data->width, ctx_data->height};
+        return {ctxData->Width, ctxData->Height};
     }
 
     // ============================================================================
     // Rendering
     // ============================================================================
 
-    void renderer::begin()
+    void Renderer::Begin()
     {
-        begin(render_context{0});
+        Begin(RenderContext{0});
     }
 
-    void renderer::begin(render_context ctx)
+    void Renderer::Begin(RenderContext ctx)
     {
         RENDERER_CHECK_INIT();
 
-        if (s_state->in_frame)
+        if (s_State->InFrame)
         {
-            LUMINA_LOG_ERROR("Already in a frame, call end() first");
+            LUMINA_LOG_ERROR("Already in a frame, call End() first");
             return;
         }
 
-        auto* ctx_data = get_context_data(ctx.id);
-        if (!ctx_data)
+        auto* ctxData = GetContextData(ctx.Id);
+        if (!ctxData)
         {
             LUMINA_LOG_ERROR("Invalid render context");
             return;
         }
 
-        s_state->current_context_id = ctx.id;
-        s_state->in_frame = true;
+        s_State->CurrentContextId = ctx.Id;
+        s_State->InFrame = true;
 
         // Use custom projection or generate default for this context
         glm::mat4 projection;
-        if (s_state->use_custom_projection)
+        if (s_State->UseCustomProjection)
         {
-            projection = s_state->current_projection;
+            projection = s_State->CurrentProjection;
         }
         else
         {
-            projection = make_default_projection(ctx_data->width, ctx_data->height);
+            projection = MakeDefaultProjection(ctxData->Width, ctxData->Height);
         }
 
-        s_state->renderer->begin(projection);
-        s_state->renderer->set_render_target(ctx_data->target);
+        s_State->Renderer->Begin(projection);
+        s_State->Renderer->SetRenderTarget(ctxData->Target);
     }
 
-    void renderer::end()
+    void Renderer::End()
     {
         RENDERER_CHECK_INIT();
 
-        if (!s_state->in_frame)
+        if (!s_State->InFrame)
         {
-            LUMINA_LOG_ERROR("Not in a frame, call begin() first");
+            LUMINA_LOG_ERROR("Not in a frame, call Begin() first");
             return;
         }
 
-        s_state->renderer->end();
-        s_state->in_frame = false;
+        s_State->Renderer->End();
+        s_State->InFrame = false;
 
         // Reset custom projection flag for next frame
-        s_state->use_custom_projection = false;
+        s_State->UseCustomProjection = false;
     }
 
-    void renderer::clear(const glm::vec4& color)
+    void Renderer::Clear(const glm::vec4& color)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->clear(color);
+        s_State->Renderer->Clear(color);
     }
 
     // ============================================================================
     // Camera / Projection
     // ============================================================================
 
-    void renderer::set_camera(const camera2d& camera)
+    void Renderer::SetCamera(const Camera2D& camera)
     {
         RENDERER_CHECK_INIT();
-        s_state->current_projection = camera.get_view_projection_matrix();
-        s_state->use_custom_projection = true;
+        s_State->CurrentProjection = camera.GetViewProjectionMatrix();
+        s_State->UseCustomProjection = true;
     }
 
-    void renderer::set_projection(const glm::mat4& projection)
+    void Renderer::SetProjection(const glm::mat4& projection)
     {
         RENDERER_CHECK_INIT();
-        s_state->current_projection = projection;
-        s_state->use_custom_projection = true;
+        s_State->CurrentProjection = projection;
+        s_State->UseCustomProjection = true;
     }
 
     // ============================================================================
     // Output
     // ============================================================================
 
-    ref<texture> renderer::get_texture()
+    Ref<Texture> Renderer::GetTexture()
     {
         RENDERER_CHECK_INIT_RET(nullptr);
 
-        auto* ctx_data = get_context_data(0);
-        if (!ctx_data || !ctx_data->target) return nullptr;
+        auto* ctxData = GetContextData(0);
+        if (!ctxData || !ctxData->Target) return nullptr;
 
-        return ctx_data->target->get_color_texture();
+        return ctxData->Target->GetColorTexture();
     }
 
-    ref<texture> renderer::get_texture(render_context ctx)
+    Ref<Texture> Renderer::GetTexture(RenderContext ctx)
     {
         RENDERER_CHECK_INIT_RET(nullptr);
 
-        auto* ctx_data = get_context_data(ctx.id);
-        if (!ctx_data || !ctx_data->target) return nullptr;
+        auto* ctxData = GetContextData(ctx.Id);
+        if (!ctxData || !ctxData->Target) return nullptr;
 
-        return ctx_data->target->get_color_texture();
+        return ctxData->Target->GetColorTexture();
     }
 
     // ============================================================================
     // Drawing - Primitives
     // ============================================================================
 
-    void renderer::draw_quad(const quad_desc& desc)
+    void Renderer::DrawQuad(const QuadDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_quad(desc);
+        s_State->Renderer->DrawQuad(desc);
     }
 
-    void renderer::draw_circle(const circle_desc& desc)
+    void Renderer::DrawCircle(const CircleDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_circle(desc);
+        s_State->Renderer->DrawCircle(desc);
     }
 
-    void renderer::draw_line(const line_desc& desc)
+    void Renderer::DrawLine(const LineDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_line(desc);
+        s_State->Renderer->DrawLine(desc);
     }
 
-    void renderer::draw_triangle(const triangle_desc& desc)
+    void Renderer::DrawTriangle(const TriangleDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_triangle(desc);
+        s_State->Renderer->DrawTriangle(desc);
     }
 
-    void renderer::draw_rect(const rect_desc& desc)
+    void Renderer::DrawRect(const RectDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_rect(desc);
+        s_State->Renderer->DrawRect(desc);
     }
 
-    void renderer::draw_pixel(const pixel_desc& desc)
+    void Renderer::DrawPixel(const PixelDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_pixel(desc);
+        s_State->Renderer->DrawPixel(desc);
     }
 
-    void renderer::draw_grid(const grid_desc& desc)
+    void Renderer::DrawGrid(const GridDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_grid(desc);
+        s_State->Renderer->DrawGrid(desc);
     }
 
     // ============================================================================
     // Drawing - Text
     // ============================================================================
 
-    void renderer::draw_text(const text_desc& desc)
+    void Renderer::DrawText(const TextDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_text(desc);
+        s_State->Renderer->DrawText(desc);
     }
 
-    void renderer::set_default_font(ref<font_atlas> font)
+    void Renderer::SetDefaultFont(Ref<FontAtlas> font)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->set_default_font(font);
+        s_State->Renderer->SetDefaultFont(font);
     }
 
-    ref<font_atlas> renderer::get_default_font()
+    Ref<FontAtlas> Renderer::GetDefaultFont()
     {
         RENDERER_CHECK_INIT_RET(nullptr);
-        return s_state->renderer->get_default_font();
+        return s_State->Renderer->GetDefaultFont();
     }
 
     // ============================================================================
     // Drawing - Sprites
     // ============================================================================
 
-    void renderer::draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc)
+    void Renderer::DrawSprite(const TextureAtlas& atlas, const std::string& regionName, const SpriteDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_sprite(atlas, region_name, desc);
+        s_State->Renderer->DrawSprite(atlas, regionName, desc);
     }
 
-    void renderer::draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc)
+    void Renderer::DrawSprite(const TextureAtlas& atlas, uint32_t regionIndex, const SpriteDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_sprite(atlas, region_index, desc);
+        s_State->Renderer->DrawSprite(atlas, regionIndex, desc);
     }
 
-    void renderer::draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc)
+    void Renderer::DrawSprite(const AtlasRegion& region, Ref<Texture> atlasTexture, const SpriteDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_sprite(region, atlas_texture, desc);
+        s_State->Renderer->DrawSprite(region, atlasTexture, desc);
     }
 
     // ============================================================================
     // Scissor / Clipping
     // ============================================================================
 
-    void renderer::push_scissor(float x, float y, float width, float height)
+    void Renderer::PushScissor(float x, float y, float width, float height)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->push_scissor(x, y, width, height);
+        s_State->Renderer->PushScissor(x, y, width, height);
     }
 
-    void renderer::push_scissor(const glm::vec4& rect)
+    void Renderer::PushScissor(const glm::vec4& rect)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->push_scissor(rect);
+        s_State->Renderer->PushScissor(rect);
     }
 
-    void renderer::pop_scissor()
+    void Renderer::PopScissor()
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->pop_scissor();
+        s_State->Renderer->PopScissor();
     }
 
-    bool renderer::has_scissor()
+    bool Renderer::HasScissor()
     {
         RENDERER_CHECK_INIT_RET(false);
-        return s_state->renderer->has_scissor();
+        return s_State->Renderer->HasScissor();
     }
 
     // ============================================================================
     // Texture Filtering
     // ============================================================================
 
-    void renderer::set_filter_mode(filter_mode mode)
+    void Renderer::SetFilterMode(FilterMode mode)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->set_filter_mode(mode);
+        s_State->Renderer->SetFilterMode(mode);
     }
 
-    filter_mode renderer::get_filter_mode()
+    FilterMode Renderer::GetFilterMode()
     {
-        RENDERER_CHECK_INIT_RET(filter_mode::linear);
-        return s_state->renderer->get_filter_mode();
+        RENDERER_CHECK_INIT_RET(FilterMode::Linear);
+        return s_State->Renderer->GetFilterMode();
     }
 
     // ============================================================================
     // Lighting
     // ============================================================================
 
-    void renderer::set_lighting_enabled(bool enabled)
+    void Renderer::SetLightingEnabled(bool enabled)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->set_lighting_enabled(enabled);
+        s_State->Renderer->SetLightingEnabled(enabled);
     }
 
-    bool renderer::is_lighting_enabled()
+    bool Renderer::IsLightingEnabled()
     {
         RENDERER_CHECK_INIT_RET(false);
-        return s_state->renderer->is_lighting_enabled();
+        return s_State->Renderer->IsLightingEnabled();
     }
 
-    void renderer::set_ambient_light(const glm::vec3& color, float intensity)
+    void Renderer::SetAmbientLight(const glm::vec3& color, float intensity)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->set_ambient_light(color, intensity);
+        s_State->Renderer->SetAmbientLight(color, intensity);
     }
 
-    void renderer::draw_point_light(const point_light_desc& desc)
+    void Renderer::DrawPointLight(const PointLightDesc& desc)
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->draw_point_light(desc);
+        s_State->Renderer->DrawPointLight(desc);
     }
 
     // ============================================================================
     // Stats
     // ============================================================================
 
-    const renderer2d_stats& renderer::get_stats()
+    const Renderer2DStats& Renderer::GetStats()
     {
-        static const renderer2d_stats empty_stats{};
-        if (!s_state)
+        static const Renderer2DStats emptyStats{};
+        if (!s_State)
         {
             LUMINA_LOG_ERROR("Renderer not initialized");
-            return empty_stats;
+            return emptyStats;
         }
-        return s_state->renderer->get_stats();
+        return s_State->Renderer->GetStats();
     }
 
-    void renderer::reset_stats()
+    void Renderer::ResetStats()
     {
         RENDERER_CHECK_INIT();
-        s_state->renderer->reset_stats();
+        s_State->Renderer->ResetStats();
     }
 }

@@ -5,42 +5,42 @@
 #include <concepts>
 #include <vector>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    // table() scope is in scoped.h. This file adds column/row helpers.
+    // Table() scope is in scoped.h. This file adds column/row helpers.
 
-    inline void table_setup_column(const char* label, ImGuiTableColumnFlags flags = 0, float init_width = 0.0f)
+    inline void TableSetupColumn(const char* label, ImGuiTableColumnFlags flags = 0, float initWidth = 0.0f)
     {
-        ImGui::TableSetupColumn(label, flags, init_width);
+        ImGui::TableSetupColumn(label, flags, initWidth);
     }
 
-    inline void table_headers_row()
+    inline void TableHeadersRow()
     {
         ImGui::TableHeadersRow();
     }
 
-    inline void table_next_row(ImGuiTableRowFlags flags = 0, float min_height = 0.0f)
+    inline void TableNextRow(ImGuiTableRowFlags flags = 0, float minHeight = 0.0f)
     {
-        ImGui::TableNextRow(flags, min_height);
+        ImGui::TableNextRow(flags, minHeight);
     }
 
-    inline bool table_next_column()
+    inline bool TableNextColumn()
     {
         return ImGui::TableNextColumn();
     }
 
-    inline bool table_set_column(int index)
+    inline bool TableSetColumn(int index)
     {
         return ImGui::TableSetColumnIndex(index);
     }
 
     template<typename T, std::invocable<const T&, int> F>
-    void table_rows(const std::vector<T>& items, F&& row_fn)
+    void TableRows(const std::vector<T>& items, F&& rowFn)
     {
         for (int i = 0; i < static_cast<int>(items.size()); ++i)
         {
             ImGui::TableNextRow();
-            row_fn(items[i], i);
+            rowFn(items[i], i);
         }
     }
 }

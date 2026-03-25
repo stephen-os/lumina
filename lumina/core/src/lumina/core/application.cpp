@@ -1,8 +1,8 @@
-#include "application.h"
-#include "log.h"
-#include "assert.h"
-#include "theme.h"
-#include "profiler.h"
+#include "Application.h"
+#include "Log.h"
+#include "Assert.h"
+#include "Theme.h"
+#include "Profiler.h"
 #include "imgui/imgui_nvrhi.h"
 
 #include <imgui.h>
@@ -14,396 +14,396 @@
 
 #include <algorithm>
 
-namespace lumina::core
+namespace Lumina
 {
-    static application* s_instance = nullptr;
+	static Application* s_Instance = nullptr;
 
-    application& application::get()
-    {
-        LUMINA_ASSERT(s_instance, "Application instance is null");
-        return *s_instance;
-    }
+	Application& Application::Get()
+	{
+		LUMINA_ASSERT(s_Instance, "Application instance is null");
+		return *s_Instance;
+	}
 
-    application::application(const application_specifications& specifications)
-        : m_specs(specifications)
-    {
-        // TODO: Different loggers for different subsystems
-        // For example, we should have a core logger and a client logger.
-        log::init("Lumina");
+	Application::Application(const ApplicationSpecifications& specifications)
+		: m_Specs(specifications)
+	{
+		// TODO: Different loggers for different subsystems
+		// For example, we should have a core logger and a client logger.
+		Log::Init("Lumina");
 
-        LUMINA_ASSERT(!s_instance, "Application already exists");
-        s_instance = this;
+		LUMINA_ASSERT(!s_Instance, "Application already exists");
+		s_Instance = this;
 
-        // Set working directory if specified
-        if (!m_specs.working_directory.empty())
-        {
-            std::filesystem::current_path(m_specs.working_directory);
-        }
+		// Set working directory if specified
+		if (!m_Specs.WorkingDirectory.empty())
+		{
+			std::filesystem::current_path(m_Specs.WorkingDirectory);
+		}
 
-        LUMINA_LOG_INFO("Starting Lumina Application: {}", m_specs.title);
+		LUMINA_LOG_INFO("Starting Lumina Application: {}", m_Specs.Title);
 
-        // Build window spec from application specifications
-        window_spec win_spec;
-        win_spec.title = m_specs.title;
-        win_spec.icon_path = m_specs.icon_path.string();
-        win_spec.width = m_specs.width;
-        win_spec.height = m_specs.height;
-        win_spec.fullscreen = m_specs.fullscreen;
-        win_spec.maximized = (m_specs.start_mode == window_start_mode::maximized);
-        win_spec.centered = (m_specs.start_mode == window_start_mode::centered);
-        win_spec.resizable = m_specs.resizable;
-        win_spec.decorated = m_specs.decorated;
-        win_spec.vsync = m_specs.vsync;
+		// Build window spec from application specifications
+		WindowSpec winSpec;
+		winSpec.Title = m_Specs.Title;
+		winSpec.IconPath = m_Specs.IconPath.string();
+		winSpec.Width = m_Specs.Width;
+		winSpec.Height = m_Specs.Height;
+		winSpec.Fullscreen = m_Specs.Fullscreen;
+		winSpec.Maximized = (m_Specs.StartMode == WindowStartMode::Maximized);
+		winSpec.Centered = (m_Specs.StartMode == WindowStartMode::Centered);
+		winSpec.Resizable = m_Specs.Resizable;
+		winSpec.Decorated = m_Specs.Decorated;
+		winSpec.VSync = m_Specs.VSync;
 
-        m_window = make_scope<window>(win_spec);
-        m_window->set_event_callback([this](event& e) { on_event(e); });
-        LUMINA_ASSERT(m_window, "Failed to create application window");
+		m_Window = MakeScope<Window>(winSpec);
+		m_Window->SetEventCallback([this](Event& e) { OnEvent(e); });
+		LUMINA_ASSERT(m_Window, "Failed to create application window");
 
-        // Apply titlebar theme if specified (Windows only)
-        if (m_specs.titlebar.has_value())
-        {
-            const auto& theme = m_specs.titlebar.value();
-            m_window->set_titlebar_color(
-                static_cast<uint8_t>(theme.background.r * 255.0f),
-                static_cast<uint8_t>(theme.background.g * 255.0f),
-                static_cast<uint8_t>(theme.background.b * 255.0f)
-            );
-            m_window->set_titlebar_text_color(
-                static_cast<uint8_t>(theme.text.r * 255.0f),
-                static_cast<uint8_t>(theme.text.g * 255.0f),
-                static_cast<uint8_t>(theme.text.b * 255.0f)
-            );
-        }
+		// Apply titlebar theme if specified (Windows only)
+		if (m_Specs.Titlebar.has_value())
+		{
+			const auto& theme = m_Specs.Titlebar.value();
+			m_Window->SetTitlebarColor(
+				static_cast<uint8_t>(theme.Background.r * 255.0f),
+				static_cast<uint8_t>(theme.Background.g * 255.0f),
+				static_cast<uint8_t>(theme.Background.b * 255.0f)
+			);
+			m_Window->SetTitlebarTextColor(
+				static_cast<uint8_t>(theme.Text.r * 255.0f),
+				static_cast<uint8_t>(theme.Text.g * 255.0f),
+				static_cast<uint8_t>(theme.Text.b * 255.0f)
+			);
+		}
 
-        // Initialize device
-        m_device = device::create(m_specs.api);
-        LUMINA_ASSERT(m_device, "Failed to create device");
+		// Initialize device
+		m_Device = Device::Create(m_Specs.API);
+		LUMINA_ASSERT(m_Device, "Failed to create device");
 
-        device_desc dev_desc;
-        dev_desc.window = m_window->get_native_window();
-        dev_desc.width = m_window->get_width();
-        dev_desc.height = m_window->get_height();
-        dev_desc.vsync = m_specs.vsync;
-        dev_desc.app_name = m_specs.title.c_str();
+		DeviceDesc devDesc;
+		devDesc.Window = m_Window->GetNativeWindow();
+		devDesc.Width = m_Window->GetWidth();
+		devDesc.Height = m_Window->GetHeight();
+		devDesc.VSync = m_Specs.VSync;
+		devDesc.AppName = m_Specs.Title.c_str();
 #ifdef LUMINA_DEBUG
-        dev_desc.enable_debug_layer = true;
+		devDesc.EnableDebugLayer = true;
 #endif
 
-        bool dev_init = m_device->init(dev_desc);
-        LUMINA_ASSERT(dev_init, "Failed to initialize device");
-
-        if (m_specs.enable_imgui)
-        {
-            init_imgui();
-        }
-    }
-
-    application::~application()
-    {
-        m_event_queue.clear();
-
-        for (auto& layer : m_layer_stack)
-            layer->on_detach();
-
-        m_layer_stack.clear();
-
-        if (m_specs.enable_imgui)
-        {
-            shutdown_imgui();
-        }
-
-        m_device->shutdown();
-        m_device.reset();
-
-        m_window.reset();
-        window::terminate_glfw();
-
-        log::shutdown();
-        s_instance = nullptr;
-    }
-
-    void application::init_imgui()
-    {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
-        io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
-
-        ImGuiStyle& style = ImGui::GetStyle();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            style.WindowRounding = 0.0f;
-            style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-        }
-
-        // Initialize GLFW backend for ImGui (handles input)
-        ImGui_ImplGlfw_InitForOther(m_window->get_native_window(), true);
-
-        // Initialize NVRHI backend for ImGui rendering
-        imgui::imgui_nvrhi_config imgui_config;
-        imgui_config.device = m_device->get_nvrhi_device();
-        imgui_config.render_target_format = m_device->get_swapchain_format();
-
-        bool imgui_init = imgui::init(imgui_config);
-        LUMINA_ASSERT(imgui_init, "Failed to initialize ImGui NVRHI backend");
-
-        imgui::init_platform_viewports(*m_device);
-
-        theme::apply_lumina_theme();
-
-        LUMINA_LOG_INFO("ImGui initialized");
-    }
-
-    void application::shutdown_imgui()
-    {
-        imgui::shutdown_platform_viewports();
-        imgui::shutdown();
-        ImGui_ImplGlfw_Shutdown();
-        ImGui::DestroyContext();
-    }
-
-    void application::begin_frame()
-    {
-        LUMINA_PROFILE_SCOPE_NC("Application::BeginFrame", profiler::colors::frame);
-
-        m_device->begin_frame();
-
-        // Clear the framebuffer
-        auto cmd = m_device->get_command_list();
-        auto fb = m_device->get_current_framebuffer();
-
-        nvrhi::utils::ClearColorAttachment(cmd, fb, 0, nvrhi::Color(
-            m_specs.clear_color.r,
-            m_specs.clear_color.g,
-            m_specs.clear_color.b,
-            m_specs.clear_color.a
-        ));
-
-        if (m_specs.enable_imgui)
-        {
-            imgui::new_frame();
-            ImGui_ImplGlfw_NewFrame();
-            ImGui::NewFrame();
-        }
-    }
-
-    void application::end_frame()
-    {
-        LUMINA_PROFILE_SCOPE_NC("Application::EndFrame", profiler::colors::frame);
-
-        if (m_specs.enable_imgui)
-        {
-            ImGui::Render();
-
-            // Render ImGui draw data using NVRHI
-            auto cmd = m_device->get_command_list();
-            auto fb = m_device->get_current_framebuffer();
-            imgui::render_draw_data(cmd, fb, ImGui::GetDrawData());
-        }
-
-        // Present the main window first — this closes and executes the main command list.
-        // Viewport rendering must happen after, since NVRHI only allows one immediate
-        // command list open at a time.
-        m_device->present();
-
-        if (m_specs.enable_imgui)
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-            {
-                ImGui::UpdatePlatformWindows();
-                ImGui::RenderPlatformWindowsDefault();
-            }
-        }
-    }
-
-    void application::on_event(event& e)
-    {
-        event_dispatcher dispatcher(e);
-
-        // Handle window resize
-        dispatcher.dispatch<window_resize_event>([this](window_resize_event& resize_event) {
-            on_resize(resize_event.get_width(), resize_event.get_height());
-            return false;
-        });
-
-        for (auto it = m_layer_stack.rbegin(); it != m_layer_stack.rend(); ++it)
-        {
-            if (e.is_handled())
-                break;
-            (*it)->on_event(e);
-        }
-    }
-
-    void application::on_resize(uint32_t width, uint32_t height)
-    {
-        if (width == 0 || height == 0)
-            return;
-
-        m_device->resize(width, height);
-    }
-
-    void application::post_event(event& e)
-    {
-        on_event(e);
-    }
-
-    void application::queue_event(std::unique_ptr<event> e)
-    {
-        m_event_queue.push_back(std::move(e));
-    }
-
-    void application::run()
-    {
-        m_window->show();
-
-        float last_time = get_time();
-
-        while (m_running)
-        {
-            LUMINA_PROFILE_SCOPE_NC("Application::Frame", profiler::colors::frame);
-
-            m_window->update();
-
-            if (m_window->should_close())
-            {
-                shutdown();
-                break;
-            }
-
-            // Process queued events
-            {
-                LUMINA_PROFILE_SCOPE_N("Application::ProcessEvents");
-                for (auto& e : m_event_queue)
-                    on_event(*e);
-                m_event_queue.clear();
-            }
-
-            float current_time = get_time();
-            float timestep = std::clamp(current_time - last_time, 0.001f, 0.1f);
-            last_time = current_time;
-
-            // Update layers
-            {
-                LUMINA_PROFILE_SCOPE_N("Application::UpdateLayers");
-                for (auto& layer : m_layer_stack)
-                    layer->on_update(timestep);
-            }
-
-            begin_frame();
-
-            if (m_specs.enable_imgui)
-            {
-                // Setup dockspace
-                ImGuiViewport* viewport = ImGui::GetMainViewport();
-                ImGui::SetNextWindowPos(viewport->WorkPos);
-                ImGui::SetNextWindowSize(viewport->WorkSize);
-                ImGui::SetNextWindowViewport(viewport->ID);
-
-                ImGuiWindowFlags window_flags =
-                    ImGuiWindowFlags_NoTitleBar |
-                    ImGuiWindowFlags_NoCollapse |
-                    ImGuiWindowFlags_NoResize |
-                    ImGuiWindowFlags_NoMove |
-                    ImGuiWindowFlags_NoBringToFrontOnFocus |
-                    ImGuiWindowFlags_NoNavFocus |
-                    ImGuiWindowFlags_NoBackground;
-
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-
-                ImGui::Begin("lumina_dockspace", nullptr, window_flags);
-                ImGui::PopStyleVar(3);
-
-                ImGuiID dockspace_id = ImGui::GetID("lumina_dockspace_id");
-                ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-            }
-
-            // Render layers
-            {
-                LUMINA_PROFILE_SCOPE_N("Application::RenderLayers");
-                for (auto& layer : m_layer_stack)
-                    layer->on_render();
-            }
-
-            if (m_specs.enable_imgui)
-            {
-                ImGui::End();
-            }
-
-            end_frame();
-
-            LUMINA_PROFILE_FRAME();
-        }
-    }
-
-    void application::set_fullscreen(bool fullscreen)
-    {
-        m_window->set_fullscreen(fullscreen);
-    }
-
-    void application::set_vsync(bool enabled)
-    {
-        m_window->set_vsync(enabled);
-    }
-
-    void application::set_position(int32_t x, int32_t y)
-    {
-        m_window->set_position(x, y);
-    }
-
-    void application::maximize()
-    {
-        m_window->maximize();
-    }
-
-    void application::minimize()
-    {
-        m_window->minimize();
-    }
-
-    void application::restore()
-    {
-        m_window->restore();
-    }
-
-    uint32_t application::get_width() const
-    {
-        return m_window->get_width();
-    }
-
-    uint32_t application::get_height() const
-    {
-        return m_window->get_height();
-    }
-
-    bool application::is_fullscreen() const
-    {
-        return m_window->is_fullscreen();
-    }
-
-    bool application::is_vsync() const
-    {
-        return m_window->is_vsync();
-    }
-
-    bool application::is_maximized() const
-    {
-        return m_window->is_maximized();
-    }
-
-    bool application::is_minimized() const
-    {
-        return m_window->is_minimized();
-    }
-
-    float application::get_time()
-    {
-        return static_cast<float>(glfwGetTime());
-    }
+		bool devInit = m_Device->Init(devDesc);
+		LUMINA_ASSERT(devInit, "Failed to initialize device");
+
+		if (m_Specs.EnableImGui)
+		{
+			InitImGui();
+		}
+	}
+
+	Application::~Application()
+	{
+		m_EventQueue.clear();
+
+		for (auto& layer : m_LayerStack)
+			layer->OnDetach();
+
+		m_LayerStack.clear();
+
+		if (m_Specs.EnableImGui)
+		{
+			ShutdownImGui();
+		}
+
+		m_Device->Shutdown();
+		m_Device.reset();
+
+		m_Window.reset();
+		Window::TerminateGLFW();
+
+		Log::Shutdown();
+		s_Instance = nullptr;
+	}
+
+	void Application::InitImGui()
+	{
+		IMGUI_CHECKVERSION();
+		ImGui::CreateContext();
+
+		ImGuiIO& io = ImGui::GetIO();
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
+		io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;
+		io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+		io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;
+
+		ImGuiStyle& style = ImGui::GetStyle();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			style.WindowRounding = 0.0f;
+			style.Colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+
+		// Initialize GLFW backend for ImGui (handles input)
+		ImGui_ImplGlfw_InitForOther(m_Window->GetNativeWindow(), true);
+
+		// Initialize NVRHI backend for ImGui rendering
+		ImGuiNvrhi::ImGuiNvrhiConfig imguiConfig;
+		imguiConfig.Device = m_Device->GetNvrhiDevice();
+		imguiConfig.RenderTargetFormat = m_Device->GetSwapchainFormat();
+
+		bool imguiInit = ImGuiNvrhi::Init(imguiConfig);
+		LUMINA_ASSERT(imguiInit, "Failed to initialize ImGui NVRHI backend");
+
+		ImGuiNvrhi::InitPlatformViewports(*m_Device);
+
+		Theme::ApplyLuminaTheme();
+
+		LUMINA_LOG_INFO("ImGui initialized");
+	}
+
+	void Application::ShutdownImGui()
+	{
+		ImGuiNvrhi::ShutdownPlatformViewports();
+		ImGuiNvrhi::Shutdown();
+		ImGui_ImplGlfw_Shutdown();
+		ImGui::DestroyContext();
+	}
+
+	void Application::BeginFrame()
+	{
+		LUMINA_PROFILE_SCOPE_NC("Application::BeginFrame", Profiler::Colors::Frame);
+
+		m_Device->BeginFrame();
+
+		// Clear the framebuffer
+		auto cmd = m_Device->GetCommandList();
+		auto fb = m_Device->GetCurrentFramebuffer();
+
+		nvrhi::utils::ClearColorAttachment(cmd, fb, 0, nvrhi::Color(
+			m_Specs.ClearColor.r,
+			m_Specs.ClearColor.g,
+			m_Specs.ClearColor.b,
+			m_Specs.ClearColor.a
+		));
+
+		if (m_Specs.EnableImGui)
+		{
+			ImGuiNvrhi::NewFrame();
+			ImGui_ImplGlfw_NewFrame();
+			ImGui::NewFrame();
+		}
+	}
+
+	void Application::EndFrame()
+	{
+		LUMINA_PROFILE_SCOPE_NC("Application::EndFrame", Profiler::Colors::Frame);
+
+		if (m_Specs.EnableImGui)
+		{
+			ImGui::Render();
+
+			// Render ImGui draw data using NVRHI
+			auto cmd = m_Device->GetCommandList();
+			auto fb = m_Device->GetCurrentFramebuffer();
+			ImGuiNvrhi::RenderDrawData(cmd, fb, ImGui::GetDrawData());
+		}
+
+		// Present the main window first — this closes and executes the main command list.
+		// Viewport rendering must happen after, since NVRHI only allows one immediate
+		// command list open at a time.
+		m_Device->Present();
+
+		if (m_Specs.EnableImGui)
+		{
+			ImGuiIO& io = ImGui::GetIO();
+			if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+			{
+				ImGui::UpdatePlatformWindows();
+				ImGui::RenderPlatformWindowsDefault();
+			}
+		}
+	}
+
+	void Application::OnEvent(Event& e)
+	{
+		EventDispatcher dispatcher(e);
+
+		// Handle window resize
+		dispatcher.Dispatch<WindowResizeEvent>([this](WindowResizeEvent& resizeEvent) {
+			OnResize(resizeEvent.GetWidth(), resizeEvent.GetHeight());
+			return false;
+		});
+
+		for (auto it = m_LayerStack.rbegin(); it != m_LayerStack.rend(); ++it)
+		{
+			if (e.IsHandled())
+				break;
+			(*it)->OnEvent(e);
+		}
+	}
+
+	void Application::OnResize(uint32_t width, uint32_t height)
+	{
+		if (width == 0 || height == 0)
+			return;
+
+		m_Device->Resize(width, height);
+	}
+
+	void Application::PostEvent(Event& e)
+	{
+		OnEvent(e);
+	}
+
+	void Application::QueueEvent(std::unique_ptr<Event> e)
+	{
+		m_EventQueue.push_back(std::move(e));
+	}
+
+	void Application::Run()
+	{
+		m_Window->Show();
+
+		float lastTime = GetTime();
+
+		while (m_Running)
+		{
+			LUMINA_PROFILE_SCOPE_NC("Application::Frame", Profiler::Colors::Frame);
+
+			m_Window->Update();
+
+			if (m_Window->ShouldClose())
+			{
+				Shutdown();
+				break;
+			}
+
+			// Process queued events
+			{
+				LUMINA_PROFILE_SCOPE_N("Application::ProcessEvents");
+				for (auto& e : m_EventQueue)
+					OnEvent(*e);
+				m_EventQueue.clear();
+			}
+
+			float currentTime = GetTime();
+			float timestep = std::clamp(currentTime - lastTime, 0.001f, 0.1f);
+			lastTime = currentTime;
+
+			// Update layers
+			{
+				LUMINA_PROFILE_SCOPE_N("Application::UpdateLayers");
+				for (auto& layer : m_LayerStack)
+					layer->OnUpdate(timestep);
+			}
+
+			BeginFrame();
+
+			if (m_Specs.EnableImGui)
+			{
+				// Setup dockspace
+				ImGuiViewport* viewport = ImGui::GetMainViewport();
+				ImGui::SetNextWindowPos(viewport->WorkPos);
+				ImGui::SetNextWindowSize(viewport->WorkSize);
+				ImGui::SetNextWindowViewport(viewport->ID);
+
+				ImGuiWindowFlags windowFlags =
+					ImGuiWindowFlags_NoTitleBar |
+					ImGuiWindowFlags_NoCollapse |
+					ImGuiWindowFlags_NoResize |
+					ImGuiWindowFlags_NoMove |
+					ImGuiWindowFlags_NoBringToFrontOnFocus |
+					ImGuiWindowFlags_NoNavFocus |
+					ImGuiWindowFlags_NoBackground;
+
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
+				ImGui::Begin("lumina_dockspace", nullptr, windowFlags);
+				ImGui::PopStyleVar(3);
+
+				ImGuiID dockspaceId = ImGui::GetID("lumina_dockspace_id");
+				ImGui::DockSpace(dockspaceId, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
+			}
+
+			// Render layers
+			{
+				LUMINA_PROFILE_SCOPE_N("Application::RenderLayers");
+				for (auto& layer : m_LayerStack)
+					layer->OnRender();
+			}
+
+			if (m_Specs.EnableImGui)
+			{
+				ImGui::End();
+			}
+
+			EndFrame();
+
+			LUMINA_PROFILE_FRAME();
+		}
+	}
+
+	void Application::SetFullscreen(bool fullscreen)
+	{
+		m_Window->SetFullscreen(fullscreen);
+	}
+
+	void Application::SetVSync(bool enabled)
+	{
+		m_Window->SetVSync(enabled);
+	}
+
+	void Application::SetPosition(int32_t x, int32_t y)
+	{
+		m_Window->SetPosition(x, y);
+	}
+
+	void Application::Maximize()
+	{
+		m_Window->Maximize();
+	}
+
+	void Application::Minimize()
+	{
+		m_Window->Minimize();
+	}
+
+	void Application::Restore()
+	{
+		m_Window->Restore();
+	}
+
+	uint32_t Application::GetWidth() const
+	{
+		return m_Window->GetWidth();
+	}
+
+	uint32_t Application::GetHeight() const
+	{
+		return m_Window->GetHeight();
+	}
+
+	bool Application::IsFullscreen() const
+	{
+		return m_Window->IsFullscreen();
+	}
+
+	bool Application::IsVSync() const
+	{
+		return m_Window->IsVSync();
+	}
+
+	bool Application::IsMaximized() const
+	{
+		return m_Window->IsMaximized();
+	}
+
+	bool Application::IsMinimized() const
+	{
+		return m_Window->IsMinimized();
+	}
+
+	float Application::GetTime()
+	{
+		return static_cast<float>(glfwGetTime());
+	}
 }

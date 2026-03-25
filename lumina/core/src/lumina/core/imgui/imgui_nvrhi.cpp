@@ -1,7 +1,7 @@
 #include "imgui_nvrhi.h"
-#include "../log.h"
-#include "../device.h"
-#include "../profiler.h"
+#include "../Log.h"
+#include "../Device.h"
+#include "../Profiler.h"
 
 #include <imgui.h>
 
@@ -31,1378 +31,1378 @@
 #include <algorithm>
 #include <unordered_map>
 
-namespace lumina::core::imgui
+namespace Lumina::ImGuiNvrhi
 {
-    // GLSL shader source for Vulkan (compiled with glslc)
-    static const char* s_imgui_vs_glsl = R"(
-        #version 450
+	// GLSL shader source for Vulkan (compiled with glslc)
+	static const char* s_ImGuiVSGLSL = R"(
+		#version 450
 
-        layout(set = 0, binding = 0) uniform VertexConstantBuffer {
-            mat4 ProjectionMatrix;
-        };
+		layout(set = 0, binding = 0) uniform VertexConstantBuffer {
+			mat4 ProjectionMatrix;
+		};
 
-        layout(location = 0) in vec2 inPosition;
-        layout(location = 1) in vec2 inTexCoord;
-        layout(location = 2) in vec4 inColor;
+		layout(location = 0) in vec2 inPosition;
+		layout(location = 1) in vec2 inTexCoord;
+		layout(location = 2) in vec4 inColor;
 
-        layout(location = 0) out vec4 outColor;
-        layout(location = 1) out vec2 outTexCoord;
+		layout(location = 0) out vec4 outColor;
+		layout(location = 1) out vec2 outTexCoord;
 
-        void main() {
-            gl_Position = ProjectionMatrix * vec4(inPosition, 0.0, 1.0);
-            outColor = inColor;
-            outTexCoord = inTexCoord;
-        }
-    )";
+		void main() {
+			gl_Position = ProjectionMatrix * vec4(inPosition, 0.0, 1.0);
+			outColor = inColor;
+			outTexCoord = inTexCoord;
+		}
+	)";
 
-    static const char* s_imgui_ps_glsl = R"(
-        #version 450
+	static const char* s_ImGuiPSGLSL = R"(
+		#version 450
 
-        layout(set = 0, binding = 1) uniform texture2D fontTexture;
-        layout(set = 0, binding = 2) uniform sampler fontSampler;
+		layout(set = 0, binding = 1) uniform texture2D fontTexture;
+		layout(set = 0, binding = 2) uniform sampler fontSampler;
 
-        layout(location = 0) in vec4 inColor;
-        layout(location = 1) in vec2 inTexCoord;
+		layout(location = 0) in vec4 inColor;
+		layout(location = 1) in vec2 inTexCoord;
 
-        layout(location = 0) out vec4 outColor;
+		layout(location = 0) out vec4 outColor;
 
-        void main() {
-            outColor = inColor * texture(sampler2D(fontTexture, fontSampler), inTexCoord);
-        }
-    )";
+		void main() {
+			outColor = inColor * texture(sampler2D(fontTexture, fontSampler), inTexCoord);
+		}
+	)";
 
-    // HLSL shader source for D3D12
-    static const char* s_imgui_vs_hlsl = R"(
-        cbuffer VertexConstantBuffer : register(b0)
-        {
-            float4x4 ProjectionMatrix;
-        };
+	// HLSL shader source for D3D12
+	static const char* s_ImGuiVSHLSL = R"(
+		cbuffer VertexConstantBuffer : register(b0)
+		{
+			float4x4 ProjectionMatrix;
+		};
 
-        struct VS_INPUT
-        {
-            float2 pos : POSITION;
-            float2 uv  : TEXCOORD0;
-            float4 col : COLOR0;
-        };
+		struct VS_INPUT
+		{
+			float2 pos : POSITION;
+			float2 uv  : TEXCOORD0;
+			float4 col : COLOR0;
+		};
 
-        struct PS_INPUT
-        {
-            float4 pos : SV_POSITION;
-            float4 col : COLOR0;
-            float2 uv  : TEXCOORD0;
-        };
+		struct PS_INPUT
+		{
+			float4 pos : SV_POSITION;
+			float4 col : COLOR0;
+			float2 uv  : TEXCOORD0;
+		};
 
-        PS_INPUT main(VS_INPUT input)
-        {
-            PS_INPUT output;
-            output.pos = mul(ProjectionMatrix, float4(input.pos.xy, 0.0f, 1.0f));
-            output.col = input.col;
-            output.uv  = input.uv;
-            return output;
-        }
-    )";
+		PS_INPUT main(VS_INPUT input)
+		{
+			PS_INPUT output;
+			output.pos = mul(ProjectionMatrix, float4(input.pos.xy, 0.0f, 1.0f));
+			output.col = input.col;
+			output.uv  = input.uv;
+			return output;
+		}
+	)";
 
-    static const char* s_imgui_ps_hlsl = R"(
-        Texture2D texture0 : register(t0);
-        SamplerState sampler0 : register(s0);
+	static const char* s_ImGuiPSHLSL = R"(
+		Texture2D texture0 : register(t0);
+		SamplerState sampler0 : register(s0);
 
-        struct PS_INPUT
-        {
-            float4 pos : SV_POSITION;
-            float4 col : COLOR0;
-            float2 uv  : TEXCOORD0;
-        };
+		struct PS_INPUT
+		{
+			float4 pos : SV_POSITION;
+			float4 col : COLOR0;
+			float2 uv  : TEXCOORD0;
+		};
 
-        float4 main(PS_INPUT input) : SV_Target
-        {
-            float4 out_col = input.col * texture0.Sample(sampler0, input.uv);
-            return out_col;
-        }
-    )";
+		float4 main(PS_INPUT input) : SV_Target
+		{
+			float4 out_col = input.col * texture0.Sample(sampler0, input.uv);
+			return out_col;
+		}
+	)";
 
-    // Combined HLSL for D3D12 (uses D3DCompile which needs entry points specified)
-    static const char* s_imgui_shader_hlsl_d3d12 = R"(
-        cbuffer VertexConstantBuffer : register(b0)
-        {
-            float4x4 ProjectionMatrix;
-        };
+	// Combined HLSL for D3D12 (uses D3DCompile which needs entry points specified)
+	static const char* s_ImGuiShaderHLSLD3D12 = R"(
+		cbuffer VertexConstantBuffer : register(b0)
+		{
+			float4x4 ProjectionMatrix;
+		};
 
-        struct VS_INPUT
-        {
-            float2 pos : POSITION;
-            float2 uv  : TEXCOORD0;
-            float4 col : COLOR0;
-        };
+		struct VS_INPUT
+		{
+			float2 pos : POSITION;
+			float2 uv  : TEXCOORD0;
+			float4 col : COLOR0;
+		};
 
-        struct PS_INPUT
-        {
-            float4 pos : SV_POSITION;
-            float4 col : COLOR0;
-            float2 uv  : TEXCOORD0;
-        };
+		struct PS_INPUT
+		{
+			float4 pos : SV_POSITION;
+			float4 col : COLOR0;
+			float2 uv  : TEXCOORD0;
+		};
 
-        PS_INPUT VSMain(VS_INPUT input)
-        {
-            PS_INPUT output;
-            output.pos = mul(ProjectionMatrix, float4(input.pos.xy, 0.0f, 1.0f));
-            output.col = input.col;
-            output.uv  = input.uv;
-            return output;
-        }
+		PS_INPUT VSMain(VS_INPUT input)
+		{
+			PS_INPUT output;
+			output.pos = mul(ProjectionMatrix, float4(input.pos.xy, 0.0f, 1.0f));
+			output.col = input.col;
+			output.uv  = input.uv;
+			return output;
+		}
 
-        SamplerState sampler0 : register(s0);
-        Texture2D texture0 : register(t0);
+		SamplerState sampler0 : register(s0);
+		Texture2D texture0 : register(t0);
 
-        float4 PSMain(PS_INPUT input) : SV_Target
-        {
-            float4 out_col = input.col * texture0.Sample(sampler0, input.uv);
-            return out_col;
-        }
-    )";
+		float4 PSMain(PS_INPUT input) : SV_Target
+		{
+			float4 out_col = input.col * texture0.Sample(sampler0, input.uv);
+			return out_col;
+		}
+	)";
 
-    static nvrhi::GraphicsAPI s_graphics_api = nvrhi::GraphicsAPI::D3D12;
+	static nvrhi::GraphicsAPI s_GraphicsAPI = nvrhi::GraphicsAPI::D3D12;
 
 #ifdef LUMINA_PLATFORM_WINDOWS
-    // Helper to execute a process safely without invoking the shell
-    static bool execute_process(const std::string& command, const std::string& args, DWORD& exit_code)
-    {
-        STARTUPINFOA si = {};
-        si.cb = sizeof(si);
-        si.dwFlags = STARTF_USESHOWWINDOW;
-        si.wShowWindow = SW_HIDE;
+	// Helper to execute a process safely without invoking the shell
+	static bool ExecuteProcess(const std::string& command, const std::string& args, DWORD& exitCode)
+	{
+		STARTUPINFOA si = {};
+		si.cb = sizeof(si);
+		si.dwFlags = STARTF_USESHOWWINDOW;
+		si.wShowWindow = SW_HIDE;
 
-        PROCESS_INFORMATION pi = {};
+		PROCESS_INFORMATION pi = {};
 
-        // CreateProcess requires a mutable command line buffer
-        std::string cmd_line = command + " " + args;
-        std::vector<char> cmd_buffer(cmd_line.begin(), cmd_line.end());
-        cmd_buffer.push_back('\0');
+		// CreateProcess requires a mutable command line buffer
+		std::string cmdLine = command + " " + args;
+		std::vector<char> cmdBuffer(cmdLine.begin(), cmdLine.end());
+		cmdBuffer.push_back('\0');
 
-        BOOL success = CreateProcessA(
-            nullptr,           // Application name (null = use command line)
-            cmd_buffer.data(), // Command line (mutable)
-            nullptr,           // Process security attributes
-            nullptr,           // Thread security attributes
-            FALSE,             // Inherit handles
-            CREATE_NO_WINDOW,  // Creation flags
-            nullptr,           // Environment (inherit)
-            nullptr,           // Current directory (inherit)
-            &si,
-            &pi
-        );
+		BOOL success = CreateProcessA(
+			nullptr,           // Application name (null = use command line)
+			cmdBuffer.data(),  // Command line (mutable)
+			nullptr,           // Process security attributes
+			nullptr,           // Thread security attributes
+			FALSE,             // Inherit handles
+			CREATE_NO_WINDOW,  // Creation flags
+			nullptr,           // Environment (inherit)
+			nullptr,           // Current directory (inherit)
+			&si,
+			&pi
+		);
 
-        if (!success)
-        {
-            LUMINA_LOG_ERROR("Failed to create process: {}", GetLastError());
-            return false;
-        }
+		if (!success)
+		{
+			LUMINA_LOG_ERROR("Failed to create process: {}", GetLastError());
+			return false;
+		}
 
-        // Wait for the process to complete
-        WaitForSingleObject(pi.hProcess, INFINITE);
-        GetExitCodeProcess(pi.hProcess, &exit_code);
+		// Wait for the process to complete
+		WaitForSingleObject(pi.hProcess, INFINITE);
+		GetExitCodeProcess(pi.hProcess, &exitCode);
 
-        CloseHandle(pi.hProcess);
-        CloseHandle(pi.hThread);
+		CloseHandle(pi.hProcess);
+		CloseHandle(pi.hThread);
 
-        return true;
-    }
+		return true;
+	}
 
-    // Helper to compile GLSL to SPIR-V using glslc (Vulkan SDK)
-    static bool compile_glsl_to_spirv(const char* source, const char* shader_type, std::vector<uint8_t>& spirv_out)
-    {
-        // Create temporary files for input and output
-        std::filesystem::path temp_dir = std::filesystem::temp_directory_path();
-        std::filesystem::path input_path = temp_dir / ("imgui_shader_" + std::string(shader_type) + ".glsl");
-        std::filesystem::path output_path = temp_dir / ("imgui_shader_" + std::string(shader_type) + ".spv");
+	// Helper to compile GLSL to SPIR-V using glslc (Vulkan SDK)
+	static bool CompileGLSLToSPIRV(const char* source, const char* shaderType, std::vector<uint8_t>& spirvOut)
+	{
+		// Create temporary files for input and output
+		std::filesystem::path tempDir = std::filesystem::temp_directory_path();
+		std::filesystem::path inputPath = tempDir / ("imgui_shader_" + std::string(shaderType) + ".glsl");
+		std::filesystem::path outputPath = tempDir / ("imgui_shader_" + std::string(shaderType) + ".spv");
 
-        // Write source to temporary file
-        {
-            std::ofstream input_file(input_path, std::ios::binary);
-            if (!input_file)
-            {
-                LUMINA_LOG_ERROR("Failed to create temporary shader file: {}", input_path.string());
-                return false;
-            }
-            input_file.write(source, strlen(source));
-        }
+		// Write source to temporary file
+		{
+			std::ofstream inputFile(inputPath, std::ios::binary);
+			if (!inputFile)
+			{
+				LUMINA_LOG_ERROR("Failed to create temporary shader file: {}", inputPath.string());
+				return false;
+			}
+			inputFile.write(source, strlen(source));
+		}
 
-        // Build glslc arguments
-        std::string stage = (strcmp(shader_type, "vert") == 0) ? "vertex" : "fragment";
-        std::string args = "-fshader-stage=" + stage + " \"" + input_path.string() + "\" -o \"" + output_path.string() + "\"";
+		// Build glslc arguments
+		std::string stage = (strcmp(shaderType, "vert") == 0) ? "vertex" : "fragment";
+		std::string args = "-fshader-stage=" + stage + " \"" + inputPath.string() + "\" -o \"" + outputPath.string() + "\"";
 
-        LUMINA_LOG_INFO("Compiling {} shader with glslc...", stage);
+		LUMINA_LOG_INFO("Compiling {} shader with glslc...", stage);
 
-        // Execute glslc using CreateProcess (safer than system())
-        DWORD exit_code = 0;
-        bool process_ok = execute_process("glslc.exe", args, exit_code);
+		// Execute glslc using CreateProcess (safer than system())
+		DWORD exitCode = 0;
+		bool processOk = ExecuteProcess("glslc.exe", args, exitCode);
 
-        std::filesystem::remove(input_path);
+		std::filesystem::remove(inputPath);
 
-        if (!process_ok || exit_code != 0)
-        {
-            LUMINA_LOG_ERROR("glslc compilation failed with exit code: {}", exit_code);
-            return false;
-        }
+		if (!processOk || exitCode != 0)
+		{
+			LUMINA_LOG_ERROR("glslc compilation failed with exit code: {}", exitCode);
+			return false;
+		}
 
-        // Read compiled SPIR-V
-        std::ifstream spirv_file(output_path, std::ios::binary | std::ios::ate);
-        if (!spirv_file)
-        {
-            LUMINA_LOG_ERROR("Failed to read compiled SPIR-V from: {}", output_path.string());
-            return false;
-        }
+		// Read compiled SPIR-V
+		std::ifstream spirvFile(outputPath, std::ios::binary | std::ios::ate);
+		if (!spirvFile)
+		{
+			LUMINA_LOG_ERROR("Failed to read compiled SPIR-V from: {}", outputPath.string());
+			return false;
+		}
 
-        size_t file_size = spirv_file.tellg();
-        spirv_file.seekg(0);
+		size_t fileSize = spirvFile.tellg();
+		spirvFile.seekg(0);
 
-        spirv_out.resize(file_size);
-        spirv_file.read(reinterpret_cast<char*>(spirv_out.data()), file_size);
-        spirv_file.close();
+		spirvOut.resize(fileSize);
+		spirvFile.read(reinterpret_cast<char*>(spirvOut.data()), fileSize);
+		spirvFile.close();
 
-        std::filesystem::remove(output_path);
+		std::filesystem::remove(outputPath);
 
-        LUMINA_LOG_INFO("Shader compiled successfully ({} bytes)", file_size);
-        return true;
-    }
+		LUMINA_LOG_INFO("Shader compiled successfully ({} bytes)", fileSize);
+		return true;
+	}
 #endif
 
-    // Renderer state
-    static nvrhi::DeviceHandle s_device;
-    static nvrhi::ShaderHandle s_vertex_shader;
-    static nvrhi::ShaderHandle s_pixel_shader;
-    static nvrhi::InputLayoutHandle s_input_layout;
-    static nvrhi::BindingLayoutHandle s_binding_layout;
-    static nvrhi::GraphicsPipelineHandle s_pipeline;
-    static nvrhi::BufferHandle s_vertex_buffer;
-    static nvrhi::BufferHandle s_index_buffer;
-    static nvrhi::BufferHandle s_constant_buffer;
-    static nvrhi::TextureHandle s_font_texture;
-    static nvrhi::SamplerHandle s_font_sampler;
-    static nvrhi::BindingSetHandle s_binding_set;
+	// Renderer state
+	static nvrhi::DeviceHandle s_Device;
+	static nvrhi::ShaderHandle s_VertexShader;
+	static nvrhi::ShaderHandle s_PixelShader;
+	static nvrhi::InputLayoutHandle s_InputLayout;
+	static nvrhi::BindingLayoutHandle s_BindingLayout;
+	static nvrhi::GraphicsPipelineHandle s_Pipeline;
+	static nvrhi::BufferHandle s_VertexBuffer;
+	static nvrhi::BufferHandle s_IndexBuffer;
+	static nvrhi::BufferHandle s_ConstantBuffer;
+	static nvrhi::TextureHandle s_FontTexture;
+	static nvrhi::SamplerHandle s_FontSampler;
+	static nvrhi::BindingSetHandle s_BindingSet;
 
-    // Cache for texture binding sets (texture ptr -> binding set)
-    static std::unordered_map<nvrhi::ITexture*, nvrhi::BindingSetHandle> s_texture_binding_sets;
+	// Cache for texture binding sets (texture ptr -> binding set)
+	static std::unordered_map<nvrhi::ITexture*, nvrhi::BindingSetHandle> s_TextureBindingSets;
 
-    static uint32_t s_vertex_buffer_size = 0;
-    static uint32_t s_index_buffer_size = 0;
-    static nvrhi::Format s_render_target_format = nvrhi::Format::RGBA8_UNORM;
+	static uint32_t s_VertexBufferSize = 0;
+	static uint32_t s_IndexBufferSize = 0;
+	static nvrhi::Format s_RenderTargetFormat = nvrhi::Format::RGBA8_UNORM;
 
-    static bool create_font_texture()
-    {
-        ImGuiIO& io = ImGui::GetIO();
+	static bool CreateFontTexture()
+	{
+		ImGuiIO& io = ImGui::GetIO();
 
-        unsigned char* pixels;
-        int width, height;
-        io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+		unsigned char* pixels;
+		int width, height;
+		io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
 
-        nvrhi::TextureDesc texture_desc;
-        texture_desc.dimension = nvrhi::TextureDimension::Texture2D;
-        texture_desc.width = static_cast<uint32_t>(width);
-        texture_desc.height = static_cast<uint32_t>(height);
-        texture_desc.format = nvrhi::Format::RGBA8_UNORM;
-        texture_desc.debugName = "ImGui Font Texture";
-        texture_desc.initialState = nvrhi::ResourceStates::ShaderResource;
-        texture_desc.keepInitialState = true;
+		nvrhi::TextureDesc textureDesc;
+		textureDesc.dimension = nvrhi::TextureDimension::Texture2D;
+		textureDesc.width = static_cast<uint32_t>(width);
+		textureDesc.height = static_cast<uint32_t>(height);
+		textureDesc.format = nvrhi::Format::RGBA8_UNORM;
+		textureDesc.debugName = "ImGui Font Texture";
+		textureDesc.initialState = nvrhi::ResourceStates::ShaderResource;
+		textureDesc.keepInitialState = true;
 
-        s_font_texture = s_device->createTexture(texture_desc);
-        if (!s_font_texture)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui font texture");
-            return false;
-        }
+		s_FontTexture = s_Device->createTexture(textureDesc);
+		if (!s_FontTexture)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui font texture");
+			return false;
+		}
 
-        // Upload font texture data
-        nvrhi::CommandListHandle cmd = s_device->createCommandList();
-        cmd->open();
-        cmd->writeTexture(s_font_texture, 0, 0, pixels, width * 4);
-        cmd->close();
-        s_device->executeCommandList(cmd);
+		// Upload font texture data
+		nvrhi::CommandListHandle cmd = s_Device->createCommandList();
+		cmd->open();
+		cmd->writeTexture(s_FontTexture, 0, 0, pixels, width * 4);
+		cmd->close();
+		s_Device->executeCommandList(cmd);
 
-        // Store texture ID for ImGui (cast pointer to ImTextureID via uintptr_t for 32/64-bit safety)
-        io.Fonts->SetTexID((ImTextureID)(uintptr_t)s_font_texture.Get());
+		// Store texture ID for ImGui (cast pointer to ImTextureID via uintptr_t for 32/64-bit safety)
+		io.Fonts->SetTexID((ImTextureID)(uintptr_t)s_FontTexture.Get());
 
-        return true;
-    }
+		return true;
+	}
 
-    static bool create_shaders()
-    {
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
+	static bool CreateShaders()
+	{
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
 #ifdef LUMINA_PLATFORM_WINDOWS
-            // Use glslc to compile GLSL to SPIR-V for Vulkan
-            std::vector<uint8_t> vs_spirv;
-            if (!compile_glsl_to_spirv(s_imgui_vs_glsl, "vert", vs_spirv))
-            {
-                LUMINA_LOG_ERROR("Failed to compile ImGui vertex shader to SPIR-V");
-                return false;
-            }
+			// Use glslc to compile GLSL to SPIR-V for Vulkan
+			std::vector<uint8_t> vsSPIRV;
+			if (!CompileGLSLToSPIRV(s_ImGuiVSGLSL, "vert", vsSPIRV))
+			{
+				LUMINA_LOG_ERROR("Failed to compile ImGui vertex shader to SPIR-V");
+				return false;
+			}
 
-            nvrhi::ShaderDesc vs_desc;
-            vs_desc.shaderType = nvrhi::ShaderType::Vertex;
-            vs_desc.debugName = "ImGui VS";
+			nvrhi::ShaderDesc vsDesc;
+			vsDesc.shaderType = nvrhi::ShaderType::Vertex;
+			vsDesc.debugName = "ImGui VS";
 
-            s_vertex_shader = s_device->createShader(vs_desc, vs_spirv.data(), vs_spirv.size());
-            if (!s_vertex_shader)
-            {
-                LUMINA_LOG_ERROR("Failed to create ImGui vertex shader (SPIR-V)");
-                return false;
-            }
+			s_VertexShader = s_Device->createShader(vsDesc, vsSPIRV.data(), vsSPIRV.size());
+			if (!s_VertexShader)
+			{
+				LUMINA_LOG_ERROR("Failed to create ImGui vertex shader (SPIR-V)");
+				return false;
+			}
 
-            std::vector<uint8_t> ps_spirv;
-            if (!compile_glsl_to_spirv(s_imgui_ps_glsl, "frag", ps_spirv))
-            {
-                LUMINA_LOG_ERROR("Failed to compile ImGui pixel shader to SPIR-V");
-                return false;
-            }
+			std::vector<uint8_t> psSPIRV;
+			if (!CompileGLSLToSPIRV(s_ImGuiPSGLSL, "frag", psSPIRV))
+			{
+				LUMINA_LOG_ERROR("Failed to compile ImGui pixel shader to SPIR-V");
+				return false;
+			}
 
-            nvrhi::ShaderDesc ps_desc;
-            ps_desc.shaderType = nvrhi::ShaderType::Pixel;
-            ps_desc.debugName = "ImGui PS";
+			nvrhi::ShaderDesc psDesc;
+			psDesc.shaderType = nvrhi::ShaderType::Pixel;
+			psDesc.debugName = "ImGui PS";
 
-            s_pixel_shader = s_device->createShader(ps_desc, ps_spirv.data(), ps_spirv.size());
-            if (!s_pixel_shader)
-            {
-                LUMINA_LOG_ERROR("Failed to create ImGui pixel shader (SPIR-V)");
-                return false;
-            }
+			s_PixelShader = s_Device->createShader(psDesc, psSPIRV.data(), psSPIRV.size());
+			if (!s_PixelShader)
+			{
+				LUMINA_LOG_ERROR("Failed to create ImGui pixel shader (SPIR-V)");
+				return false;
+			}
 
-            return true;
+			return true;
 #else
-            LUMINA_LOG_ERROR("Vulkan shader compilation not supported on this platform");
-            return false;
+			LUMINA_LOG_ERROR("Vulkan shader compilation not supported on this platform");
+			return false;
 #endif
-        }
+		}
 
 #ifdef LUMINA_PLATFORM_WINDOWS
-        // Compile HLSL shaders for D3D12
-        ID3DBlob* vs_blob = nullptr;
-        ID3DBlob* error_blob = nullptr;
+		// Compile HLSL shaders for D3D12
+		ID3DBlob* vsBlob = nullptr;
+		ID3DBlob* errorBlob = nullptr;
 
-        HRESULT hr = D3DCompile(
-            s_imgui_shader_hlsl_d3d12,
-            strlen(s_imgui_shader_hlsl_d3d12),
-            "imgui_vs",
-            nullptr,
-            nullptr,
-            "VSMain",
-            "vs_5_0",
-            D3DCOMPILE_OPTIMIZATION_LEVEL3,
-            0,
-            &vs_blob,
-            &error_blob);
+		HRESULT hr = D3DCompile(
+			s_ImGuiShaderHLSLD3D12,
+			strlen(s_ImGuiShaderHLSLD3D12),
+			"imgui_vs",
+			nullptr,
+			nullptr,
+			"VSMain",
+			"vs_5_0",
+			D3DCOMPILE_OPTIMIZATION_LEVEL3,
+			0,
+			&vsBlob,
+			&errorBlob);
 
-        if (FAILED(hr))
-        {
-            if (error_blob)
-            {
-                LUMINA_LOG_ERROR("Failed to compile ImGui vertex shader: {}", (char*)error_blob->GetBufferPointer());
-                error_blob->Release();
-            }
-            return false;
-        }
+		if (FAILED(hr))
+		{
+			if (errorBlob)
+			{
+				LUMINA_LOG_ERROR("Failed to compile ImGui vertex shader: {}", (char*)errorBlob->GetBufferPointer());
+				errorBlob->Release();
+			}
+			return false;
+		}
 
-        nvrhi::ShaderDesc vs_desc;
-        vs_desc.shaderType = nvrhi::ShaderType::Vertex;
-        vs_desc.debugName = "ImGui VS";
+		nvrhi::ShaderDesc vsDesc;
+		vsDesc.shaderType = nvrhi::ShaderType::Vertex;
+		vsDesc.debugName = "ImGui VS";
 
-        s_vertex_shader = s_device->createShader(vs_desc, vs_blob->GetBufferPointer(), vs_blob->GetBufferSize());
-        vs_blob->Release();
+		s_VertexShader = s_Device->createShader(vsDesc, vsBlob->GetBufferPointer(), vsBlob->GetBufferSize());
+		vsBlob->Release();
 
-        if (!s_vertex_shader)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui vertex shader");
-            return false;
-        }
+		if (!s_VertexShader)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui vertex shader");
+			return false;
+		}
 
-        // Compile pixel shader
-        ID3DBlob* ps_blob = nullptr;
+		// Compile pixel shader
+		ID3DBlob* psBlob = nullptr;
 
-        hr = D3DCompile(
-            s_imgui_shader_hlsl_d3d12,
-            strlen(s_imgui_shader_hlsl_d3d12),
-            "imgui_ps",
-            nullptr,
-            nullptr,
-            "PSMain",
-            "ps_5_0",
-            D3DCOMPILE_OPTIMIZATION_LEVEL3,
-            0,
-            &ps_blob,
-            &error_blob);
+		hr = D3DCompile(
+			s_ImGuiShaderHLSLD3D12,
+			strlen(s_ImGuiShaderHLSLD3D12),
+			"imgui_ps",
+			nullptr,
+			nullptr,
+			"PSMain",
+			"ps_5_0",
+			D3DCOMPILE_OPTIMIZATION_LEVEL3,
+			0,
+			&psBlob,
+			&errorBlob);
 
-        if (FAILED(hr))
-        {
-            if (error_blob)
-            {
-                LUMINA_LOG_ERROR("Failed to compile ImGui pixel shader: {}", (char*)error_blob->GetBufferPointer());
-                error_blob->Release();
-            }
-            return false;
-        }
+		if (FAILED(hr))
+		{
+			if (errorBlob)
+			{
+				LUMINA_LOG_ERROR("Failed to compile ImGui pixel shader: {}", (char*)errorBlob->GetBufferPointer());
+				errorBlob->Release();
+			}
+			return false;
+		}
 
-        nvrhi::ShaderDesc ps_desc;
-        ps_desc.shaderType = nvrhi::ShaderType::Pixel;
-        ps_desc.debugName = "ImGui PS";
+		nvrhi::ShaderDesc psDesc;
+		psDesc.shaderType = nvrhi::ShaderType::Pixel;
+		psDesc.debugName = "ImGui PS";
 
-        s_pixel_shader = s_device->createShader(ps_desc, ps_blob->GetBufferPointer(), ps_blob->GetBufferSize());
-        ps_blob->Release();
+		s_PixelShader = s_Device->createShader(psDesc, psBlob->GetBufferPointer(), psBlob->GetBufferSize());
+		psBlob->Release();
 
-        if (!s_pixel_shader)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui pixel shader");
-            return false;
-        }
+		if (!s_PixelShader)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui pixel shader");
+			return false;
+		}
 
-        return true;
+		return true;
 #else
-        LUMINA_LOG_ERROR("ImGui NVRHI shader compilation not yet implemented for this platform");
-        return false;
+		LUMINA_LOG_ERROR("ImGui NVRHI shader compilation not yet implemented for this platform");
+		return false;
 #endif
-    }
-
-    static bool create_pipeline()
-    {
-        // Create input layout
-        nvrhi::VertexAttributeDesc vertex_attributes[] = {
-            nvrhi::VertexAttributeDesc()
-                .setName("POSITION")
-                .setFormat(nvrhi::Format::RG32_FLOAT)
-                .setOffset(offsetof(ImDrawVert, pos))
-                .setElementStride(sizeof(ImDrawVert)),
-            nvrhi::VertexAttributeDesc()
-                .setName("TEXCOORD")
-                .setFormat(nvrhi::Format::RG32_FLOAT)
-                .setOffset(offsetof(ImDrawVert, uv))
-                .setElementStride(sizeof(ImDrawVert)),
-            nvrhi::VertexAttributeDesc()
-                .setName("COLOR")
-                .setFormat(nvrhi::Format::RGBA8_UNORM)
-                .setOffset(offsetof(ImDrawVert, col))
-                .setElementStride(sizeof(ImDrawVert)),
-        };
-
-        s_input_layout = s_device->createInputLayout(vertex_attributes, 3, s_vertex_shader);
-        if (!s_input_layout)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui input layout");
-            return false;
-        }
-
-        // Create binding layout
-        nvrhi::BindingLayoutDesc binding_layout_desc;
-        binding_layout_desc.visibility = nvrhi::ShaderType::All;
-
-        // For Vulkan, set custom binding offsets so resources map to consecutive bindings
-        // Shader expects: binding 0 = constant buffer, binding 1 = texture, binding 2 = sampler
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            nvrhi::VulkanBindingOffsets offsets;
-            offsets.setConstantBufferOffset(0);   // cb(0) -> binding 0
-            offsets.setShaderResourceOffset(1);   // t(0) -> binding 1
-            offsets.setSamplerOffset(2);          // s(0) -> binding 2
-            binding_layout_desc.setBindingOffsets(offsets);
-        }
-
-        binding_layout_desc.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
-        binding_layout_desc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
-        binding_layout_desc.addItem(nvrhi::BindingLayoutItem::Sampler(0));
-
-        s_binding_layout = s_device->createBindingLayout(binding_layout_desc);
-        if (!s_binding_layout)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui binding layout");
-            return false;
-        }
-
-        // Create constant buffer (non-volatile since we only write once per frame)
-        nvrhi::BufferDesc cb_desc;
-        cb_desc.byteSize = sizeof(float) * 16;
-        cb_desc.isConstantBuffer = true;
-        cb_desc.isVolatile = false;
-        cb_desc.debugName = "ImGui Constant Buffer";
-        cb_desc.initialState = nvrhi::ResourceStates::ConstantBuffer;
-        cb_desc.keepInitialState = true;
-
-        s_constant_buffer = s_device->createBuffer(cb_desc);
-        if (!s_constant_buffer)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui constant buffer");
-            return false;
-        }
-
-        // Create sampler
-        nvrhi::SamplerDesc sampler_desc;
-        sampler_desc.setAllFilters(true);
-        sampler_desc.setAllAddressModes(nvrhi::SamplerAddressMode::Wrap);
-
-        s_font_sampler = s_device->createSampler(sampler_desc);
-        if (!s_font_sampler)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui sampler");
-            return false;
-        }
-
-        // Create binding set
-        nvrhi::BindingSetDesc binding_set_desc;
-        binding_set_desc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, s_constant_buffer));
-        binding_set_desc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, s_font_texture));
-        binding_set_desc.addItem(nvrhi::BindingSetItem::Sampler(0, s_font_sampler));
-
-        s_binding_set = s_device->createBindingSet(binding_set_desc, s_binding_layout);
-        if (!s_binding_set)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui binding set");
-            return false;
-        }
-
-        // Create graphics pipeline
-        nvrhi::GraphicsPipelineDesc pipeline_desc;
-        pipeline_desc.inputLayout = s_input_layout;
-        pipeline_desc.VS = s_vertex_shader;
-        pipeline_desc.PS = s_pixel_shader;
-        pipeline_desc.primType = nvrhi::PrimitiveType::TriangleList;
-        pipeline_desc.addBindingLayout(s_binding_layout);
-
-        // Blending
-        pipeline_desc.renderState.blendState.targets[0].blendEnable = true;
-        pipeline_desc.renderState.blendState.targets[0].srcBlend = nvrhi::BlendFactor::SrcAlpha;
-        pipeline_desc.renderState.blendState.targets[0].destBlend = nvrhi::BlendFactor::InvSrcAlpha;
-        pipeline_desc.renderState.blendState.targets[0].blendOp = nvrhi::BlendOp::Add;
-        pipeline_desc.renderState.blendState.targets[0].srcBlendAlpha = nvrhi::BlendFactor::One;
-        pipeline_desc.renderState.blendState.targets[0].destBlendAlpha = nvrhi::BlendFactor::InvSrcAlpha;
-        pipeline_desc.renderState.blendState.targets[0].blendOpAlpha = nvrhi::BlendOp::Add;
-
-        // Rasterizer
-        pipeline_desc.renderState.rasterState.cullMode = nvrhi::RasterCullMode::None;
-        pipeline_desc.renderState.rasterState.fillMode = nvrhi::RasterFillMode::Solid;
-        pipeline_desc.renderState.rasterState.scissorEnable = true;
-
-        // Depth
-        pipeline_desc.renderState.depthStencilState.depthTestEnable = false;
-        pipeline_desc.renderState.depthStencilState.depthWriteEnable = false;
-
-        nvrhi::FramebufferInfo fb_info;
-        fb_info.addColorFormat(s_render_target_format);
-
-        s_pipeline = s_device->createGraphicsPipeline(pipeline_desc, fb_info);
-        if (!s_pipeline)
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui graphics pipeline");
-            return false;
-        }
-
-        return true;
-    }
-
-    static nvrhi::BindingSetHandle get_or_create_texture_binding(nvrhi::ITexture* texture)
-    {
-        // Check cache first
-        auto it = s_texture_binding_sets.find(texture);
-        if (it != s_texture_binding_sets.end())
-            return it->second;
-
-        // Create new binding set for this texture
-        nvrhi::BindingSetDesc binding_set_desc;
-        binding_set_desc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, s_constant_buffer));
-        binding_set_desc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, texture));
-        binding_set_desc.addItem(nvrhi::BindingSetItem::Sampler(0, s_font_sampler));
-
-        nvrhi::BindingSetHandle binding_set = s_device->createBindingSet(binding_set_desc, s_binding_layout);
-        if (binding_set)
-        {
-            s_texture_binding_sets[texture] = binding_set;
-        }
-        return binding_set;
-    }
-
-    static bool create_buffers(uint32_t vertex_count, uint32_t index_count)
-    {
-        // Create or resize vertex buffer
-        if (!s_vertex_buffer || s_vertex_buffer_size < vertex_count)
-        {
-            s_vertex_buffer_size = vertex_count + 5000;
-
-            nvrhi::BufferDesc vb_desc;
-            vb_desc.byteSize = s_vertex_buffer_size * sizeof(ImDrawVert);
-            vb_desc.isVertexBuffer = true;
-            vb_desc.debugName = "ImGui Vertex Buffer";
-            vb_desc.initialState = nvrhi::ResourceStates::CopyDest;
-            vb_desc.keepInitialState = true;
-
-            s_vertex_buffer = s_device->createBuffer(vb_desc);
-            if (!s_vertex_buffer)
-            {
-                LUMINA_LOG_ERROR("Failed to create ImGui vertex buffer");
-                return false;
-            }
-        }
-
-        // Create or resize index buffer
-        if (!s_index_buffer || s_index_buffer_size < index_count)
-        {
-            s_index_buffer_size = index_count + 10000;
-
-            nvrhi::BufferDesc ib_desc;
-            ib_desc.byteSize = s_index_buffer_size * sizeof(ImDrawIdx);
-            ib_desc.isIndexBuffer = true;
-            ib_desc.debugName = "ImGui Index Buffer";
-            ib_desc.initialState = nvrhi::ResourceStates::CopyDest;
-            ib_desc.keepInitialState = true;
-
-            s_index_buffer = s_device->createBuffer(ib_desc);
-            if (!s_index_buffer)
-            {
-                LUMINA_LOG_ERROR("Failed to create ImGui index buffer");
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    bool init(const imgui_nvrhi_config& config)
-    {
-        s_device = config.device;
-        s_render_target_format = config.render_target_format;
-        s_vertex_buffer_size = config.initial_vertex_buffer_size;
-        s_index_buffer_size = config.initial_index_buffer_size;
-        s_graphics_api = s_device->getGraphicsAPI();
-
-        if (!create_shaders())
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui shaders");
-            return false;
-        }
-
-        if (!create_font_texture())
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui font texture");
-            return false;
-        }
-
-        if (!create_pipeline())
-        {
-            LUMINA_LOG_ERROR("Failed to create ImGui pipeline");
-            return false;
-        }
-
-        LUMINA_LOG_INFO("ImGui NVRHI backend initialized");
-        return true;
-    }
-
-    void shutdown()
-    {
-        s_texture_binding_sets.clear();
-        s_binding_set = nullptr;
-        s_font_sampler = nullptr;
-        s_font_texture = nullptr;
-        s_constant_buffer = nullptr;
-        s_index_buffer = nullptr;
-        s_vertex_buffer = nullptr;
-        s_pipeline = nullptr;
-        s_binding_layout = nullptr;
-        s_input_layout = nullptr;
-        s_pixel_shader = nullptr;
-        s_vertex_shader = nullptr;
-        s_device = nullptr;
-
-        ImGui::GetIO().Fonts->SetTexID(nullptr);
-
-        LUMINA_LOG_INFO("ImGui NVRHI backend shutdown");
-    }
-
-    void new_frame()
-    {
-        // Nothing to do here for NVRHI backend
-    }
-
-    void render_draw_data(nvrhi::ICommandList* command_list, nvrhi::IFramebuffer* framebuffer, ImDrawData* draw_data)
-    {
-        LUMINA_PROFILE_SCOPE_NC("ImGui::RenderDrawData", profiler::colors::ui);
-
-        if (!draw_data || draw_data->TotalVtxCount == 0)
-            return;
-
-        // Create/resize buffers if needed
-        if (!create_buffers(static_cast<uint32_t>(draw_data->TotalVtxCount), static_cast<uint32_t>(draw_data->TotalIdxCount)))
-            return;
-
-        // Upload vertex/index data
-        ImDrawVert* vtx_dst = nullptr;
-        ImDrawIdx* idx_dst = nullptr;
-
-        std::vector<ImDrawVert> vertex_data(draw_data->TotalVtxCount);
-        std::vector<ImDrawIdx> index_data(draw_data->TotalIdxCount);
-
-        vtx_dst = vertex_data.data();
-        idx_dst = index_data.data();
-
-        for (int n = 0; n < draw_data->CmdListsCount; n++)
-        {
-            const ImDrawList* cmd_list = draw_data->CmdLists[n];
-            memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-            memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-            vtx_dst += cmd_list->VtxBuffer.Size;
-            idx_dst += cmd_list->IdxBuffer.Size;
-        }
-
-        command_list->writeBuffer(s_vertex_buffer, vertex_data.data(), vertex_data.size() * sizeof(ImDrawVert));
-        command_list->writeBuffer(s_index_buffer, index_data.data(), index_data.size() * sizeof(ImDrawIdx));
-
-        // Setup orthographic projection matrix
-        float L = draw_data->DisplayPos.x;
-        float R = draw_data->DisplayPos.x + draw_data->DisplaySize.x;
-        float T = draw_data->DisplayPos.y;
-        float B = draw_data->DisplayPos.y + draw_data->DisplaySize.y;
-
-        float mvp[4][4] = {
-            { 2.0f / (R - L),     0.0f,              0.0f, 0.0f },
-            { 0.0f,               2.0f / (T - B),    0.0f, 0.0f },
-            { 0.0f,               0.0f,              0.5f, 0.0f },
-            { (R + L) / (L - R),  (T + B) / (B - T), 0.5f, 1.0f },
-        };
-
-        command_list->writeBuffer(s_constant_buffer, mvp, sizeof(mvp));
-
-        // Setup viewport
-        nvrhi::Viewport viewport;
-        viewport.minX = 0;
-        viewport.minY = 0;
-        viewport.maxX = draw_data->DisplaySize.x;
-        viewport.maxY = draw_data->DisplaySize.y;
-        viewport.minZ = 0.0f;
-        viewport.maxZ = 1.0f;
-
-        // Set graphics state
-        nvrhi::GraphicsState state;
-        state.pipeline = s_pipeline;
-        state.framebuffer = framebuffer;
-        state.viewport.addViewport(viewport);
-        state.viewport.addScissorRect(nvrhi::Rect(0, static_cast<int>(draw_data->DisplaySize.x), 0, static_cast<int>(draw_data->DisplaySize.y)));
-        state.addBindingSet(s_binding_set);
-        state.addVertexBuffer({ s_vertex_buffer, 0, 0 });
-        state.indexBuffer = { s_index_buffer, nvrhi::Format::R16_UINT, 0 };
-
-        // Track current texture to minimize binding set changes
-        nvrhi::ITexture* current_texture = s_font_texture.Get();
-
-        command_list->setGraphicsState(state);
-
-        // Render draw lists
-        ImVec2 clip_off = draw_data->DisplayPos;
-        int global_vtx_offset = 0;
-        int global_idx_offset = 0;
-
-        for (int n = 0; n < draw_data->CmdListsCount; n++)
-        {
-            const ImDrawList* cmd_list = draw_data->CmdLists[n];
-
-            for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
-            {
-                const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
-
-                if (pcmd->UserCallback)
-                {
-                    pcmd->UserCallback(cmd_list, pcmd);
-                }
-                else
-                {
-                    // Apply scissor rect
-                    ImVec2 clip_min(pcmd->ClipRect.x - clip_off.x, pcmd->ClipRect.y - clip_off.y);
-                    ImVec2 clip_max(pcmd->ClipRect.z - clip_off.x, pcmd->ClipRect.w - clip_off.y);
-
-                    if (clip_max.x <= clip_min.x || clip_max.y <= clip_min.y)
-                        continue;
-
-                    nvrhi::Rect scissor;
-                    scissor.minX = static_cast<int>(clip_min.x);
-                    scissor.minY = static_cast<int>(clip_min.y);
-                    scissor.maxX = static_cast<int>(clip_max.x);
-                    scissor.maxY = static_cast<int>(clip_max.y);
-
-                    state.viewport.scissorRects[0] = scissor;
-
-                    // Handle custom textures (cast ImTextureID back to pointer via uintptr_t)
-                    nvrhi::ITexture* texture = (nvrhi::ITexture*)(uintptr_t)pcmd->GetTexID();
-                    if (texture != current_texture)
-                    {
-                        current_texture = texture;
-                        nvrhi::BindingSetHandle binding_set = get_or_create_texture_binding(texture);
-                        if (binding_set)
-                        {
-                            state.bindings[0] = { binding_set };
-                        }
-                    }
-
-                    command_list->setGraphicsState(state);
-
-                    // Draw
-                    nvrhi::DrawArguments args;
-                    args.vertexCount = pcmd->ElemCount;
-                    args.startIndexLocation = pcmd->IdxOffset + global_idx_offset;
-                    args.startVertexLocation = pcmd->VtxOffset + global_vtx_offset;
-
-                    command_list->drawIndexed(args);
-                }
-            }
-
-            global_idx_offset += cmd_list->IdxBuffer.Size;
-            global_vtx_offset += cmd_list->VtxBuffer.Size;
-        }
-    }
-
-    // =========================================================================
-    // Multi-viewport support
-    // =========================================================================
-
-    // Native handles cached from graphics_device
-    static vulkan_native_handles s_vk_handles;
+	}
+
+	static bool CreatePipeline()
+	{
+		// Create input layout
+		nvrhi::VertexAttributeDesc vertexAttributes[] = {
+			nvrhi::VertexAttributeDesc()
+				.setName("POSITION")
+				.setFormat(nvrhi::Format::RG32_FLOAT)
+				.setOffset(offsetof(ImDrawVert, pos))
+				.setElementStride(sizeof(ImDrawVert)),
+			nvrhi::VertexAttributeDesc()
+				.setName("TEXCOORD")
+				.setFormat(nvrhi::Format::RG32_FLOAT)
+				.setOffset(offsetof(ImDrawVert, uv))
+				.setElementStride(sizeof(ImDrawVert)),
+			nvrhi::VertexAttributeDesc()
+				.setName("COLOR")
+				.setFormat(nvrhi::Format::RGBA8_UNORM)
+				.setOffset(offsetof(ImDrawVert, col))
+				.setElementStride(sizeof(ImDrawVert)),
+		};
+
+		s_InputLayout = s_Device->createInputLayout(vertexAttributes, 3, s_VertexShader);
+		if (!s_InputLayout)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui input layout");
+			return false;
+		}
+
+		// Create binding layout
+		nvrhi::BindingLayoutDesc bindingLayoutDesc;
+		bindingLayoutDesc.visibility = nvrhi::ShaderType::All;
+
+		// For Vulkan, set custom binding offsets so resources map to consecutive bindings
+		// Shader expects: binding 0 = constant buffer, binding 1 = texture, binding 2 = sampler
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			nvrhi::VulkanBindingOffsets offsets;
+			offsets.setConstantBufferOffset(0);   // cb(0) -> binding 0
+			offsets.setShaderResourceOffset(1);   // t(0) -> binding 1
+			offsets.setSamplerOffset(2);          // s(0) -> binding 2
+			bindingLayoutDesc.setBindingOffsets(offsets);
+		}
+
+		bindingLayoutDesc.addItem(nvrhi::BindingLayoutItem::ConstantBuffer(0));
+		bindingLayoutDesc.addItem(nvrhi::BindingLayoutItem::Texture_SRV(0));
+		bindingLayoutDesc.addItem(nvrhi::BindingLayoutItem::Sampler(0));
+
+		s_BindingLayout = s_Device->createBindingLayout(bindingLayoutDesc);
+		if (!s_BindingLayout)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui binding layout");
+			return false;
+		}
+
+		// Create constant buffer (non-volatile since we only write once per frame)
+		nvrhi::BufferDesc cbDesc;
+		cbDesc.byteSize = sizeof(float) * 16;
+		cbDesc.isConstantBuffer = true;
+		cbDesc.isVolatile = false;
+		cbDesc.debugName = "ImGui Constant Buffer";
+		cbDesc.initialState = nvrhi::ResourceStates::ConstantBuffer;
+		cbDesc.keepInitialState = true;
+
+		s_ConstantBuffer = s_Device->createBuffer(cbDesc);
+		if (!s_ConstantBuffer)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui constant buffer");
+			return false;
+		}
+
+		// Create sampler
+		nvrhi::SamplerDesc samplerDesc;
+		samplerDesc.setAllFilters(true);
+		samplerDesc.setAllAddressModes(nvrhi::SamplerAddressMode::Wrap);
+
+		s_FontSampler = s_Device->createSampler(samplerDesc);
+		if (!s_FontSampler)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui sampler");
+			return false;
+		}
+
+		// Create binding set
+		nvrhi::BindingSetDesc bindingSetDesc;
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, s_ConstantBuffer));
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, s_FontTexture));
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, s_FontSampler));
+
+		s_BindingSet = s_Device->createBindingSet(bindingSetDesc, s_BindingLayout);
+		if (!s_BindingSet)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui binding set");
+			return false;
+		}
+
+		// Create graphics pipeline
+		nvrhi::GraphicsPipelineDesc pipelineDesc;
+		pipelineDesc.inputLayout = s_InputLayout;
+		pipelineDesc.VS = s_VertexShader;
+		pipelineDesc.PS = s_PixelShader;
+		pipelineDesc.primType = nvrhi::PrimitiveType::TriangleList;
+		pipelineDesc.addBindingLayout(s_BindingLayout);
+
+		// Blending
+		pipelineDesc.renderState.blendState.targets[0].blendEnable = true;
+		pipelineDesc.renderState.blendState.targets[0].srcBlend = nvrhi::BlendFactor::SrcAlpha;
+		pipelineDesc.renderState.blendState.targets[0].destBlend = nvrhi::BlendFactor::InvSrcAlpha;
+		pipelineDesc.renderState.blendState.targets[0].blendOp = nvrhi::BlendOp::Add;
+		pipelineDesc.renderState.blendState.targets[0].srcBlendAlpha = nvrhi::BlendFactor::One;
+		pipelineDesc.renderState.blendState.targets[0].destBlendAlpha = nvrhi::BlendFactor::InvSrcAlpha;
+		pipelineDesc.renderState.blendState.targets[0].blendOpAlpha = nvrhi::BlendOp::Add;
+
+		// Rasterizer
+		pipelineDesc.renderState.rasterState.cullMode = nvrhi::RasterCullMode::None;
+		pipelineDesc.renderState.rasterState.fillMode = nvrhi::RasterFillMode::Solid;
+		pipelineDesc.renderState.rasterState.scissorEnable = true;
+
+		// Depth
+		pipelineDesc.renderState.depthStencilState.depthTestEnable = false;
+		pipelineDesc.renderState.depthStencilState.depthWriteEnable = false;
+
+		nvrhi::FramebufferInfo fbInfo;
+		fbInfo.addColorFormat(s_RenderTargetFormat);
+
+		s_Pipeline = s_Device->createGraphicsPipeline(pipelineDesc, fbInfo);
+		if (!s_Pipeline)
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui graphics pipeline");
+			return false;
+		}
+
+		return true;
+	}
+
+	static nvrhi::BindingSetHandle GetOrCreateTextureBinding(nvrhi::ITexture* texture)
+	{
+		// Check cache first
+		auto it = s_TextureBindingSets.find(texture);
+		if (it != s_TextureBindingSets.end())
+			return it->second;
+
+		// Create new binding set for this texture
+		nvrhi::BindingSetDesc bindingSetDesc;
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::ConstantBuffer(0, s_ConstantBuffer));
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::Texture_SRV(0, texture));
+		bindingSetDesc.addItem(nvrhi::BindingSetItem::Sampler(0, s_FontSampler));
+
+		nvrhi::BindingSetHandle bindingSet = s_Device->createBindingSet(bindingSetDesc, s_BindingLayout);
+		if (bindingSet)
+		{
+			s_TextureBindingSets[texture] = bindingSet;
+		}
+		return bindingSet;
+	}
+
+	static bool CreateBuffers(uint32_t vertexCount, uint32_t indexCount)
+	{
+		// Create or resize vertex buffer
+		if (!s_VertexBuffer || s_VertexBufferSize < vertexCount)
+		{
+			s_VertexBufferSize = vertexCount + 5000;
+
+			nvrhi::BufferDesc vbDesc;
+			vbDesc.byteSize = s_VertexBufferSize * sizeof(ImDrawVert);
+			vbDesc.isVertexBuffer = true;
+			vbDesc.debugName = "ImGui Vertex Buffer";
+			vbDesc.initialState = nvrhi::ResourceStates::CopyDest;
+			vbDesc.keepInitialState = true;
+
+			s_VertexBuffer = s_Device->createBuffer(vbDesc);
+			if (!s_VertexBuffer)
+			{
+				LUMINA_LOG_ERROR("Failed to create ImGui vertex buffer");
+				return false;
+			}
+		}
+
+		// Create or resize index buffer
+		if (!s_IndexBuffer || s_IndexBufferSize < indexCount)
+		{
+			s_IndexBufferSize = indexCount + 10000;
+
+			nvrhi::BufferDesc ibDesc;
+			ibDesc.byteSize = s_IndexBufferSize * sizeof(ImDrawIdx);
+			ibDesc.isIndexBuffer = true;
+			ibDesc.debugName = "ImGui Index Buffer";
+			ibDesc.initialState = nvrhi::ResourceStates::CopyDest;
+			ibDesc.keepInitialState = true;
+
+			s_IndexBuffer = s_Device->createBuffer(ibDesc);
+			if (!s_IndexBuffer)
+			{
+				LUMINA_LOG_ERROR("Failed to create ImGui index buffer");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	bool Init(const ImGuiNvrhiConfig& config)
+	{
+		s_Device = config.Device;
+		s_RenderTargetFormat = config.RenderTargetFormat;
+		s_VertexBufferSize = config.InitialVertexBufferSize;
+		s_IndexBufferSize = config.InitialIndexBufferSize;
+		s_GraphicsAPI = s_Device->getGraphicsAPI();
+
+		if (!CreateShaders())
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui shaders");
+			return false;
+		}
+
+		if (!CreateFontTexture())
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui font texture");
+			return false;
+		}
+
+		if (!CreatePipeline())
+		{
+			LUMINA_LOG_ERROR("Failed to create ImGui pipeline");
+			return false;
+		}
+
+		LUMINA_LOG_INFO("ImGui NVRHI backend initialized");
+		return true;
+	}
+
+	void Shutdown()
+	{
+		s_TextureBindingSets.clear();
+		s_BindingSet = nullptr;
+		s_FontSampler = nullptr;
+		s_FontTexture = nullptr;
+		s_ConstantBuffer = nullptr;
+		s_IndexBuffer = nullptr;
+		s_VertexBuffer = nullptr;
+		s_Pipeline = nullptr;
+		s_BindingLayout = nullptr;
+		s_InputLayout = nullptr;
+		s_PixelShader = nullptr;
+		s_VertexShader = nullptr;
+		s_Device = nullptr;
+
+		ImGui::GetIO().Fonts->SetTexID(nullptr);
+
+		LUMINA_LOG_INFO("ImGui NVRHI backend shutdown");
+	}
+
+	void NewFrame()
+	{
+		// Nothing to do here for NVRHI backend
+	}
+
+	void RenderDrawData(nvrhi::ICommandList* commandList, nvrhi::IFramebuffer* framebuffer, ImDrawData* drawData)
+	{
+		LUMINA_PROFILE_SCOPE_NC("ImGui::RenderDrawData", Profiler::Colors::UI);
+
+		if (!drawData || drawData->TotalVtxCount == 0)
+			return;
+
+		// Create/resize buffers if needed
+		if (!CreateBuffers(static_cast<uint32_t>(drawData->TotalVtxCount), static_cast<uint32_t>(drawData->TotalIdxCount)))
+			return;
+
+		// Upload vertex/index data
+		ImDrawVert* vtxDst = nullptr;
+		ImDrawIdx* idxDst = nullptr;
+
+		std::vector<ImDrawVert> vertexData(drawData->TotalVtxCount);
+		std::vector<ImDrawIdx> indexData(drawData->TotalIdxCount);
+
+		vtxDst = vertexData.data();
+		idxDst = indexData.data();
+
+		for (int n = 0; n < drawData->CmdListsCount; n++)
+		{
+			const ImDrawList* cmdList = drawData->CmdLists[n];
+			memcpy(vtxDst, cmdList->VtxBuffer.Data, cmdList->VtxBuffer.Size * sizeof(ImDrawVert));
+			memcpy(idxDst, cmdList->IdxBuffer.Data, cmdList->IdxBuffer.Size * sizeof(ImDrawIdx));
+			vtxDst += cmdList->VtxBuffer.Size;
+			idxDst += cmdList->IdxBuffer.Size;
+		}
+
+		commandList->writeBuffer(s_VertexBuffer, vertexData.data(), vertexData.size() * sizeof(ImDrawVert));
+		commandList->writeBuffer(s_IndexBuffer, indexData.data(), indexData.size() * sizeof(ImDrawIdx));
+
+		// Setup orthographic projection matrix
+		float L = drawData->DisplayPos.x;
+		float R = drawData->DisplayPos.x + drawData->DisplaySize.x;
+		float T = drawData->DisplayPos.y;
+		float B = drawData->DisplayPos.y + drawData->DisplaySize.y;
+
+		float mvp[4][4] = {
+			{ 2.0f / (R - L),     0.0f,              0.0f, 0.0f },
+			{ 0.0f,               2.0f / (T - B),    0.0f, 0.0f },
+			{ 0.0f,               0.0f,              0.5f, 0.0f },
+			{ (R + L) / (L - R),  (T + B) / (B - T), 0.5f, 1.0f },
+		};
+
+		commandList->writeBuffer(s_ConstantBuffer, mvp, sizeof(mvp));
+
+		// Setup viewport
+		nvrhi::Viewport viewport;
+		viewport.minX = 0;
+		viewport.minY = 0;
+		viewport.maxX = drawData->DisplaySize.x;
+		viewport.maxY = drawData->DisplaySize.y;
+		viewport.minZ = 0.0f;
+		viewport.maxZ = 1.0f;
+
+		// Set graphics state
+		nvrhi::GraphicsState state;
+		state.pipeline = s_Pipeline;
+		state.framebuffer = framebuffer;
+		state.viewport.addViewport(viewport);
+		state.viewport.addScissorRect(nvrhi::Rect(0, static_cast<int>(drawData->DisplaySize.x), 0, static_cast<int>(drawData->DisplaySize.y)));
+		state.addBindingSet(s_BindingSet);
+		state.addVertexBuffer({ s_VertexBuffer, 0, 0 });
+		state.indexBuffer = { s_IndexBuffer, nvrhi::Format::R16_UINT, 0 };
+
+		// Track current texture to minimize binding set changes
+		nvrhi::ITexture* currentTexture = s_FontTexture.Get();
+
+		commandList->setGraphicsState(state);
+
+		// Render draw lists
+		ImVec2 clipOff = drawData->DisplayPos;
+		int globalVtxOffset = 0;
+		int globalIdxOffset = 0;
+
+		for (int n = 0; n < drawData->CmdListsCount; n++)
+		{
+			const ImDrawList* cmdList = drawData->CmdLists[n];
+
+			for (int cmdI = 0; cmdI < cmdList->CmdBuffer.Size; cmdI++)
+			{
+				const ImDrawCmd* pcmd = &cmdList->CmdBuffer[cmdI];
+
+				if (pcmd->UserCallback)
+				{
+					pcmd->UserCallback(cmdList, pcmd);
+				}
+				else
+				{
+					// Apply scissor rect
+					ImVec2 clipMin(pcmd->ClipRect.x - clipOff.x, pcmd->ClipRect.y - clipOff.y);
+					ImVec2 clipMax(pcmd->ClipRect.z - clipOff.x, pcmd->ClipRect.w - clipOff.y);
+
+					if (clipMax.x <= clipMin.x || clipMax.y <= clipMin.y)
+						continue;
+
+					nvrhi::Rect scissor;
+					scissor.minX = static_cast<int>(clipMin.x);
+					scissor.minY = static_cast<int>(clipMin.y);
+					scissor.maxX = static_cast<int>(clipMax.x);
+					scissor.maxY = static_cast<int>(clipMax.y);
+
+					state.viewport.scissorRects[0] = scissor;
+
+					// Handle custom textures (cast ImTextureID back to pointer via uintptr_t)
+					nvrhi::ITexture* texture = (nvrhi::ITexture*)(uintptr_t)pcmd->GetTexID();
+					if (texture != currentTexture)
+					{
+						currentTexture = texture;
+						nvrhi::BindingSetHandle bindingSet = GetOrCreateTextureBinding(texture);
+						if (bindingSet)
+						{
+							state.bindings[0] = { bindingSet };
+						}
+					}
+
+					commandList->setGraphicsState(state);
+
+					// Draw
+					nvrhi::DrawArguments args;
+					args.vertexCount = pcmd->ElemCount;
+					args.startIndexLocation = pcmd->IdxOffset + globalIdxOffset;
+					args.startVertexLocation = pcmd->VtxOffset + globalVtxOffset;
+
+					commandList->drawIndexed(args);
+				}
+			}
+
+			globalIdxOffset += cmdList->IdxBuffer.Size;
+			globalVtxOffset += cmdList->VtxBuffer.Size;
+		}
+	}
+
+	// =========================================================================
+	// Multi-viewport support
+	// =========================================================================
+
+	// Native handles cached from graphics_device
+	static VulkanNativeHandles s_VkHandles;
 #ifdef LUMINA_PLATFORM_WINDOWS
-    static d3d12_native_handles s_dx_handles;
+	static D3D12NativeHandles s_DxHandles;
 #endif
 
-    // Per-viewport renderer data stored in ImGuiViewport::RendererUserData
-    struct viewport_data
-    {
-        nvrhi::CommandListHandle command_list;
-        std::vector<nvrhi::TextureHandle> swapchain_textures;
-        std::vector<nvrhi::FramebufferHandle> framebuffers;
-        uint32_t width = 0;
-        uint32_t height = 0;
-        uint32_t backbuffer_count = 2;
-        uint32_t frame_index = 0;
-        uint32_t image_index = 0;
+	// Per-viewport renderer data stored in ImGuiViewport::RendererUserData
+	struct ViewportData
+	{
+		nvrhi::CommandListHandle CommandList;
+		std::vector<nvrhi::TextureHandle> SwapchainTextures;
+		std::vector<nvrhi::FramebufferHandle> Framebuffers;
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		uint32_t BackbufferCount = 2;
+		uint32_t FrameIndex = 0;
+		uint32_t ImageIndex = 0;
 
-        // Vulkan-specific
-        VkSurfaceKHR vk_surface = VK_NULL_HANDLE;
-        VkSwapchainKHR vk_swapchain = VK_NULL_HANDLE;
-        VkFormat vk_format = VK_FORMAT_UNDEFINED;
-        std::vector<VkImage> vk_images;
-        std::vector<VkFence> vk_fences;
+		// Vulkan-specific
+		VkSurfaceKHR VkSurface = VK_NULL_HANDLE;
+		VkSwapchainKHR VkSwapchain = VK_NULL_HANDLE;
+		VkFormat VkFormat = VK_FORMAT_UNDEFINED;
+		std::vector<VkImage> VkImages;
+		std::vector<VkFence> VkFences;
 
-        // D3D12-specific
+		// D3D12-specific
 #ifdef LUMINA_PLATFORM_WINDOWS
-        Microsoft::WRL::ComPtr<IDXGISwapChain4> dx_swapchain;
-        Microsoft::WRL::ComPtr<ID3D12Fence> dx_fence;
-        std::vector<uint64_t> dx_fence_values;
-        uint64_t dx_current_fence_value = 1;
-        HANDLE dx_fence_event = nullptr;
+		Microsoft::WRL::ComPtr<IDXGISwapChain4> DxSwapchain;
+		Microsoft::WRL::ComPtr<ID3D12Fence> DxFence;
+		std::vector<uint64_t> DxFenceValues;
+		uint64_t DxCurrentFenceValue = 1;
+		HANDLE DxFenceEvent = nullptr;
 #endif
-    };
+	};
 
-    // --- Vulkan viewport helpers ---
+	// --- Vulkan viewport helpers ---
 
-    static bool vk_create_viewport_swapchain(viewport_data* vd, uint32_t width, uint32_t height)
-    {
-        VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
-        VkPhysicalDevice physical = static_cast<VkPhysicalDevice>(s_vk_handles.physical_device);
-        VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+	static bool VkCreateViewportSwapchain(ViewportData* vd, uint32_t width, uint32_t height)
+	{
+		VkInstance instance = static_cast<VkInstance>(s_VkHandles.Instance);
+		VkPhysicalDevice physical = static_cast<VkPhysicalDevice>(s_VkHandles.PhysicalDevice);
+		VkDevice device = static_cast<VkDevice>(s_VkHandles.Device);
 
-        // Query surface capabilities
-        VkSurfaceCapabilitiesKHR caps;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, vd->vk_surface, &caps);
+		// Query surface capabilities
+		VkSurfaceCapabilitiesKHR caps;
+		vkGetPhysicalDeviceSurfaceCapabilitiesKHR(physical, vd->VkSurface, &caps);
 
-        uint32_t fmt_count;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->vk_surface, &fmt_count, nullptr);
-        std::vector<VkSurfaceFormatKHR> formats(fmt_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->vk_surface, &fmt_count, formats.data());
+		uint32_t fmtCount;
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->VkSurface, &fmtCount, nullptr);
+		std::vector<VkSurfaceFormatKHR> formats(fmtCount);
+		vkGetPhysicalDeviceSurfaceFormatsKHR(physical, vd->VkSurface, &fmtCount, formats.data());
 
-        // Prefer UNORM (matches main window)
-        VkSurfaceFormatKHR surface_format = formats[0];
-        for (const auto& f : formats)
-        {
-            if (f.format == VK_FORMAT_B8G8R8A8_UNORM && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
-            {
-                surface_format = f;
-                break;
-            }
-        }
-        vd->vk_format = surface_format.format;
+		// Prefer UNORM (matches main window)
+		VkSurfaceFormatKHR surfaceFormat = formats[0];
+		for (const auto& f : formats)
+		{
+			if (f.format == VK_FORMAT_B8G8R8A8_UNORM && f.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
+			{
+				surfaceFormat = f;
+				break;
+			}
+		}
+		vd->VkFormat = surfaceFormat.format;
 
-        VkExtent2D extent;
-        if (caps.currentExtent.width != UINT32_MAX)
-            extent = caps.currentExtent;
-        else
-        {
-            extent.width = std::max(caps.minImageExtent.width, std::min(caps.maxImageExtent.width, width));
-            extent.height = std::max(caps.minImageExtent.height, std::min(caps.maxImageExtent.height, height));
-        }
-        vd->width = extent.width;
-        vd->height = extent.height;
+		VkExtent2D extent;
+		if (caps.currentExtent.width != UINT32_MAX)
+			extent = caps.currentExtent;
+		else
+		{
+			extent.width = std::max(caps.minImageExtent.width, std::min(caps.maxImageExtent.width, width));
+			extent.height = std::max(caps.minImageExtent.height, std::min(caps.maxImageExtent.height, height));
+		}
+		vd->Width = extent.width;
+		vd->Height = extent.height;
 
-        uint32_t image_count = caps.minImageCount + 1;
-        if (caps.maxImageCount > 0 && image_count > caps.maxImageCount)
-            image_count = caps.maxImageCount;
-        vd->backbuffer_count = image_count;
+		uint32_t imageCount = caps.minImageCount + 1;
+		if (caps.maxImageCount > 0 && imageCount > caps.maxImageCount)
+			imageCount = caps.maxImageCount;
+		vd->BackbufferCount = imageCount;
 
-        VkSwapchainCreateInfoKHR sc_info{};
-        sc_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        sc_info.surface = vd->vk_surface;
-        sc_info.minImageCount = image_count;
-        sc_info.imageFormat = surface_format.format;
-        sc_info.imageColorSpace = surface_format.colorSpace;
-        sc_info.imageExtent = extent;
-        sc_info.imageArrayLayers = 1;
-        sc_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-        sc_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        sc_info.preTransform = caps.currentTransform;
-        sc_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        sc_info.presentMode = VK_PRESENT_MODE_FIFO_KHR;
-        sc_info.clipped = VK_TRUE;
+		VkSwapchainCreateInfoKHR scInfo{};
+		scInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+		scInfo.surface = vd->VkSurface;
+		scInfo.minImageCount = imageCount;
+		scInfo.imageFormat = surfaceFormat.format;
+		scInfo.imageColorSpace = surfaceFormat.colorSpace;
+		scInfo.imageExtent = extent;
+		scInfo.imageArrayLayers = 1;
+		scInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+		scInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+		scInfo.preTransform = caps.currentTransform;
+		scInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+		scInfo.presentMode = VK_PRESENT_MODE_FIFO_KHR;
+		scInfo.clipped = VK_TRUE;
 
-        if (vkCreateSwapchainKHR(device, &sc_info, nullptr, &vd->vk_swapchain) != VK_SUCCESS)
-        {
-            LUMINA_LOG_ERROR("Failed to create viewport Vulkan swapchain");
-            return false;
-        }
+		if (vkCreateSwapchainKHR(device, &scInfo, nullptr, &vd->VkSwapchain) != VK_SUCCESS)
+		{
+			LUMINA_LOG_ERROR("Failed to create viewport Vulkan swapchain");
+			return false;
+		}
 
-        // Get images
-        vkGetSwapchainImagesKHR(device, vd->vk_swapchain, &image_count, nullptr);
-        vd->vk_images.resize(image_count);
-        vkGetSwapchainImagesKHR(device, vd->vk_swapchain, &image_count, vd->vk_images.data());
-        vd->backbuffer_count = image_count;
+		// Get images
+		vkGetSwapchainImagesKHR(device, vd->VkSwapchain, &imageCount, nullptr);
+		vd->VkImages.resize(imageCount);
+		vkGetSwapchainImagesKHR(device, vd->VkSwapchain, &imageCount, vd->VkImages.data());
+		vd->BackbufferCount = imageCount;
 
-        // Create fences
-        vd->vk_fences.resize(image_count);
-        VkFenceCreateInfo fence_info{};
-        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
-        for (uint32_t i = 0; i < image_count; ++i)
-        {
-            if (vkCreateFence(device, &fence_info, nullptr, &vd->vk_fences[i]) != VK_SUCCESS)
-            {
-                LUMINA_LOG_ERROR("Failed to create viewport fence {}", i);
-                return false;
-            }
-        }
+		// Create fences
+		vd->VkFences.resize(imageCount);
+		VkFenceCreateInfo fenceInfo{};
+		fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+		fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		for (uint32_t i = 0; i < imageCount; ++i)
+		{
+			if (vkCreateFence(device, &fenceInfo, nullptr, &vd->VkFences[i]) != VK_SUCCESS)
+			{
+				LUMINA_LOG_ERROR("Failed to create viewport fence {}", i);
+				return false;
+			}
+		}
 
-        // Wrap as NVRHI textures/framebuffers
-        nvrhi::Format nvrhi_fmt = nvrhi::Format::BGRA8_UNORM;
-        if (vd->vk_format == VK_FORMAT_R8G8B8A8_SRGB || vd->vk_format == VK_FORMAT_B8G8R8A8_SRGB)
-            nvrhi_fmt = nvrhi::Format::SBGRA8_UNORM;
+		// Wrap as NVRHI textures/framebuffers
+		nvrhi::Format nvrhiFmt = nvrhi::Format::BGRA8_UNORM;
+		if (vd->VkFormat == VK_FORMAT_R8G8B8A8_SRGB || vd->VkFormat == VK_FORMAT_B8G8R8A8_SRGB)
+			nvrhiFmt = nvrhi::Format::SBGRA8_UNORM;
 
-        vd->swapchain_textures.resize(image_count);
-        vd->framebuffers.resize(image_count);
+		vd->SwapchainTextures.resize(imageCount);
+		vd->Framebuffers.resize(imageCount);
 
-        for (uint32_t i = 0; i < image_count; ++i)
-        {
-            nvrhi::TextureDesc td;
-            td.dimension = nvrhi::TextureDimension::Texture2D;
-            td.format = nvrhi_fmt;
-            td.width = vd->width;
-            td.height = vd->height;
-            td.isRenderTarget = true;
-            td.debugName = "Viewport Swapchain " + std::to_string(i);
-            td.initialState = nvrhi::ResourceStates::Present;
-            td.keepInitialState = true;
+		for (uint32_t i = 0; i < imageCount; ++i)
+		{
+			nvrhi::TextureDesc td;
+			td.dimension = nvrhi::TextureDimension::Texture2D;
+			td.format = nvrhiFmt;
+			td.width = vd->Width;
+			td.height = vd->Height;
+			td.isRenderTarget = true;
+			td.debugName = "Viewport Swapchain " + std::to_string(i);
+			td.initialState = nvrhi::ResourceStates::Present;
+			td.keepInitialState = true;
 
-            vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
-                nvrhi::ObjectTypes::VK_Image, nvrhi::Object(vd->vk_images[i]), td);
+			vd->SwapchainTextures[i] = s_Device->createHandleForNativeTexture(
+				nvrhi::ObjectTypes::VK_Image, nvrhi::Object(vd->VkImages[i]), td);
 
-            nvrhi::FramebufferDesc fb_desc;
-            fb_desc.addColorAttachment(vd->swapchain_textures[i]);
-            vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
-        }
+			nvrhi::FramebufferDesc fbDesc;
+			fbDesc.addColorAttachment(vd->SwapchainTextures[i]);
+			vd->Framebuffers[i] = s_Device->createFramebuffer(fbDesc);
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    static void vk_destroy_viewport_swapchain(viewport_data* vd)
-    {
-        VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
+	static void VkDestroyViewportSwapchain(ViewportData* vd)
+	{
+		VkDevice device = static_cast<VkDevice>(s_VkHandles.Device);
 
-        vd->framebuffers.clear();
-        vd->swapchain_textures.clear();
+		vd->Framebuffers.clear();
+		vd->SwapchainTextures.clear();
 
-        for (auto& fence : vd->vk_fences)
-            if (fence) vkDestroyFence(device, fence, nullptr);
-        vd->vk_fences.clear();
+		for (auto& fence : vd->VkFences)
+			if (fence) vkDestroyFence(device, fence, nullptr);
+		vd->VkFences.clear();
 
-        if (vd->vk_swapchain)
-        {
-            vkDestroySwapchainKHR(device, vd->vk_swapchain, nullptr);
-            vd->vk_swapchain = VK_NULL_HANDLE;
-        }
+		if (vd->VkSwapchain)
+		{
+			vkDestroySwapchainKHR(device, vd->VkSwapchain, nullptr);
+			vd->VkSwapchain = VK_NULL_HANDLE;
+		}
 
-        vd->vk_images.clear();
-    }
+		vd->VkImages.clear();
+	}
 
-    // --- D3D12 viewport helpers ---
+	// --- D3D12 viewport helpers ---
 
 #ifdef LUMINA_PLATFORM_WINDOWS
-    static bool dx_create_viewport_swapchain(viewport_data* vd, HWND hwnd, uint32_t width, uint32_t height)
-    {
-        auto* factory = static_cast<IDXGIFactory6*>(s_dx_handles.dxgi_factory);
-        auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
-        auto* d3d_device = static_cast<ID3D12Device*>(s_dx_handles.device);
+	static bool DxCreateViewportSwapchain(ViewportData* vd, HWND hwnd, uint32_t width, uint32_t height)
+	{
+		auto* factory = static_cast<IDXGIFactory6*>(s_DxHandles.DXGIFactory);
+		auto* cmdQueue = static_cast<ID3D12CommandQueue*>(s_DxHandles.CommandQueue);
+		auto* d3dDevice = static_cast<ID3D12Device*>(s_DxHandles.Device);
 
-        vd->width = width;
-        vd->height = height;
-        vd->backbuffer_count = 2;
+		vd->Width = width;
+		vd->Height = height;
+		vd->BackbufferCount = 2;
 
-        DXGI_SWAP_CHAIN_DESC1 desc{};
-        desc.Width = width;
-        desc.Height = height;
-        desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        desc.SampleDesc.Count = 1;
-        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-        desc.BufferCount = vd->backbuffer_count;
-        desc.Scaling = DXGI_SCALING_STRETCH;
-        desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-        desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-        desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
+		DXGI_SWAP_CHAIN_DESC1 desc{};
+		desc.Width = width;
+		desc.Height = height;
+		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+		desc.SampleDesc.Count = 1;
+		desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+		desc.BufferCount = vd->BackbufferCount;
+		desc.Scaling = DXGI_SCALING_STRETCH;
+		desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+		desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+		desc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING;
 
-        Microsoft::WRL::ComPtr<IDXGISwapChain1> sc1;
-        HRESULT hr = factory->CreateSwapChainForHwnd(cmd_queue, hwnd, &desc, nullptr, nullptr, &sc1);
-        if (FAILED(hr))
-        {
-            LUMINA_LOG_ERROR("Failed to create viewport D3D12 swapchain");
-            return false;
-        }
+		Microsoft::WRL::ComPtr<IDXGISwapChain1> sc1;
+		HRESULT hr = factory->CreateSwapChainForHwnd(cmdQueue, hwnd, &desc, nullptr, nullptr, &sc1);
+		if (FAILED(hr))
+		{
+			LUMINA_LOG_ERROR("Failed to create viewport D3D12 swapchain");
+			return false;
+		}
 
-        factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
-        sc1.As(&vd->dx_swapchain);
+		factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER);
+		sc1.As(&vd->DxSwapchain);
 
-        // Create fence
-        vd->dx_fence_values.resize(vd->backbuffer_count, 0);
-        vd->dx_current_fence_value = 1;
-        d3d_device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&vd->dx_fence));
-        vd->dx_fence_event = CreateEvent(nullptr, FALSE, FALSE, nullptr);
+		// Create fence
+		vd->DxFenceValues.resize(vd->BackbufferCount, 0);
+		vd->DxCurrentFenceValue = 1;
+		d3dDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&vd->DxFence));
+		vd->DxFenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
-        // Wrap backbuffers as NVRHI
-        vd->swapchain_textures.resize(vd->backbuffer_count);
-        vd->framebuffers.resize(vd->backbuffer_count);
-        vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+		// Wrap backbuffers as NVRHI
+		vd->SwapchainTextures.resize(vd->BackbufferCount);
+		vd->Framebuffers.resize(vd->BackbufferCount);
+		vd->FrameIndex = vd->DxSwapchain->GetCurrentBackBufferIndex();
 
-        for (UINT i = 0; i < vd->backbuffer_count; ++i)
-        {
-            Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
-            vd->dx_swapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
+		for (UINT i = 0; i < vd->BackbufferCount; ++i)
+		{
+			Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
+			vd->DxSwapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
 
-            nvrhi::TextureDesc td;
-            td.dimension = nvrhi::TextureDimension::Texture2D;
-            td.format = nvrhi::Format::RGBA8_UNORM;
-            td.width = width;
-            td.height = height;
-            td.isRenderTarget = true;
-            td.debugName = "Viewport DX Swapchain " + std::to_string(i);
-            td.initialState = nvrhi::ResourceStates::Present;
-            td.keepInitialState = true;
+			nvrhi::TextureDesc td;
+			td.dimension = nvrhi::TextureDimension::Texture2D;
+			td.format = nvrhi::Format::RGBA8_UNORM;
+			td.width = width;
+			td.height = height;
+			td.isRenderTarget = true;
+			td.debugName = "Viewport DX Swapchain " + std::to_string(i);
+			td.initialState = nvrhi::ResourceStates::Present;
+			td.keepInitialState = true;
 
-            vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
-                nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
+			vd->SwapchainTextures[i] = s_Device->createHandleForNativeTexture(
+				nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
 
-            nvrhi::FramebufferDesc fb_desc;
-            fb_desc.addColorAttachment(vd->swapchain_textures[i]);
-            vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
-        }
+			nvrhi::FramebufferDesc fbDesc;
+			fbDesc.addColorAttachment(vd->SwapchainTextures[i]);
+			vd->Framebuffers[i] = s_Device->createFramebuffer(fbDesc);
+		}
 
-        return true;
-    }
+		return true;
+	}
 
-    static void dx_destroy_viewport_swapchain(viewport_data* vd)
-    {
-        vd->framebuffers.clear();
-        vd->swapchain_textures.clear();
+	static void DxDestroyViewportSwapchain(ViewportData* vd)
+	{
+		vd->Framebuffers.clear();
+		vd->SwapchainTextures.clear();
 
-        if (vd->dx_fence_event)
-        {
-            CloseHandle(vd->dx_fence_event);
-            vd->dx_fence_event = nullptr;
-        }
-        vd->dx_fence.Reset();
-        vd->dx_swapchain.Reset();
-        vd->dx_fence_values.clear();
-    }
+		if (vd->DxFenceEvent)
+		{
+			CloseHandle(vd->DxFenceEvent);
+			vd->DxFenceEvent = nullptr;
+		}
+		vd->DxFence.Reset();
+		vd->DxSwapchain.Reset();
+		vd->DxFenceValues.clear();
+	}
 #endif
 
-    // --- ImGui renderer callbacks ---
+	// --- ImGui renderer callbacks ---
 
-    static void renderer_create_window(ImGuiViewport* vp)
-    {
-        auto* vd = new viewport_data();
-        vp->RendererUserData = vd;
+	static void RendererCreateWindow(ImGuiViewport* vp)
+	{
+		auto* vd = new ViewportData();
+		vp->RendererUserData = vd;
 
-        vd->command_list = s_device->createCommandList();
+		vd->CommandList = s_Device->createCommandList();
 
-        int w = static_cast<int>(vp->Size.x);
-        int h = static_cast<int>(vp->Size.y);
+		int w = static_cast<int>(vp->Size.x);
+		int h = static_cast<int>(vp->Size.y);
 
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
-            auto* glfw_window = static_cast<GLFWwindow*>(vp->PlatformHandle);
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			VkInstance instance = static_cast<VkInstance>(s_VkHandles.Instance);
+			auto* glfwWindow = static_cast<GLFWwindow*>(vp->PlatformHandle);
 
-            if (glfwCreateWindowSurface(instance, glfw_window, nullptr, &vd->vk_surface) != VK_SUCCESS)
-            {
-                LUMINA_LOG_ERROR("Failed to create Vulkan surface for viewport");
-                return;
-            }
+			if (glfwCreateWindowSurface(instance, glfwWindow, nullptr, &vd->VkSurface) != VK_SUCCESS)
+			{
+				LUMINA_LOG_ERROR("Failed to create Vulkan surface for viewport");
+				return;
+			}
 
-            vk_create_viewport_swapchain(vd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
-        }
+			VkCreateViewportSwapchain(vd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+		}
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
-        {
-            HWND hwnd = static_cast<HWND>(vp->PlatformHandleRaw);
-            if (!hwnd)
-            {
-                auto* glfw_window = static_cast<GLFWwindow*>(vp->PlatformHandle);
-                hwnd = glfwGetWin32Window(glfw_window);
-            }
+		else if (s_GraphicsAPI == nvrhi::GraphicsAPI::D3D12)
+		{
+			HWND hwnd = static_cast<HWND>(vp->PlatformHandleRaw);
+			if (!hwnd)
+			{
+				auto* glfwWindow = static_cast<GLFWwindow*>(vp->PlatformHandle);
+				hwnd = glfwGetWin32Window(glfwWindow);
+			}
 
-            dx_create_viewport_swapchain(vd, hwnd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
-        }
+			DxCreateViewportSwapchain(vd, hwnd, static_cast<uint32_t>(w), static_cast<uint32_t>(h));
+		}
 #endif
-    }
+	}
 
-    static void renderer_destroy_window(ImGuiViewport* vp)
-    {
-        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
-        if (!vd)
-            return;
+	static void RendererDestroyWindow(ImGuiViewport* vp)
+	{
+		auto* vd = static_cast<ViewportData*>(vp->RendererUserData);
+		if (!vd)
+			return;
 
-        // Wait for all GPU work to finish
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
-            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
-            vkQueueWaitIdle(queue);
+		// Wait for all GPU work to finish
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			VkDevice device = static_cast<VkDevice>(s_VkHandles.Device);
+			VkQueue queue = static_cast<VkQueue>(s_VkHandles.GraphicsQueue);
+			vkQueueWaitIdle(queue);
 
-            vk_destroy_viewport_swapchain(vd);
+			VkDestroyViewportSwapchain(vd);
 
-            if (vd->vk_surface)
-            {
-                VkInstance instance = static_cast<VkInstance>(s_vk_handles.instance);
-                vkDestroySurfaceKHR(instance, vd->vk_surface, nullptr);
-                vd->vk_surface = VK_NULL_HANDLE;
-            }
-        }
+			if (vd->VkSurface)
+			{
+				VkInstance instance = static_cast<VkInstance>(s_VkHandles.Instance);
+				vkDestroySurfaceKHR(instance, vd->VkSurface, nullptr);
+				vd->VkSurface = VK_NULL_HANDLE;
+			}
+		}
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
-        {
-            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
-            // Wait for GPU
-            if (vd->dx_fence)
-            {
-                const uint64_t val = vd->dx_current_fence_value;
-                cmd_queue->Signal(vd->dx_fence.Get(), val);
-                if (vd->dx_fence->GetCompletedValue() < val)
-                {
-                    vd->dx_fence->SetEventOnCompletion(val, vd->dx_fence_event);
-                    WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
-                }
-            }
+		else if (s_GraphicsAPI == nvrhi::GraphicsAPI::D3D12)
+		{
+			auto* cmdQueue = static_cast<ID3D12CommandQueue*>(s_DxHandles.CommandQueue);
+			// Wait for GPU
+			if (vd->DxFence)
+			{
+				const uint64_t val = vd->DxCurrentFenceValue;
+				cmdQueue->Signal(vd->DxFence.Get(), val);
+				if (vd->DxFence->GetCompletedValue() < val)
+				{
+					vd->DxFence->SetEventOnCompletion(val, vd->DxFenceEvent);
+					WaitForSingleObjectEx(vd->DxFenceEvent, INFINITE, FALSE);
+				}
+			}
 
-            dx_destroy_viewport_swapchain(vd);
-        }
+			DxDestroyViewportSwapchain(vd);
+		}
 #endif
 
-        vd->command_list = nullptr;
-        delete vd;
-        vp->RendererUserData = nullptr;
-    }
+		vd->CommandList = nullptr;
+		delete vd;
+		vp->RendererUserData = nullptr;
+	}
 
-    static void renderer_set_window_size(ImGuiViewport* vp, ImVec2 size)
-    {
-        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
-        if (!vd)
-            return;
+	static void RendererSetWindowSize(ImGuiViewport* vp, ImVec2 size)
+	{
+		auto* vd = static_cast<ViewportData*>(vp->RendererUserData);
+		if (!vd)
+			return;
 
-        uint32_t w = static_cast<uint32_t>(size.x);
-        uint32_t h = static_cast<uint32_t>(size.y);
+		uint32_t w = static_cast<uint32_t>(size.x);
+		uint32_t h = static_cast<uint32_t>(size.y);
 
-        if (w == 0 || h == 0)
-            return;
+		if (w == 0 || h == 0)
+			return;
 
-        if (w == vd->width && h == vd->height)
-            return;
+		if (w == vd->Width && h == vd->Height)
+			return;
 
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
-            vkQueueWaitIdle(queue);
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			VkQueue queue = static_cast<VkQueue>(s_VkHandles.GraphicsQueue);
+			vkQueueWaitIdle(queue);
 
-            vk_destroy_viewport_swapchain(vd);
-            vk_create_viewport_swapchain(vd, w, h);
-        }
+			VkDestroyViewportSwapchain(vd);
+			VkCreateViewportSwapchain(vd, w, h);
+		}
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
-        {
-            // Wait for GPU
-            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
-            if (vd->dx_fence)
-            {
-                const uint64_t val = vd->dx_current_fence_value;
-                cmd_queue->Signal(vd->dx_fence.Get(), val);
-                vd->dx_current_fence_value++;
-                if (vd->dx_fence->GetCompletedValue() < val)
-                {
-                    vd->dx_fence->SetEventOnCompletion(val, vd->dx_fence_event);
-                    WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
-                }
-            }
+		else if (s_GraphicsAPI == nvrhi::GraphicsAPI::D3D12)
+		{
+			// Wait for GPU
+			auto* cmdQueue = static_cast<ID3D12CommandQueue*>(s_DxHandles.CommandQueue);
+			if (vd->DxFence)
+			{
+				const uint64_t val = vd->DxCurrentFenceValue;
+				cmdQueue->Signal(vd->DxFence.Get(), val);
+				vd->DxCurrentFenceValue++;
+				if (vd->DxFence->GetCompletedValue() < val)
+				{
+					vd->DxFence->SetEventOnCompletion(val, vd->DxFenceEvent);
+					WaitForSingleObjectEx(vd->DxFenceEvent, INFINITE, FALSE);
+				}
+			}
 
-            // Release NVRHI refs before resize
-            vd->framebuffers.clear();
-            vd->swapchain_textures.clear();
+			// Release NVRHI refs before resize
+			vd->Framebuffers.clear();
+			vd->SwapchainTextures.clear();
 
-            DXGI_SWAP_CHAIN_DESC desc;
-            vd->dx_swapchain->GetDesc(&desc);
-            vd->dx_swapchain->ResizeBuffers(vd->backbuffer_count, w, h, desc.BufferDesc.Format, desc.Flags);
+			DXGI_SWAP_CHAIN_DESC desc;
+			vd->DxSwapchain->GetDesc(&desc);
+			vd->DxSwapchain->ResizeBuffers(vd->BackbufferCount, w, h, desc.BufferDesc.Format, desc.Flags);
 
-            vd->width = w;
-            vd->height = h;
-            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
+			vd->Width = w;
+			vd->Height = h;
+			vd->FrameIndex = vd->DxSwapchain->GetCurrentBackBufferIndex();
 
-            // Re-wrap backbuffers
-            vd->swapchain_textures.resize(vd->backbuffer_count);
-            vd->framebuffers.resize(vd->backbuffer_count);
-            for (auto& fv : vd->dx_fence_values) fv = vd->dx_fence->GetCompletedValue();
+			// Re-wrap backbuffers
+			vd->SwapchainTextures.resize(vd->BackbufferCount);
+			vd->Framebuffers.resize(vd->BackbufferCount);
+			for (auto& fv : vd->DxFenceValues) fv = vd->DxFence->GetCompletedValue();
 
-            for (UINT i = 0; i < vd->backbuffer_count; ++i)
-            {
-                Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
-                vd->dx_swapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
+			for (UINT i = 0; i < vd->BackbufferCount; ++i)
+			{
+				Microsoft::WRL::ComPtr<ID3D12Resource> backbuffer;
+				vd->DxSwapchain->GetBuffer(i, IID_PPV_ARGS(&backbuffer));
 
-                nvrhi::TextureDesc td;
-                td.dimension = nvrhi::TextureDimension::Texture2D;
-                td.format = nvrhi::Format::RGBA8_UNORM;
-                td.width = w;
-                td.height = h;
-                td.isRenderTarget = true;
-                td.debugName = "Viewport DX Swapchain " + std::to_string(i);
-                td.initialState = nvrhi::ResourceStates::Present;
-                td.keepInitialState = true;
+				nvrhi::TextureDesc td;
+				td.dimension = nvrhi::TextureDimension::Texture2D;
+				td.format = nvrhi::Format::RGBA8_UNORM;
+				td.width = w;
+				td.height = h;
+				td.isRenderTarget = true;
+				td.debugName = "Viewport DX Swapchain " + std::to_string(i);
+				td.initialState = nvrhi::ResourceStates::Present;
+				td.keepInitialState = true;
 
-                vd->swapchain_textures[i] = s_device->createHandleForNativeTexture(
-                    nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
+				vd->SwapchainTextures[i] = s_Device->createHandleForNativeTexture(
+					nvrhi::ObjectTypes::D3D12_Resource, nvrhi::Object(backbuffer.Get()), td);
 
-                nvrhi::FramebufferDesc fb_desc;
-                fb_desc.addColorAttachment(vd->swapchain_textures[i]);
-                vd->framebuffers[i] = s_device->createFramebuffer(fb_desc);
-            }
-        }
+				nvrhi::FramebufferDesc fbDesc;
+				fbDesc.addColorAttachment(vd->SwapchainTextures[i]);
+				vd->Framebuffers[i] = s_Device->createFramebuffer(fbDesc);
+			}
+		}
 #endif
-    }
+	}
 
-    static void renderer_render_window(ImGuiViewport* vp, void*)
-    {
-        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
-        if (!vd || vd->width == 0 || vd->height == 0)
-            return;
+	static void RendererRenderWindow(ImGuiViewport* vp, void*)
+	{
+		auto* vd = static_cast<ViewportData*>(vp->RendererUserData);
+		if (!vd || vd->Width == 0 || vd->Height == 0)
+			return;
 
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            VkDevice device = static_cast<VkDevice>(s_vk_handles.device);
-            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			VkDevice device = static_cast<VkDevice>(s_VkHandles.Device);
+			VkQueue queue = static_cast<VkQueue>(s_VkHandles.GraphicsQueue);
 
-            vkQueueWaitIdle(queue);
+			vkQueueWaitIdle(queue);
 
-            vkResetFences(device, 1, &vd->vk_fences[vd->frame_index]);
+			vkResetFences(device, 1, &vd->VkFences[vd->FrameIndex]);
 
-            VkResult result = vkAcquireNextImageKHR(device, vd->vk_swapchain, UINT64_MAX,
-                VK_NULL_HANDLE, vd->vk_fences[vd->frame_index], &vd->image_index);
+			VkResult result = vkAcquireNextImageKHR(device, vd->VkSwapchain, UINT64_MAX,
+				VK_NULL_HANDLE, vd->VkFences[vd->FrameIndex], &vd->ImageIndex);
 
-            if (result == VK_ERROR_OUT_OF_DATE_KHR)
-                return;
+			if (result == VK_ERROR_OUT_OF_DATE_KHR)
+				return;
 
-            vkWaitForFences(device, 1, &vd->vk_fences[vd->frame_index], VK_TRUE, UINT64_MAX);
-        }
+			vkWaitForFences(device, 1, &vd->VkFences[vd->FrameIndex], VK_TRUE, UINT64_MAX);
+		}
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
-        {
-            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
-            vd->image_index = vd->frame_index;
+		else if (s_GraphicsAPI == nvrhi::GraphicsAPI::D3D12)
+		{
+			vd->FrameIndex = vd->DxSwapchain->GetCurrentBackBufferIndex();
+			vd->ImageIndex = vd->FrameIndex;
 
-            if (vd->dx_fence->GetCompletedValue() < vd->dx_fence_values[vd->frame_index])
-            {
-                vd->dx_fence->SetEventOnCompletion(vd->dx_fence_values[vd->frame_index], vd->dx_fence_event);
-                WaitForSingleObjectEx(vd->dx_fence_event, INFINITE, FALSE);
-            }
-        }
+			if (vd->DxFence->GetCompletedValue() < vd->DxFenceValues[vd->FrameIndex])
+			{
+				vd->DxFence->SetEventOnCompletion(vd->DxFenceValues[vd->FrameIndex], vd->DxFenceEvent);
+				WaitForSingleObjectEx(vd->DxFenceEvent, INFINITE, FALSE);
+			}
+		}
 #endif
 
-        // Record and submit rendering commands
-        vd->command_list->open();
+		// Record and submit rendering commands
+		vd->CommandList->open();
 
-        nvrhi::utils::ClearColorAttachment(vd->command_list, vd->framebuffers[vd->image_index], 0,
-            nvrhi::Color(0.0f, 0.0f, 0.0f, 1.0f));
+		nvrhi::utils::ClearColorAttachment(vd->CommandList, vd->Framebuffers[vd->ImageIndex], 0,
+			nvrhi::Color(0.0f, 0.0f, 0.0f, 1.0f));
 
-        render_draw_data(vd->command_list, vd->framebuffers[vd->image_index], vp->DrawData);
+		RenderDrawData(vd->CommandList, vd->Framebuffers[vd->ImageIndex], vp->DrawData);
 
-        vd->command_list->close();
-        s_device->executeCommandList(vd->command_list);
-    }
+		vd->CommandList->close();
+		s_Device->executeCommandList(vd->CommandList);
+	}
 
-    static void renderer_swap_buffers(ImGuiViewport* vp, void*)
-    {
-        auto* vd = static_cast<viewport_data*>(vp->RendererUserData);
-        if (!vd || vd->width == 0 || vd->height == 0)
-            return;
+	static void RendererSwapBuffers(ImGuiViewport* vp, void*)
+	{
+		auto* vd = static_cast<ViewportData*>(vp->RendererUserData);
+		if (!vd || vd->Width == 0 || vd->Height == 0)
+			return;
 
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-        {
-            VkQueue queue = static_cast<VkQueue>(s_vk_handles.graphics_queue);
-            vkQueueWaitIdle(queue);
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+		{
+			VkQueue queue = static_cast<VkQueue>(s_VkHandles.GraphicsQueue);
+			vkQueueWaitIdle(queue);
 
-            // Run garbage collection to free staging buffers from viewport rendering
-            s_device->runGarbageCollection();
+			// Run garbage collection to free staging buffers from viewport rendering
+			s_Device->runGarbageCollection();
 
-            VkPresentInfoKHR present_info{};
-            present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-            present_info.swapchainCount = 1;
-            present_info.pSwapchains = &vd->vk_swapchain;
-            present_info.pImageIndices = &vd->image_index;
+			VkPresentInfoKHR presentInfo{};
+			presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+			presentInfo.swapchainCount = 1;
+			presentInfo.pSwapchains = &vd->VkSwapchain;
+			presentInfo.pImageIndices = &vd->ImageIndex;
 
-            vkQueuePresentKHR(queue, &present_info);
-            vd->frame_index = (vd->frame_index + 1) % vd->backbuffer_count;
-        }
+			vkQueuePresentKHR(queue, &presentInfo);
+			vd->FrameIndex = (vd->FrameIndex + 1) % vd->BackbufferCount;
+		}
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else if (s_graphics_api == nvrhi::GraphicsAPI::D3D12)
-        {
-            vd->dx_swapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
+		else if (s_GraphicsAPI == nvrhi::GraphicsAPI::D3D12)
+		{
+			vd->DxSwapchain->Present(0, DXGI_PRESENT_ALLOW_TEARING);
 
-            auto* cmd_queue = static_cast<ID3D12CommandQueue*>(s_dx_handles.command_queue);
-            const uint64_t fence_val = vd->dx_current_fence_value;
-            cmd_queue->Signal(vd->dx_fence.Get(), fence_val);
-            vd->dx_fence_values[vd->frame_index] = fence_val;
-            vd->dx_current_fence_value++;
+			auto* cmdQueue = static_cast<ID3D12CommandQueue*>(s_DxHandles.CommandQueue);
+			const uint64_t fenceVal = vd->DxCurrentFenceValue;
+			cmdQueue->Signal(vd->DxFence.Get(), fenceVal);
+			vd->DxFenceValues[vd->FrameIndex] = fenceVal;
+			vd->DxCurrentFenceValue++;
 
-            // Run garbage collection to free staging buffers from viewport rendering
-            s_device->runGarbageCollection();
+			// Run garbage collection to free staging buffers from viewport rendering
+			s_Device->runGarbageCollection();
 
-            vd->frame_index = vd->dx_swapchain->GetCurrentBackBufferIndex();
-        }
+			vd->FrameIndex = vd->DxSwapchain->GetCurrentBackBufferIndex();
+		}
 #endif
-    }
+	}
 
-    // --- Public viewport API ---
+	// --- Public viewport API ---
 
-    void init_platform_viewports(device& dev)
-    {
-        if (s_graphics_api == nvrhi::GraphicsAPI::VULKAN)
-            s_vk_handles = dev.get_vulkan_handles();
+	void InitPlatformViewports(Device& dev)
+	{
+		if (s_GraphicsAPI == nvrhi::GraphicsAPI::VULKAN)
+			s_VkHandles = dev.GetVulkanHandles();
 #ifdef LUMINA_PLATFORM_WINDOWS
-        else
-            s_dx_handles = dev.get_d3d12_handles();
+		else
+			s_DxHandles = dev.GetD3D12Handles();
 #endif
 
-        ImGuiIO& io = ImGui::GetIO();
-        io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
+		ImGuiIO& io = ImGui::GetIO();
+		io.BackendFlags |= ImGuiBackendFlags_RendererHasViewports;
 
-        ImGuiPlatformIO& pio = ImGui::GetPlatformIO();
-        pio.Renderer_CreateWindow = renderer_create_window;
-        pio.Renderer_DestroyWindow = renderer_destroy_window;
-        pio.Renderer_SetWindowSize = renderer_set_window_size;
-        pio.Renderer_RenderWindow = renderer_render_window;
-        pio.Renderer_SwapBuffers = renderer_swap_buffers;
+		ImGuiPlatformIO& pio = ImGui::GetPlatformIO();
+		pio.Renderer_CreateWindow = RendererCreateWindow;
+		pio.Renderer_DestroyWindow = RendererDestroyWindow;
+		pio.Renderer_SetWindowSize = RendererSetWindowSize;
+		pio.Renderer_RenderWindow = RendererRenderWindow;
+		pio.Renderer_SwapBuffers = RendererSwapBuffers;
 
-        LUMINA_LOG_INFO("ImGui multi-viewport renderer callbacks registered");
-    }
+		LUMINA_LOG_INFO("ImGui multi-viewport renderer callbacks registered");
+	}
 
-    void shutdown_platform_viewports()
-    {
-        ImGui::DestroyPlatformWindows();
-    }
+	void ShutdownPlatformViewports()
+	{
+		ImGui::DestroyPlatformWindows();
+	}
 }

@@ -6,89 +6,89 @@
 
 #include <nvrhi/nvrhi.h>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// Configuration for how textures are sampled.
     /// Controls filtering (point/linear/anisotropic) and addressing (wrap/clamp/mirror).
-    struct sampler_desc
+    struct SamplerDesc
     {
-        filter_mode filter = filter_mode::linear;
-        address_mode address_u = address_mode::clamp;
-        address_mode address_v = address_mode::clamp;
-        address_mode address_w = address_mode::clamp;
-        float max_anisotropy = 1.0f;
-        float mip_lod_bias = 0.0f;
-        float min_lod = 0.0f;
-        float max_lod = 1000.0f;
+        FilterMode Filter = FilterMode::Linear;
+        AddressMode AddressU = AddressMode::Clamp;
+        AddressMode AddressV = AddressMode::Clamp;
+        AddressMode AddressW = AddressMode::Clamp;
+        float MaxAnisotropy = 1.0f;
+        float MipLodBias = 0.0f;
+        float MinLod = 0.0f;
+        float MaxLod = 1000.0f;
 
-        sampler_desc& set_filter(filter_mode mode) noexcept { filter = mode; return *this; }
-        sampler_desc& set_address(address_mode mode) noexcept { address_u = address_v = address_w = mode; return *this; }
-        sampler_desc& set_anisotropy(float value) noexcept { max_anisotropy = value; filter = filter_mode::anisotropic; return *this; }
+        SamplerDesc& SetFilter(FilterMode mode) noexcept { Filter = mode; return *this; }
+        SamplerDesc& SetAddress(AddressMode mode) noexcept { AddressU = AddressV = AddressW = mode; return *this; }
+        SamplerDesc& SetAnisotropy(float value) noexcept { MaxAnisotropy = value; Filter = FilterMode::Anisotropic; return *this; }
     };
 
     /// GPU sampler for controlling texture sampling behavior.
     /// Samplers are immutable; create a new one to change settings.
-    class sampler
+    class Sampler
     {
     public:
-        ~sampler();
+        ~Sampler();
 
-        sampler(const sampler&) = delete;
-        sampler& operator=(const sampler&) = delete;
+        Sampler(const Sampler&) = delete;
+        Sampler& operator=(const Sampler&) = delete;
 
         /// Creates a sampler with the specified settings. Returns nullptr on failure.
-        [[nodiscard]] static ref<sampler> create(core::device& dev, const sampler_desc& desc = {});
+        [[nodiscard]] static Ref<Sampler> Create(Device& dev, const SamplerDesc& desc = {});
 
-        [[nodiscard]] const sampler_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] nvrhi::ISampler* get_sampler() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] const SamplerDesc& GetDesc() const noexcept { return m_Desc; }
+        [[nodiscard]] nvrhi::ISampler* GetSampler() const noexcept { return m_Handle.Get(); }
 
     private:
-        sampler(core::device& dev, nvrhi::SamplerHandle handle, const sampler_desc& desc)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_desc(desc)
+        Sampler(Device& dev, nvrhi::SamplerHandle handle, const SamplerDesc& desc)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Desc(desc)
         {}
 
-        core::device& m_device;
-        nvrhi::SamplerHandle m_handle;
-        sampler_desc m_desc;
+        Device& m_Device;
+        nvrhi::SamplerHandle m_Handle;
+        SamplerDesc m_Desc;
     };
 
     /// Common predefined sampler configurations.
-    namespace samplers
+    namespace Samplers
     {
-        [[nodiscard]] inline sampler_desc point_clamp() noexcept
+        [[nodiscard]] inline SamplerDesc PointClamp() noexcept
         {
-            sampler_desc desc;
-            desc.filter = filter_mode::point;
-            desc.address_u = desc.address_v = desc.address_w = address_mode::clamp;
+            SamplerDesc desc;
+            desc.Filter = FilterMode::Point;
+            desc.AddressU = desc.AddressV = desc.AddressW = AddressMode::Clamp;
             return desc;
         }
 
-        [[nodiscard]] inline sampler_desc linear_clamp() noexcept
+        [[nodiscard]] inline SamplerDesc LinearClamp() noexcept
         {
-            sampler_desc desc;
-            desc.filter = filter_mode::linear;
-            desc.address_u = desc.address_v = desc.address_w = address_mode::clamp;
+            SamplerDesc desc;
+            desc.Filter = FilterMode::Linear;
+            desc.AddressU = desc.AddressV = desc.AddressW = AddressMode::Clamp;
             return desc;
         }
 
-        [[nodiscard]] inline sampler_desc linear_wrap() noexcept
+        [[nodiscard]] inline SamplerDesc LinearWrap() noexcept
         {
-            sampler_desc desc;
-            desc.filter = filter_mode::linear;
-            desc.address_u = desc.address_v = desc.address_w = address_mode::wrap;
+            SamplerDesc desc;
+            desc.Filter = FilterMode::Linear;
+            desc.AddressU = desc.AddressV = desc.AddressW = AddressMode::Wrap;
             return desc;
         }
 
-        [[nodiscard]] inline sampler_desc anisotropic_clamp(float anisotropy = 16.0f) noexcept
+        [[nodiscard]] inline SamplerDesc AnisotropicClamp(float anisotropy = 16.0f) noexcept
         {
-            sampler_desc desc;
-            desc.filter = filter_mode::anisotropic;
-            desc.max_anisotropy = anisotropy;
-            desc.address_u = desc.address_v = desc.address_w = address_mode::clamp;
+            SamplerDesc desc;
+            desc.Filter = FilterMode::Anisotropic;
+            desc.MaxAnisotropy = anisotropy;
+            desc.AddressU = desc.AddressV = desc.AddressW = AddressMode::Clamp;
             return desc;
         }
     }

@@ -6,59 +6,59 @@
 #include <functional>
 #include <vector>
 
-namespace lumina::physics
+namespace Lumina
 {
-    class world;
+    class World;
 
     // Query filter for controlling what shapes are hit
-    struct query_filter
+    struct QueryFilter
     {
-        uint64_t category_bits = UINT64_MAX;
-        uint64_t mask_bits = UINT64_MAX;
+        uint64_t CategoryBits = UINT64_MAX;
+        uint64_t MaskBits = UINT64_MAX;
 
-        [[nodiscard]] b2QueryFilter to_b2() const
+        [[nodiscard]] b2QueryFilter ToB2() const
         {
             b2QueryFilter f = b2DefaultQueryFilter();
-            f.categoryBits = category_bits;
-            f.maskBits = mask_bits;
+            f.categoryBits = CategoryBits;
+            f.maskBits = MaskBits;
             return f;
         }
     };
 
     // Overlap query callback - return true to continue, false to stop
-    using overlap_callback = std::function<bool(b2ShapeId shape_id)>;
+    using OverlapCallback = std::function<bool(b2ShapeId shapeId)>;
 
     // Raycast callback - return fraction to continue (1.0 = continue, 0.0 = stop)
-    using ray_cast_callback = std::function<float(b2ShapeId shape_id, glm::vec2 point, glm::vec2 normal, float fraction)>;
+    using RayCastCallback = std::function<float(b2ShapeId shapeId, glm::vec2 point, glm::vec2 normal, float fraction)>;
 
-    namespace query
+    namespace Query
     {
         // AABB overlap query
-        void query_aabb(
-            const world& w,
+        void QueryAABB(
+            const World& w,
             glm::vec2 min,
             glm::vec2 max,
-            overlap_callback callback,
-            query_filter filter = {}
+            OverlapCallback callback,
+            QueryFilter filter = {}
         );
 
         // Circle overlap query
-        void query_circle(
-            const world& w,
+        void QueryCircle(
+            const World& w,
             glm::vec2 center,
             float radius,
-            overlap_callback callback,
-            query_filter filter = {}
+            OverlapCallback callback,
+            QueryFilter filter = {}
         );
 
         // Raycast with callback for all hits
-        void ray_cast(
-            const world& w,
+        void RayCast(
+            const World& w,
             glm::vec2 origin,
             glm::vec2 direction,
-            float max_distance,
-            ray_cast_callback callback,
-            query_filter filter = {}
+            float maxDistance,
+            RayCastCallback callback,
+            QueryFilter filter = {}
         );
     }
 }

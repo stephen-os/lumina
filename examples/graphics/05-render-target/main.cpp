@@ -8,114 +8,114 @@
 
 #include <glm/glm.hpp>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class render_target_layer : public lumina::core::layer
+class RenderTargetLayer : public Lumina::Layer
 {
 public:
-    render_target_layer() : layer("render_target") {}
+    RenderTargetLayer() : Layer("RenderTarget") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 512, .height = 512});
+        Gfx::Renderer::Init({.Width = 512, .Height = 512});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_time += dt;
+        m_Time += dt;
     }
 
-    void on_render() override
+    void OnRender() override
     {
         float cx = 256.0f;
         float cy = 256.0f;
 
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.15f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.15f, 1.0f});
 
         // Rotating squares
         for (int i = 0; i < 5; i++)
         {
-            float angle = m_time + i * (3.14159f * 2.0f / 5.0f);
+            float angle = m_Time + i * (3.14159f * 2.0f / 5.0f);
             float radius = 100.0f;
             float x = cx + std::cos(angle) * radius;
             float y = cy + std::sin(angle) * radius;
 
-            gfx::renderer::draw_quad({
-                .position = {x, y, 0},
-                .size = {40, 40},
-                .color = hsv_to_rgb(static_cast<float>(i) / 5.0f, 0.8f, 1.0f),
-                .rotation = m_time * 2.0f
+            Gfx::Renderer::DrawQuad({
+                .Position = {x, y, 0},
+                .Size = {40, 40},
+                .Color = HsvToRgb(static_cast<float>(i) / 5.0f, 0.8f, 1.0f),
+                .Rotation = m_Time * 2.0f
             });
         }
 
         // Center circle
-        gfx::renderer::draw_circle({
-            .position = {cx, cy, 0},
-            .radius = {30, 30},
-            .color = {1, 1, 1, 1}
+        Gfx::Renderer::DrawCircle({
+            .Position = {cx, cy, 0},
+            .Radius = {30, 30},
+            .Color = {1, 1, 1, 1}
         });
 
         // Label
-        gfx::renderer::draw_text({
-            .text = "Render Target",
-            .position = {256, 480, 0},
-            .scale = 1.5f,
-            .color = {1, 1, 1, 1},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Render Target",
+            .Position = {256, 480, 0},
+            .Scale = 1.5f,
+            .Color = {1, 1, 1, 1},
+            .Alignment = Gfx::TextAlignment::Center
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // Main viewport
-        ui::begin_window("Render Target Demo");
-        ui::text("Render-to-Texture Demo");
-        ui::separator();
-        ui::text("Render Target: 512x512 RGBA8");
-        ui::text("Animated scene rendered to texture");
-        ui::separator();
+        UI::BeginWindow("Render Target Demo");
+        UI::Text("Render-to-Texture Demo");
+        UI::Separator();
+        UI::Text("Render Target: 512x512 RGBA8");
+        UI::Text("Animated scene rendered to texture");
+        UI::Separator();
 
-        const auto& stats = gfx::renderer::get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("Quads: {}", stats.quad_count);
-        gfx::renderer::reset_stats();
+        const auto& stats = Gfx::Renderer::GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("Quads: {}", stats.QuadCount);
+        Gfx::Renderer::ResetStats();
 
-        ui::separator();
-        auto tex = gfx::renderer::get_texture();
+        UI::Separator();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), ui::get_content_size());
+            UI::Image(tex->GetTexture(), UI::GetContentSize());
         }
-        ui::end_window();
+        UI::EndWindow();
 
         // Secondary views showing same texture at different sizes
-        ui::begin_window("Multiple Views");
+        UI::BeginWindow("Multiple Views");
         if (tex)
         {
-            ui::text("Small");
-            ui::image(tex->get_texture(), 100, 100);
+            UI::Text("Small");
+            UI::Image(tex->GetTexture(), 100, 100);
 
-            ui::same_line();
+            UI::SameLine();
 
-            ui::text("Medium");
-            ui::image(tex->get_texture(), 150, 150);
+            UI::Text("Medium");
+            UI::Image(tex->GetTexture(), 150, 150);
 
-            ui::same_line();
+            UI::SameLine();
 
-            ui::text("Large");
-            ui::image(tex->get_texture(), 200, 200);
+            UI::Text("Large");
+            UI::Image(tex->GetTexture(), 200, 200);
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    glm::vec4 hsv_to_rgb(float h, float s, float v)
+    glm::vec4 HsvToRgb(float h, float s, float v)
     {
         float c = v * s;
         float x = c * (1 - std::abs(std::fmod(h * 6.0f, 2.0f) - 1));
@@ -130,14 +130,14 @@ private:
         return {r + m, g + m, b + m, 1.0f};
     }
 
-    float m_time = 0.0f;
+    float m_Time = 0.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/05-render-target";
-    auto* app = new application(specs);
-    app->push_layer<render_target_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/05-render-target";
+    auto* app = new Application(specs);
+    app->PushLayer<RenderTargetLayer>();
     return app;
 }

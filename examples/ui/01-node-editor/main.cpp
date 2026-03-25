@@ -10,299 +10,299 @@
 #include <string>
 #include <algorithm>
 
-namespace ui = lumina::ui;
+namespace UI = Lumina::UI;
 
 // Simple node structure
 struct Node
 {
-    ui::node_id id;
-    std::string name;
-    std::vector<ui::pin_id> inputs;
-    std::vector<ui::pin_id> outputs;
-    glm::vec2 initial_position{0, 0};
-    bool position_set = false;
+    UI::NodeId Id;
+    std::string Name;
+    std::vector<UI::PinId> Inputs;
+    std::vector<UI::PinId> Outputs;
+    glm::vec2 InitialPosition{0, 0};
+    bool PositionSet = false;
 };
 
 // Simple link structure
 struct Link
 {
-    ui::link_id id;
-    ui::pin_id start_pin;
-    ui::pin_id end_pin;
+    UI::LinkId Id;
+    UI::PinId StartPin;
+    UI::PinId EndPin;
 };
 
-class node_editor_layer : public lumina::core::layer
+class NodeEditorLayer : public Lumina::Layer
 {
 public:
-    node_editor_layer() : layer("node_editor") {}
+    NodeEditorLayer() : Layer("NodeEditorLayer") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
         // Create node editor context
-        ui::ne_config config;
+        UI::NEConfig config;
         config.SettingsFile = "ui-01-node-editor.json";
-        m_context = std::make_unique<ui::node_editor_context>(&config);
+        m_Context = std::make_unique<UI::NodeEditorContext>(&config);
 
         // Create some example nodes
-        create_node("Start", 0, 1, {50, 100});
-        create_node("Process A", 1, 1, {250, 50});
-        create_node("Process B", 1, 1, {250, 200});
-        create_node("Combine", 2, 1, {450, 125});
-        create_node("Output", 1, 0, {650, 125});
+        CreateNode("Start", 0, 1, {50, 100});
+        CreateNode("Process A", 1, 1, {250, 50});
+        CreateNode("Process B", 1, 1, {250, 200});
+        CreateNode("Combine", 2, 1, {450, 125});
+        CreateNode("Output", 1, 0, {650, 125});
 
         // Create some example links
-        create_link(m_nodes[0].outputs[0], m_nodes[1].inputs[0]);
-        create_link(m_nodes[0].outputs[0], m_nodes[2].inputs[0]);
-        create_link(m_nodes[1].outputs[0], m_nodes[3].inputs[0]);
-        create_link(m_nodes[2].outputs[0], m_nodes[3].inputs[1]);
-        create_link(m_nodes[3].outputs[0], m_nodes[4].inputs[0]);
+        CreateLink(m_Nodes[0].Outputs[0], m_Nodes[1].Inputs[0]);
+        CreateLink(m_Nodes[0].Outputs[0], m_Nodes[2].Inputs[0]);
+        CreateLink(m_Nodes[1].Outputs[0], m_Nodes[3].Inputs[0]);
+        CreateLink(m_Nodes[2].Outputs[0], m_Nodes[3].Inputs[1]);
+        CreateLink(m_Nodes[3].Outputs[0], m_Nodes[4].Inputs[0]);
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_context.reset();
+        m_Context.reset();
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        ui::begin_window("Node Editor");
-        ui::text("Right-click for context menu, drag to connect pins");
-        ui::separator();
+        UI::BeginWindow("Node Editor");
+        UI::Text("Right-click for context menu, drag to connect pins");
+        UI::Separator();
 
-        m_context->set_current();
-        ui::ne_begin("Node Editor", glm::vec2(0, 0));
+        m_Context->SetCurrent();
+        UI::NEBegin("Node Editor", glm::vec2(0, 0));
 
-        for (auto& node : m_nodes)
-            draw_node(node);
+        for (auto& node : m_Nodes)
+            DrawNode(node);
 
-        for (auto& link : m_links)
-            ui::ne_link(link.id, link.start_pin, link.end_pin, glm::vec4(1, 1, 1, 1), 2.0f);
+        for (auto& link : m_Links)
+            UI::NELink(link.Id, link.StartPin, link.EndPin, glm::vec4(1, 1, 1, 1), 2.0f);
 
         // Handle link creation
-        if (ui::ne_begin_create())
+        if (UI::NEBeginCreate())
         {
-            ui::pin_id start_pin, end_pin;
-            if (ui::ne_query_new_link(&start_pin, &end_pin))
+            UI::PinId startPin, endPin;
+            if (UI::NEQueryNewLink(&startPin, &endPin))
             {
-                if (start_pin && end_pin && can_create_link(start_pin, end_pin))
+                if (startPin && endPin && CanCreateLink(startPin, endPin))
                 {
-                    if (ui::ne_accept_new_item())
-                        create_link(start_pin, end_pin);
+                    if (UI::NEAcceptNewItem())
+                        CreateLink(startPin, endPin);
                 }
                 else
                 {
-                    ui::ne_reject_new_item();
+                    UI::NERejectNewItem();
                 }
             }
         }
-        ui::ne_end_create();
+        UI::NEEndCreate();
 
         // Handle deletion
-        if (ui::ne_begin_delete())
+        if (UI::NEBeginDelete())
         {
-            ui::link_id link_id;
-            while (ui::ne_query_deleted_link(&link_id))
-                if (ui::ne_accept_deleted_item())
-                    delete_link(link_id);
+            UI::LinkId linkId;
+            while (UI::NEQueryDeletedLink(&linkId))
+                if (UI::NEAcceptDeletedItem())
+                    DeleteLink(linkId);
 
-            ui::node_id node_id;
-            while (ui::ne_query_deleted_node(&node_id))
-                if (ui::ne_accept_deleted_item())
-                    delete_node(node_id);
+            UI::NodeId nodeId;
+            while (UI::NEQueryDeletedNode(&nodeId))
+                if (UI::NEAcceptDeletedItem())
+                    DeleteNode(nodeId);
         }
-        ui::ne_end_delete();
+        UI::NEEndDelete();
 
         // Context menus
-        ui::ne_suspend();
-        handle_context_menus();
-        ui::ne_resume();
+        UI::NESuspend();
+        HandleContextMenus();
+        UI::NEResume();
 
-        ui::ne_end();
+        UI::NEEnd();
 
-        ui::separator();
-        ui::text_fmt("Nodes: {}  Links: {}", m_nodes.size(), m_links.size());
-        ui::text_fmt("Zoom: {:.2f}x", ui::ne_get_current_zoom());
+        UI::Separator();
+        UI::TextFmt("Nodes: {}  Links: {}", m_Nodes.size(), m_Links.size());
+        UI::TextFmt("Zoom: {:.2f}x", UI::NEGetCurrentZoom());
 
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    void draw_node(Node& node)
+    void DrawNode(Node& node)
     {
-        if (!node.position_set)
+        if (!node.PositionSet)
         {
-            ui::ne_set_node_position(node.id, node.initial_position);
-            node.position_set = true;
+            UI::NESetNodePosition(node.Id, node.InitialPosition);
+            node.PositionSet = true;
         }
 
-        ui::ne_begin_node(node.id);
-        ImGui::Text("%s", node.name.c_str());
+        UI::NEBeginNode(node.Id);
+        ImGui::Text("%s", node.Name.c_str());
 
-        for (size_t i = 0; i < node.inputs.size(); ++i)
+        for (size_t i = 0; i < node.Inputs.size(); ++i)
         {
-            ui::ne_begin_pin(node.inputs[i], ui::pin_kind::Input);
+            UI::NEBeginPin(node.Inputs[i], UI::PinKind::Input);
             ImGui::Text("-> In %zu", i);
-            ui::ne_end_pin();
+            UI::NEEndPin();
         }
 
-        for (size_t i = 0; i < node.outputs.size(); ++i)
+        for (size_t i = 0; i < node.Outputs.size(); ++i)
         {
-            ui::ne_begin_pin(node.outputs[i], ui::pin_kind::Output);
+            UI::NEBeginPin(node.Outputs[i], UI::PinKind::Output);
             ImGui::Text("Out %zu ->", i);
-            ui::ne_end_pin();
+            UI::NEEndPin();
         }
 
-        ui::ne_end_node();
+        UI::NEEndNode();
     }
 
-    void handle_context_menus()
+    void HandleContextMenus()
     {
-        ui::node_id context_node_id;
-        ui::link_id context_link_id;
+        UI::NodeId contextNodeId;
+        UI::LinkId contextLinkId;
 
-        if (ui::ne_show_node_context_menu(&context_node_id))
+        if (UI::NEShowNodeContextMenu(&contextNodeId))
         {
             ImGui::OpenPopup("Node Context Menu");
-            m_context_node = context_node_id;
+            m_ContextNode = contextNodeId;
         }
-        else if (ui::ne_show_link_context_menu(&context_link_id))
+        else if (UI::NEShowLinkContextMenu(&contextLinkId))
         {
             ImGui::OpenPopup("Link Context Menu");
-            m_context_link = context_link_id;
+            m_ContextLink = contextLinkId;
         }
-        else if (ui::ne_show_background_context_menu())
+        else if (UI::NEShowBackgroundContextMenu())
         {
             auto mouse = ImGui::GetMousePos();
-            m_context_menu_pos = {mouse.x, mouse.y};
+            m_ContextMenuPos = {mouse.x, mouse.y};
             ImGui::OpenPopup("Background Context Menu");
         }
 
         if (ImGui::BeginPopup("Node Context Menu"))
         {
             if (ImGui::MenuItem("Delete Node"))
-                delete_node(m_context_node);
+                DeleteNode(m_ContextNode);
             ImGui::EndPopup();
         }
 
         if (ImGui::BeginPopup("Link Context Menu"))
         {
             if (ImGui::MenuItem("Delete Link"))
-                delete_link(m_context_link);
+                DeleteLink(m_ContextLink);
             ImGui::EndPopup();
         }
 
         if (ImGui::BeginPopup("Background Context Menu"))
         {
-            glm::vec2 canvas_pos = ui::ne_screen_to_canvas(m_context_menu_pos);
+            glm::vec2 canvasPos = UI::NEScreenToCanvas(m_ContextMenuPos);
             if (ImGui::MenuItem("Add Process Node"))
-                create_node("Process", 1, 1, canvas_pos);
+                CreateNode("Process", 1, 1, canvasPos);
             if (ImGui::MenuItem("Add Input Node"))
-                create_node("Input", 0, 1, canvas_pos);
+                CreateNode("Input", 0, 1, canvasPos);
             if (ImGui::MenuItem("Add Output Node"))
-                create_node("Output", 1, 0, canvas_pos);
+                CreateNode("Output", 1, 0, canvasPos);
             ImGui::Separator();
             if (ImGui::MenuItem("Navigate to Content"))
-                ui::ne_navigate_to_content();
+                UI::NENavigateToContent();
             ImGui::EndPopup();
         }
     }
 
-    void create_node(const std::string& name, int input_count, int output_count, glm::vec2 position)
+    void CreateNode(const std::string& name, int inputCount, int outputCount, glm::vec2 position)
     {
         Node node;
-        node.id = ui::node_id(m_next_id++);
-        node.name = name;
-        for (int i = 0; i < input_count; ++i)
-            node.inputs.push_back(ui::pin_id(m_next_id++));
-        for (int i = 0; i < output_count; ++i)
-            node.outputs.push_back(ui::pin_id(m_next_id++));
-        node.initial_position = position;
-        m_nodes.push_back(node);
+        node.Id = UI::NodeId(m_NextId++);
+        node.Name = name;
+        for (int i = 0; i < inputCount; ++i)
+            node.Inputs.push_back(UI::PinId(m_NextId++));
+        for (int i = 0; i < outputCount; ++i)
+            node.Outputs.push_back(UI::PinId(m_NextId++));
+        node.InitialPosition = position;
+        m_Nodes.push_back(node);
     }
 
-    void create_link(ui::pin_id start, ui::pin_id end)
+    void CreateLink(UI::PinId start, UI::PinId end)
     {
         Link link;
-        link.id = ui::link_id(m_next_id++);
-        link.start_pin = start;
-        link.end_pin = end;
-        m_links.push_back(link);
+        link.Id = UI::LinkId(m_NextId++);
+        link.StartPin = start;
+        link.EndPin = end;
+        m_Links.push_back(link);
     }
 
-    bool can_create_link(ui::pin_id start, ui::pin_id end)
+    bool CanCreateLink(UI::PinId start, UI::PinId end)
     {
-        Node* start_node = find_node_by_pin(start);
-        Node* end_node = find_node_by_pin(end);
-        if (!start_node || !end_node || start_node == end_node)
+        Node* startNode = FindNodeByPin(start);
+        Node* endNode = FindNodeByPin(end);
+        if (!startNode || !endNode || startNode == endNode)
             return false;
-        return is_output_pin(start) != is_output_pin(end);
+        return IsOutputPin(start) != IsOutputPin(end);
     }
 
-    Node* find_node_by_pin(ui::pin_id pin)
+    Node* FindNodeByPin(UI::PinId pin)
     {
-        for (auto& node : m_nodes)
+        for (auto& node : m_Nodes)
         {
-            for (auto& p : node.inputs)
+            for (auto& p : node.Inputs)
                 if (p == pin) return &node;
-            for (auto& p : node.outputs)
+            for (auto& p : node.Outputs)
                 if (p == pin) return &node;
         }
         return nullptr;
     }
 
-    bool is_output_pin(ui::pin_id pin)
+    bool IsOutputPin(UI::PinId pin)
     {
-        for (auto& node : m_nodes)
-            for (auto& p : node.outputs)
+        for (auto& node : m_Nodes)
+            for (auto& p : node.Outputs)
                 if (p == pin) return true;
         return false;
     }
 
-    void delete_node(ui::node_id id)
+    void DeleteNode(UI::NodeId id)
     {
-        auto it = m_nodes.begin();
-        while (it != m_nodes.end())
+        auto it = m_Nodes.begin();
+        while (it != m_Nodes.end())
         {
-            if (it->id == id)
+            if (it->Id == id)
             {
-                for (auto& pin : it->inputs)
-                    remove_links_for_pin(pin);
-                for (auto& pin : it->outputs)
-                    remove_links_for_pin(pin);
-                it = m_nodes.erase(it);
+                for (auto& pin : it->Inputs)
+                    RemoveLinksForPin(pin);
+                for (auto& pin : it->Outputs)
+                    RemoveLinksForPin(pin);
+                it = m_Nodes.erase(it);
             }
             else
                 ++it;
         }
     }
 
-    void delete_link(ui::link_id id)
+    void DeleteLink(UI::LinkId id)
     {
-        m_links.erase(std::remove_if(m_links.begin(), m_links.end(),
-            [id](const Link& link) { return link.id == id; }), m_links.end());
+        m_Links.erase(std::remove_if(m_Links.begin(), m_Links.end(),
+            [id](const Link& link) { return link.Id == id; }), m_Links.end());
     }
 
-    void remove_links_for_pin(ui::pin_id pin)
+    void RemoveLinksForPin(UI::PinId pin)
     {
-        m_links.erase(std::remove_if(m_links.begin(), m_links.end(),
-            [pin](const Link& link) { return link.start_pin == pin || link.end_pin == pin; }),
-            m_links.end());
+        m_Links.erase(std::remove_if(m_Links.begin(), m_Links.end(),
+            [pin](const Link& link) { return link.StartPin == pin || link.EndPin == pin; }),
+            m_Links.end());
     }
 
-    std::unique_ptr<ui::node_editor_context> m_context;
-    std::vector<Node> m_nodes;
-    std::vector<Link> m_links;
-    int m_next_id = 1;
-    ui::node_id m_context_node;
-    ui::link_id m_context_link;
-    glm::vec2 m_context_menu_pos{0, 0};
+    std::unique_ptr<UI::NodeEditorContext> m_Context;
+    std::vector<Node> m_Nodes;
+    std::vector<Link> m_Links;
+    int m_NextId = 1;
+    UI::NodeId m_ContextNode;
+    UI::LinkId m_ContextLink;
+    glm::vec2 m_ContextMenuPos{0, 0};
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "ui/01-node-editor";
-    auto* app = new application(specs);
-    app->push_layer<node_editor_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "ui/01-node-editor";
+    auto* app = new Application(specs);
+    app->PushLayer<NodeEditorLayer>();
     return app;
 }

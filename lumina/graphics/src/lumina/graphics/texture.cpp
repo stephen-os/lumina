@@ -9,67 +9,67 @@
 
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    texture::~texture() = default;
+    Texture::~Texture() = default;
 
-    ref<texture> texture::wrap(core::device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, format fmt)
+    Ref<Texture> Texture::Wrap(Core::Device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, Format fmt)
     {
         if (!handle)
             return nullptr;
 
         // TextureHandle constructor AddRefs automatically, no explicit AddRef needed
-        return ref<texture>(new texture(dev, nvrhi::TextureHandle(handle), width, height, fmt));
+        return Ref<Texture>(new Texture(dev, nvrhi::TextureHandle(handle), width, height, fmt));
     }
 
-    ref<texture> texture::create(core::device& dev, uint32_t width, uint32_t height, format fmt, const void* data, std::string_view debug_name)
+    Ref<Texture> Texture::Create(Core::Device& dev, uint32_t width, uint32_t height, Format fmt, const void* data, std::string_view debugName)
     {
-        texture_desc desc;
-        desc.width = width;
-        desc.height = height;
-        desc.pixel_format = fmt;
-        return create(dev, desc, data, debug_name);
+        TextureDesc desc;
+        desc.Width = width;
+        desc.Height = height;
+        desc.PixelFormat = fmt;
+        return Create(dev, desc, data, debugName);
     }
 
-    ref<texture> texture::create(core::device& dev, const texture_desc& desc, const void* data, std::string_view debug_name)
+    Ref<Texture> Texture::Create(Core::Device& dev, const TextureDesc& desc, const void* data, std::string_view debugName)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create texture: no device");
             return nullptr;
         }
 
-        if (desc.width == 0)
+        if (desc.Width == 0)
         {
             LUMINA_LOG_ERROR("Failed to create texture: width cannot be zero");
             return nullptr;
         }
 
-        if (desc.height == 0)
+        if (desc.Height == 0)
         {
             LUMINA_LOG_ERROR("Failed to create texture: height cannot be zero");
             return nullptr;
         }
 
-        nvrhi::TextureDesc tex_desc;
-        tex_desc.width = desc.width;
-        tex_desc.height = desc.height;
-        tex_desc.format = to_nvrhi_format(desc.pixel_format);
-        tex_desc.dimension = nvrhi::TextureDimension::Texture2D;
-        tex_desc.isShaderResource = true;
-        tex_desc.debugName = std::string(debug_name);
-        tex_desc.initialState = nvrhi::ResourceStates::ShaderResource;
-        tex_desc.keepInitialState = true;
+        nvrhi::TextureDesc texDesc;
+        texDesc.width = desc.Width;
+        texDesc.height = desc.Height;
+        texDesc.format = ToNvrhiFormat(desc.PixelFormat);
+        texDesc.dimension = nvrhi::TextureDimension::Texture2D;
+        texDesc.isShaderResource = true;
+        texDesc.debugName = std::string(debugName);
+        texDesc.initialState = nvrhi::ResourceStates::ShaderResource;
+        texDesc.keepInitialState = true;
 
-        if (desc.generate_mips)
+        if (desc.GenerateMips)
         {
-            uint32_t max_dim = std::max(desc.width, desc.height);
-            tex_desc.mipLevels = static_cast<uint32_t>(std::floor(std::log2(max_dim))) + 1;
-            tex_desc.isUAV = true;
+            uint32_t maxDim = std::max(desc.Width, desc.Height);
+            texDesc.mipLevels = static_cast<uint32_t>(std::floor(std::log2(maxDim))) + 1;
+            texDesc.isUAV = true;
         }
 
-        nvrhi::TextureHandle tex = nvrhi_device->createTexture(tex_desc);
+        nvrhi::TextureHandle tex = nvrhiDevice->createTexture(texDesc);
         if (!tex)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI texture");
@@ -78,20 +78,20 @@ namespace lumina::graphics
 
         if (data)
         {
-            size_t row_pitch = desc.width * format_bytes_per_pixel(desc.pixel_format);
+            size_t rowPitch = desc.Width * FormatBytesPerPixel(desc.PixelFormat);
 
-            nvrhi::CommandListHandle cmd = nvrhi_device->createCommandList();
+            nvrhi::CommandListHandle cmd = nvrhiDevice->createCommandList();
             cmd->open();
-            cmd->writeTexture(tex, 0, 0, data, row_pitch);
+            cmd->writeTexture(tex, 0, 0, data, rowPitch);
             cmd->close();
-            nvrhi_device->executeCommandList(cmd);
-            nvrhi_device->waitForIdle();
+            nvrhiDevice->executeCommandList(cmd);
+            nvrhiDevice->waitForIdle();
         }
 
-        return ref<texture>(new texture(dev, std::move(tex), desc.width, desc.height, desc.pixel_format));
+        return Ref<Texture>(new Texture(dev, std::move(tex), desc.Width, desc.Height, desc.PixelFormat));
     }
 
-    ref<texture> texture::load_from_file(core::device& dev, const std::string& path, std::string_view debug_name)
+    Ref<Texture> Texture::LoadFromFile(Core::Device& dev, const std::string& path, std::string_view debugName)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(false);
@@ -104,10 +104,10 @@ namespace lumina::graphics
         }
 
         // Use path as debug name if none provided
-        std::string_view effective_debug_name = debug_name.empty() ? std::string_view(path) : debug_name;
+        std::string_view effectiveDebugName = debugName.empty() ? std::string_view(path) : debugName;
 
-        auto tex = create(dev, static_cast<uint32_t>(width), static_cast<uint32_t>(height),
-                          format::rgba8_unorm, data, effective_debug_name);
+        auto tex = Create(dev, static_cast<uint32_t>(width), static_cast<uint32_t>(height),
+                          Format::RGBA8_UNORM, data, effectiveDebugName);
 
         stbi_image_free(data);
 

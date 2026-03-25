@@ -4,11 +4,11 @@
 
 #include <concepts>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    inline void confirm_dialog(const char* title, const char* message,
-                               std::invocable auto&& on_confirm,
-                               std::invocable auto&& on_cancel = []{})
+    inline void ConfirmDialog(const char* title, const char* message,
+                               std::invocable auto&& onConfirm,
+                               std::invocable auto&& onCancel = []{})
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -23,22 +23,22 @@ namespace lumina::ui
 
             if (ImGui::Button("OK", ImVec2(120, 0)))
             {
-                on_confirm();
+                onConfirm();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel", ImVec2(120, 0)))
             {
-                on_cancel();
+                onCancel();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::EndPopup();
         }
     }
 
-    inline void input_dialog(const char* title, const char* prompt,
-                             char* buffer, size_t buffer_size,
-                             std::invocable auto&& on_submit)
+    inline void InputDialog(const char* title, const char* prompt,
+                             char* buffer, size_t bufferSize,
+                             std::invocable auto&& onSubmit)
     {
         ImVec2 center = ImGui::GetMainViewport()->GetCenter();
         ImGui::SetNextWindowPos(center, ImGuiCond_Appearing, ImVec2(0.5f, 0.5f));
@@ -49,15 +49,15 @@ namespace lumina::ui
             ImGui::TextUnformatted(prompt);
             ImGui::Spacing();
 
-            bool enter_pressed = ImGui::InputText("##input", buffer, buffer_size,
+            bool enterPressed = ImGui::InputText("##input", buffer, bufferSize,
                                                   ImGuiInputTextFlags_EnterReturnsTrue);
             ImGui::Spacing();
             ImGui::Separator();
             ImGui::Spacing();
 
-            if (ImGui::Button("OK", ImVec2(120, 0)) || enter_pressed)
+            if (ImGui::Button("OK", ImVec2(120, 0)) || enterPressed)
             {
-                on_submit();
+                onSubmit();
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();

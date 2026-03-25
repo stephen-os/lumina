@@ -15,307 +15,307 @@
 #include <nvrhi/nvrhi.h>
 #include <nvrhi/utils.h>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    context::context(core::device& dev)
-        : m_device(dev)
+    Context::Context(Core::Device& dev)
+        : m_Device(dev)
     {
     }
 
-    context::~context() = default;
+    Context::~Context() = default;
 
-    void context::begin_frame()
+    void Context::BeginFrame()
     {
         // Reset per-frame state
-        m_state_dirty = true;
+        m_StateDirty = true;
     }
 
-    void context::end_frame()
+    void Context::EndFrame()
     {
         // Clear references
-        m_current_render_target = nullptr;
-        m_current_pipeline = nullptr;
-        m_current_binding_set = nullptr;
-        m_current_vertex_buffer = nullptr;
-        m_current_index_buffer = nullptr;
-        m_state_dirty = true;
+        m_CurrentRenderTarget = nullptr;
+        m_CurrentPipeline = nullptr;
+        m_CurrentBindingSet = nullptr;
+        m_CurrentVertexBuffer = nullptr;
+        m_CurrentIndexBuffer = nullptr;
+        m_StateDirty = true;
     }
 
-    void context::set_command_list(nvrhi::ICommandList* cmd_list)
+    void Context::SetCommandList(nvrhi::ICommandList* cmdList)
     {
-        m_command_list = cmd_list;
+        m_CommandList = cmdList;
     }
 
-    void context::set_render_target(ref<render_target> target)
+    void Context::SetRenderTarget(Ref<RenderTarget> target)
     {
-        m_current_render_target = target;
-        m_state_dirty = true;
+        m_CurrentRenderTarget = target;
+        m_StateDirty = true;
     }
 
-    void context::set_default_render_target()
+    void Context::SetDefaultRenderTarget()
     {
-        m_current_render_target = nullptr;
-        m_state_dirty = true;
+        m_CurrentRenderTarget = nullptr;
+        m_StateDirty = true;
     }
 
-    void context::set_swapchain_framebuffer(nvrhi::IFramebuffer* framebuffer)
+    void Context::SetSwapchainFramebuffer(nvrhi::IFramebuffer* framebuffer)
     {
-        m_swapchain_framebuffer = framebuffer;
-        m_current_render_target = nullptr;
-        m_state_dirty = true;
+        m_SwapchainFramebuffer = framebuffer;
+        m_CurrentRenderTarget = nullptr;
+        m_StateDirty = true;
     }
 
-    void context::clear(const glm::vec4& color)
+    void Context::Clear(const glm::vec4& color)
     {
-        clear(clear_color(color.r, color.g, color.b, color.a));
+        Clear(ClearColor(color.r, color.g, color.b, color.a));
     }
 
-    void context::clear(const clear_color& color)
+    void Context::Clear(const ClearColor& color)
     {
-        if (!m_command_list)
+        if (!m_CommandList)
             return;
 
         nvrhi::IFramebuffer* fb = nullptr;
-        if (m_current_render_target)
+        if (m_CurrentRenderTarget)
         {
-            fb = m_current_render_target->get_framebuffer();
+            fb = m_CurrentRenderTarget->GetFramebuffer();
         }
-        else if (m_swapchain_framebuffer)
+        else if (m_SwapchainFramebuffer)
         {
-            fb = m_swapchain_framebuffer;
+            fb = m_SwapchainFramebuffer;
         }
 
         if (fb)
         {
-            nvrhi::utils::ClearColorAttachment(m_command_list, fb, 0, nvrhi::Color(color.r, color.g, color.b, color.a));
+            nvrhi::utils::ClearColorAttachment(m_CommandList, fb, 0, nvrhi::Color(color.r, color.g, color.b, color.a));
         }
     }
 
-    void context::clear_depth(float depth, uint8_t stencil)
+    void Context::ClearDepth(float depth, uint8_t stencil)
     {
-        if (!m_command_list)
+        if (!m_CommandList)
             return;
 
         nvrhi::IFramebuffer* fb = nullptr;
-        if (m_current_render_target)
+        if (m_CurrentRenderTarget)
         {
-            fb = m_current_render_target->get_framebuffer();
+            fb = m_CurrentRenderTarget->GetFramebuffer();
         }
-        else if (m_swapchain_framebuffer)
+        else if (m_SwapchainFramebuffer)
         {
-            fb = m_swapchain_framebuffer;
+            fb = m_SwapchainFramebuffer;
         }
 
         if (fb && fb->getDesc().depthAttachment.texture)
         {
-            m_command_list->clearDepthStencilTexture(fb->getDesc().depthAttachment.texture, nvrhi::AllSubresources, true, depth, true, stencil);
+            m_CommandList->clearDepthStencilTexture(fb->getDesc().depthAttachment.texture, nvrhi::AllSubresources, true, depth, true, stencil);
         }
     }
 
-    void context::set_viewport(float x, float y, float width, float height)
+    void Context::SetViewport(float x, float y, float width, float height)
     {
-        viewport vp;
+        Viewport vp;
         vp.x = x;
         vp.y = y;
         vp.width = width;
         vp.height = height;
-        set_viewport(vp);
+        SetViewport(vp);
     }
 
-    void context::set_viewport(const viewport& vp)
+    void Context::SetViewport(const Viewport& vp)
     {
-        m_current_viewport = vp;
-        m_state_dirty = true;
+        m_CurrentViewport = vp;
+        m_StateDirty = true;
     }
 
-    void context::set_scissor(int32_t x, int32_t y, int32_t width, int32_t height)
+    void Context::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
     {
-        scissor_rect rect;
+        ScissorRect rect;
         rect.x = x;
         rect.y = y;
         rect.width = width;
         rect.height = height;
-        set_scissor(rect);
+        SetScissor(rect);
     }
 
-    void context::set_scissor(const scissor_rect& rect)
+    void Context::SetScissor(const ScissorRect& rect)
     {
-        m_current_scissor = rect;
-        m_state_dirty = true;
+        m_CurrentScissor = rect;
+        m_StateDirty = true;
     }
 
-    void context::set_pipeline(ref<pipeline> pso)
+    void Context::SetPipeline(Ref<Pipeline> pso)
     {
-        m_current_pipeline = pso;
-        m_state_dirty = true;
+        m_CurrentPipeline = pso;
+        m_StateDirty = true;
     }
 
-    void context::set_binding_set(ref<binding_set> bindings)
+    void Context::SetBindingSet(Ref<BindingSet> bindings)
     {
-        m_current_binding_set = bindings;
-        m_state_dirty = true;
+        m_CurrentBindingSet = bindings;
+        m_StateDirty = true;
     }
 
-    void context::set_vertex_buffer(ref<vertex_buffer> buffer)
+    void Context::SetVertexBuffer(Ref<VertexBuffer> buffer)
     {
-        m_current_vertex_buffer = buffer;
-        m_state_dirty = true;
+        m_CurrentVertexBuffer = buffer;
+        m_StateDirty = true;
     }
 
-    void context::set_index_buffer(ref<index_buffer> buffer)
+    void Context::SetIndexBuffer(Ref<IndexBuffer> buffer)
     {
-        m_current_index_buffer = buffer;
-        m_state_dirty = true;
+        m_CurrentIndexBuffer = buffer;
+        m_StateDirty = true;
     }
 
-    void context::apply_state()
+    void Context::ApplyState()
     {
-        if (!m_state_dirty)
+        if (!m_StateDirty)
             return;
 
-        if (!m_command_list)
+        if (!m_CommandList)
             return;
 
         // Build graphics state
         nvrhi::GraphicsState state;
 
         // Pipeline
-        if (m_current_pipeline)
+        if (m_CurrentPipeline)
         {
-            state.pipeline = m_current_pipeline->get_pipeline();
+            state.pipeline = m_CurrentPipeline->GetPipeline();
         }
 
         // Framebuffer
-        if (m_current_render_target)
+        if (m_CurrentRenderTarget)
         {
-            state.framebuffer = m_current_render_target->get_framebuffer();
+            state.framebuffer = m_CurrentRenderTarget->GetFramebuffer();
         }
-        else if (m_swapchain_framebuffer)
+        else if (m_SwapchainFramebuffer)
         {
-            state.framebuffer = m_swapchain_framebuffer;
+            state.framebuffer = m_SwapchainFramebuffer;
         }
 
         // Viewport
         state.viewport.addViewport(nvrhi::Viewport(
-            m_current_viewport.x,
-            m_current_viewport.x + m_current_viewport.width,
-            m_current_viewport.y,
-            m_current_viewport.y + m_current_viewport.height,
-            m_current_viewport.min_depth,
-            m_current_viewport.max_depth
+            m_CurrentViewport.x,
+            m_CurrentViewport.x + m_CurrentViewport.width,
+            m_CurrentViewport.y,
+            m_CurrentViewport.y + m_CurrentViewport.height,
+            m_CurrentViewport.minDepth,
+            m_CurrentViewport.maxDepth
         ));
 
         // Scissor (use viewport as default if not set)
-        if (m_current_scissor.width > 0 && m_current_scissor.height > 0)
+        if (m_CurrentScissor.width > 0 && m_CurrentScissor.height > 0)
         {
             state.viewport.addScissorRect(nvrhi::Rect(
-                m_current_scissor.x,
-                m_current_scissor.x + m_current_scissor.width,
-                m_current_scissor.y,
-                m_current_scissor.y + m_current_scissor.height
+                m_CurrentScissor.x,
+                m_CurrentScissor.x + m_CurrentScissor.width,
+                m_CurrentScissor.y,
+                m_CurrentScissor.y + m_CurrentScissor.height
             ));
         }
         else
         {
             state.viewport.addScissorRect(nvrhi::Rect(
-                static_cast<int>(m_current_viewport.x),
-                static_cast<int>(m_current_viewport.x + m_current_viewport.width),
-                static_cast<int>(m_current_viewport.y),
-                static_cast<int>(m_current_viewport.y + m_current_viewport.height)
+                static_cast<int>(m_CurrentViewport.x),
+                static_cast<int>(m_CurrentViewport.x + m_CurrentViewport.width),
+                static_cast<int>(m_CurrentViewport.y),
+                static_cast<int>(m_CurrentViewport.y + m_CurrentViewport.height)
             ));
         }
 
         // Binding set
-        if (m_current_binding_set)
+        if (m_CurrentBindingSet)
         {
-            state.bindings.push_back(m_current_binding_set->get_binding_set());
+            state.bindings.push_back(m_CurrentBindingSet->GetBindingSet());
         }
 
         // Vertex buffer
-        if (m_current_vertex_buffer)
+        if (m_CurrentVertexBuffer)
         {
             nvrhi::VertexBufferBinding vb;
-            vb.buffer = m_current_vertex_buffer->get_buffer();
+            vb.buffer = m_CurrentVertexBuffer->GetBuffer();
             vb.slot = 0;
             vb.offset = 0;
             state.vertexBuffers.push_back(vb);
         }
 
         // Index buffer
-        if (m_current_index_buffer)
+        if (m_CurrentIndexBuffer)
         {
-            state.indexBuffer.buffer = m_current_index_buffer->get_buffer();
-            state.indexBuffer.format = m_current_index_buffer->is_32bit() ? nvrhi::Format::R32_UINT : nvrhi::Format::R16_UINT;
+            state.indexBuffer.buffer = m_CurrentIndexBuffer->GetBuffer();
+            state.indexBuffer.format = m_CurrentIndexBuffer->Is32Bit() ? nvrhi::Format::R32_UINT : nvrhi::Format::R16_UINT;
             state.indexBuffer.offset = 0;
         }
 
-        m_command_list->setGraphicsState(state);
-        m_state_dirty = false;
+        m_CommandList->setGraphicsState(state);
+        m_StateDirty = false;
     }
 
-    void context::draw(uint32_t vertex_count, uint32_t start_vertex)
+    void Context::Draw(uint32_t vertexCount, uint32_t startVertex)
     {
-        if (!m_command_list || !m_current_pipeline)
+        if (!m_CommandList || !m_CurrentPipeline)
             return;
 
-        apply_state();
+        ApplyState();
 
         nvrhi::DrawArguments args;
-        args.vertexCount = vertex_count;
-        args.startVertexLocation = start_vertex;
+        args.vertexCount = vertexCount;
+        args.startVertexLocation = startVertex;
         args.instanceCount = 1;
         args.startInstanceLocation = 0;
 
-        m_command_list->draw(args);
+        m_CommandList->draw(args);
     }
 
-    void context::draw_indexed(uint32_t index_count, uint32_t start_index, int32_t base_vertex)
+    void Context::DrawIndexed(uint32_t indexCount, uint32_t startIndex, int32_t baseVertex)
     {
-        if (!m_command_list || !m_current_pipeline || !m_current_index_buffer)
+        if (!m_CommandList || !m_CurrentPipeline || !m_CurrentIndexBuffer)
             return;
 
-        apply_state();
+        ApplyState();
 
         nvrhi::DrawArguments args;
-        args.vertexCount = index_count;           // Number of indices to draw
-        args.startIndexLocation = start_index;    // Offset into index buffer
-        args.startVertexLocation = base_vertex;   // Base vertex added to each index
+        args.vertexCount = indexCount;           // Number of indices to draw
+        args.startIndexLocation = startIndex;    // Offset into index buffer
+        args.startVertexLocation = baseVertex;   // Base vertex added to each index
         args.instanceCount = 1;
         args.startInstanceLocation = 0;
 
-        m_command_list->drawIndexed(args);
+        m_CommandList->drawIndexed(args);
     }
 
-    void context::draw_instanced(uint32_t vertex_count, uint32_t instance_count, uint32_t start_vertex, uint32_t start_instance)
+    void Context::DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex, uint32_t startInstance)
     {
-        if (!m_command_list || !m_current_pipeline)
+        if (!m_CommandList || !m_CurrentPipeline)
             return;
 
-        apply_state();
+        ApplyState();
 
         nvrhi::DrawArguments args;
-        args.vertexCount = vertex_count;
-        args.startVertexLocation = start_vertex;
-        args.instanceCount = instance_count;
-        args.startInstanceLocation = start_instance;
+        args.vertexCount = vertexCount;
+        args.startVertexLocation = startVertex;
+        args.instanceCount = instanceCount;
+        args.startInstanceLocation = startInstance;
 
-        m_command_list->draw(args);
+        m_CommandList->draw(args);
     }
 
-    void context::draw_indexed_instanced(uint32_t index_count, uint32_t instance_count, uint32_t start_index, int32_t base_vertex, uint32_t start_instance)
+    void Context::DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex, int32_t baseVertex, uint32_t startInstance)
     {
-        if (!m_command_list || !m_current_pipeline || !m_current_index_buffer)
+        if (!m_CommandList || !m_CurrentPipeline || !m_CurrentIndexBuffer)
             return;
 
-        apply_state();
+        ApplyState();
 
         nvrhi::DrawArguments args;
-        args.vertexCount = index_count;
-        args.startIndexLocation = start_index;
-        args.startVertexLocation = base_vertex;
-        args.instanceCount = instance_count;
-        args.startInstanceLocation = start_instance;
+        args.vertexCount = indexCount;
+        args.startIndexLocation = startIndex;
+        args.startVertexLocation = baseVertex;
+        args.instanceCount = instanceCount;
+        args.startInstanceLocation = startInstance;
 
-        m_command_list->drawIndexed(args);
+        m_CommandList->drawIndexed(args);
     }
 }

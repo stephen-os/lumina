@@ -25,11 +25,11 @@
 #include <string>
 #include <string_view>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
-    class context;
+    class Context;
 
     // ============================================================================
     // Enums
@@ -37,219 +37,219 @@ namespace lumina::graphics
 
     // Render layers control draw order. Lower values render first (background).
     // Users can use any uint32_t value for custom layers.
-    enum class render_layer : uint32_t
+    enum class RenderLayer : uint32_t
     {
-        background = 0,
-        world = 100,
-        sprites = 200,
-        effects = 300,
-        ui = 400,
-        overlay = 500,
+        Background = 0,
+        World = 100,
+        Sprites = 200,
+        Effects = 300,
+        UI = 400,
+        Overlay = 500,
 
         // Default layer
-        default_layer = world
+        DefaultLayer = World
     };
 
     // Helper to create custom layer values
-    constexpr render_layer make_layer(uint32_t value) { return static_cast<render_layer>(value); }
+    constexpr RenderLayer MakeLayer(uint32_t value) { return static_cast<RenderLayer>(value); }
 
-    enum class text_alignment
+    enum class TextAlignment
     {
-        left,
-        center,
-        right
+        Left,
+        Center,
+        Right
     };
 
-    enum class light_blend_mode
+    enum class LightBlendMode
     {
-        additive,
-        multiply,
-        screen,
-        overlay,
-        soft_light,
-        linear_burn,
-        color_dodge,
-        subtract,
-        alpha
+        Additive,
+        Multiply,
+        Screen,
+        Overlay,
+        SoftLight,
+        LinearBurn,
+        ColorDodge,
+        Subtract,
+        Alpha
     };
 
-    enum class attenuation_model
+    enum class AttenuationModel
     {
-        none,
-        linear,
-        quadratic,
-        inverse_square,
-        exponential,
-        smoothstep,
-        realistic
+        None,
+        Linear,
+        Quadratic,
+        InverseSquare,
+        Exponential,
+        Smoothstep,
+        Realistic
     };
 
     // ============================================================================
     // Descriptor Structs
     // ============================================================================
 
-    struct quad_desc
+    struct QuadDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec2 size = {1, 1};
-        glm::vec4 color = {1, 1, 1, 1};
-        float rotation = 0.0f;
-        glm::vec2 origin = {0.5f, 0.5f};    // Rotation pivot (0-1 normalized)
-        ref<texture> texture = nullptr;
-        glm::vec2 uv_min = {0, 0};
-        glm::vec2 uv_max = {1, 1};
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
-        blend_mode blend = blend_mode::alpha;
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec2 Size = {1, 1};
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Rotation = 0.0f;
+        glm::vec2 Origin = {0.5f, 0.5f};    // Rotation pivot (0-1 normalized)
+        Ref<Texture> Texture = nullptr;
+        glm::vec2 UVMin = {0, 0};
+        glm::vec2 UVMax = {1, 1};
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
+        BlendMode Blend = BlendMode::Alpha;
     };
 
-    struct circle_desc
+    struct CircleDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec2 radius = {1, 1};          // x,y for ellipse support
-        glm::vec4 color = {1, 1, 1, 1};
-        float thickness = 1.0f;             // 1.0 = filled, <1.0 = ring
-        float fade = 0.005f;                // Soft edge fade
-        ref<texture> texture = nullptr;
-        glm::vec2 uv_min = {0, 0};
-        glm::vec2 uv_max = {1, 1};
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
-        blend_mode blend = blend_mode::alpha;
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec2 Radius = {1, 1};          // x,y for ellipse support
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Thickness = 1.0f;             // 1.0 = filled, <1.0 = ring
+        float Fade = 0.005f;                // Soft edge fade
+        Ref<Texture> Texture = nullptr;
+        glm::vec2 UVMin = {0, 0};
+        glm::vec2 UVMax = {1, 1};
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
+        BlendMode Blend = BlendMode::Alpha;
     };
 
-    struct line_desc
+    struct LineDesc
     {
-        glm::vec3 start = {0, 0, 0};
-        glm::vec3 end = {1, 0, 0};
-        glm::vec4 color = {1, 1, 1, 1};
-        float thickness = 1.0f;
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        glm::vec3 Start = {0, 0, 0};
+        glm::vec3 End = {1, 0, 0};
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Thickness = 1.0f;
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
-    struct text_desc
+    struct TextDesc
     {
-        std::string_view text;
-        glm::vec3 position = {0, 0, 0};
-        float scale = 1.0f;                 // Scale factor (1.0 = font's native pixel height)
-        glm::vec4 color = {1, 1, 1, 1};
-        text_alignment alignment = text_alignment::left;
-        ref<font_atlas> font = nullptr;     // nullptr = default font
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        std::string_view Text;
+        glm::vec3 Position = {0, 0, 0};
+        float Scale = 1.0f;                 // Scale factor (1.0 = font's native pixel height)
+        glm::vec4 Color = {1, 1, 1, 1};
+        TextAlignment Alignment = TextAlignment::Left;
+        Ref<FontAtlas> Font = nullptr;     // nullptr = default font
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
-    struct triangle_desc
+    struct TriangleDesc
     {
-        glm::vec3 p0 = {0, 0, 0};
-        glm::vec3 p1 = {1, 0, 0};
-        glm::vec3 p2 = {0.5f, 1, 0};
-        glm::vec4 color = {1, 1, 1, 1};
-        ref<texture> texture = nullptr;
-        glm::vec2 uv0 = {0, 1};
-        glm::vec2 uv1 = {1, 1};
-        glm::vec2 uv2 = {0.5f, 0};
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
-        blend_mode blend = blend_mode::alpha;
+        glm::vec3 P0 = {0, 0, 0};
+        glm::vec3 P1 = {1, 0, 0};
+        glm::vec3 P2 = {0.5f, 1, 0};
+        glm::vec4 Color = {1, 1, 1, 1};
+        Ref<Texture> Texture = nullptr;
+        glm::vec2 UV0 = {0, 1};
+        glm::vec2 UV1 = {1, 1};
+        glm::vec2 UV2 = {0.5f, 0};
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
+        BlendMode Blend = BlendMode::Alpha;
     };
 
-    struct pixel_desc
+    struct PixelDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec4 color = {1, 1, 1, 1};
-        float size = 1.0f;
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Size = 1.0f;
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
-    struct rect_desc
+    struct RectDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec2 size = {1, 1};
-        glm::vec4 color = {1, 1, 1, 1};
-        float thickness = 1.0f;
-        float rotation = 0.0f;
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec2 Size = {1, 1};
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Thickness = 1.0f;
+        float Rotation = 0.0f;
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
-    struct grid_desc
+    struct GridDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec2 size = {10, 10};
-        float cell_size = 1.0f;
-        glm::vec4 line_color = {0.5f, 0.5f, 0.5f, 1.0f};
-        float line_width = 1.0f;
-        bool checkerboard = false;
-        glm::vec4 checker_color1 = {0.4f, 0.4f, 0.4f, 1.0f};
-        glm::vec4 checker_color2 = {0.6f, 0.6f, 0.6f, 1.0f};
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec2 Size = {10, 10};
+        float CellSize = 1.0f;
+        glm::vec4 LineColor = {0.5f, 0.5f, 0.5f, 1.0f};
+        float LineWidth = 1.0f;
+        bool Checkerboard = false;
+        glm::vec4 CheckerColor1 = {0.4f, 0.4f, 0.4f, 1.0f};
+        glm::vec4 CheckerColor2 = {0.6f, 0.6f, 0.6f, 1.0f};
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
     };
 
-    struct point_light_desc
+    struct PointLightDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec3 color = {1, 1, 1};
-        float intensity = 1.0f;
-        float radius = 10.0f;
-        light_blend_mode blend = light_blend_mode::additive;
-        float blend_alpha = 1.0f;
-        attenuation_model attenuation = attenuation_model::quadratic;
-        float falloff = 1.0f;
-        render_layer layer = render_layer::effects;
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec3 Color = {1, 1, 1};
+        float Intensity = 1.0f;
+        float Radius = 10.0f;
+        LightBlendMode Blend = LightBlendMode::Additive;
+        float BlendAlpha = 1.0f;
+        AttenuationModel Attenuation = AttenuationModel::Quadratic;
+        float Falloff = 1.0f;
+        RenderLayer Layer = RenderLayer::Effects;
     };
 
-    struct sprite_desc
+    struct SpriteDesc
     {
-        glm::vec3 position = {0, 0, 0};
-        glm::vec2 size = {0, 0};            // If {0,0}, uses region size
-        glm::vec4 color = {1, 1, 1, 1};
-        float rotation = 0.0f;
-        glm::vec2 origin = {0.5f, 0.5f};    // Rotation pivot (0-1 normalized)
-        bool flip_x = false;                 // Horizontal flip
-        bool flip_y = false;                 // Vertical flip
-        render_layer layer = render_layer::default_layer;
-        float z = 0.0f;                     // Depth within layer (0.0-1.0)
-        blend_mode blend = blend_mode::alpha;
+        glm::vec3 Position = {0, 0, 0};
+        glm::vec2 Size = {0, 0};            // If {0,0}, uses region size
+        glm::vec4 Color = {1, 1, 1, 1};
+        float Rotation = 0.0f;
+        glm::vec2 Origin = {0.5f, 0.5f};    // Rotation pivot (0-1 normalized)
+        bool FlipX = false;                 // Horizontal flip
+        bool FlipY = false;                 // Vertical flip
+        RenderLayer Layer = RenderLayer::DefaultLayer;
+        float Z = 0.0f;                     // Depth within layer (0.0-1.0)
+        BlendMode Blend = BlendMode::Alpha;
     };
 
     // ============================================================================
     // Statistics
     // ============================================================================
 
-    struct renderer2d_stats
+    struct Renderer2DStats
     {
-        uint32_t draw_calls = 0;
-        uint32_t quad_count = 0;
-        uint32_t circle_count = 0;
-        uint32_t line_count = 0;
-        uint32_t text_char_count = 0;
-        uint32_t triangle_count = 0;
-        uint32_t pixel_count = 0;
-        uint32_t grid_count = 0;
-        uint32_t point_light_count = 0;
-        uint32_t texture_binds = 0;
+        uint32_t DrawCalls = 0;
+        uint32_t QuadCount = 0;
+        uint32_t CircleCount = 0;
+        uint32_t LineCount = 0;
+        uint32_t TextCharCount = 0;
+        uint32_t TriangleCount = 0;
+        uint32_t PixelCount = 0;
+        uint32_t GridCount = 0;
+        uint32_t PointLightCount = 0;
+        uint32_t TextureBinds = 0;
 
-        [[nodiscard]] uint32_t get_total_primitives() const noexcept
+        [[nodiscard]] uint32_t GetTotalPrimitives() const noexcept
         {
-            return quad_count + circle_count + line_count + triangle_count + pixel_count + grid_count;
+            return QuadCount + CircleCount + LineCount + TriangleCount + PixelCount + GridCount;
         }
 
-        void reset() noexcept
+        void Reset() noexcept
         {
-            draw_calls = 0;
-            quad_count = 0;
-            circle_count = 0;
-            line_count = 0;
-            text_char_count = 0;
-            triangle_count = 0;
-            pixel_count = 0;
-            grid_count = 0;
-            point_light_count = 0;
-            texture_binds = 0;
+            DrawCalls = 0;
+            QuadCount = 0;
+            CircleCount = 0;
+            LineCount = 0;
+            TextCharCount = 0;
+            TriangleCount = 0;
+            PixelCount = 0;
+            GridCount = 0;
+            PointLightCount = 0;
+            TextureBinds = 0;
         }
     };
 
@@ -257,66 +257,66 @@ namespace lumina::graphics
     // Configuration
     // ============================================================================
 
-    struct renderer2d_config
+    struct Renderer2DConfig
     {
-        uint32_t max_quads = 10000;
-        uint32_t max_circles = 10000;
-        uint32_t max_lines = 10000;
-        uint32_t max_triangles = 10000;
-        uint32_t max_text_chars = 10000;
-        uint32_t max_pixels = 50000;
-        uint32_t max_grids = 1000;
-        uint32_t max_point_lights = 32;
-        uint32_t max_textures = 32;
+        uint32_t MaxQuads = 10000;
+        uint32_t MaxCircles = 10000;
+        uint32_t MaxLines = 10000;
+        uint32_t MaxTriangles = 10000;
+        uint32_t MaxTextChars = 10000;
+        uint32_t MaxPixels = 50000;
+        uint32_t MaxGrids = 1000;
+        uint32_t MaxPointLights = 32;
+        uint32_t MaxTextures = 32;
     };
 
     // ============================================================================
     // Renderer2D Class
     // ============================================================================
 
-    class renderer2d
+    class Renderer2D
     {
     public:
-        explicit renderer2d(core::device& dev);
-        ~renderer2d();
+        explicit Renderer2D(Device& dev);
+        ~Renderer2D();
 
-        renderer2d(const renderer2d&) = delete;
-        renderer2d& operator=(const renderer2d&) = delete;
+        Renderer2D(const Renderer2D&) = delete;
+        Renderer2D& operator=(const Renderer2D&) = delete;
 
         // Initialization
-        bool init(const renderer2d_config& config = {});
-        void shutdown();
+        bool Init(const Renderer2DConfig& config = {});
+        void Shutdown();
 
         // Scene management
-        void begin(const glm::mat4& projection);
-        void begin(const glm::mat4& view, const glm::mat4& projection);
-        void begin(const camera2d& camera);
-        void end();
+        void Begin(const glm::mat4& projection);
+        void Begin(const glm::mat4& view, const glm::mat4& projection);
+        void Begin(const Camera2D& camera);
+        void End();
 
         // Render target
-        void set_render_target(ref<render_target> target);
-        void set_default_render_target();
-        void clear(const glm::vec4& color = {0.0f, 0.0f, 0.0f, 1.0f});
+        void SetRenderTarget(Ref<RenderTarget> target);
+        void SetDefaultRenderTarget();
+        void Clear(const glm::vec4& color = {0.0f, 0.0f, 0.0f, 1.0f});
 
         // ========================================================================
         // Drawing API (struct-based)
         // ========================================================================
 
-        void draw_quad(const quad_desc& desc);
-        void draw_circle(const circle_desc& desc);
-        void draw_line(const line_desc& desc);
-        void draw_text(const text_desc& desc);
-        void set_default_font(ref<font_atlas> font) { m_default_font = font; }
-        [[nodiscard]] ref<font_atlas> get_default_font() const noexcept { return m_default_font; }
-        void draw_triangle(const triangle_desc& desc);
-        void draw_pixel(const pixel_desc& desc);
-        void draw_rect(const rect_desc& desc);
-        void draw_grid(const grid_desc& desc);
+        void DrawQuad(const QuadDesc& desc);
+        void DrawCircle(const CircleDesc& desc);
+        void DrawLine(const LineDesc& desc);
+        void DrawText(const TextDesc& desc);
+        void SetDefaultFont(Ref<FontAtlas> font) { m_DefaultFont = font; }
+        [[nodiscard]] Ref<FontAtlas> GetDefaultFont() const noexcept { return m_DefaultFont; }
+        void DrawTriangle(const TriangleDesc& desc);
+        void DrawPixel(const PixelDesc& desc);
+        void DrawRect(const RectDesc& desc);
+        void DrawGrid(const GridDesc& desc);
 
         // Sprite drawing (texture atlas support)
-        void draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc);
-        void draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc);
-        void draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc);
+        void DrawSprite(const TextureAtlas& atlas, const std::string& regionName, const SpriteDesc& desc);
+        void DrawSprite(const TextureAtlas& atlas, uint32_t regionIndex, const SpriteDesc& desc);
+        void DrawSprite(const AtlasRegion& region, Ref<Texture> atlasTexture, const SpriteDesc& desc);
 
         // ========================================================================
         // Scissor/Clipping Regions
@@ -325,192 +325,192 @@ namespace lumina::graphics
         // Push a scissor rectangle onto the stack. All subsequent drawing will be clipped to this region.
         // If there's already a scissor active, the new scissor is intersected with the current one.
         // x, y = top-left corner in screen coordinates, w, h = dimensions
-        void push_scissor(float x, float y, float width, float height);
-        void push_scissor(const glm::vec4& rect);  // rect = {x, y, width, height}
+        void PushScissor(float x, float y, float width, float height);
+        void PushScissor(const glm::vec4& rect);  // rect = {x, y, width, height}
 
         // Pop the current scissor rectangle, restoring the previous one (or disabling scissor if stack is empty)
-        void pop_scissor();
+        void PopScissor();
 
         /// Checks if scissor is currently active.
-        [[nodiscard]] bool has_scissor() const noexcept { return !m_scissor_stack.empty(); }
+        [[nodiscard]] bool HasScissor() const noexcept { return !m_ScissorStack.empty(); }
 
         /// Gets the current scissor rect (returns zero rect if no scissor active).
-        [[nodiscard]] glm::vec4 get_current_scissor() const;
+        [[nodiscard]] glm::vec4 GetCurrentScissor() const;
 
         // ========================================================================
         // Texture Filtering
         // ========================================================================
 
-        void set_filter_mode(filter_mode mode);
-        [[nodiscard]] filter_mode get_filter_mode() const noexcept { return m_filter_mode; }
+        void SetFilterMode(FilterMode mode);
+        [[nodiscard]] FilterMode GetFilterMode() const noexcept { return m_FilterMode; }
 
         // ========================================================================
         // Lighting
         // ========================================================================
 
-        void set_lighting_enabled(bool enabled);
-        [[nodiscard]] bool is_lighting_enabled() const noexcept { return m_lighting_enabled; }
+        void SetLightingEnabled(bool enabled);
+        [[nodiscard]] bool IsLightingEnabled() const noexcept { return m_LightingEnabled; }
 
-        void set_ambient_light(const glm::vec3& color, float intensity = 1.0f);
-        [[nodiscard]] const glm::vec3& get_ambient_color() const noexcept { return m_ambient_color; }
-        [[nodiscard]] float get_ambient_intensity() const noexcept { return m_ambient_intensity; }
+        void SetAmbientLight(const glm::vec3& color, float intensity = 1.0f);
+        [[nodiscard]] const glm::vec3& GetAmbientColor() const noexcept { return m_AmbientColor; }
+        [[nodiscard]] float GetAmbientIntensity() const noexcept { return m_AmbientIntensity; }
 
-        void draw_point_light(const point_light_desc& desc);
+        void DrawPointLight(const PointLightDesc& desc);
 
         // ========================================================================
         // Stats
         // ========================================================================
 
-        [[nodiscard]] const renderer2d_stats& get_stats() const noexcept { return m_stats; }
-        void reset_stats() noexcept { m_stats.reset(); }
+        [[nodiscard]] const Renderer2DStats& GetStats() const noexcept { return m_Stats; }
+        void ResetStats() noexcept { m_Stats.Reset(); }
 
     private:
-        core::device& m_device;
-        lumina::scope<context> m_context;
-        lumina::scope<pipeline_cache> m_pipeline_cache;
-        std::vector<ref<binding_set>> m_frame_binding_sets;  // Keep binding sets alive during frame
-        renderer2d_config m_config;
-        bool m_initialized = false;
+        Device& m_Device;
+        Scope<Context> m_Context;
+        Scope<PipelineCache> m_PipelineCache;
+        std::vector<Ref<BindingSet>> m_FrameBindingSets;  // Keep binding sets alive during frame
+        Renderer2DConfig m_Config;
+        bool m_Initialized = false;
 
         // Camera
-        glm::mat4 m_view_projection{1.0f};
+        glm::mat4 m_ViewProjection{1.0f};
 
         // Scissor stack
-        std::stack<glm::vec4> m_scissor_stack;  // Stack of scissor rects {x, y, width, height}
+        std::stack<glm::vec4> m_ScissorStack;  // Stack of scissor rects {x, y, width, height}
 
         // ========================================================================
         // Vertex Types (internal)
         // ========================================================================
 
-        struct quad_vertex
+        struct QuadVertex
         {
-            glm::vec4 position;     // World position (xyz) + padding
-            glm::vec4 color;
-            glm::vec2 texcoord;
-            float tex_index;
-            float z_index;          // Depth within layer (0.0-1.0)
+            glm::vec4 Position;     // World position (xyz) + padding
+            glm::vec4 Color;
+            glm::vec2 TexCoord;
+            float TexIndex;
+            float ZIndex;          // Depth within layer (0.0-1.0)
         };
 
-        struct circle_vertex
+        struct CircleVertex
         {
-            glm::vec4 world_position;   // World position (xyz) + padding
-            glm::vec4 local_position;   // Local coords for SDF
-            glm::vec4 color;
-            glm::vec2 texcoord;
-            float tex_index;
-            float thickness;
-            float fade;
-            float z_index;              // Depth within layer (0.0-1.0)
+            glm::vec4 WorldPosition;   // World position (xyz) + padding
+            glm::vec4 LocalPosition;   // Local coords for SDF
+            glm::vec4 Color;
+            glm::vec2 TexCoord;
+            float TexIndex;
+            float Thickness;
+            float Fade;
+            float ZIndex;              // Depth within layer (0.0-1.0)
             // Total: 72 bytes - must match input layout stride
         };
 
-        struct line_vertex
+        struct LineVertex
         {
-            glm::vec4 position;     // World position (xyz) + z_index in w
-            glm::vec4 color;
+            glm::vec4 Position;     // World position (xyz) + z_index in w
+            glm::vec4 Color;
         };
 
-        struct text_vertex
+        struct TextVertex
         {
-            glm::vec4 position;     // World position (xyz) + padding
-            glm::vec4 color;
-            glm::vec2 texcoord;
-            float tex_index;
-            float z_index;          // Depth within layer (0.0-1.0)
+            glm::vec4 Position;     // World position (xyz) + padding
+            glm::vec4 Color;
+            glm::vec2 TexCoord;
+            float TexIndex;
+            float ZIndex;          // Depth within layer (0.0-1.0)
         };
 
-        struct triangle_vertex
+        struct TriangleVertex
         {
-            glm::vec4 position;     // World position (xyz) + padding
-            glm::vec4 color;
-            glm::vec2 texcoord;
-            float tex_index;
-            float z_index;          // Depth within layer (0.0-1.0)
+            glm::vec4 Position;     // World position (xyz) + padding
+            glm::vec4 Color;
+            glm::vec2 TexCoord;
+            float TexIndex;
+            float ZIndex;          // Depth within layer (0.0-1.0)
         };
 
-        struct pixel_vertex
+        struct PixelVertex
         {
-            glm::vec4 position;     // World position (xyz) + z_index in w
-            glm::vec4 color;
-            float size;
+            glm::vec4 Position;     // World position (xyz) + z_index in w
+            glm::vec4 Color;
+            float Size;
             float _pad[3];
         };
 
-        struct grid_vertex
+        struct GridVertex
         {
-            glm::vec4 position;         // World position (xyz) + z_index in w
-            glm::vec4 local_position;   // For procedural grid in shader
-            glm::vec4 line_color;
-            glm::vec2 grid_size;
-            float cell_size;
-            float line_width;
-            float show_checkerboard;
-            glm::vec4 checker_color1;
-            glm::vec4 checker_color2;
+            glm::vec4 Position;         // World position (xyz) + z_index in w
+            glm::vec4 LocalPosition;   // For procedural grid in shader
+            glm::vec4 LineColor;
+            glm::vec2 GridSize;
+            float CellSize;
+            float LineWidth;
+            float ShowCheckerboard;
+            glm::vec4 CheckerColor1;
+            glm::vec4 CheckerColor2;
         };
 
         // ========================================================================
         // Layer Batch (per-layer vertex storage)
         // ========================================================================
 
-        struct layer_batch
+        struct LayerBatch
         {
-            std::vector<quad_vertex> quad_vertices;
-            std::vector<circle_vertex> circle_vertices;
-            std::vector<line_vertex> line_vertices;
-            std::vector<text_vertex> text_vertices;
-            std::vector<triangle_vertex> triangle_vertices;
-            std::vector<pixel_vertex> pixel_vertices;
-            std::vector<grid_vertex> grid_vertices;
+            std::vector<QuadVertex> QuadVertices;
+            std::vector<CircleVertex> CircleVertices;
+            std::vector<LineVertex> LineVertices;
+            std::vector<TextVertex> TextVertices;
+            std::vector<TriangleVertex> TriangleVertices;
+            std::vector<PixelVertex> PixelVertices;
+            std::vector<GridVertex> GridVertices;
 
-            uint32_t quad_count = 0;
-            uint32_t circle_count = 0;
-            uint32_t line_count = 0;
-            uint32_t text_char_count = 0;
-            uint32_t triangle_count = 0;
-            uint32_t pixel_count = 0;
-            uint32_t grid_count = 0;
+            uint32_t QuadCount = 0;
+            uint32_t CircleCount = 0;
+            uint32_t LineCount = 0;
+            uint32_t TextCharCount = 0;
+            uint32_t TriangleCount = 0;
+            uint32_t PixelCount = 0;
+            uint32_t GridCount = 0;
 
             // Texture batching per layer
-            std::array<ref<texture>, 32> texture_slots;
-            uint32_t texture_slot_index = 0;
+            std::array<Ref<Texture>, 32> TextureSlots;
+            uint32_t TextureSlotIndex = 0;
 
             // Blend mode tracking per primitive type
-            blend_mode quad_blend = blend_mode::alpha;
-            blend_mode circle_blend = blend_mode::alpha;
-            blend_mode triangle_blend = blend_mode::alpha;
+            BlendMode QuadBlend = BlendMode::Alpha;
+            BlendMode CircleBlend = BlendMode::Alpha;
+            BlendMode TriangleBlend = BlendMode::Alpha;
 
-            void clear()
+            void Clear()
             {
-                quad_vertices.clear();
-                circle_vertices.clear();
-                line_vertices.clear();
-                text_vertices.clear();
-                triangle_vertices.clear();
-                pixel_vertices.clear();
-                grid_vertices.clear();
+                QuadVertices.clear();
+                CircleVertices.clear();
+                LineVertices.clear();
+                TextVertices.clear();
+                TriangleVertices.clear();
+                PixelVertices.clear();
+                GridVertices.clear();
 
-                quad_count = 0;
-                circle_count = 0;
-                line_count = 0;
-                text_char_count = 0;
-                triangle_count = 0;
-                pixel_count = 0;
-                grid_count = 0;
+                QuadCount = 0;
+                CircleCount = 0;
+                LineCount = 0;
+                TextCharCount = 0;
+                TriangleCount = 0;
+                PixelCount = 0;
+                GridCount = 0;
 
-                texture_slots.fill(nullptr);
-                texture_slot_index = 0;
+                TextureSlots.fill(nullptr);
+                TextureSlotIndex = 0;
 
-                quad_blend = blend_mode::alpha;
-                circle_blend = blend_mode::alpha;
-                triangle_blend = blend_mode::alpha;
+                QuadBlend = BlendMode::Alpha;
+                CircleBlend = BlendMode::Alpha;
+                TriangleBlend = BlendMode::Alpha;
             }
 
-            bool is_empty() const
+            bool IsEmpty() const
             {
-                return quad_count == 0 && circle_count == 0 && line_count == 0 &&
-                       text_char_count == 0 && triangle_count == 0 && pixel_count == 0 &&
-                       grid_count == 0;
+                return QuadCount == 0 && CircleCount == 0 && LineCount == 0 &&
+                       TextCharCount == 0 && TriangleCount == 0 && PixelCount == 0 &&
+                       GridCount == 0;
             }
         };
 
@@ -518,192 +518,192 @@ namespace lumina::graphics
         // Batch Limits
         // ========================================================================
 
-        static constexpr uint32_t vertices_per_quad = 4;
-        static constexpr uint32_t indices_per_quad = 6;
+        static constexpr uint32_t VerticesPerQuad = 4;
+        static constexpr uint32_t IndicesPerQuad = 6;
 
         // ========================================================================
         // Per-Layer Batches (sorted map for ordered iteration)
         // ========================================================================
 
-        std::map<uint32_t, layer_batch> m_layers;
+        std::map<uint32_t, LayerBatch> m_Layers;
 
         // ========================================================================
         // Private Methods
         // ========================================================================
 
-        void flush_layer(uint32_t layer_id);
-        void flush_layers_up_to(uint32_t layer_id);  // Flush all layers below this layer
-        void flush_quads(uint32_t layer_id);
-        void flush_circles(uint32_t layer_id);
-        void flush_lines(uint32_t layer_id);
-        void flush_text(uint32_t layer_id);
-        void flush_triangles(uint32_t layer_id);
-        void flush_pixels(uint32_t layer_id);
-        void flush_grids(uint32_t layer_id);
-        void flush_all();
+        void FlushLayer(uint32_t layerId);
+        void FlushLayersUpTo(uint32_t layerId);  // Flush all layers below this layer
+        void FlushQuads(uint32_t layerId);
+        void FlushCircles(uint32_t layerId);
+        void FlushLines(uint32_t layerId);
+        void FlushText(uint32_t layerId);
+        void FlushTriangles(uint32_t layerId);
+        void FlushPixels(uint32_t layerId);
+        void FlushGrids(uint32_t layerId);
+        void FlushAll();
 
-        void start_batch();
-        float get_texture_index(uint32_t layer_id, ref<texture> tex);
-        layer_batch& get_layer(uint32_t layer_id);
-        void apply_scissor();  // Apply current scissor state to context
+        void StartBatch();
+        float GetTextureIndex(uint32_t layerId, Ref<Texture> tex);
+        LayerBatch& GetLayer(uint32_t layerId);
+        void ApplyScissor();  // Apply current scissor state to context
 
         // ========================================================================
         // Shared GPU Resources (pipelines, shaders, buffers - shared across layers)
         // ========================================================================
 
         // Quad
-        ref<vertex_buffer> m_quad_vertex_buffer;
-        ref<index_buffer> m_quad_index_buffer;
-        ref<shader> m_quad_shader;
-        ref<input_layout> m_quad_input_layout;
-        ref<binding_layout> m_quad_binding_layout;
-        ref<pipeline> m_quad_pipeline;
-        uint32_t m_quad_vertex_offset = 0;  // Current vertex offset for appending (in vertices, not bytes)
+        Ref<VertexBuffer> m_QuadVertexBuffer;
+        Ref<IndexBuffer> m_QuadIndexBuffer;
+        Ref<Shader> m_QuadShader;
+        Ref<InputLayout> m_QuadInputLayout;
+        Ref<BindingLayout> m_QuadBindingLayout;
+        Ref<Pipeline> m_QuadPipeline;
+        uint32_t m_QuadVertexOffset = 0;  // Current vertex offset for appending (in vertices, not bytes)
 
         // Circle
-        ref<vertex_buffer> m_circle_vertex_buffer;
-        ref<index_buffer> m_circle_index_buffer;
-        ref<shader> m_circle_shader;
-        ref<input_layout> m_circle_input_layout;
-        ref<binding_layout> m_circle_binding_layout;
-        ref<pipeline> m_circle_pipeline;
-        uint32_t m_circle_vertex_offset = 0;
+        Ref<VertexBuffer> m_CircleVertexBuffer;
+        Ref<IndexBuffer> m_CircleIndexBuffer;
+        Ref<Shader> m_CircleShader;
+        Ref<InputLayout> m_CircleInputLayout;
+        Ref<BindingLayout> m_CircleBindingLayout;
+        Ref<Pipeline> m_CirclePipeline;
+        uint32_t m_CircleVertexOffset = 0;
 
         // Line
-        ref<vertex_buffer> m_line_vertex_buffer;
-        ref<shader> m_line_shader;
-        ref<input_layout> m_line_input_layout;
-        ref<binding_layout> m_line_binding_layout;
-        ref<pipeline> m_line_pipeline;
-        uint32_t m_line_vertex_offset = 0;
+        Ref<VertexBuffer> m_LineVertexBuffer;
+        Ref<Shader> m_LineShader;
+        Ref<InputLayout> m_LineInputLayout;
+        Ref<BindingLayout> m_LineBindingLayout;
+        Ref<Pipeline> m_LinePipeline;
+        uint32_t m_LineVertexOffset = 0;
 
         // Text
-        ref<vertex_buffer> m_text_vertex_buffer;
-        ref<index_buffer> m_text_index_buffer;
-        ref<shader> m_text_shader;
-        ref<input_layout> m_text_input_layout;
-        ref<binding_layout> m_text_binding_layout;
-        ref<pipeline> m_text_pipeline;
-        ref<font_atlas> m_default_font;
-        uint32_t m_text_vertex_offset = 0;
+        Ref<VertexBuffer> m_TextVertexBuffer;
+        Ref<IndexBuffer> m_TextIndexBuffer;
+        Ref<Shader> m_TextShader;
+        Ref<InputLayout> m_TextInputLayout;
+        Ref<BindingLayout> m_TextBindingLayout;
+        Ref<Pipeline> m_TextPipeline;
+        Ref<FontAtlas> m_DefaultFont;
+        uint32_t m_TextVertexOffset = 0;
 
         // Triangle
-        ref<vertex_buffer> m_triangle_vertex_buffer;
-        ref<shader> m_triangle_shader;
-        ref<input_layout> m_triangle_input_layout;
-        ref<binding_layout> m_triangle_binding_layout;
-        ref<pipeline> m_triangle_pipeline;
-        uint32_t m_triangle_vertex_offset = 0;
+        Ref<VertexBuffer> m_TriangleVertexBuffer;
+        Ref<Shader> m_TriangleShader;
+        Ref<InputLayout> m_TriangleInputLayout;
+        Ref<BindingLayout> m_TriangleBindingLayout;
+        Ref<Pipeline> m_TrianglePipeline;
+        uint32_t m_TriangleVertexOffset = 0;
 
         // Pixel
-        ref<vertex_buffer> m_pixel_vertex_buffer;
-        ref<shader> m_pixel_shader;
-        ref<input_layout> m_pixel_input_layout;
-        ref<binding_layout> m_pixel_binding_layout;
-        ref<pipeline> m_pixel_pipeline;
-        uint32_t m_pixel_vertex_offset = 0;
+        Ref<VertexBuffer> m_PixelVertexBuffer;
+        Ref<Shader> m_PixelShader;
+        Ref<InputLayout> m_PixelInputLayout;
+        Ref<BindingLayout> m_PixelBindingLayout;
+        Ref<Pipeline> m_PixelPipeline;
+        uint32_t m_PixelVertexOffset = 0;
 
         // Grid
-        ref<vertex_buffer> m_grid_vertex_buffer;
-        ref<index_buffer> m_grid_index_buffer;
-        ref<shader> m_grid_shader;
-        ref<input_layout> m_grid_input_layout;
-        ref<binding_layout> m_grid_binding_layout;
-        ref<pipeline> m_grid_pipeline;
-        uint32_t m_grid_vertex_offset = 0;
+        Ref<VertexBuffer> m_GridVertexBuffer;
+        Ref<IndexBuffer> m_GridIndexBuffer;
+        Ref<Shader> m_GridShader;
+        Ref<InputLayout> m_GridInputLayout;
+        Ref<BindingLayout> m_GridBindingLayout;
+        Ref<Pipeline> m_GridPipeline;
+        uint32_t m_GridVertexOffset = 0;
 
         // ========================================================================
         // Shared Resources
         // ========================================================================
 
-        ref<sampler> m_default_sampler;
-        ref<sampler> m_point_sampler;
-        ref<sampler> m_current_sampler;  // Active sampler (linear or point)
-        filter_mode m_filter_mode = filter_mode::linear;
-        ref<texture> m_white_texture;
+        Ref<Sampler> m_DefaultSampler;
+        Ref<Sampler> m_PointSampler;
+        Ref<Sampler> m_CurrentSampler;  // Active sampler (linear or point)
+        FilterMode m_FilterMode = FilterMode::Linear;
+        Ref<Texture> m_WhiteTexture;
 
         // Camera constant buffer (shared by all primitives)
-        struct camera_data
+        struct CameraData
         {
-            glm::mat4 view_projection;
+            glm::mat4 ViewProjection;
         };
-        ref<uniform_buffer> m_camera_buffer;
+        Ref<UniformBuffer> m_CameraBuffer;
 
         // ========================================================================
         // Lighting State
         // ========================================================================
 
-        bool m_lighting_enabled = false;
-        glm::vec3 m_ambient_color{0.1f, 0.1f, 0.1f};
-        float m_ambient_intensity = 1.0f;
+        bool m_LightingEnabled = false;
+        glm::vec3 m_AmbientColor{0.1f, 0.1f, 0.1f};
+        float m_AmbientIntensity = 1.0f;
 
-        struct point_light_data
+        struct PointLightData
         {
-            glm::vec3 position;
-            float intensity;
-            glm::vec3 color;
-            float radius;
-            float blend_mode;
-            float blend_alpha;
-            float attenuation;
-            float falloff;
+            glm::vec3 Position;
+            float Intensity;
+            glm::vec3 Color;
+            float Radius;
+            float BlendMode;
+            float BlendAlpha;
+            float Attenuation;
+            float Falloff;
         };
 
-        std::vector<point_light_data> m_point_lights;
+        std::vector<PointLightData> m_PointLights;
 
         // ========================================================================
         // Lighting Resources (Godot-style deferred 2D lighting)
         // ========================================================================
 
         // Render targets for lighting pass
-        ref<render_target> m_scene_target;          // Scene is rendered here when lighting enabled
-        ref<render_target> m_light_accumulation;    // Light contributions accumulated here
+        Ref<RenderTarget> m_SceneTarget;          // Scene is rendered here when lighting enabled
+        Ref<RenderTarget> m_LightAccumulation;    // Light contributions accumulated here
 
         // Fullscreen quad for lighting passes
-        struct fullscreen_vertex
+        struct FullscreenVertex
         {
-            glm::vec4 position;
-            glm::vec2 texcoord;
+            glm::vec4 Position;
+            glm::vec2 TexCoord;
         };
-        ref<vertex_buffer> m_fullscreen_vertex_buffer;
+        Ref<VertexBuffer> m_FullscreenVertexBuffer;
 
         // Point light shader and pipeline
-        ref<shader> m_point_light_shader;
-        ref<input_layout> m_point_light_input_layout;
-        ref<binding_layout> m_point_light_binding_layout;
-        ref<pipeline> m_point_light_pipeline;
+        Ref<Shader> m_PointLightShader;
+        Ref<InputLayout> m_PointLightInputLayout;
+        Ref<BindingLayout> m_PointLightBindingLayout;
+        Ref<Pipeline> m_PointLightPipeline;
 
         // Composite shader and pipeline
-        ref<shader> m_composite_shader;
-        ref<input_layout> m_composite_input_layout;
-        ref<binding_layout> m_composite_binding_layout;
-        ref<pipeline> m_composite_pipeline;
+        Ref<Shader> m_CompositeShader;
+        Ref<InputLayout> m_CompositeInputLayout;
+        Ref<BindingLayout> m_CompositeBindingLayout;
+        Ref<Pipeline> m_CompositePipeline;
 
         // Constant buffers for lighting passes
-        ref<uniform_buffer> m_light_params_buffer;
-        ref<uniform_buffer> m_composite_params_buffer;
+        Ref<UniformBuffer> m_LightParamsBuffer;
+        Ref<UniformBuffer> m_CompositeParamsBuffer;
 
         // Cached viewport size for lighting target resize
-        uint32_t m_lighting_target_width = 0;
-        uint32_t m_lighting_target_height = 0;
+        uint32_t m_LightingTargetWidth = 0;
+        uint32_t m_LightingTargetHeight = 0;
 
         // Private lighting methods
-        void init_lighting_resources();
-        void shutdown_lighting_resources();
-        void ensure_lighting_targets(uint32_t width, uint32_t height);
-        void flush_lights();
-        void composite_scene();
+        void InitLightingResources();
+        void ShutdownLightingResources();
+        void EnsureLightingTargets(uint32_t width, uint32_t height);
+        void FlushLights();
+        void CompositeScene();
 
         // ========================================================================
         // Render Target State
         // ========================================================================
 
-        ref<render_target> m_current_target;
-        format m_current_color_format = format::rgba8_unorm;
-        format m_current_depth_format = format::unknown;
-        uint32_t m_current_sample_count = 1;  // MSAA sample count
+        Ref<RenderTarget> m_CurrentTarget;
+        Format m_CurrentColorFormat = Format::RGBA8Unorm;
+        Format m_CurrentDepthFormat = Format::Unknown;
+        uint32_t m_CurrentSampleCount = 1;  // MSAA sample count
 
         // Stats
-        renderer2d_stats m_stats;
+        Renderer2DStats m_Stats;
     };
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../device.h"
+#include "../../Device.h"
 
 // Platform defines must be set before including Vulkan headers
 #ifdef _WIN32
@@ -16,97 +16,97 @@
 #include <nvrhi/vulkan.h>
 
 // Include profiler and Tracy Vulkan GPU header
-#include "../../profiler.h"
+#include "../../Profiler.h"
 #ifdef TRACY_ENABLE
     #include <tracy/TracyVulkan.hpp>
 #endif
 
 #include <vector>
 
-namespace lumina::core::platform::vulkan
+namespace Lumina
 {
-    class vulkan_message_callback : public nvrhi::IMessageCallback
+    class VulkanMessageCallback : public nvrhi::IMessageCallback
     {
     public:
-        void message(nvrhi::MessageSeverity severity, const char* message_text) override;
+        void message(nvrhi::MessageSeverity severity, const char* messageText) override;
     };
 
-    class vulkan_device : public device
+    class VulkanDevice : public Device
     {
     public:
-        vulkan_device() = default;
-        ~vulkan_device() override;
+        VulkanDevice() = default;
+        ~VulkanDevice() override;
 
-        bool init(const device_desc& desc) override;
-        void shutdown() override;
+        bool Init(const DeviceDesc& desc) override;
+        void Shutdown() override;
 
-        void begin_frame() override;
-        void present() override;
+        void BeginFrame() override;
+        void Present() override;
 
-        void resize(uint32_t width, uint32_t height) override;
+        void Resize(uint32_t width, uint32_t height) override;
 
-        nvrhi::IDevice* get_nvrhi_device() const override { return m_nvrhi_device.Get(); }
-        nvrhi::ICommandList* get_command_list() const override { return m_command_list.Get(); }
-        nvrhi::IFramebuffer* get_current_framebuffer() const override;
+        nvrhi::IDevice* GetNvrhiDevice() const override { return m_NvrhiDevice.Get(); }
+        nvrhi::ICommandList* GetCommandList() const override { return m_CommandList.Get(); }
+        nvrhi::IFramebuffer* GetCurrentFramebuffer() const override;
 
-        uint32_t get_width() const override { return m_width; }
-        uint32_t get_height() const override { return m_height; }
-        uint32_t get_frame_index() const override { return m_frame_index; }
+        uint32_t GetWidth() const override { return m_Width; }
+        uint32_t GetHeight() const override { return m_Height; }
+        uint32_t GetFrameIndex() const override { return m_FrameIndex; }
 
-        graphics_api get_api() const override { return graphics_api::vulkan; }
-        nvrhi::Format get_swapchain_format() const override;
+        GraphicsAPI GetAPI() const override { return GraphicsAPI::Vulkan; }
+        nvrhi::Format GetSwapchainFormat() const override;
 
-        vulkan_native_handles get_vulkan_handles() const override
+        VulkanNativeHandles GetVulkanHandles() const override
         {
-            return { m_instance, m_physical_device, m_device, m_graphics_queue, m_graphics_queue_family };
+            return { m_Instance, m_PhysicalDevice, m_Device, m_GraphicsQueue, m_GraphicsQueueFamily };
         }
 
     private:
-        bool create_instance();
-        bool create_device();
-        bool create_swapchain();
-        bool create_framebuffers();
-        void destroy_framebuffers();
-        void destroy_swapchain();
+        bool CreateInstance();
+        bool CreateDevice();
+        bool CreateSwapchain();
+        bool CreateFramebuffers();
+        void DestroyFramebuffers();
+        void DestroySwapchain();
 
-        void wait_for_gpu();
+        void WaitForGPU();
 
-        GLFWwindow* m_window = nullptr;
-        uint32_t m_width = 0;
-        uint32_t m_height = 0;
-        uint32_t m_backbuffer_count = 2;
-        bool m_vsync = true;
+        GLFWwindow* m_Window = nullptr;
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
+        uint32_t m_BackbufferCount = 2;
+        bool m_VSync = true;
 
         // Vulkan objects
-        VkInstance m_instance = VK_NULL_HANDLE;
-        VkDebugUtilsMessengerEXT m_debug_messenger = VK_NULL_HANDLE;
-        VkPhysicalDevice m_physical_device = VK_NULL_HANDLE;
-        VkDevice m_device = VK_NULL_HANDLE;
-        VkQueue m_graphics_queue = VK_NULL_HANDLE;
-        uint32_t m_graphics_queue_family = 0;
-        VkSurfaceKHR m_surface = VK_NULL_HANDLE;
-        VkSwapchainKHR m_swapchain = VK_NULL_HANDLE;
-        VkFormat m_swapchain_format = VK_FORMAT_UNDEFINED;
+        VkInstance m_Instance = VK_NULL_HANDLE;
+        VkDebugUtilsMessengerEXT m_DebugMessenger = VK_NULL_HANDLE;
+        VkPhysicalDevice m_PhysicalDevice = VK_NULL_HANDLE;
+        VkDevice m_Device = VK_NULL_HANDLE;
+        VkQueue m_GraphicsQueue = VK_NULL_HANDLE;
+        uint32_t m_GraphicsQueueFamily = 0;
+        VkSurfaceKHR m_Surface = VK_NULL_HANDLE;
+        VkSwapchainKHR m_Swapchain = VK_NULL_HANDLE;
+        VkFormat m_SwapchainFormat = VK_FORMAT_UNDEFINED;
 
-        std::vector<VkImage> m_swapchain_images;
-        std::vector<VkSemaphore> m_image_available_semaphores;
-        std::vector<VkSemaphore> m_render_finished_semaphores;
-        std::vector<VkFence> m_in_flight_fences;
-        uint32_t m_frame_index = 0;
-        uint32_t m_image_index = 0;
+        std::vector<VkImage> m_SwapchainImages;
+        std::vector<VkSemaphore> m_ImageAvailableSemaphores;
+        std::vector<VkSemaphore> m_RenderFinishedSemaphores;
+        std::vector<VkFence> m_InFlightFences;
+        uint32_t m_FrameIndex = 0;
+        uint32_t m_ImageIndex = 0;
 
         // NVRHI objects
-        vulkan_message_callback m_message_callback;
-        nvrhi::DeviceHandle m_nvrhi_device;
-        nvrhi::CommandListHandle m_command_list;
+        VulkanMessageCallback m_MessageCallback;
+        nvrhi::DeviceHandle m_NvrhiDevice;
+        nvrhi::CommandListHandle m_CommandList;
 
         // Swapchain textures and framebuffers
-        std::vector<nvrhi::TextureHandle> m_swapchain_textures;
-        std::vector<nvrhi::FramebufferHandle> m_swapchain_framebuffers;
+        std::vector<nvrhi::TextureHandle> m_SwapchainTextures;
+        std::vector<nvrhi::FramebufferHandle> m_SwapchainFramebuffers;
 
 #ifdef TRACY_ENABLE
-        TracyVkCtx m_tracy_ctx = nullptr;
-        VkCommandPool m_tracy_command_pool = VK_NULL_HANDLE;
+        TracyVkCtx m_TracyCtx = nullptr;
+        VkCommandPool m_TracyCommandPool = VK_NULL_HANDLE;
 #endif
     };
 }

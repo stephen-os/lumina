@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../device.h"
+#include "../../Device.h"
 
 #ifdef LUMINA_PLATFORM_WINDOWS
 
@@ -15,93 +15,93 @@
 #include <wrl/client.h>
 
 // Include profiler and Tracy D3D12 GPU header
-#include "../../profiler.h"
+#include "../../Profiler.h"
 #ifdef TRACY_ENABLE
     #include <tracy/TracyD3D12.hpp>
 #endif
 
 #include <vector>
 
-namespace lumina::core::platform::d3d12
+namespace Lumina
 {
     using Microsoft::WRL::ComPtr;
 
-    class d3d12_message_callback : public nvrhi::IMessageCallback
+    class D3D12MessageCallback : public nvrhi::IMessageCallback
     {
     public:
-        void message(nvrhi::MessageSeverity severity, const char* message_text) override;
+        void message(nvrhi::MessageSeverity severity, const char* messageText) override;
     };
 
-    class d3d12_device : public device
+    class D3D12Device : public Device
     {
     public:
-        d3d12_device() = default;
-        ~d3d12_device() override;
+        D3D12Device() = default;
+        ~D3D12Device() override;
 
-        bool init(const device_desc& desc) override;
-        void shutdown() override;
+        bool Init(const DeviceDesc& desc) override;
+        void Shutdown() override;
 
-        void begin_frame() override;
-        void present() override;
+        void BeginFrame() override;
+        void Present() override;
 
-        void resize(uint32_t width, uint32_t height) override;
+        void Resize(uint32_t width, uint32_t height) override;
 
-        nvrhi::IDevice* get_nvrhi_device() const override { return m_nvrhi_device.Get(); }
-        nvrhi::ICommandList* get_command_list() const override { return m_command_list.Get(); }
-        nvrhi::IFramebuffer* get_current_framebuffer() const override;
+        nvrhi::IDevice* GetNvrhiDevice() const override { return m_NvrhiDevice.Get(); }
+        nvrhi::ICommandList* GetCommandList() const override { return m_CommandList.Get(); }
+        nvrhi::IFramebuffer* GetCurrentFramebuffer() const override;
 
-        uint32_t get_width() const override { return m_width; }
-        uint32_t get_height() const override { return m_height; }
-        uint32_t get_frame_index() const override { return m_frame_index; }
+        uint32_t GetWidth() const override { return m_Width; }
+        uint32_t GetHeight() const override { return m_Height; }
+        uint32_t GetFrameIndex() const override { return m_FrameIndex; }
 
-        graphics_api get_api() const override { return graphics_api::d3d12; }
-        nvrhi::Format get_swapchain_format() const override { return nvrhi::Format::RGBA8_UNORM; }
+        GraphicsAPI GetAPI() const override { return GraphicsAPI::D3D12; }
+        nvrhi::Format GetSwapchainFormat() const override { return nvrhi::Format::RGBA8_UNORM; }
 
-        d3d12_native_handles get_d3d12_handles() const override
+        D3D12NativeHandles GetD3D12Handles() const override
         {
-            return { m_device.Get(), m_command_queue.Get(), m_factory.Get() };
+            return { m_Device.Get(), m_CommandQueue.Get(), m_Factory.Get() };
         }
 
     private:
-        bool create_device();
-        bool create_swapchain();
-        bool create_framebuffers();
-        void destroy_framebuffers();
+        bool CreateDevice();
+        bool CreateSwapchain();
+        bool CreateFramebuffers();
+        void DestroyFramebuffers();
 
-        void wait_for_gpu();
-        void move_to_next_frame();
+        void WaitForGPU();
+        void MoveToNextFrame();
 
-        GLFWwindow* m_window = nullptr;
-        uint32_t m_width = 0;
-        uint32_t m_height = 0;
-        uint32_t m_backbuffer_count = 2;
-        bool m_vsync = true;
+        GLFWwindow* m_Window = nullptr;
+        uint32_t m_Width = 0;
+        uint32_t m_Height = 0;
+        uint32_t m_BackbufferCount = 2;
+        bool m_VSync = true;
 
         // D3D12 objects
-        ComPtr<IDXGIFactory6> m_factory;
-        ComPtr<IDXGIAdapter1> m_adapter;
-        ComPtr<ID3D12Device> m_device;
-        ComPtr<ID3D12CommandQueue> m_command_queue;
-        ComPtr<IDXGISwapChain4> m_swapchain;
+        ComPtr<IDXGIFactory6> m_Factory;
+        ComPtr<IDXGIAdapter1> m_Adapter;
+        ComPtr<ID3D12Device> m_Device;
+        ComPtr<ID3D12CommandQueue> m_CommandQueue;
+        ComPtr<IDXGISwapChain4> m_Swapchain;
 
         // Synchronization
-        ComPtr<ID3D12Fence> m_fence;
-        std::vector<uint64_t> m_fence_values;
-        uint64_t m_current_fence_value = 0;
-        HANDLE m_fence_event = nullptr;
-        uint32_t m_frame_index = 0;
+        ComPtr<ID3D12Fence> m_Fence;
+        std::vector<uint64_t> m_FenceValues;
+        uint64_t m_CurrentFenceValue = 0;
+        HANDLE m_FenceEvent = nullptr;
+        uint32_t m_FrameIndex = 0;
 
         // NVRHI objects
-        d3d12_message_callback m_message_callback;
-        nvrhi::DeviceHandle m_nvrhi_device;
-        nvrhi::CommandListHandle m_command_list;
+        D3D12MessageCallback m_MessageCallback;
+        nvrhi::DeviceHandle m_NvrhiDevice;
+        nvrhi::CommandListHandle m_CommandList;
 
         // Swapchain textures and framebuffers
-        std::vector<nvrhi::TextureHandle> m_swapchain_textures;
-        std::vector<nvrhi::FramebufferHandle> m_swapchain_framebuffers;
+        std::vector<nvrhi::TextureHandle> m_SwapchainTextures;
+        std::vector<nvrhi::FramebufferHandle> m_SwapchainFramebuffers;
 
 #ifdef TRACY_ENABLE
-        TracyD3D12Ctx m_tracy_ctx = nullptr;
+        TracyD3D12Ctx m_TracyCtx = nullptr;
 #endif
     };
 }

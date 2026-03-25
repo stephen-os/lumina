@@ -6,66 +6,66 @@
 #include <map>
 #include <functional>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
     // File dialog flags - re-export for convenience
-    using file_dialog_flags = ImGuiFileDialogFlags;
+    using FileDialogFlags = ImGuiFileDialogFlags;
 
-    namespace file_dialog_flag
+    namespace FileDialogFlag
     {
-        constexpr file_dialog_flags none = ImGuiFileDialogFlags_None;
-        constexpr file_dialog_flags confirm_overwrite = ImGuiFileDialogFlags_ConfirmOverwrite;
-        constexpr file_dialog_flags hide_hidden_files = ImGuiFileDialogFlags_DontShowHiddenFiles;
-        constexpr file_dialog_flags disable_create_dir = ImGuiFileDialogFlags_DisableCreateDirectoryButton;
-        constexpr file_dialog_flags hide_type_column = ImGuiFileDialogFlags_HideColumnType;
-        constexpr file_dialog_flags hide_size_column = ImGuiFileDialogFlags_HideColumnSize;
-        constexpr file_dialog_flags hide_date_column = ImGuiFileDialogFlags_HideColumnDate;
-        constexpr file_dialog_flags read_only_filename = ImGuiFileDialogFlags_ReadOnlyFileNameField;
-        constexpr file_dialog_flags modal = ImGuiFileDialogFlags_Modal;
-        constexpr file_dialog_flags default_flags = ImGuiFileDialogFlags_Default;
+        constexpr FileDialogFlags None = ImGuiFileDialogFlags_None;
+        constexpr FileDialogFlags ConfirmOverwrite = ImGuiFileDialogFlags_ConfirmOverwrite;
+        constexpr FileDialogFlags HideHiddenFiles = ImGuiFileDialogFlags_DontShowHiddenFiles;
+        constexpr FileDialogFlags DisableCreateDir = ImGuiFileDialogFlags_DisableCreateDirectoryButton;
+        constexpr FileDialogFlags HideTypeColumn = ImGuiFileDialogFlags_HideColumnType;
+        constexpr FileDialogFlags HideSizeColumn = ImGuiFileDialogFlags_HideColumnSize;
+        constexpr FileDialogFlags HideDateColumn = ImGuiFileDialogFlags_HideColumnDate;
+        constexpr FileDialogFlags ReadOnlyFilename = ImGuiFileDialogFlags_ReadOnlyFileNameField;
+        constexpr FileDialogFlags Modal = ImGuiFileDialogFlags_Modal;
+        constexpr FileDialogFlags DefaultFlags = ImGuiFileDialogFlags_Default;
     }
 
     // Open a file dialog for opening files
-    inline void open_file_dialog(
+    inline void OpenFileDialog(
         const char* key,
         const char* title,
         const char* filters,
         const char* path = ".",
-        const char* default_filename = "",
-        int max_selection = 1,
-        file_dialog_flags flags = file_dialog_flag::default_flags)
+        const char* defaultFilename = "",
+        int maxSelection = 1,
+        FileDialogFlags flags = FileDialogFlag::DefaultFlags)
     {
         IGFD::FileDialogConfig config;
         config.path = path;
-        config.fileName = default_filename;
-        config.countSelectionMax = max_selection;
+        config.fileName = defaultFilename;
+        config.countSelectionMax = maxSelection;
         config.flags = flags;
         ImGuiFileDialog::Instance()->OpenDialog(key, title, filters, config);
     }
 
     // Open a file dialog for saving files
-    inline void save_file_dialog(
+    inline void SaveFileDialog(
         const char* key,
         const char* title,
         const char* filters,
         const char* path = ".",
-        const char* default_filename = "",
-        file_dialog_flags flags = file_dialog_flag::default_flags | file_dialog_flag::confirm_overwrite)
+        const char* defaultFilename = "",
+        FileDialogFlags flags = FileDialogFlag::DefaultFlags | FileDialogFlag::ConfirmOverwrite)
     {
         IGFD::FileDialogConfig config;
         config.path = path;
-        config.fileName = default_filename;
+        config.fileName = defaultFilename;
         config.countSelectionMax = 1;
         config.flags = flags;
         ImGuiFileDialog::Instance()->OpenDialog(key, title, filters, config);
     }
 
     // Open a folder picker dialog
-    inline void open_folder_dialog(
+    inline void OpenFolderDialog(
         const char* key,
         const char* title,
         const char* path = ".",
-        file_dialog_flags flags = file_dialog_flag::default_flags)
+        FileDialogFlags flags = FileDialogFlag::DefaultFlags)
     {
         IGFD::FileDialogConfig config;
         config.path = path;
@@ -75,83 +75,83 @@ namespace lumina::ui
     }
 
     // Display the file dialog - returns true if dialog was closed (ok or cancel)
-    inline bool display_file_dialog(const char* key, const ImVec2& min_size = ImVec2(400, 300),
-                                    const ImVec2& max_size = ImVec2(FLT_MAX, FLT_MAX))
+    inline bool DisplayFileDialog(const char* key, const ImVec2& minSize = ImVec2(400, 300),
+                                    const ImVec2& maxSize = ImVec2(FLT_MAX, FLT_MAX))
     {
-        return ImGuiFileDialog::Instance()->Display(key, ImGuiWindowFlags_None, min_size, max_size);
+        return ImGuiFileDialog::Instance()->Display(key, ImGuiWindowFlags_None, minSize, maxSize);
     }
 
     // Check if dialog was closed with OK
-    inline bool file_dialog_ok()
+    inline bool FileDialogOk()
     {
         return ImGuiFileDialog::Instance()->IsOk();
     }
 
     // Get selected file path (for single selection / save dialogs)
-    inline std::string get_file_dialog_path()
+    inline std::string GetFileDialogPath()
     {
         return ImGuiFileDialog::Instance()->GetFilePathName();
     }
 
     // Get selected directory path
-    inline std::string get_file_dialog_directory()
+    inline std::string GetFileDialogDirectory()
     {
         return ImGuiFileDialog::Instance()->GetCurrentPath();
     }
 
     // Get filename only (no path)
-    inline std::string get_file_dialog_filename()
+    inline std::string GetFileDialogFilename()
     {
         return ImGuiFileDialog::Instance()->GetCurrentFileName();
     }
 
     // Get multiple selections as map<filename, filepath>
-    inline std::map<std::string, std::string> get_file_dialog_selection()
+    inline std::map<std::string, std::string> GetFileDialogSelection()
     {
         return ImGuiFileDialog::Instance()->GetSelection();
     }
 
     // Close the dialog
-    inline void close_file_dialog()
+    inline void CloseFileDialog()
     {
         ImGuiFileDialog::Instance()->Close();
     }
 
     // Check if a dialog with key is open
-    inline bool is_file_dialog_open(const char* key)
+    inline bool IsFileDialogOpen(const char* key)
     {
         return ImGuiFileDialog::Instance()->IsOpened(key);
     }
 
     // Helper: Run file dialog and call callback on OK
     // Usage:
-    //   if (ui::button("Open File")) ui::open_file_dialog("open", "Open", ".cpp,.h");
-    //   ui::file_dialog("open", [](const std::string& path) { load_file(path); });
-    inline void file_dialog(const char* key, std::function<void(const std::string&)> on_ok,
-                           const ImVec2& min_size = ImVec2(400, 300))
+    //   if (UI::Button("Open File")) UI::OpenFileDialog("open", "Open", ".cpp,.h");
+    //   UI::FileDialog("open", [](const std::string& path) { LoadFile(path); });
+    inline void FileDialog(const char* key, std::function<void(const std::string&)> onOk,
+                           const ImVec2& minSize = ImVec2(400, 300))
     {
-        if (display_file_dialog(key, min_size))
+        if (DisplayFileDialog(key, minSize))
         {
-            if (file_dialog_ok())
+            if (FileDialogOk())
             {
-                on_ok(get_file_dialog_path());
+                onOk(GetFileDialogPath());
             }
-            close_file_dialog();
+            CloseFileDialog();
         }
     }
 
     // Helper: Run file dialog for multiple selection
-    inline void file_dialog_multi(const char* key,
-                                  std::function<void(const std::map<std::string, std::string>&)> on_ok,
-                                  const ImVec2& min_size = ImVec2(400, 300))
+    inline void FileDialogMulti(const char* key,
+                                  std::function<void(const std::map<std::string, std::string>&)> onOk,
+                                  const ImVec2& minSize = ImVec2(400, 300))
     {
-        if (display_file_dialog(key, min_size))
+        if (DisplayFileDialog(key, minSize))
         {
-            if (file_dialog_ok())
+            if (FileDialogOk())
             {
-                on_ok(get_file_dialog_selection());
+                onOk(GetFileDialogSelection());
             }
-            close_file_dialog();
+            CloseFileDialog();
         }
     }
 }

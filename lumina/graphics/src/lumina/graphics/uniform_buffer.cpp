@@ -8,24 +8,24 @@
 #include <string>
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    uniform_buffer::~uniform_buffer() = default;
+    UniformBuffer::~UniformBuffer() = default;
 
-    uniform_buffer::uniform_buffer(uniform_buffer&& other) noexcept
-        : m_device(other.m_device)
-        , m_handle(std::move(other.m_handle))
-        , m_size(other.m_size)
-        , m_aligned_size(other.m_aligned_size)
+    UniformBuffer::UniformBuffer(UniformBuffer&& other) noexcept
+        : m_Device(other.m_Device)
+        , m_Handle(std::move(other.m_Handle))
+        , m_Size(other.m_Size)
+        , m_AlignedSize(other.m_AlignedSize)
     {
-        other.m_size = 0;
-        other.m_aligned_size = 0;
+        other.m_Size = 0;
+        other.m_AlignedSize = 0;
     }
 
-    ref<uniform_buffer> uniform_buffer::create(core::device& dev, size_t size, std::string_view debug_name)
+    Ref<UniformBuffer> UniformBuffer::Create(Core::Device& dev, size_t size, std::string_view debugName)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create uniform buffer: no device");
             return nullptr;
@@ -37,45 +37,45 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        size_t aligned_size = (size + 255) & ~255;
+        size_t alignedSize = (size + 255) & ~255;
 
         nvrhi::BufferDesc desc;
-        desc.byteSize = aligned_size;
+        desc.byteSize = alignedSize;
         desc.isConstantBuffer = true;
-        desc.debugName = std::string(debug_name);
+        desc.debugName = std::string(debugName);
         desc.initialState = nvrhi::ResourceStates::CopyDest;
         desc.keepInitialState = true;
 
-        nvrhi::BufferHandle buffer = nvrhi_device->createBuffer(desc);
+        nvrhi::BufferHandle buffer = nvrhiDevice->createBuffer(desc);
         if (!buffer)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI uniform buffer");
             return nullptr;
         }
 
-        return ref<uniform_buffer>(new uniform_buffer(dev, std::move(buffer), size, aligned_size));
+        return Ref<UniformBuffer>(new UniformBuffer(dev, std::move(buffer), size, alignedSize));
     }
 
-    void uniform_buffer::update(const void* data, size_t size, nvrhi::ICommandList* cmd_list)
+    void UniformBuffer::Update(const void* data, size_t size, nvrhi::ICommandList* cmdList)
     {
         LUMINA_ASSERT(data != nullptr, "Cannot update uniform buffer with null data");
-        LUMINA_ASSERT(cmd_list != nullptr, "Command list is required for uniform buffer update");
-        LUMINA_ASSERT(m_handle != nullptr, "Uniform buffer handle is null");
+        LUMINA_ASSERT(cmdList != nullptr, "Command list is required for uniform buffer update");
+        LUMINA_ASSERT(m_Handle != nullptr, "Uniform buffer handle is null");
 
-        if (!data || !cmd_list || !m_handle)
+        if (!data || !cmdList || !m_Handle)
         {
-            LUMINA_LOG_ERROR("uniform_buffer::update called with invalid state");
+            LUMINA_LOG_ERROR("UniformBuffer::Update called with invalid state");
             return;
         }
 
-        if (size > m_size)
+        if (size > m_Size)
         {
-            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}", size, m_size);
-            size = m_size;
+            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}", size, m_Size);
+            size = m_Size;
         }
 
-        cmd_list->writeBuffer(m_handle.Get(), data, size);
+        cmdList->writeBuffer(m_Handle.Get(), data, size);
 
-        cmd_list->setBufferState(m_handle.Get(), nvrhi::ResourceStates::ConstantBuffer);
+        cmdList->setBufferState(m_Handle.Get(), nvrhi::ResourceStates::ConstantBuffer);
     }
 }

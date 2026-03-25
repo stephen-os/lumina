@@ -2,80 +2,80 @@
 #include "world.h"
 #include "conversions.h"
 
-namespace lumina::physics::query
+namespace Lumina
 {
     namespace
     {
-        struct overlap_context
+        struct OverlapContext
         {
-            overlap_callback* callback;
+            OverlapCallback* Callback;
         };
 
-        bool overlap_callback_wrapper(b2ShapeId shape_id, void* context)
+        bool OverlapCallbackWrapper(b2ShapeId shapeId, void* context)
         {
-            auto* ctx = static_cast<overlap_context*>(context);
-            return (*ctx->callback)(shape_id);
+            auto* ctx = static_cast<OverlapContext*>(context);
+            return (*ctx->Callback)(shapeId);
         }
 
-        struct raycast_context
+        struct RaycastContext
         {
-            ray_cast_callback* callback;
+            RayCastCallback* Callback;
         };
 
-        float raycast_callback_wrapper(b2ShapeId shape_id, b2Vec2 point, b2Vec2 normal, float fraction, void* context)
+        float RaycastCallbackWrapper(b2ShapeId shapeId, b2Vec2 point, b2Vec2 normal, float fraction, void* context)
         {
-            auto* ctx = static_cast<raycast_context*>(context);
-            return (*ctx->callback)(shape_id, to_glm(point), to_glm(normal), fraction);
+            auto* ctx = static_cast<RaycastContext*>(context);
+            return (*ctx->Callback)(shapeId, ToGlm(point), ToGlm(normal), fraction);
         }
     }
 
-    void query_aabb(
-        const world& w,
+    void QueryAABB(
+        const World& w,
         glm::vec2 min,
         glm::vec2 max,
-        overlap_callback callback,
-        query_filter filter)
+        OverlapCallback callback,
+        QueryFilter filter)
     {
         b2AABB aabb;
-        aabb.lowerBound = to_b2(min);
-        aabb.upperBound = to_b2(max);
+        aabb.lowerBound = ToB2(min);
+        aabb.upperBound = ToB2(max);
 
-        overlap_context ctx{ &callback };
-        b2World_OverlapAABB(w.get_native_id(), aabb, filter.to_b2(), overlap_callback_wrapper, &ctx);
+        OverlapContext ctx{ &callback };
+        b2World_OverlapAABB(w.GetNativeId(), aabb, filter.ToB2(), OverlapCallbackWrapper, &ctx);
     }
 
-    void query_circle(
-        const world& w,
+    void QueryCircle(
+        const World& w,
         glm::vec2 center,
         float radius,
-        overlap_callback callback,
-        query_filter filter)
+        OverlapCallback callback,
+        QueryFilter filter)
     {
         // Create a shape proxy for a circle (single point with radius)
-        b2Vec2 point = to_b2(center);
+        b2Vec2 point = ToB2(center);
         b2ShapeProxy proxy = b2MakeProxy(&point, 1, radius);
 
-        overlap_context ctx{ &callback };
-        b2World_OverlapShape(w.get_native_id(), &proxy, filter.to_b2(), overlap_callback_wrapper, &ctx);
+        OverlapContext ctx{ &callback };
+        b2World_OverlapShape(w.GetNativeId(), &proxy, filter.ToB2(), OverlapCallbackWrapper, &ctx);
     }
 
-    void ray_cast(
-        const world& w,
+    void RayCast(
+        const World& w,
         glm::vec2 origin,
         glm::vec2 direction,
-        float max_distance,
-        ray_cast_callback callback,
-        query_filter filter)
+        float maxDistance,
+        RayCastCallback callback,
+        QueryFilter filter)
     {
-        glm::vec2 translation = direction * max_distance;
+        glm::vec2 translation = direction * maxDistance;
 
-        raycast_context ctx{ &callback };
+        RaycastContext ctx{ &callback };
         b2World_CastRay(
-            w.get_native_id(),
-            to_b2(origin),
-            to_b2(translation),
-            filter.to_b2(),
-            raycast_callback_wrapper,
+            w.GetNativeId(),
+            ToB2(origin),
+            ToB2(translation),
+            filter.ToB2(),
+            RaycastCallbackWrapper,
             &ctx
         );
     }

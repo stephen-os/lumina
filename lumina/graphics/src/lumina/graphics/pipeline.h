@@ -10,80 +10,80 @@
 #include <utility>
 #include <vector>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
-    class shader;
-    class input_layout;
-    class binding_layout;
-    class render_target;
+    class Shader;
+    class InputLayout;
+    class BindingLayout;
+    class RenderTarget;
 
     /// Complete graphics pipeline configuration.
     /// Combines shader, vertex layout, bindings, and render state.
-    struct pipeline_desc
+    struct PipelineDesc
     {
-        ref<shader> shader_program;
-        ref<input_layout> vertex_layout;
-        std::vector<ref<binding_layout>> binding_layouts;
-        render_state state;
-        format color_format = format::rgba8_unorm;
-        format depth_format = format::unknown;
-        uint32_t sample_count = 1;  // MSAA sample count (1 = no MSAA)
+        Ref<Shader> ShaderProgram;
+        Ref<InputLayout> VertexLayout;
+        std::vector<Ref<BindingLayout>> BindingLayouts;
+        RenderState State;
+        Format ColorFormat = Format::RGBA8Unorm;
+        Format DepthFormat = Format::Unknown;
+        uint32_t SampleCount = 1;  // MSAA sample count (1 = no MSAA)
 
         /// Generates a hash for pipeline caching.
-        [[nodiscard]] size_t hash() const;
+        [[nodiscard]] size_t Hash() const;
     };
 
     /// GPU graphics pipeline encapsulating all rendering state.
-    /// Pipelines are immutable; use pipeline_cache to manage them efficiently.
-    class pipeline
+    /// Pipelines are immutable; use PipelineCache to manage them efficiently.
+    class Pipeline
     {
     public:
-        ~pipeline();
+        ~Pipeline();
 
-        pipeline(const pipeline&) = delete;
-        pipeline& operator=(const pipeline&) = delete;
+        Pipeline(const Pipeline&) = delete;
+        Pipeline& operator=(const Pipeline&) = delete;
 
         /// Creates a graphics pipeline. Returns nullptr on failure.
-        [[nodiscard]] static ref<pipeline> create(core::device& dev, const pipeline_desc& desc);
+        [[nodiscard]] static Ref<Pipeline> Create(Device& dev, const PipelineDesc& desc);
 
-        [[nodiscard]] const pipeline_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] nvrhi::IGraphicsPipeline* get_pipeline() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] const PipelineDesc& GetDesc() const noexcept { return m_Desc; }
+        [[nodiscard]] nvrhi::IGraphicsPipeline* GetPipeline() const noexcept { return m_Handle.Get(); }
 
     private:
-        pipeline(core::device& dev, nvrhi::GraphicsPipelineHandle handle, const pipeline_desc& desc)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_desc(desc)
+        Pipeline(Device& dev, nvrhi::GraphicsPipelineHandle handle, const PipelineDesc& desc)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Desc(desc)
         {}
 
-        core::device& m_device;
-        nvrhi::GraphicsPipelineHandle m_handle;
-        pipeline_desc m_desc;
+        Device& m_Device;
+        nvrhi::GraphicsPipelineHandle m_Handle;
+        PipelineDesc m_Desc;
     };
 
     /// Manages and reuses pipelines based on their configuration.
     /// Avoids creating duplicate pipelines for the same settings.
-    class pipeline_cache
+    class PipelineCache
     {
     public:
-        explicit pipeline_cache(core::device& dev);
-        ~pipeline_cache();
+        explicit PipelineCache(Device& dev);
+        ~PipelineCache();
 
-        pipeline_cache(const pipeline_cache&) = delete;
-        pipeline_cache& operator=(const pipeline_cache&) = delete;
+        PipelineCache(const PipelineCache&) = delete;
+        PipelineCache& operator=(const PipelineCache&) = delete;
 
         /// Gets an existing pipeline or creates a new one matching the description.
-        [[nodiscard]] ref<pipeline> get_or_create(const pipeline_desc& desc);
+        [[nodiscard]] Ref<Pipeline> GetOrCreate(const PipelineDesc& desc);
 
         /// Clears all cached pipelines.
-        void clear();
+        void Clear();
 
-        [[nodiscard]] size_t get_pipeline_count() const noexcept { return m_pipelines.size(); }
+        [[nodiscard]] size_t GetPipelineCount() const noexcept { return m_Pipelines.size(); }
 
     private:
-        core::device& m_device;
-        std::unordered_map<size_t, ref<pipeline>> m_pipelines;
+        Device& m_Device;
+        std::unordered_map<size_t, Ref<Pipeline>> m_Pipelines;
     };
 }

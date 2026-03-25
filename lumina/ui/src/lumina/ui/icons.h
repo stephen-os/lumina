@@ -4,45 +4,45 @@
 
 #include <cstdio>
 
-namespace lumina::ui::icons
+namespace Lumina::UI::Icons
 {
     // Placeholder icon constants.
     // Replace with actual UTF-8 codepoints when an icon font (FontAwesome, MaterialIcons, etc.) is integrated.
-    inline constexpr const char* folder      = "F";
-    inline constexpr const char* file        = "f";
-    inline constexpr const char* save        = "S";
-    inline constexpr const char* open        = "O";
-    inline constexpr const char* close       = "X";
-    inline constexpr const char* play        = ">";
-    inline constexpr const char* pause       = "||";
-    inline constexpr const char* stop        = "#";
-    inline constexpr const char* add         = "+";
-    inline constexpr const char* remove      = "-";
-    inline constexpr const char* edit        = "E";
-    inline constexpr const char* search      = "?";
-    inline constexpr const char* settings    = "*";
-    inline constexpr const char* refresh     = "R";
-    inline constexpr const char* trash       = "D";
-    inline constexpr const char* eye         = "V";
-    inline constexpr const char* eye_off     = "H";
-    inline constexpr const char* lock        = "L";
-    inline constexpr const char* unlock      = "U";
-    inline constexpr const char* arrow_up    = "^";
-    inline constexpr const char* arrow_down  = "v";
-    inline constexpr const char* arrow_left  = "<";
-    inline constexpr const char* arrow_right = ">";
+    inline constexpr const char* Folder      = "F";
+    inline constexpr const char* File        = "f";
+    inline constexpr const char* Save        = "S";
+    inline constexpr const char* Open        = "O";
+    inline constexpr const char* Close       = "X";
+    inline constexpr const char* Play        = ">";
+    inline constexpr const char* Pause       = "||";
+    inline constexpr const char* Stop        = "#";
+    inline constexpr const char* Add         = "+";
+    inline constexpr const char* Remove      = "-";
+    inline constexpr const char* Edit        = "E";
+    inline constexpr const char* Search      = "?";
+    inline constexpr const char* Settings    = "*";
+    inline constexpr const char* Refresh     = "R";
+    inline constexpr const char* Trash       = "D";
+    inline constexpr const char* Eye         = "V";
+    inline constexpr const char* EyeOff      = "H";
+    inline constexpr const char* Lock        = "L";
+    inline constexpr const char* Unlock      = "U";
+    inline constexpr const char* ArrowUp     = "^";
+    inline constexpr const char* ArrowDown   = "v";
+    inline constexpr const char* ArrowLeft   = "<";
+    inline constexpr const char* ArrowRight  = ">";
 }
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    [[nodiscard]] inline bool icon_button(const char* icon, const char* label, const ImVec2& size = {0, 0})
+    [[nodiscard]] inline bool IconButton(const char* icon, const char* label, const ImVec2& size = {0, 0})
     {
         char buffer[256];
         std::snprintf(buffer, sizeof(buffer), "%s %s", icon, label);
         return ImGui::Button(buffer, size);
     }
 
-    [[nodiscard]] inline bool icon_button(const char* icon, const ImVec2& size = {0, 0})
+    [[nodiscard]] inline bool IconButton(const char* icon, const ImVec2& size = {0, 0})
     {
         return ImGui::Button(icon, size);
     }

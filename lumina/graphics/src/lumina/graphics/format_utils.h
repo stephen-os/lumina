@@ -4,93 +4,93 @@
 
 #include <nvrhi/nvrhi.h>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    [[nodiscard]] inline nvrhi::Format to_nvrhi_format(format fmt) noexcept
+    [[nodiscard]] inline nvrhi::Format ToNvrhiFormat(Format fmt) noexcept
     {
         switch (fmt)
         {
-            case format::unknown:           return nvrhi::Format::UNKNOWN;
+            case Format::Unknown:           return nvrhi::Format::UNKNOWN;
 
-            case format::r8_unorm:          return nvrhi::Format::R8_UNORM;
-            case format::r8_snorm:          return nvrhi::Format::R8_SNORM;
-            case format::r8_uint:           return nvrhi::Format::R8_UINT;
-            case format::r8_sint:           return nvrhi::Format::R8_SINT;
+            case Format::R8Unorm:           return nvrhi::Format::R8_UNORM;
+            case Format::R8Snorm:           return nvrhi::Format::R8_SNORM;
+            case Format::R8Uint:            return nvrhi::Format::R8_UINT;
+            case Format::R8Sint:            return nvrhi::Format::R8_SINT;
 
-            case format::r16_float:         return nvrhi::Format::R16_FLOAT;
-            case format::r16_unorm:         return nvrhi::Format::R16_UNORM;
-            case format::r16_uint:          return nvrhi::Format::R16_UINT;
-            case format::r16_sint:          return nvrhi::Format::R16_SINT;
-            case format::rg8_unorm:         return nvrhi::Format::RG8_UNORM;
-            case format::rg8_snorm:         return nvrhi::Format::RG8_SNORM;
+            case Format::R16Float:          return nvrhi::Format::R16_FLOAT;
+            case Format::R16Unorm:          return nvrhi::Format::R16_UNORM;
+            case Format::R16Uint:           return nvrhi::Format::R16_UINT;
+            case Format::R16Sint:           return nvrhi::Format::R16_SINT;
+            case Format::RG8Unorm:          return nvrhi::Format::RG8_UNORM;
+            case Format::RG8Snorm:          return nvrhi::Format::RG8_SNORM;
 
-            case format::r32_float:         return nvrhi::Format::R32_FLOAT;
-            case format::r32_uint:          return nvrhi::Format::R32_UINT;
-            case format::r32_sint:          return nvrhi::Format::R32_SINT;
-            case format::rg16_float:        return nvrhi::Format::RG16_FLOAT;
-            case format::rg16_unorm:        return nvrhi::Format::RG16_UNORM;
-            case format::rgba8_unorm:       return nvrhi::Format::RGBA8_UNORM;
-            case format::rgba8_unorm_srgb:  return nvrhi::Format::SRGBA8_UNORM;
-            case format::rgba8_snorm:       return nvrhi::Format::RGBA8_SNORM;
-            case format::bgra8_unorm:       return nvrhi::Format::BGRA8_UNORM;
-            case format::bgra8_unorm_srgb:  return nvrhi::Format::SBGRA8_UNORM;
+            case Format::R32Float:          return nvrhi::Format::R32_FLOAT;
+            case Format::R32Uint:           return nvrhi::Format::R32_UINT;
+            case Format::R32Sint:           return nvrhi::Format::R32_SINT;
+            case Format::RG16Float:         return nvrhi::Format::RG16_FLOAT;
+            case Format::RG16Unorm:         return nvrhi::Format::RG16_UNORM;
+            case Format::RGBA8Unorm:        return nvrhi::Format::RGBA8_UNORM;
+            case Format::RGBA8UnormSrgb:    return nvrhi::Format::SRGBA8_UNORM;
+            case Format::RGBA8Snorm:        return nvrhi::Format::RGBA8_SNORM;
+            case Format::BGRA8Unorm:        return nvrhi::Format::BGRA8_UNORM;
+            case Format::BGRA8UnormSrgb:    return nvrhi::Format::SBGRA8_UNORM;
 
-            case format::rg32_float:        return nvrhi::Format::RG32_FLOAT;
-            case format::rgba16_float:      return nvrhi::Format::RGBA16_FLOAT;
-            case format::rgba16_unorm:      return nvrhi::Format::RGBA16_UNORM;
+            case Format::RG32Float:         return nvrhi::Format::RG32_FLOAT;
+            case Format::RGBA16Float:       return nvrhi::Format::RGBA16_FLOAT;
+            case Format::RGBA16Unorm:       return nvrhi::Format::RGBA16_UNORM;
 
-            case format::rgba32_float:      return nvrhi::Format::RGBA32_FLOAT;
+            case Format::RGBA32Float:       return nvrhi::Format::RGBA32_FLOAT;
 
-            case format::d16_unorm:         return nvrhi::Format::D16;
-            case format::d24_unorm_s8_uint: return nvrhi::Format::D24S8;
-            case format::d32_float:         return nvrhi::Format::D32;
-            case format::d32_float_s8_uint: return nvrhi::Format::D32S8;
+            case Format::D16Unorm:          return nvrhi::Format::D16;
+            case Format::D24UnormS8Uint:    return nvrhi::Format::D24S8;
+            case Format::D32Float:          return nvrhi::Format::D32;
+            case Format::D32FloatS8Uint:    return nvrhi::Format::D32S8;
 
             default:                        return nvrhi::Format::UNKNOWN;
         }
     }
 
-    [[nodiscard]] inline format from_nvrhi_format(nvrhi::Format fmt) noexcept
+    [[nodiscard]] inline Format FromNvrhiFormat(nvrhi::Format fmt) noexcept
     {
         switch (fmt)
         {
-            case nvrhi::Format::UNKNOWN:        return format::unknown;
+            case nvrhi::Format::UNKNOWN:        return Format::Unknown;
 
-            case nvrhi::Format::R8_UNORM:       return format::r8_unorm;
-            case nvrhi::Format::R8_SNORM:       return format::r8_snorm;
-            case nvrhi::Format::R8_UINT:        return format::r8_uint;
-            case nvrhi::Format::R8_SINT:        return format::r8_sint;
+            case nvrhi::Format::R8_UNORM:       return Format::R8Unorm;
+            case nvrhi::Format::R8_SNORM:       return Format::R8Snorm;
+            case nvrhi::Format::R8_UINT:        return Format::R8Uint;
+            case nvrhi::Format::R8_SINT:        return Format::R8Sint;
 
-            case nvrhi::Format::R16_FLOAT:      return format::r16_float;
-            case nvrhi::Format::R16_UNORM:      return format::r16_unorm;
-            case nvrhi::Format::R16_UINT:       return format::r16_uint;
-            case nvrhi::Format::R16_SINT:       return format::r16_sint;
-            case nvrhi::Format::RG8_UNORM:      return format::rg8_unorm;
-            case nvrhi::Format::RG8_SNORM:      return format::rg8_snorm;
+            case nvrhi::Format::R16_FLOAT:      return Format::R16Float;
+            case nvrhi::Format::R16_UNORM:      return Format::R16Unorm;
+            case nvrhi::Format::R16_UINT:       return Format::R16Uint;
+            case nvrhi::Format::R16_SINT:       return Format::R16Sint;
+            case nvrhi::Format::RG8_UNORM:      return Format::RG8Unorm;
+            case nvrhi::Format::RG8_SNORM:      return Format::RG8Snorm;
 
-            case nvrhi::Format::R32_FLOAT:      return format::r32_float;
-            case nvrhi::Format::R32_UINT:       return format::r32_uint;
-            case nvrhi::Format::R32_SINT:       return format::r32_sint;
-            case nvrhi::Format::RG16_FLOAT:     return format::rg16_float;
-            case nvrhi::Format::RG16_UNORM:     return format::rg16_unorm;
-            case nvrhi::Format::RGBA8_UNORM:    return format::rgba8_unorm;
-            case nvrhi::Format::SRGBA8_UNORM:   return format::rgba8_unorm_srgb;
-            case nvrhi::Format::RGBA8_SNORM:    return format::rgba8_snorm;
-            case nvrhi::Format::BGRA8_UNORM:    return format::bgra8_unorm;
-            case nvrhi::Format::SBGRA8_UNORM:   return format::bgra8_unorm_srgb;
+            case nvrhi::Format::R32_FLOAT:      return Format::R32Float;
+            case nvrhi::Format::R32_UINT:       return Format::R32Uint;
+            case nvrhi::Format::R32_SINT:       return Format::R32Sint;
+            case nvrhi::Format::RG16_FLOAT:     return Format::RG16Float;
+            case nvrhi::Format::RG16_UNORM:     return Format::RG16Unorm;
+            case nvrhi::Format::RGBA8_UNORM:    return Format::RGBA8Unorm;
+            case nvrhi::Format::SRGBA8_UNORM:   return Format::RGBA8UnormSrgb;
+            case nvrhi::Format::RGBA8_SNORM:    return Format::RGBA8Snorm;
+            case nvrhi::Format::BGRA8_UNORM:    return Format::BGRA8Unorm;
+            case nvrhi::Format::SBGRA8_UNORM:   return Format::BGRA8UnormSrgb;
 
-            case nvrhi::Format::RG32_FLOAT:     return format::rg32_float;
-            case nvrhi::Format::RGBA16_FLOAT:   return format::rgba16_float;
-            case nvrhi::Format::RGBA16_UNORM:   return format::rgba16_unorm;
+            case nvrhi::Format::RG32_FLOAT:     return Format::RG32Float;
+            case nvrhi::Format::RGBA16_FLOAT:   return Format::RGBA16Float;
+            case nvrhi::Format::RGBA16_UNORM:   return Format::RGBA16Unorm;
 
-            case nvrhi::Format::RGBA32_FLOAT:   return format::rgba32_float;
+            case nvrhi::Format::RGBA32_FLOAT:   return Format::RGBA32Float;
 
-            case nvrhi::Format::D16:            return format::d16_unorm;
-            case nvrhi::Format::D24S8:          return format::d24_unorm_s8_uint;
-            case nvrhi::Format::D32:            return format::d32_float;
-            case nvrhi::Format::D32S8:          return format::d32_float_s8_uint;
+            case nvrhi::Format::D16:            return Format::D16Unorm;
+            case nvrhi::Format::D24S8:          return Format::D24UnormS8Uint;
+            case nvrhi::Format::D32:            return Format::D32Float;
+            case nvrhi::Format::D32S8:          return Format::D32FloatS8Uint;
 
-            default:                            return format::unknown;
+            default:                            return Format::Unknown;
         }
     }
 }

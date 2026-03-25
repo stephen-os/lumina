@@ -8,44 +8,44 @@
 
 #include <glm/glm.hpp>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class transforms_layer : public lumina::core::layer
+class TransformsLayer : public Lumina::Layer
 {
 public:
-    transforms_layer() : layer("transforms") {}
+    TransformsLayer() : Layer("Transforms") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 600, .height = 500});
+        Gfx::Renderer::Init({.Width = 600, .Height = 500});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float delta_time) override
+    void OnUpdate(float deltaTime) override
     {
-        m_time += delta_time;
+        m_Time += deltaTime;
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.12f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.12f, 1.0f});
 
         // Row 1: Static rotations (0, 15, 30, 45, 60, 90 degrees)
         float y1 = 80.0f;
         const float angles[] = {0.0f, 15.0f, 30.0f, 45.0f, 60.0f, 90.0f};
         for (int i = 0; i < 6; ++i)
         {
-            gfx::renderer::draw_quad({
-                .position = {80.0f + i * 90.0f, y1, 0.0f},
-                .size = {50.0f, 30.0f},
-                .color = {0.3f, 0.6f, 1.0f, 1.0f},
-                .rotation = glm::radians(angles[i])
+            Gfx::Renderer::DrawQuad({
+                .Position = {80.0f + i * 90.0f, y1, 0.0f},
+                .Size = {50.0f, 30.0f},
+                .Color = {0.3f, 0.6f, 1.0f, 1.0f},
+                .Rotation = glm::radians(angles[i])
             });
         }
 
@@ -54,109 +54,109 @@ public:
         const float sizes[] = {20.0f, 35.0f, 50.0f, 65.0f, 80.0f};
         for (int i = 0; i < 5; ++i)
         {
-            gfx::renderer::draw_quad({
-                .position = {100.0f + i * 100.0f, y2, 0.0f},
-                .size = {sizes[i], sizes[i]},
-                .color = {1.0f, 0.5f, 0.2f, 1.0f}
+            Gfx::Renderer::DrawQuad({
+                .Position = {100.0f + i * 100.0f, y2, 0.0f},
+                .Size = {sizes[i], sizes[i]},
+                .Color = {1.0f, 0.5f, 0.2f, 1.0f}
             });
         }
 
         // Row 3: Animated rotation (spinning shapes)
         float y3 = 300.0f;
-        float spin = m_time * 2.0f;  // 2 radians per second
+        float spin = m_Time * 2.0f;  // 2 radians per second
 
         // Slow spin
-        gfx::renderer::draw_quad({
-            .position = {100.0f, y3, 0.0f},
-            .size = {60.0f, 40.0f},
-            .color = {1.0f, 0.3f, 0.3f, 1.0f},
-            .rotation = spin * 0.5f
+        Gfx::Renderer::DrawQuad({
+            .Position = {100.0f, y3, 0.0f},
+            .Size = {60.0f, 40.0f},
+            .Color = {1.0f, 0.3f, 0.3f, 1.0f},
+            .Rotation = spin * 0.5f
         });
 
         // Medium spin
-        gfx::renderer::draw_quad({
-            .position = {220.0f, y3, 0.0f},
-            .size = {60.0f, 40.0f},
-            .color = {0.3f, 1.0f, 0.3f, 1.0f},
-            .rotation = spin
+        Gfx::Renderer::DrawQuad({
+            .Position = {220.0f, y3, 0.0f},
+            .Size = {60.0f, 40.0f},
+            .Color = {0.3f, 1.0f, 0.3f, 1.0f},
+            .Rotation = spin
         });
 
         // Fast spin
-        gfx::renderer::draw_quad({
-            .position = {340.0f, y3, 0.0f},
-            .size = {60.0f, 40.0f},
-            .color = {0.3f, 0.3f, 1.0f, 1.0f},
-            .rotation = spin * 2.0f
+        Gfx::Renderer::DrawQuad({
+            .Position = {340.0f, y3, 0.0f},
+            .Size = {60.0f, 40.0f},
+            .Color = {0.3f, 0.3f, 1.0f, 1.0f},
+            .Rotation = spin * 2.0f
         });
 
         // Counter-rotation pair
-        gfx::renderer::draw_quad({
-            .position = {480.0f, y3, 0.0f},
-            .size = {70.0f, 70.0f},
-            .color = {1.0f, 0.8f, 0.2f, 0.7f},
-            .rotation = spin
+        Gfx::Renderer::DrawQuad({
+            .Position = {480.0f, y3, 0.0f},
+            .Size = {70.0f, 70.0f},
+            .Color = {1.0f, 0.8f, 0.2f, 0.7f},
+            .Rotation = spin
         });
-        gfx::renderer::draw_quad({
-            .position = {480.0f, y3, 0.0f},
-            .size = {45.0f, 45.0f},
-            .color = {0.8f, 0.2f, 1.0f, 0.8f},
-            .rotation = -spin * 1.5f
+        Gfx::Renderer::DrawQuad({
+            .Position = {480.0f, y3, 0.0f},
+            .Size = {45.0f, 45.0f},
+            .Color = {0.8f, 0.2f, 1.0f, 0.8f},
+            .Rotation = -spin * 1.5f
         });
 
         // Row 4: Pulsing scale animation
         float y4 = 420.0f;
-        float pulse = std::sin(m_time * 3.0f) * 0.3f + 1.0f;  // Scale 0.7 to 1.3
+        float pulse = std::sin(m_Time * 3.0f) * 0.3f + 1.0f;  // Scale 0.7 to 1.3
 
-        gfx::renderer::draw_circle({
-            .position = {150.0f, y4, 0.0f},
-            .radius = {30.0f * pulse, 30.0f * pulse},
-            .color = {0.4f, 1.0f, 0.8f, 1.0f}
+        Gfx::Renderer::DrawCircle({
+            .Position = {150.0f, y4, 0.0f},
+            .Radius = {30.0f * pulse, 30.0f * pulse},
+            .Color = {0.4f, 1.0f, 0.8f, 1.0f}
         });
 
         // Breathing rectangle
-        float breathe = std::sin(m_time * 2.0f) * 0.2f + 1.0f;
-        gfx::renderer::draw_quad({
-            .position = {300.0f, y4, 0.0f},
-            .size = {80.0f * breathe, 50.0f * breathe},
-            .color = {1.0f, 0.6f, 0.4f, 1.0f}
+        float breathe = std::sin(m_Time * 2.0f) * 0.2f + 1.0f;
+        Gfx::Renderer::DrawQuad({
+            .Position = {300.0f, y4, 0.0f},
+            .Size = {80.0f * breathe, 50.0f * breathe},
+            .Color = {1.0f, 0.6f, 0.4f, 1.0f}
         });
 
         // Ellipse with changing aspect ratio
-        float aspect = std::sin(m_time * 1.5f) * 0.5f + 1.0f;
-        gfx::renderer::draw_circle({
-            .position = {450.0f, y4, 0.0f},
-            .radius = {40.0f * aspect, 40.0f / aspect},
-            .color = {0.6f, 0.4f, 1.0f, 1.0f}
+        float aspect = std::sin(m_Time * 1.5f) * 0.5f + 1.0f;
+        Gfx::Renderer::DrawCircle({
+            .Position = {450.0f, y4, 0.0f},
+            .Radius = {40.0f * aspect, 40.0f / aspect},
+            .Color = {0.6f, 0.4f, 1.0f, 1.0f}
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        ui::begin_window("Transforms");
-        ui::text("Transform Animations");
-        ui::separator();
-        ui::text("Row 1: Static rotations");
-        ui::text("Row 2: Size variations");
-        ui::text("Row 3: Animated rotation");
-        ui::text("Row 4: Scale animations");
-        ui::separator();
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Transforms");
+        UI::Text("Transform Animations");
+        UI::Separator();
+        UI::Text("Row 1: Static rotations");
+        UI::Text("Row 2: Size variations");
+        UI::Text("Row 3: Animated rotation");
+        UI::Text("Row 4: Scale animations");
+        UI::Separator();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), {600, 500});
+            UI::Image(tex->GetTexture(), {600, 500});
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    float m_time = 0.0f;
+    float m_Time = 0.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/03-transforms";
-    auto* app = new application(specs);
-    app->push_layer<transforms_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/03-transforms";
+    auto* app = new Application(specs);
+    app->PushLayer<TransformsLayer>();
     return app;
 }

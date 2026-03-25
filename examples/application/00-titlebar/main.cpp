@@ -5,35 +5,35 @@
 #include <lumina/core/entry_point.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
+namespace UI = Lumina::UI;
 
-class titlebar_layer : public lumina::core::layer
+class TitlebarLayer : public Lumina::Layer
 {
 public:
-    titlebar_layer() : layer("titlebar") {}
+    TitlebarLayer() : Layer("Titlebar") {}
 
-    void on_render() override
+    void OnRender() override
     {
-        ui::begin_window("Titlebar Demo");
-        ui::text("Custom titlebar colors!");
-        ui::spacing();
-        ui::text("Titlebar: Dark Gray (30, 30, 30)");
-        ui::text("Text: Lumina Orange (255, 128, 0)");
-        ui::spacing();
-        ui::text_disabled("Note: Requires Windows 11+");
-        ui::end_window();
+        UI::BeginWindow("Titlebar Demo");
+        UI::Text("Custom titlebar colors!");
+        UI::Spacing();
+        UI::Text("Titlebar: Dark Gray (30, 30, 30)");
+        UI::Text("Text: Lumina Orange (255, 128, 0)");
+        UI::Spacing();
+        UI::TextDisabled("Note: Requires Windows 11+");
+        UI::EndWindow();
     }
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "application/00-titlebar";
-    specs.titlebar = application_specifications::titlebar_theme{
-        .background = {30.0f / 255.0f, 30.0f / 255.0f, 30.0f / 255.0f},
-        .text = {1.0f, 128.0f / 255.0f, 0.0f}
+    ApplicationSpecifications specs;
+    specs.Title = "application/00-titlebar";
+    specs.Titlebar = ApplicationSpecifications::TitlebarTheme{
+        .Background = {30.0f / 255.0f, 30.0f / 255.0f, 30.0f / 255.0f},
+        .Text = {1.0f, 128.0f / 255.0f, 0.0f}
     };
-    auto* app = new application(specs);
-    app->push_layer<titlebar_layer>();
+    auto* app = new Application(specs);
+    app->PushLayer<TitlebarLayer>();
     return app;
 }

@@ -6,63 +6,63 @@
 #include <lumina/graphics/graphics.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class colors_layer : public lumina::core::layer
+class ColorsLayer : public Lumina::Layer
 {
 public:
-    colors_layer() : layer("colors") {}
+    ColorsLayer() : Layer("Colors") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 600, .height = 500});
+        Gfx::Renderer::Init({.Width = 600, .Height = 500});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.12f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.12f, 1.0f});
 
         // Row 1: Primary colors
         float y1 = 60.0f;
-        gfx::renderer::draw_quad({
-            .position = {100.0f, y1, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {1.0f, 0.0f, 0.0f, 1.0f}  // Red
+        Gfx::Renderer::DrawQuad({
+            .Position = {100.0f, y1, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {1.0f, 0.0f, 0.0f, 1.0f}  // Red
         });
-        gfx::renderer::draw_quad({
-            .position = {200.0f, y1, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {0.0f, 1.0f, 0.0f, 1.0f}  // Green
+        Gfx::Renderer::DrawQuad({
+            .Position = {200.0f, y1, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {0.0f, 1.0f, 0.0f, 1.0f}  // Green
         });
-        gfx::renderer::draw_quad({
-            .position = {300.0f, y1, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {0.0f, 0.0f, 1.0f, 1.0f}  // Blue
+        Gfx::Renderer::DrawQuad({
+            .Position = {300.0f, y1, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {0.0f, 0.0f, 1.0f, 1.0f}  // Blue
         });
 
         // Row 2: Secondary colors (mixing)
         float y2 = 160.0f;
-        gfx::renderer::draw_quad({
-            .position = {100.0f, y2, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {1.0f, 1.0f, 0.0f, 1.0f}  // Yellow (R+G)
+        Gfx::Renderer::DrawQuad({
+            .Position = {100.0f, y2, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {1.0f, 1.0f, 0.0f, 1.0f}  // Yellow (R+G)
         });
-        gfx::renderer::draw_quad({
-            .position = {200.0f, y2, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {0.0f, 1.0f, 1.0f, 1.0f}  // Cyan (G+B)
+        Gfx::Renderer::DrawQuad({
+            .Position = {200.0f, y2, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {0.0f, 1.0f, 1.0f, 1.0f}  // Cyan (G+B)
         });
-        gfx::renderer::draw_quad({
-            .position = {300.0f, y2, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {1.0f, 0.0f, 1.0f, 1.0f}  // Magenta (R+B)
+        Gfx::Renderer::DrawQuad({
+            .Position = {300.0f, y2, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {1.0f, 0.0f, 1.0f, 1.0f}  // Magenta (R+B)
         });
 
         // Row 3: Alpha transparency gradient
@@ -70,67 +70,67 @@ public:
         for (int i = 0; i < 5; ++i)
         {
             float alpha = (i + 1) * 0.2f;  // 0.2, 0.4, 0.6, 0.8, 1.0
-            gfx::renderer::draw_quad({
-                .position = {80.0f + i * 90.0f, y3, 0.0f},
-                .size = {70.0f, 70.0f},
-                .color = {0.4f, 0.6f, 1.0f, alpha}
+            Gfx::Renderer::DrawQuad({
+                .Position = {80.0f + i * 90.0f, y3, 0.0f},
+                .Size = {70.0f, 70.0f},
+                .Color = {0.4f, 0.6f, 1.0f, alpha}
             });
         }
 
         // Row 4: Overlapping transparent circles (alpha blending)
         float y4 = 380.0f;
-        gfx::renderer::draw_circle({
-            .position = {150.0f, y4, 0.0f},
-            .radius = {60.0f, 60.0f},
-            .color = {1.0f, 0.2f, 0.2f, 0.6f}  // Semi-transparent red
+        Gfx::Renderer::DrawCircle({
+            .Position = {150.0f, y4, 0.0f},
+            .Radius = {60.0f, 60.0f},
+            .Color = {1.0f, 0.2f, 0.2f, 0.6f}  // Semi-transparent red
         });
-        gfx::renderer::draw_circle({
-            .position = {200.0f, y4, 0.0f},
-            .radius = {60.0f, 60.0f},
-            .color = {0.2f, 1.0f, 0.2f, 0.6f}  // Semi-transparent green
+        Gfx::Renderer::DrawCircle({
+            .Position = {200.0f, y4, 0.0f},
+            .Radius = {60.0f, 60.0f},
+            .Color = {0.2f, 1.0f, 0.2f, 0.6f}  // Semi-transparent green
         });
-        gfx::renderer::draw_circle({
-            .position = {175.0f, y4 + 40.0f, 0.0f},
-            .radius = {60.0f, 60.0f},
-            .color = {0.2f, 0.2f, 1.0f, 0.6f}  // Semi-transparent blue
+        Gfx::Renderer::DrawCircle({
+            .Position = {175.0f, y4 + 40.0f, 0.0f},
+            .Radius = {60.0f, 60.0f},
+            .Color = {0.2f, 0.2f, 1.0f, 0.6f}  // Semi-transparent blue
         });
 
         // Grayscale gradient using circles
         for (int i = 0; i < 6; ++i)
         {
             float gray = i * 0.2f;  // 0.0 to 1.0
-            gfx::renderer::draw_circle({
-                .position = {350.0f + i * 40.0f, y4, 0.0f},
-                .radius = {18.0f, 18.0f},
-                .color = {gray, gray, gray, 1.0f}
+            Gfx::Renderer::DrawCircle({
+                .Position = {350.0f + i * 40.0f, y4, 0.0f},
+                .Radius = {18.0f, 18.0f},
+                .Color = {gray, gray, gray, 1.0f}
             });
         }
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        ui::begin_window("Colors");
-        ui::text("Color System Demo");
-        ui::separator();
-        ui::text("Row 1: Primary RGB");
-        ui::text("Row 2: Secondary (mixed)");
-        ui::text("Row 3: Alpha transparency");
-        ui::text("Row 4: Blending & grayscale");
-        ui::separator();
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Colors");
+        UI::Text("Color System Demo");
+        UI::Separator();
+        UI::Text("Row 1: Primary RGB");
+        UI::Text("Row 2: Secondary (mixed)");
+        UI::Text("Row 3: Alpha transparency");
+        UI::Text("Row 4: Blending & grayscale");
+        UI::Separator();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), {600, 500});
+            UI::Image(tex->GetTexture(), {600, 500});
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/02-colors";
-    auto* app = new application(specs);
-    app->push_layer<colors_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/02-colors";
+    auto* app = new Application(specs);
+    app->PushLayer<ColorsLayer>();
     return app;
 }

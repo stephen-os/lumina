@@ -1,54 +1,54 @@
 // ui/00-demo: Lumina UI Demo Window
-// Demonstrates: All ui:: functions in one place
+// Demonstrates: All UI:: functions in one place
 
 #include <lumina/core/core.h>
 #include <lumina/core/entry_point.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
+namespace UI = Lumina::UI;
 
-class ui_demo_layer : public lumina::core::layer
+class UIDemoLayer : public Lumina::Layer
 {
 public:
-    ui_demo_layer() : layer("ui_demo") {}
+    UIDemoLayer() : Layer("UIDemoLayer") {}
 
-    void on_render() override
+    void OnRender() override
     {
         // Show the Lumina UI demo window
-        ui::show_demo_window(&m_demo_open);
+        UI::ShowDemoWindow(&m_DemoOpen);
 
         // Also show ImGui's demo for comparison
-        if (m_show_imgui_demo)
+        if (m_ShowImGuiDemo)
         {
-            ImGui::ShowDemoWindow(&m_show_imgui_demo);
+            ImGui::ShowDemoWindow(&m_ShowImGuiDemo);
         }
 
         // Control window
-        ui::begin_window("Demo Controls");
-        ui::text("Lumina UI Demo");
-        ui::separator();
+        UI::BeginWindow("Demo Controls");
+        UI::Text("Lumina UI Demo");
+        UI::Separator();
 
-        ui::checkbox("Show Lumina UI Demo", m_demo_open);
-        ui::checkbox("Show ImGui Demo (for comparison)", m_show_imgui_demo);
+        UI::Checkbox("Show Lumina UI Demo", m_DemoOpen);
+        UI::Checkbox("Show ImGui Demo (for comparison)", m_ShowImGuiDemo);
 
-        ui::separator();
-        ui::text_disabled("Press ESC to exit");
+        UI::Separator();
+        UI::TextDisabled("Press ESC to exit");
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Render notifications (call at end of frame)
-        ui::render_notifications();
+        UI::RenderNotifications();
     }
 
-    void on_event(lumina::core::event& e) override
+    void OnEvent(Lumina::Event& e) override
     {
-        lumina::core::event_dispatcher dispatcher(e);
+        Lumina::EventDispatcher dispatcher(e);
 
-        dispatcher.dispatch<lumina::core::key_pressed_event>([](lumina::core::key_pressed_event& e)
+        dispatcher.Dispatch<Lumina::KeyPressedEvent>([](Lumina::KeyPressedEvent& e)
         {
-            if (e.get_key() == lumina::core::input::key_code::escape)
+            if (e.GetKey() == Lumina::Input::KeyCode::Escape)
             {
-                lumina::core::application::get().shutdown();
+                Lumina::Application::Get().Shutdown();
                 return true;
             }
             return false;
@@ -56,15 +56,15 @@ public:
     }
 
 private:
-    bool m_demo_open = true;
-    bool m_show_imgui_demo = false;
+    bool m_DemoOpen = true;
+    bool m_ShowImGuiDemo = false;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "ui/00-demo";
-    auto* app = new application(specs);
-    app->push_layer<ui_demo_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "ui/00-demo";
+    auto* app = new Application(specs);
+    app->PushLayer<UIDemoLayer>();
     return app;
 }

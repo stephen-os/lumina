@@ -5,165 +5,165 @@
 
 #include <memory>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
     // Bring node editor types into ui namespace for convenience
-    namespace ne = ax::NodeEditor;
+    namespace NE = ax::NodeEditor;
 
-    using node_id = ne::NodeId;
-    using link_id = ne::LinkId;
-    using pin_id = ne::PinId;
-    using pin_kind = ne::PinKind;
-    using ne_config = ne::Config;
-    using ne_style = ne::Style;
+    using NodeId = NE::NodeId;
+    using LinkId = NE::LinkId;
+    using PinId = NE::PinId;
+    using PinKind = NE::PinKind;
+    using NEConfig = NE::Config;
+    using NEStyle = NE::Style;
 
     // Editor context wrapper with RAII
-    class node_editor_context
+    class NodeEditorContext
     {
     public:
-        node_editor_context(const ne_config* config = nullptr)
-            : m_context(ne::CreateEditor(config))
+        NodeEditorContext(const NEConfig* config = nullptr)
+            : m_Context(NE::CreateEditor(config))
         {
         }
 
-        ~node_editor_context()
+        ~NodeEditorContext()
         {
-            if (m_context)
+            if (m_Context)
             {
-                ne::DestroyEditor(m_context);
+                NE::DestroyEditor(m_Context);
             }
         }
 
-        node_editor_context(const node_editor_context&) = delete;
-        node_editor_context& operator=(const node_editor_context&) = delete;
+        NodeEditorContext(const NodeEditorContext&) = delete;
+        NodeEditorContext& operator=(const NodeEditorContext&) = delete;
 
-        node_editor_context(node_editor_context&& other) noexcept
-            : m_context(other.m_context)
+        NodeEditorContext(NodeEditorContext&& other) noexcept
+            : m_Context(other.m_Context)
         {
-            other.m_context = nullptr;
+            other.m_Context = nullptr;
         }
 
-        node_editor_context& operator=(node_editor_context&& other) noexcept
+        NodeEditorContext& operator=(NodeEditorContext&& other) noexcept
         {
             if (this != &other)
             {
-                if (m_context) ne::DestroyEditor(m_context);
-                m_context = other.m_context;
-                other.m_context = nullptr;
+                if (m_Context) NE::DestroyEditor(m_Context);
+                m_Context = other.m_Context;
+                other.m_Context = nullptr;
             }
             return *this;
         }
 
-        void set_current() { ne::SetCurrentEditor(m_context); }
-        [[nodiscard]] ne::EditorContext* get() { return m_context; }
-        [[nodiscard]] operator bool() const { return m_context != nullptr; }
+        void SetCurrent() { NE::SetCurrentEditor(m_Context); }
+        [[nodiscard]] NE::EditorContext* Get() { return m_Context; }
+        [[nodiscard]] operator bool() const { return m_Context != nullptr; }
 
     private:
-        ne::EditorContext* m_context = nullptr;
+        NE::EditorContext* m_Context = nullptr;
     };
 
     // Node editor immediate mode API wrappers
-    inline void ne_set_current(ne::EditorContext* ctx) { ne::SetCurrentEditor(ctx); }
-    [[nodiscard]] inline ne::EditorContext* ne_get_current() { return ne::GetCurrentEditor(); }
-    [[nodiscard]] inline ne_style& ne_get_style() { return ne::GetStyle(); }
+    inline void NESetCurrent(NE::EditorContext* ctx) { NE::SetCurrentEditor(ctx); }
+    [[nodiscard]] inline NE::EditorContext* NEGetCurrent() { return NE::GetCurrentEditor(); }
+    [[nodiscard]] inline NEStyle& NEGetStyle() { return NE::GetStyle(); }
 
-    inline void ne_begin(const char* id, const ImVec2& size = ImVec2(0, 0)) { ne::Begin(id, size); }
-    inline void ne_begin(const char* id, const glm::vec2& size) { ne::Begin(id, ImVec2(size.x, size.y)); }
-    inline void ne_end() { ne::End(); }
+    inline void NEBegin(const char* id, const ImVec2& size = ImVec2(0, 0)) { NE::Begin(id, size); }
+    inline void NEBegin(const char* id, const glm::vec2& size) { NE::Begin(id, ImVec2(size.x, size.y)); }
+    inline void NEEnd() { NE::End(); }
 
-    inline void ne_begin_node(node_id id) { ne::BeginNode(id); }
-    inline void ne_end_node() { ne::EndNode(); }
+    inline void NEBeginNode(NodeId id) { NE::BeginNode(id); }
+    inline void NEEndNode() { NE::EndNode(); }
 
-    inline void ne_begin_pin(pin_id id, pin_kind kind) { ne::BeginPin(id, kind); }
-    inline void ne_end_pin() { ne::EndPin(); }
+    inline void NEBeginPin(PinId id, PinKind kind) { NE::BeginPin(id, kind); }
+    inline void NEEndPin() { NE::EndPin(); }
 
-    [[nodiscard]] inline bool ne_link(link_id id, pin_id start, pin_id end,
+    [[nodiscard]] inline bool NELink(LinkId id, PinId start, PinId end,
                         const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f)
     {
-        return ne::Link(id, start, end, color, thickness);
+        return NE::Link(id, start, end, color, thickness);
     }
-    [[nodiscard]] inline bool ne_link(link_id id, pin_id start, pin_id end,
+    [[nodiscard]] inline bool NELink(LinkId id, PinId start, PinId end,
                         const glm::vec4& color, float thickness = 1.0f)
     {
-        return ne::Link(id, start, end, ImVec4(color.x, color.y, color.z, color.w), thickness);
+        return NE::Link(id, start, end, ImVec4(color.x, color.y, color.z, color.w), thickness);
     }
 
     // Creation
-    [[nodiscard]] inline bool ne_begin_create(const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f)
+    [[nodiscard]] inline bool NEBeginCreate(const ImVec4& color = ImVec4(1, 1, 1, 1), float thickness = 1.0f)
     {
-        return ne::BeginCreate(color, thickness);
+        return NE::BeginCreate(color, thickness);
     }
-    [[nodiscard]] inline bool ne_begin_create(const glm::vec4& color, float thickness = 1.0f)
+    [[nodiscard]] inline bool NEBeginCreate(const glm::vec4& color, float thickness = 1.0f)
     {
-        return ne::BeginCreate(ImVec4(color.x, color.y, color.z, color.w), thickness);
+        return NE::BeginCreate(ImVec4(color.x, color.y, color.z, color.w), thickness);
     }
-    [[nodiscard]] inline bool ne_query_new_link(pin_id* start, pin_id* end) { return ne::QueryNewLink(start, end); }
-    [[nodiscard]] inline bool ne_query_new_node(pin_id* pin) { return ne::QueryNewNode(pin); }
-    [[nodiscard]] inline bool ne_accept_new_item() { return ne::AcceptNewItem(); }
-    inline void ne_reject_new_item() { ne::RejectNewItem(); }
-    inline void ne_end_create() { ne::EndCreate(); }
+    [[nodiscard]] inline bool NEQueryNewLink(PinId* start, PinId* end) { return NE::QueryNewLink(start, end); }
+    [[nodiscard]] inline bool NEQueryNewNode(PinId* pin) { return NE::QueryNewNode(pin); }
+    [[nodiscard]] inline bool NEAcceptNewItem() { return NE::AcceptNewItem(); }
+    inline void NERejectNewItem() { NE::RejectNewItem(); }
+    inline void NEEndCreate() { NE::EndCreate(); }
 
     // Deletion
-    [[nodiscard]] inline bool ne_begin_delete() { return ne::BeginDelete(); }
-    [[nodiscard]] inline bool ne_query_deleted_link(link_id* id, pin_id* start = nullptr, pin_id* end = nullptr)
+    [[nodiscard]] inline bool NEBeginDelete() { return NE::BeginDelete(); }
+    [[nodiscard]] inline bool NEQueryDeletedLink(LinkId* id, PinId* start = nullptr, PinId* end = nullptr)
     {
-        return ne::QueryDeletedLink(id, start, end);
+        return NE::QueryDeletedLink(id, start, end);
     }
-    [[nodiscard]] inline bool ne_query_deleted_node(node_id* id) { return ne::QueryDeletedNode(id); }
-    [[nodiscard]] inline bool ne_accept_deleted_item(bool delete_deps = true) { return ne::AcceptDeletedItem(delete_deps); }
-    inline void ne_reject_deleted_item() { ne::RejectDeletedItem(); }
-    inline void ne_end_delete() { ne::EndDelete(); }
+    [[nodiscard]] inline bool NEQueryDeletedNode(NodeId* id) { return NE::QueryDeletedNode(id); }
+    [[nodiscard]] inline bool NEAcceptDeletedItem(bool deleteDeps = true) { return NE::AcceptDeletedItem(deleteDeps); }
+    inline void NERejectDeletedItem() { NE::RejectDeletedItem(); }
+    inline void NEEndDelete() { NE::EndDelete(); }
 
     // Node manipulation
-    inline void ne_set_node_position(node_id id, const ImVec2& pos) { ne::SetNodePosition(id, pos); }
-    inline void ne_set_node_position(node_id id, const glm::vec2& pos) { ne::SetNodePosition(id, ImVec2(pos.x, pos.y)); }
-    [[nodiscard]] inline ImVec2 ne_get_node_position(node_id id) { return ne::GetNodePosition(id); }
-    [[nodiscard]] inline glm::vec2 ne_get_node_position_vec2(node_id id) { auto p = ne::GetNodePosition(id); return {p.x, p.y}; }
-    [[nodiscard]] inline ImVec2 ne_get_node_size(node_id id) { return ne::GetNodeSize(id); }
-    [[nodiscard]] inline glm::vec2 ne_get_node_size_vec2(node_id id) { auto s = ne::GetNodeSize(id); return {s.x, s.y}; }
-    inline void ne_center_node_on_screen(node_id id) { ne::CenterNodeOnScreen(id); }
+    inline void NESetNodePosition(NodeId id, const ImVec2& pos) { NE::SetNodePosition(id, pos); }
+    inline void NESetNodePosition(NodeId id, const glm::vec2& pos) { NE::SetNodePosition(id, ImVec2(pos.x, pos.y)); }
+    [[nodiscard]] inline ImVec2 NEGetNodePosition(NodeId id) { return NE::GetNodePosition(id); }
+    [[nodiscard]] inline glm::vec2 NEGetNodePositionVec2(NodeId id) { auto p = NE::GetNodePosition(id); return {p.x, p.y}; }
+    [[nodiscard]] inline ImVec2 NEGetNodeSize(NodeId id) { return NE::GetNodeSize(id); }
+    [[nodiscard]] inline glm::vec2 NEGetNodeSizeVec2(NodeId id) { auto s = NE::GetNodeSize(id); return {s.x, s.y}; }
+    inline void NECenterNodeOnScreen(NodeId id) { NE::CenterNodeOnScreen(id); }
 
     // Selection
-    [[nodiscard]] inline int ne_get_selected_object_count() { return ne::GetSelectedObjectCount(); }
-    [[nodiscard]] inline int ne_get_selected_nodes(node_id* nodes, int size) { return ne::GetSelectedNodes(nodes, size); }
-    [[nodiscard]] inline int ne_get_selected_links(link_id* links, int size) { return ne::GetSelectedLinks(links, size); }
-    inline void ne_clear_selection() { ne::ClearSelection(); }
-    inline void ne_select_node(node_id id, bool append = false) { ne::SelectNode(id, append); }
-    inline void ne_select_link(link_id id, bool append = false) { ne::SelectLink(id, append); }
-    [[nodiscard]] inline bool ne_delete_node(node_id id) { return ne::DeleteNode(id); }
-    [[nodiscard]] inline bool ne_delete_link(link_id id) { return ne::DeleteLink(id); }
+    [[nodiscard]] inline int NEGetSelectedObjectCount() { return NE::GetSelectedObjectCount(); }
+    [[nodiscard]] inline int NEGetSelectedNodes(NodeId* nodes, int size) { return NE::GetSelectedNodes(nodes, size); }
+    [[nodiscard]] inline int NEGetSelectedLinks(LinkId* links, int size) { return NE::GetSelectedLinks(links, size); }
+    inline void NEClearSelection() { NE::ClearSelection(); }
+    inline void NESelectNode(NodeId id, bool append = false) { NE::SelectNode(id, append); }
+    inline void NESelectLink(LinkId id, bool append = false) { NE::SelectLink(id, append); }
+    [[nodiscard]] inline bool NEDeleteNode(NodeId id) { return NE::DeleteNode(id); }
+    [[nodiscard]] inline bool NEDeleteLink(LinkId id) { return NE::DeleteLink(id); }
 
     // Context menus
-    [[nodiscard]] inline bool ne_show_node_context_menu(node_id* id) { return ne::ShowNodeContextMenu(id); }
-    [[nodiscard]] inline bool ne_show_pin_context_menu(pin_id* id) { return ne::ShowPinContextMenu(id); }
-    [[nodiscard]] inline bool ne_show_link_context_menu(link_id* id) { return ne::ShowLinkContextMenu(id); }
-    [[nodiscard]] inline bool ne_show_background_context_menu() { return ne::ShowBackgroundContextMenu(); }
+    [[nodiscard]] inline bool NEShowNodeContextMenu(NodeId* id) { return NE::ShowNodeContextMenu(id); }
+    [[nodiscard]] inline bool NEShowPinContextMenu(PinId* id) { return NE::ShowPinContextMenu(id); }
+    [[nodiscard]] inline bool NEShowLinkContextMenu(LinkId* id) { return NE::ShowLinkContextMenu(id); }
+    [[nodiscard]] inline bool NEShowBackgroundContextMenu() { return NE::ShowBackgroundContextMenu(); }
 
     // Navigation
-    inline void ne_navigate_to_content(float duration = -1) { ne::NavigateToContent(duration); }
-    inline void ne_navigate_to_selection(bool zoom_in = false, float duration = -1)
+    inline void NENavigateToContent(float duration = -1) { NE::NavigateToContent(duration); }
+    inline void NENavigateToSelection(bool zoomIn = false, float duration = -1)
     {
-        ne::NavigateToSelection(zoom_in, duration);
+        NE::NavigateToSelection(zoomIn, duration);
     }
 
     // Suspend/Resume for overlays
-    inline void ne_suspend() { ne::Suspend(); }
-    inline void ne_resume() { ne::Resume(); }
+    inline void NESuspend() { NE::Suspend(); }
+    inline void NEResume() { NE::Resume(); }
 
     // Queries
-    [[nodiscard]] inline node_id ne_get_hovered_node() { return ne::GetHoveredNode(); }
-    [[nodiscard]] inline pin_id ne_get_hovered_pin() { return ne::GetHoveredPin(); }
-    [[nodiscard]] inline link_id ne_get_hovered_link() { return ne::GetHoveredLink(); }
-    [[nodiscard]] inline node_id ne_get_double_clicked_node() { return ne::GetDoubleClickedNode(); }
-    [[nodiscard]] inline bool ne_is_background_clicked() { return ne::IsBackgroundClicked(); }
-    [[nodiscard]] inline float ne_get_current_zoom() { return ne::GetCurrentZoom(); }
+    [[nodiscard]] inline NodeId NEGetHoveredNode() { return NE::GetHoveredNode(); }
+    [[nodiscard]] inline PinId NEGetHoveredPin() { return NE::GetHoveredPin(); }
+    [[nodiscard]] inline LinkId NEGetHoveredLink() { return NE::GetHoveredLink(); }
+    [[nodiscard]] inline NodeId NEGetDoubleClickedNode() { return NE::GetDoubleClickedNode(); }
+    [[nodiscard]] inline bool NEIsBackgroundClicked() { return NE::IsBackgroundClicked(); }
+    [[nodiscard]] inline float NEGetCurrentZoom() { return NE::GetCurrentZoom(); }
 
     // Coordinate conversion
-    [[nodiscard]] inline ImVec2 ne_screen_to_canvas(const ImVec2& pos) { return ne::ScreenToCanvas(pos); }
-    [[nodiscard]] inline glm::vec2 ne_screen_to_canvas(const glm::vec2& pos) { auto r = ne::ScreenToCanvas(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
-    [[nodiscard]] inline ImVec2 ne_canvas_to_screen(const ImVec2& pos) { return ne::CanvasToScreen(pos); }
-    [[nodiscard]] inline glm::vec2 ne_canvas_to_screen(const glm::vec2& pos) { auto r = ne::CanvasToScreen(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
+    [[nodiscard]] inline ImVec2 NEScreenToCanvas(const ImVec2& pos) { return NE::ScreenToCanvas(pos); }
+    [[nodiscard]] inline glm::vec2 NEScreenToCanvas(const glm::vec2& pos) { auto r = NE::ScreenToCanvas(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
+    [[nodiscard]] inline ImVec2 NECanvasToScreen(const ImVec2& pos) { return NE::CanvasToScreen(pos); }
+    [[nodiscard]] inline glm::vec2 NECanvasToScreen(const glm::vec2& pos) { auto r = NE::CanvasToScreen(ImVec2(pos.x, pos.y)); return {r.x, r.y}; }
 
     // Flow animation
-    inline void ne_flow(link_id id, ne::FlowDirection dir = ne::FlowDirection::Forward) { ne::Flow(id, dir); }
+    inline void NEFlow(LinkId id, NE::FlowDirection dir = NE::FlowDirection::Forward) { NE::Flow(id, dir); }
 }

@@ -6,63 +6,63 @@
 #include <format>
 #include <string>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    inline void text(const char* t)
+    inline void Text(const char* t)
     {
         ImGui::TextUnformatted(t);
     }
 
-    inline void text(const std::string& t)
+    inline void Text(const std::string& t)
     {
         ImGui::TextUnformatted(t.data(), t.data() + t.size());
     }
 
-    inline void text_colored(const ImVec4& color, const char* t)
+    inline void TextColored(const ImVec4& color, const char* t)
     {
         ImGui::PushStyleColor(ImGuiCol_Text, color);
         ImGui::TextUnformatted(t);
         ImGui::PopStyleColor();
     }
 
-    inline void text_colored(const glm::vec4& color, const char* t)
+    inline void TextColored(const glm::vec4& color, const char* t)
     {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(color.r, color.g, color.b, color.a));
         ImGui::TextUnformatted(t);
         ImGui::PopStyleColor();
     }
 
-    inline void text_colored(const glm::vec3& color, const char* t)
+    inline void TextColored(const glm::vec3& color, const char* t)
     {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(color.r, color.g, color.b, 1.0f));
         ImGui::TextUnformatted(t);
         ImGui::PopStyleColor();
     }
 
-    inline void text_disabled(const char* t)
+    inline void TextDisabled(const char* t)
     {
         ImGui::TextDisabled("%s", t);
     }
 
-    inline void text_wrapped(const char* t)
+    inline void TextWrapped(const char* t)
     {
         ImGui::TextWrapped("%s", t);
     }
 
-    inline void text_bullet(const char* t)
+    inline void TextBullet(const char* t)
     {
         ImGui::BulletText("%s", t);
     }
 
     template<typename... Args>
-    inline void text_fmt(std::format_string<Args...> fmt, Args&&... args)
+    inline void TextFmt(std::format_string<Args...> fmt, Args&&... args)
     {
         auto s = std::format(fmt, std::forward<Args>(args)...);
         ImGui::TextUnformatted(s.data(), s.data() + s.size());
     }
 
     template<typename... Args>
-    inline void text_colored_fmt(const ImVec4& color, std::format_string<Args...> fmt, Args&&... args)
+    inline void TextColoredFmt(const ImVec4& color, std::format_string<Args...> fmt, Args&&... args)
     {
         auto s = std::format(fmt, std::forward<Args>(args)...);
         ImGui::PushStyleColor(ImGuiCol_Text, color);
@@ -70,7 +70,7 @@ namespace lumina::ui
         ImGui::PopStyleColor();
     }
 
-    inline void text_label(const char* label, const char* value)
+    inline void TextLabel(const char* label, const char* value)
     {
         ImGui::TextUnformatted(label);
         ImGui::SameLine();

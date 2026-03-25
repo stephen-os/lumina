@@ -1,7 +1,7 @@
 #include "vulkan_device.h"
 
-#include "../../log.h"
-#include "../../assert.h"
+#include "../../Log.h"
+#include "../../Assert.h"
 
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -14,105 +14,105 @@
 #include <set>
 #include <cstring>
 
-namespace lumina::core::platform::vulkan
+namespace Lumina
 {
     // Validation layer name
-    static const char* s_validation_layer = "VK_LAYER_KHRONOS_validation";
+    static const char* s_ValidationLayer = "VK_LAYER_KHRONOS_validation";
 
     // Required device extensions
-    static const std::vector<const char*> s_device_extensions = {
+    static const std::vector<const char*> s_DeviceExtensions = {
         VK_KHR_SWAPCHAIN_EXTENSION_NAME,
     };
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debug_callback(
-        VkDebugUtilsMessageSeverityFlagBitsEXT message_severity,
-        VkDebugUtilsMessageTypeFlagsEXT message_type,
-        const VkDebugUtilsMessengerCallbackDataEXT* callback_data,
-        void* user_data)
+    static VKAPI_ATTR VkBool32 VKAPI_CALL DebugCallback(
+        VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+        VkDebugUtilsMessageTypeFlagsEXT messageType,
+        const VkDebugUtilsMessengerCallbackDataEXT* callbackData,
+        void* userData)
     {
-        if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-            LUMINA_LOG_ERROR("[Vulkan] {}", callback_data->pMessage);
-        else if (message_severity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-            LUMINA_LOG_WARN("[Vulkan] {}", callback_data->pMessage);
+        if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+            LUMINA_LOG_ERROR("[Vulkan] {}", callbackData->pMessage);
+        else if (messageSeverity >= VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+            LUMINA_LOG_WARN("[Vulkan] {}", callbackData->pMessage);
         else
-            LUMINA_LOG_INFO("[Vulkan] {}", callback_data->pMessage);
+            LUMINA_LOG_INFO("[Vulkan] {}", callbackData->pMessage);
 
         return VK_FALSE;
     }
 
-    void vulkan_message_callback::message(nvrhi::MessageSeverity severity, const char* message_text)
+    void VulkanMessageCallback::message(nvrhi::MessageSeverity severity, const char* messageText)
     {
         switch (severity)
         {
         case nvrhi::MessageSeverity::Info:
-            LUMINA_LOG_INFO("[NVRHI-VK] {}", message_text);
+            LUMINA_LOG_INFO("[NVRHI-VK] {}", messageText);
             break;
         case nvrhi::MessageSeverity::Warning:
-            LUMINA_LOG_WARN("[NVRHI-VK] {}", message_text);
+            LUMINA_LOG_WARN("[NVRHI-VK] {}", messageText);
             break;
         case nvrhi::MessageSeverity::Error:
-            LUMINA_LOG_ERROR("[NVRHI-VK] {}", message_text);
+            LUMINA_LOG_ERROR("[NVRHI-VK] {}", messageText);
             break;
         case nvrhi::MessageSeverity::Fatal:
-            LUMINA_LOG_CRITICAL("[NVRHI-VK] {}", message_text);
+            LUMINA_LOG_CRITICAL("[NVRHI-VK] {}", messageText);
             break;
         }
     }
 
-    vulkan_device::~vulkan_device()
+    VulkanDevice::~VulkanDevice()
     {
-        shutdown();
+        Shutdown();
     }
 
-    bool vulkan_device::init(const device_desc& desc)
+    bool VulkanDevice::Init(const DeviceDesc& desc)
     {
-        m_window = desc.window;
-        m_width = desc.width;
-        m_height = desc.height;
-        m_backbuffer_count = desc.backbuffer_count;
-        m_vsync = desc.vsync;
+        m_Window = desc.Window;
+        m_Width = desc.Width;
+        m_Height = desc.Height;
+        m_BackbufferCount = desc.BackbufferCount;
+        m_VSync = desc.VSync;
 
         // Initialize Vulkan HPP dispatcher (for pre-instance functions like vkCreateInstance)
         VULKAN_HPP_DEFAULT_DISPATCHER.init(vkGetInstanceProcAddr);
 
-        if (!create_instance())
+        if (!CreateInstance())
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan instance");
             return false;
         }
 
         // Create window surface
-        if (glfwCreateWindowSurface(m_instance, m_window, nullptr, &m_surface) != VK_SUCCESS)
+        if (glfwCreateWindowSurface(m_Instance, m_Window, nullptr, &m_Surface) != VK_SUCCESS)
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan window surface");
             return false;
         }
 
-        if (!create_device())
+        if (!CreateDevice())
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan device");
             return false;
         }
 
-        if (!create_swapchain())
+        if (!CreateSwapchain())
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan swapchain");
             return false;
         }
 
         // Create NVRHI device wrapper
-        nvrhi::vulkan::DeviceDesc nvrhi_desc;
-        nvrhi_desc.errorCB = &m_message_callback;
-        nvrhi_desc.instance = m_instance;
-        nvrhi_desc.physicalDevice = m_physical_device;
-        nvrhi_desc.device = m_device;
-        nvrhi_desc.graphicsQueue = m_graphics_queue;
-        nvrhi_desc.graphicsQueueIndex = static_cast<int>(m_graphics_queue_family);
-        nvrhi_desc.deviceExtensions = const_cast<const char**>(s_device_extensions.data());
-        nvrhi_desc.numDeviceExtensions = s_device_extensions.size();
+        nvrhi::vulkan::DeviceDesc nvrhiDesc;
+        nvrhiDesc.errorCB = &m_MessageCallback;
+        nvrhiDesc.instance = m_Instance;
+        nvrhiDesc.physicalDevice = m_PhysicalDevice;
+        nvrhiDesc.device = m_Device;
+        nvrhiDesc.graphicsQueue = m_GraphicsQueue;
+        nvrhiDesc.graphicsQueueIndex = static_cast<int>(m_GraphicsQueueFamily);
+        nvrhiDesc.deviceExtensions = const_cast<const char**>(s_DeviceExtensions.data());
+        nvrhiDesc.numDeviceExtensions = s_DeviceExtensions.size();
 
-        m_nvrhi_device = nvrhi::vulkan::createDevice(nvrhi_desc);
-        if (!m_nvrhi_device)
+        m_NvrhiDevice = nvrhi::vulkan::createDevice(nvrhiDesc);
+        if (!m_NvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI Vulkan device");
             return false;
@@ -120,19 +120,19 @@ namespace lumina::core::platform::vulkan
 
 #ifdef LUMINA_DEBUG
         // Wrap with validation layer in debug builds
-        nvrhi::DeviceHandle validation_layer = nvrhi::validation::createValidationLayer(m_nvrhi_device);
-        m_nvrhi_device = validation_layer;
+        nvrhi::DeviceHandle validationLayer = nvrhi::validation::createValidationLayer(m_NvrhiDevice);
+        m_NvrhiDevice = validationLayer;
 #endif
 
         // Create command list
-        m_command_list = m_nvrhi_device->createCommandList();
-        if (!m_command_list)
+        m_CommandList = m_NvrhiDevice->createCommandList();
+        if (!m_CommandList)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI command list");
             return false;
         }
 
-        if (!create_framebuffers())
+        if (!CreateFramebuffers())
         {
             LUMINA_LOG_ERROR("Failed to create framebuffers");
             return false;
@@ -140,24 +140,24 @@ namespace lumina::core::platform::vulkan
 
 #ifdef TRACY_ENABLE
         // Create command pool for Tracy
-        VkCommandPoolCreateInfo pool_info{};
-        pool_info.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
-        pool_info.queueFamilyIndex = m_graphics_queue_family;
-        pool_info.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+        VkCommandPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        poolInfo.queueFamilyIndex = m_GraphicsQueueFamily;
+        poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
 
-        if (vkCreateCommandPool(m_device, &pool_info, nullptr, &m_tracy_command_pool) == VK_SUCCESS)
+        if (vkCreateCommandPool(m_Device, &poolInfo, nullptr, &m_TracyCommandPool) == VK_SUCCESS)
         {
-            VkCommandBufferAllocateInfo alloc_info{};
-            alloc_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-            alloc_info.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-            alloc_info.commandPool = m_tracy_command_pool;
-            alloc_info.commandBufferCount = 1;
+            VkCommandBufferAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            allocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            allocInfo.commandPool = m_TracyCommandPool;
+            allocInfo.commandBufferCount = 1;
 
-            VkCommandBuffer tracy_cmd;
-            if (vkAllocateCommandBuffers(m_device, &alloc_info, &tracy_cmd) == VK_SUCCESS)
+            VkCommandBuffer tracyCmd;
+            if (vkAllocateCommandBuffers(m_Device, &allocInfo, &tracyCmd) == VK_SUCCESS)
             {
-                m_tracy_ctx = LUMINA_PROFILE_GPU_VK_CONTEXT(m_physical_device, m_device, m_graphics_queue, tracy_cmd);
-                LUMINA_PROFILE_GPU_VK_CONTEXT_NAME(m_tracy_ctx, "Vulkan Main Queue");
+                m_TracyCtx = LUMINA_PROFILE_GPU_VK_CONTEXT(m_PhysicalDevice, m_Device, m_GraphicsQueue, tracyCmd);
+                LUMINA_PROFILE_GPU_VK_CONTEXT_NAME(m_TracyCtx, "Vulkan Main Queue");
             }
         }
 #endif
@@ -166,126 +166,126 @@ namespace lumina::core::platform::vulkan
         return true;
     }
 
-    void vulkan_device::shutdown()
+    void VulkanDevice::Shutdown()
     {
-        if (m_device)
+        if (m_Device)
         {
-            vkDeviceWaitIdle(m_device);
+            vkDeviceWaitIdle(m_Device);
         }
 
 #ifdef TRACY_ENABLE
-        if (m_tracy_ctx)
+        if (m_TracyCtx)
         {
-            LUMINA_PROFILE_GPU_VK_DESTROY(m_tracy_ctx);
-            m_tracy_ctx = nullptr;
+            LUMINA_PROFILE_GPU_VK_DESTROY(m_TracyCtx);
+            m_TracyCtx = nullptr;
         }
-        if (m_tracy_command_pool)
+        if (m_TracyCommandPool)
         {
-            vkDestroyCommandPool(m_device, m_tracy_command_pool, nullptr);
-            m_tracy_command_pool = VK_NULL_HANDLE;
+            vkDestroyCommandPool(m_Device, m_TracyCommandPool, nullptr);
+            m_TracyCommandPool = VK_NULL_HANDLE;
         }
 #endif
 
-        destroy_framebuffers();
-        destroy_swapchain();
+        DestroyFramebuffers();
+        DestroySwapchain();
 
-        m_command_list = nullptr;
-        m_nvrhi_device = nullptr;
+        m_CommandList = nullptr;
+        m_NvrhiDevice = nullptr;
 
-        if (m_device)
+        if (m_Device)
         {
-            vkDestroyDevice(m_device, nullptr);
-            m_device = VK_NULL_HANDLE;
+            vkDestroyDevice(m_Device, nullptr);
+            m_Device = VK_NULL_HANDLE;
         }
 
-        if (m_surface)
+        if (m_Surface)
         {
-            vkDestroySurfaceKHR(m_instance, m_surface, nullptr);
-            m_surface = VK_NULL_HANDLE;
+            vkDestroySurfaceKHR(m_Instance, m_Surface, nullptr);
+            m_Surface = VK_NULL_HANDLE;
         }
 
 #ifdef LUMINA_DEBUG
-        if (m_debug_messenger)
+        if (m_DebugMessenger)
         {
-            auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkDestroyDebugUtilsMessengerEXT");
+            auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_Instance, "vkDestroyDebugUtilsMessengerEXT");
             if (func)
-                func(m_instance, m_debug_messenger, nullptr);
-            m_debug_messenger = VK_NULL_HANDLE;
+                func(m_Instance, m_DebugMessenger, nullptr);
+            m_DebugMessenger = VK_NULL_HANDLE;
         }
 #endif
 
-        if (m_instance)
+        if (m_Instance)
         {
-            vkDestroyInstance(m_instance, nullptr);
-            m_instance = VK_NULL_HANDLE;
+            vkDestroyInstance(m_Instance, nullptr);
+            m_Instance = VK_NULL_HANDLE;
         }
 
         LUMINA_LOG_INFO("Vulkan graphics device shutdown");
     }
 
-    bool vulkan_device::create_instance()
+    bool VulkanDevice::CreateInstance()
     {
-        VkApplicationInfo app_info{};
-        app_info.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-        app_info.pApplicationName = "Lumina Application";
-        app_info.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-        app_info.pEngineName = "Lumina";
-        app_info.engineVersion = VK_MAKE_VERSION(1, 0, 0);
-        app_info.apiVersion = VK_API_VERSION_1_3;
+        VkApplicationInfo appInfo{};
+        appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
+        appInfo.pApplicationName = "Lumina Application";
+        appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.pEngineName = "Lumina";
+        appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
+        appInfo.apiVersion = VK_API_VERSION_1_3;
 
         // Get required extensions from GLFW
-        uint32_t glfw_extension_count = 0;
-        const char** glfw_extensions = glfwGetRequiredInstanceExtensions(&glfw_extension_count);
+        uint32_t glfwExtensionCount = 0;
+        const char** glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
 
-        std::vector<const char*> extensions(glfw_extensions, glfw_extensions + glfw_extension_count);
+        std::vector<const char*> extensions(glfwExtensions, glfwExtensions + glfwExtensionCount);
 
 #ifdef LUMINA_DEBUG
         extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
-        VkInstanceCreateInfo create_info{};
-        create_info.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        create_info.pApplicationInfo = &app_info;
-        create_info.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
-        create_info.ppEnabledExtensionNames = extensions.data();
+        VkInstanceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
+        createInfo.pApplicationInfo = &appInfo;
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(extensions.size());
+        createInfo.ppEnabledExtensionNames = extensions.data();
 
 #ifdef LUMINA_DEBUG
         // Enable validation layers in debug mode
-        create_info.enabledLayerCount = 1;
-        create_info.ppEnabledLayerNames = &s_validation_layer;
+        createInfo.enabledLayerCount = 1;
+        createInfo.ppEnabledLayerNames = &s_ValidationLayer;
 
-        VkDebugUtilsMessengerCreateInfoEXT debug_create_info{};
-        debug_create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        debug_create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        debug_create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        debug_create_info.pfnUserCallback = debug_callback;
+        VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo{};
+        debugCreateInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        debugCreateInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        debugCreateInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        debugCreateInfo.pfnUserCallback = DebugCallback;
 
-        create_info.pNext = &debug_create_info;
+        createInfo.pNext = &debugCreateInfo;
 #else
-        create_info.enabledLayerCount = 0;
+        createInfo.enabledLayerCount = 0;
 #endif
 
-        if (vkCreateInstance(&create_info, nullptr, &m_instance) != VK_SUCCESS)
+        if (vkCreateInstance(&createInfo, nullptr, &m_Instance) != VK_SUCCESS)
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan instance");
             return false;
         }
 
         // Initialize Vulkan HPP dispatcher with instance
-        VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance, vkGetInstanceProcAddr);
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance, vkGetInstanceProcAddr);
 
 #ifdef LUMINA_DEBUG
         // Create debug messenger
-        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_instance, "vkCreateDebugUtilsMessengerEXT");
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(m_Instance, "vkCreateDebugUtilsMessengerEXT");
         if (func)
         {
-            VkDebugUtilsMessengerCreateInfoEXT messenger_info{};
-            messenger_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-            messenger_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-            messenger_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-            messenger_info.pfnUserCallback = debug_callback;
+            VkDebugUtilsMessengerCreateInfoEXT messengerInfo{};
+            messengerInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+            messengerInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+            messengerInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+            messengerInfo.pfnUserCallback = DebugCallback;
 
-            func(m_instance, &messenger_info, nullptr, &m_debug_messenger);
+            func(m_Instance, &messengerInfo, nullptr, &m_DebugMessenger);
         }
         LUMINA_LOG_INFO("Vulkan validation layers enabled");
 #endif
@@ -293,20 +293,20 @@ namespace lumina::core::platform::vulkan
         return true;
     }
 
-    bool vulkan_device::create_device()
+    bool VulkanDevice::CreateDevice()
     {
         // Enumerate physical devices
-        uint32_t device_count = 0;
-        vkEnumeratePhysicalDevices(m_instance, &device_count, nullptr);
+        uint32_t deviceCount = 0;
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, nullptr);
 
-        if (device_count == 0)
+        if (deviceCount == 0)
         {
             LUMINA_LOG_ERROR("No Vulkan-capable GPU found");
             return false;
         }
 
-        std::vector<VkPhysicalDevice> devices(device_count);
-        vkEnumeratePhysicalDevices(m_instance, &device_count, devices.data());
+        std::vector<VkPhysicalDevice> devices(deviceCount);
+        vkEnumeratePhysicalDevices(m_Instance, &deviceCount, devices.data());
 
         // Find a suitable device
         for (const auto& device : devices)
@@ -315,143 +315,143 @@ namespace lumina::core::platform::vulkan
             vkGetPhysicalDeviceProperties(device, &properties);
 
             // Find queue families
-            uint32_t queue_family_count = 0;
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, nullptr);
+            uint32_t queueFamilyCount = 0;
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, nullptr);
 
-            std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-            vkGetPhysicalDeviceQueueFamilyProperties(device, &queue_family_count, queue_families.data());
+            std::vector<VkQueueFamilyProperties> queueFamilies(queueFamilyCount);
+            vkGetPhysicalDeviceQueueFamilyProperties(device, &queueFamilyCount, queueFamilies.data());
 
-            int graphics_family = -1;
+            int graphicsFamily = -1;
 
-            for (uint32_t i = 0; i < queue_family_count; ++i)
+            for (uint32_t i = 0; i < queueFamilyCount; ++i)
             {
-                if (queue_families[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
+                if (queueFamilies[i].queueFlags & VK_QUEUE_GRAPHICS_BIT)
                 {
-                    VkBool32 present_support = false;
-                    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_surface, &present_support);
+                    VkBool32 presentSupport = false;
+                    vkGetPhysicalDeviceSurfaceSupportKHR(device, i, m_Surface, &presentSupport);
 
-                    if (present_support)
+                    if (presentSupport)
                     {
-                        graphics_family = static_cast<int>(i);
+                        graphicsFamily = static_cast<int>(i);
                         break;
                     }
                 }
             }
 
-            if (graphics_family >= 0)
+            if (graphicsFamily >= 0)
             {
-                m_physical_device = device;
-                m_graphics_queue_family = static_cast<uint32_t>(graphics_family);
+                m_PhysicalDevice = device;
+                m_GraphicsQueueFamily = static_cast<uint32_t>(graphicsFamily);
 
                 LUMINA_LOG_INFO("Using GPU: {}", properties.deviceName);
                 break;
             }
         }
 
-        if (!m_physical_device)
+        if (!m_PhysicalDevice)
         {
             LUMINA_LOG_ERROR("No suitable GPU found");
             return false;
         }
 
         // Create logical device
-        float queue_priority = 1.0f;
+        float queuePriority = 1.0f;
 
-        VkDeviceQueueCreateInfo queue_create_info{};
-        queue_create_info.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
-        queue_create_info.queueFamilyIndex = m_graphics_queue_family;
-        queue_create_info.queueCount = 1;
-        queue_create_info.pQueuePriorities = &queue_priority;
+        VkDeviceQueueCreateInfo queueCreateInfo{};
+        queueCreateInfo.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;
+        queueCreateInfo.queueFamilyIndex = m_GraphicsQueueFamily;
+        queueCreateInfo.queueCount = 1;
+        queueCreateInfo.pQueuePriorities = &queuePriority;
 
         // Enable Vulkan 1.2 features required by NVRHI
-        VkPhysicalDeviceVulkan12Features vulkan12_features{};
-        vulkan12_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
-        vulkan12_features.timelineSemaphore = VK_TRUE;
-        vulkan12_features.bufferDeviceAddress = VK_TRUE;
-        vulkan12_features.descriptorIndexing = VK_TRUE;
-        vulkan12_features.runtimeDescriptorArray = VK_TRUE;
-        vulkan12_features.descriptorBindingPartiallyBound = VK_TRUE;
-        vulkan12_features.descriptorBindingVariableDescriptorCount = VK_TRUE;
-        vulkan12_features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
+        VkPhysicalDeviceVulkan12Features vulkan12Features{};
+        vulkan12Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_2_FEATURES;
+        vulkan12Features.timelineSemaphore = VK_TRUE;
+        vulkan12Features.bufferDeviceAddress = VK_TRUE;
+        vulkan12Features.descriptorIndexing = VK_TRUE;
+        vulkan12Features.runtimeDescriptorArray = VK_TRUE;
+        vulkan12Features.descriptorBindingPartiallyBound = VK_TRUE;
+        vulkan12Features.descriptorBindingVariableDescriptorCount = VK_TRUE;
+        vulkan12Features.shaderSampledImageArrayNonUniformIndexing = VK_TRUE;
 
         // Enable Vulkan 1.3 features required by NVRHI
-        VkPhysicalDeviceVulkan13Features vulkan13_features{};
-        vulkan13_features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
-        vulkan13_features.pNext = &vulkan12_features;
-        vulkan13_features.synchronization2 = VK_TRUE;
-        vulkan13_features.dynamicRendering = VK_TRUE;
-        vulkan13_features.maintenance4 = VK_TRUE;
+        VkPhysicalDeviceVulkan13Features vulkan13Features{};
+        vulkan13Features.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_VULKAN_1_3_FEATURES;
+        vulkan13Features.pNext = &vulkan12Features;
+        vulkan13Features.synchronization2 = VK_TRUE;
+        vulkan13Features.dynamicRendering = VK_TRUE;
+        vulkan13Features.maintenance4 = VK_TRUE;
 
-        VkPhysicalDeviceFeatures2 device_features2{};
-        device_features2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
-        device_features2.pNext = &vulkan13_features;
+        VkPhysicalDeviceFeatures2 deviceFeatures2{};
+        deviceFeatures2.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2;
+        deviceFeatures2.pNext = &vulkan13Features;
 
-        VkDeviceCreateInfo create_info{};
-        create_info.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
-        create_info.pNext = &device_features2;
-        create_info.queueCreateInfoCount = 1;
-        create_info.pQueueCreateInfos = &queue_create_info;
-        create_info.pEnabledFeatures = nullptr; // Using pNext chain instead
-        create_info.enabledExtensionCount = static_cast<uint32_t>(s_device_extensions.size());
-        create_info.ppEnabledExtensionNames = s_device_extensions.data();
+        VkDeviceCreateInfo createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO;
+        createInfo.pNext = &deviceFeatures2;
+        createInfo.queueCreateInfoCount = 1;
+        createInfo.pQueueCreateInfos = &queueCreateInfo;
+        createInfo.pEnabledFeatures = nullptr; // Using pNext chain instead
+        createInfo.enabledExtensionCount = static_cast<uint32_t>(s_DeviceExtensions.size());
+        createInfo.ppEnabledExtensionNames = s_DeviceExtensions.data();
 
-        if (vkCreateDevice(m_physical_device, &create_info, nullptr, &m_device) != VK_SUCCESS)
+        if (vkCreateDevice(m_PhysicalDevice, &createInfo, nullptr, &m_Device) != VK_SUCCESS)
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan logical device");
             return false;
         }
 
         // Initialize Vulkan HPP dispatcher with device (full init with all handles)
-        VULKAN_HPP_DEFAULT_DISPATCHER.init(m_instance, vkGetInstanceProcAddr, m_device, vkGetDeviceProcAddr);
+        VULKAN_HPP_DEFAULT_DISPATCHER.init(m_Instance, vkGetInstanceProcAddr, m_Device, vkGetDeviceProcAddr);
 
-        vkGetDeviceQueue(m_device, m_graphics_queue_family, 0, &m_graphics_queue);
+        vkGetDeviceQueue(m_Device, m_GraphicsQueueFamily, 0, &m_GraphicsQueue);
 
         return true;
     }
 
-    bool vulkan_device::create_swapchain()
+    bool VulkanDevice::CreateSwapchain()
     {
         // Query swapchain support
         VkSurfaceCapabilitiesKHR capabilities;
-        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_physical_device, m_surface, &capabilities);
+        vkGetPhysicalDeviceSurfaceCapabilitiesKHR(m_PhysicalDevice, m_Surface, &capabilities);
 
-        uint32_t format_count;
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_physical_device, m_surface, &format_count, nullptr);
-        std::vector<VkSurfaceFormatKHR> formats(format_count);
-        vkGetPhysicalDeviceSurfaceFormatsKHR(m_physical_device, m_surface, &format_count, formats.data());
+        uint32_t formatCount;
+        vkGetPhysicalDeviceSurfaceFormatsKHR(m_PhysicalDevice, m_Surface, &formatCount, nullptr);
+        std::vector<VkSurfaceFormatKHR> formats(formatCount);
+        vkGetPhysicalDeviceSurfaceFormatsKHR(m_PhysicalDevice, m_Surface, &formatCount, formats.data());
 
-        uint32_t present_mode_count;
-        vkGetPhysicalDeviceSurfacePresentModesKHR(m_physical_device, m_surface, &present_mode_count, nullptr);
-        std::vector<VkPresentModeKHR> present_modes(present_mode_count);
-        vkGetPhysicalDeviceSurfacePresentModesKHR(m_physical_device, m_surface, &present_mode_count, present_modes.data());
+        uint32_t presentModeCount;
+        vkGetPhysicalDeviceSurfacePresentModesKHR(m_PhysicalDevice, m_Surface, &presentModeCount, nullptr);
+        std::vector<VkPresentModeKHR> presentModes(presentModeCount);
+        vkGetPhysicalDeviceSurfacePresentModesKHR(m_PhysicalDevice, m_Surface, &presentModeCount, presentModes.data());
 
         // Choose surface format - prefer UNORM since ImGui outputs pre-gamma-encoded colors
         // Using SRGB would double-encode and cause washed out colors
-        VkSurfaceFormatKHR surface_format = formats[0];
+        VkSurfaceFormatKHR surfaceFormat = formats[0];
         for (const auto& format : formats)
         {
             if (format.format == VK_FORMAT_B8G8R8A8_UNORM && format.colorSpace == VK_COLOR_SPACE_SRGB_NONLINEAR_KHR)
             {
-                surface_format = format;
+                surfaceFormat = format;
                 break;
             }
         }
-        m_swapchain_format = surface_format.format;
+        m_SwapchainFormat = surfaceFormat.format;
 
         // Choose present mode
-        VkPresentModeKHR present_mode = VK_PRESENT_MODE_FIFO_KHR;
-        if (!m_vsync)
+        VkPresentModeKHR presentMode = VK_PRESENT_MODE_FIFO_KHR;
+        if (!m_VSync)
         {
-            for (const auto& mode : present_modes)
+            for (const auto& mode : presentModes)
             {
                 if (mode == VK_PRESENT_MODE_MAILBOX_KHR)
                 {
-                    present_mode = mode;
+                    presentMode = mode;
                     break;
                 }
                 if (mode == VK_PRESENT_MODE_IMMEDIATE_KHR)
                 {
-                    present_mode = mode;
+                    presentMode = mode;
                 }
             }
         }
@@ -464,71 +464,71 @@ namespace lumina::core::platform::vulkan
         }
         else
         {
-            extent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, m_width));
-            extent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, m_height));
+            extent.width = std::max(capabilities.minImageExtent.width, std::min(capabilities.maxImageExtent.width, m_Width));
+            extent.height = std::max(capabilities.minImageExtent.height, std::min(capabilities.maxImageExtent.height, m_Height));
         }
-        m_width = extent.width;
-        m_height = extent.height;
+        m_Width = extent.width;
+        m_Height = extent.height;
 
-        uint32_t image_count = capabilities.minImageCount + 1;
-        if (capabilities.maxImageCount > 0 && image_count > capabilities.maxImageCount)
+        uint32_t imageCount = capabilities.minImageCount + 1;
+        if (capabilities.maxImageCount > 0 && imageCount > capabilities.maxImageCount)
         {
-            image_count = capabilities.maxImageCount;
+            imageCount = capabilities.maxImageCount;
         }
-        m_backbuffer_count = image_count;
+        m_BackbufferCount = imageCount;
 
-        VkSwapchainCreateInfoKHR create_info{};
-        create_info.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
-        create_info.surface = m_surface;
-        create_info.minImageCount = image_count;
-        create_info.imageFormat = surface_format.format;
-        create_info.imageColorSpace = surface_format.colorSpace;
-        create_info.imageExtent = extent;
-        create_info.imageArrayLayers = 1;
-        create_info.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
-        create_info.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        create_info.preTransform = capabilities.currentTransform;
-        create_info.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-        create_info.presentMode = present_mode;
-        create_info.clipped = VK_TRUE;
-        create_info.oldSwapchain = VK_NULL_HANDLE;
+        VkSwapchainCreateInfoKHR createInfo{};
+        createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
+        createInfo.surface = m_Surface;
+        createInfo.minImageCount = imageCount;
+        createInfo.imageFormat = surfaceFormat.format;
+        createInfo.imageColorSpace = surfaceFormat.colorSpace;
+        createInfo.imageExtent = extent;
+        createInfo.imageArrayLayers = 1;
+        createInfo.imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+        createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
+        createInfo.preTransform = capabilities.currentTransform;
+        createInfo.compositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
+        createInfo.presentMode = presentMode;
+        createInfo.clipped = VK_TRUE;
+        createInfo.oldSwapchain = VK_NULL_HANDLE;
 
-        if (vkCreateSwapchainKHR(m_device, &create_info, nullptr, &m_swapchain) != VK_SUCCESS)
+        if (vkCreateSwapchainKHR(m_Device, &createInfo, nullptr, &m_Swapchain) != VK_SUCCESS)
         {
             LUMINA_LOG_ERROR("Failed to create Vulkan swapchain");
             return false;
         }
 
         // Get swapchain images
-        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, nullptr);
-        m_swapchain_images.resize(image_count);
-        vkGetSwapchainImagesKHR(m_device, m_swapchain, &image_count, m_swapchain_images.data());
+        vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &imageCount, nullptr);
+        m_SwapchainImages.resize(imageCount);
+        vkGetSwapchainImagesKHR(m_Device, m_Swapchain, &imageCount, m_SwapchainImages.data());
 
         // Create synchronization objects
-        m_image_available_semaphores.resize(m_backbuffer_count);
-        m_render_finished_semaphores.resize(m_backbuffer_count);
-        m_in_flight_fences.resize(m_backbuffer_count);
+        m_ImageAvailableSemaphores.resize(m_BackbufferCount);
+        m_RenderFinishedSemaphores.resize(m_BackbufferCount);
+        m_InFlightFences.resize(m_BackbufferCount);
 
-        VkSemaphoreCreateInfo semaphore_info{};
-        semaphore_info.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
 
-        VkFenceCreateInfo fence_info{};
-        fence_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-        fence_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+        VkFenceCreateInfo fenceInfo{};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-        for (uint32_t i = 0; i < m_backbuffer_count; ++i)
+        for (uint32_t i = 0; i < m_BackbufferCount; ++i)
         {
-            if (vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_image_available_semaphores[i]) != VK_SUCCESS)
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_ImageAvailableSemaphores[i]) != VK_SUCCESS)
             {
                 LUMINA_LOG_ERROR("Failed to create image available semaphore {}", i);
                 return false;
             }
-            if (vkCreateSemaphore(m_device, &semaphore_info, nullptr, &m_render_finished_semaphores[i]) != VK_SUCCESS)
+            if (vkCreateSemaphore(m_Device, &semaphoreInfo, nullptr, &m_RenderFinishedSemaphores[i]) != VK_SUCCESS)
             {
                 LUMINA_LOG_ERROR("Failed to create render finished semaphore {}", i);
                 return false;
             }
-            if (vkCreateFence(m_device, &fence_info, nullptr, &m_in_flight_fences[i]) != VK_SUCCESS)
+            if (vkCreateFence(m_Device, &fenceInfo, nullptr, &m_InFlightFences[i]) != VK_SUCCESS)
             {
                 LUMINA_LOG_ERROR("Failed to create in-flight fence {}", i);
                 return false;
@@ -538,45 +538,45 @@ namespace lumina::core::platform::vulkan
         return true;
     }
 
-    bool vulkan_device::create_framebuffers()
+    bool VulkanDevice::CreateFramebuffers()
     {
-        m_swapchain_textures.resize(m_swapchain_images.size());
-        m_swapchain_framebuffers.resize(m_swapchain_images.size());
+        m_SwapchainTextures.resize(m_SwapchainImages.size());
+        m_SwapchainFramebuffers.resize(m_SwapchainImages.size());
 
-        nvrhi::Format nvrhi_format = nvrhi::Format::BGRA8_UNORM;
-        if (m_swapchain_format == VK_FORMAT_R8G8B8A8_SRGB || m_swapchain_format == VK_FORMAT_B8G8R8A8_SRGB)
+        nvrhi::Format nvrhiFormat = nvrhi::Format::BGRA8_UNORM;
+        if (m_SwapchainFormat == VK_FORMAT_R8G8B8A8_SRGB || m_SwapchainFormat == VK_FORMAT_B8G8R8A8_SRGB)
         {
-            nvrhi_format = nvrhi::Format::SBGRA8_UNORM;
+            nvrhiFormat = nvrhi::Format::SBGRA8_UNORM;
         }
 
-        for (size_t i = 0; i < m_swapchain_images.size(); ++i)
+        for (size_t i = 0; i < m_SwapchainImages.size(); ++i)
         {
-            nvrhi::TextureDesc texture_desc;
-            texture_desc.dimension = nvrhi::TextureDimension::Texture2D;
-            texture_desc.format = nvrhi_format;
-            texture_desc.width = m_width;
-            texture_desc.height = m_height;
-            texture_desc.isRenderTarget = true;
-            texture_desc.debugName = "Swapchain Texture " + std::to_string(i);
-            texture_desc.initialState = nvrhi::ResourceStates::Present;
-            texture_desc.keepInitialState = true;
+            nvrhi::TextureDesc textureDesc;
+            textureDesc.dimension = nvrhi::TextureDimension::Texture2D;
+            textureDesc.format = nvrhiFormat;
+            textureDesc.width = m_Width;
+            textureDesc.height = m_Height;
+            textureDesc.isRenderTarget = true;
+            textureDesc.debugName = "Swapchain Texture " + std::to_string(i);
+            textureDesc.initialState = nvrhi::ResourceStates::Present;
+            textureDesc.keepInitialState = true;
 
-            m_swapchain_textures[i] = m_nvrhi_device->createHandleForNativeTexture(
+            m_SwapchainTextures[i] = m_NvrhiDevice->createHandleForNativeTexture(
                 nvrhi::ObjectTypes::VK_Image,
-                nvrhi::Object(m_swapchain_images[i]),
-                texture_desc);
+                nvrhi::Object(m_SwapchainImages[i]),
+                textureDesc);
 
-            if (!m_swapchain_textures[i])
+            if (!m_SwapchainTextures[i])
             {
                 LUMINA_LOG_ERROR("Failed to create NVRHI texture for swapchain image {}", i);
                 return false;
             }
 
-            nvrhi::FramebufferDesc fb_desc;
-            fb_desc.addColorAttachment(m_swapchain_textures[i]);
+            nvrhi::FramebufferDesc fbDesc;
+            fbDesc.addColorAttachment(m_SwapchainTextures[i]);
 
-            m_swapchain_framebuffers[i] = m_nvrhi_device->createFramebuffer(fb_desc);
-            if (!m_swapchain_framebuffers[i])
+            m_SwapchainFramebuffers[i] = m_NvrhiDevice->createFramebuffer(fbDesc);
+            if (!m_SwapchainFramebuffers[i])
             {
                 LUMINA_LOG_ERROR("Failed to create framebuffer for swapchain image {}", i);
                 return false;
@@ -586,58 +586,58 @@ namespace lumina::core::platform::vulkan
         return true;
     }
 
-    void vulkan_device::destroy_framebuffers()
+    void VulkanDevice::DestroyFramebuffers()
     {
-        m_swapchain_framebuffers.clear();
-        m_swapchain_textures.clear();
+        m_SwapchainFramebuffers.clear();
+        m_SwapchainTextures.clear();
     }
 
-    void vulkan_device::destroy_swapchain()
+    void VulkanDevice::DestroySwapchain()
     {
-        for (auto& semaphore : m_image_available_semaphores)
+        for (auto& semaphore : m_ImageAvailableSemaphores)
         {
-            if (semaphore) vkDestroySemaphore(m_device, semaphore, nullptr);
+            if (semaphore) vkDestroySemaphore(m_Device, semaphore, nullptr);
         }
-        m_image_available_semaphores.clear();
+        m_ImageAvailableSemaphores.clear();
 
-        for (auto& semaphore : m_render_finished_semaphores)
+        for (auto& semaphore : m_RenderFinishedSemaphores)
         {
-            if (semaphore) vkDestroySemaphore(m_device, semaphore, nullptr);
+            if (semaphore) vkDestroySemaphore(m_Device, semaphore, nullptr);
         }
-        m_render_finished_semaphores.clear();
+        m_RenderFinishedSemaphores.clear();
 
-        for (auto& fence : m_in_flight_fences)
+        for (auto& fence : m_InFlightFences)
         {
-            if (fence) vkDestroyFence(m_device, fence, nullptr);
+            if (fence) vkDestroyFence(m_Device, fence, nullptr);
         }
-        m_in_flight_fences.clear();
+        m_InFlightFences.clear();
 
-        if (m_swapchain)
+        if (m_Swapchain)
         {
-            vkDestroySwapchainKHR(m_device, m_swapchain, nullptr);
-            m_swapchain = VK_NULL_HANDLE;
+            vkDestroySwapchainKHR(m_Device, m_Swapchain, nullptr);
+            m_Swapchain = VK_NULL_HANDLE;
         }
 
-        m_swapchain_images.clear();
+        m_SwapchainImages.clear();
     }
 
-    void vulkan_device::begin_frame()
+    void VulkanDevice::BeginFrame()
     {
-        LUMINA_PROFILE_SCOPE_NC("Vulkan::BeginFrame", profiler::colors::gpu);
+        LUMINA_PROFILE_SCOPE_NC("Vulkan::BeginFrame", Profiler::Colors::GPU);
 
         // Wait for any previous work to complete before acquiring
-        vkQueueWaitIdle(m_graphics_queue);
+        vkQueueWaitIdle(m_GraphicsQueue);
 
         // Run garbage collection to free staging buffers from previous frames
         // This must be called after GPU sync to safely release resources
-        m_nvrhi_device->runGarbageCollection();
+        m_NvrhiDevice->runGarbageCollection();
 
         // Reset fence before using it for acquire
-        vkResetFences(m_device, 1, &m_in_flight_fences[m_frame_index]);
+        vkResetFences(m_Device, 1, &m_InFlightFences[m_FrameIndex]);
 
         // Acquire the next swapchain image
-        VkResult result = vkAcquireNextImageKHR(m_device, m_swapchain, UINT64_MAX,
-            VK_NULL_HANDLE, m_in_flight_fences[m_frame_index], &m_image_index);
+        VkResult result = vkAcquireNextImageKHR(m_Device, m_Swapchain, UINT64_MAX,
+            VK_NULL_HANDLE, m_InFlightFences[m_FrameIndex], &m_ImageIndex);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
@@ -646,74 +646,74 @@ namespace lumina::core::platform::vulkan
         }
 
         // Wait for acquire to complete
-        vkWaitForFences(m_device, 1, &m_in_flight_fences[m_frame_index], VK_TRUE, UINT64_MAX);
+        vkWaitForFences(m_Device, 1, &m_InFlightFences[m_FrameIndex], VK_TRUE, UINT64_MAX);
 
-        m_command_list->open();
+        m_CommandList->open();
     }
 
-    void vulkan_device::present()
+    void VulkanDevice::Present()
     {
-        LUMINA_PROFILE_SCOPE_NC("Vulkan::Present", profiler::colors::gpu);
+        LUMINA_PROFILE_SCOPE_NC("Vulkan::Present", Profiler::Colors::GPU);
 
-        m_command_list->close();
-        m_nvrhi_device->executeCommandList(m_command_list);
+        m_CommandList->close();
+        m_NvrhiDevice->executeCommandList(m_CommandList);
 
         // Wait for GPU work to complete before presenting
-        vkQueueWaitIdle(m_graphics_queue);
+        vkQueueWaitIdle(m_GraphicsQueue);
 
-        VkPresentInfoKHR present_info{};
-        present_info.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        present_info.waitSemaphoreCount = 0;
-        present_info.pWaitSemaphores = nullptr;
-        present_info.swapchainCount = 1;
-        present_info.pSwapchains = &m_swapchain;
-        present_info.pImageIndices = &m_image_index;
+        VkPresentInfoKHR presentInfo{};
+        presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+        presentInfo.waitSemaphoreCount = 0;
+        presentInfo.pWaitSemaphores = nullptr;
+        presentInfo.swapchainCount = 1;
+        presentInfo.pSwapchains = &m_Swapchain;
+        presentInfo.pImageIndices = &m_ImageIndex;
 
-        VkResult result = vkQueuePresentKHR(m_graphics_queue, &present_info);
+        VkResult result = vkQueuePresentKHR(m_GraphicsQueue, &presentInfo);
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
         {
             // Swapchain needs to be recreated - will be handled by resize
         }
 
-        m_frame_index = (m_frame_index + 1) % m_backbuffer_count;
+        m_FrameIndex = (m_FrameIndex + 1) % m_BackbufferCount;
     }
 
-    void vulkan_device::resize(uint32_t width, uint32_t height)
+    void VulkanDevice::Resize(uint32_t width, uint32_t height)
     {
         if (width == 0 || height == 0)
             return;
 
-        if (width == m_width && height == m_height)
+        if (width == m_Width && height == m_Height)
             return;
 
-        wait_for_gpu();
+        WaitForGPU();
 
-        destroy_framebuffers();
-        destroy_swapchain();
+        DestroyFramebuffers();
+        DestroySwapchain();
 
-        m_width = width;
-        m_height = height;
+        m_Width = width;
+        m_Height = height;
 
-        create_swapchain();
-        create_framebuffers();
+        CreateSwapchain();
+        CreateFramebuffers();
 
         LUMINA_LOG_INFO("Vulkan swapchain resized to {}x{}", width, height);
     }
 
-    nvrhi::IFramebuffer* vulkan_device::get_current_framebuffer() const
+    nvrhi::IFramebuffer* VulkanDevice::GetCurrentFramebuffer() const
     {
-        return m_swapchain_framebuffers[m_image_index].Get();
+        return m_SwapchainFramebuffers[m_ImageIndex].Get();
     }
 
-    void vulkan_device::wait_for_gpu()
+    void VulkanDevice::WaitForGPU()
     {
-        vkDeviceWaitIdle(m_device);
+        vkDeviceWaitIdle(m_Device);
     }
 
-    nvrhi::Format vulkan_device::get_swapchain_format() const
+    nvrhi::Format VulkanDevice::GetSwapchainFormat() const
     {
-        switch (m_swapchain_format)
+        switch (m_SwapchainFormat)
         {
         case VK_FORMAT_B8G8R8A8_UNORM:
             return nvrhi::Format::BGRA8_UNORM;

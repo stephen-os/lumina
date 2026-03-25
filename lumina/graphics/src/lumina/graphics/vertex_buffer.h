@@ -10,95 +10,95 @@
 #include <span>
 #include <string_view>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// GPU vertex buffer for storing vertex data.
     /// Supports immutable (upload once) and dynamic (frequently updated) usage patterns.
-    class vertex_buffer
+    class VertexBuffer
     {
     public:
-        ~vertex_buffer();
+        ~VertexBuffer();
 
-        vertex_buffer(const vertex_buffer&) = delete;
-        vertex_buffer& operator=(const vertex_buffer&) = delete;
+        VertexBuffer(const VertexBuffer&) = delete;
+        VertexBuffer& operator=(const VertexBuffer&) = delete;
 
-        vertex_buffer(vertex_buffer&& other) noexcept;
-        vertex_buffer& operator=(vertex_buffer&&) = delete;
+        VertexBuffer(VertexBuffer&& other) noexcept;
+        VertexBuffer& operator=(VertexBuffer&&) = delete;
 
         /// Creates a vertex buffer. Returns nullptr on failure.
         /// For dynamic buffers, data can be nullptr to create an uninitialized buffer.
-        [[nodiscard]] static ref<vertex_buffer> create(
-            core::device& dev,
+        [[nodiscard]] static Ref<VertexBuffer> Create(
+            Device& dev,
             const void* data,
             size_t size,
             size_t stride,
-            buffer_usage usage,
-            std::string_view debug_name = "Lumina Vertex Buffer");
+            BufferUsage usage,
+            std::string_view debugName = "Lumina Vertex Buffer");
 
         /// Creates a vertex buffer from a span. Stride is inferred from sizeof(T).
         template<typename T>
-        [[nodiscard]] static ref<vertex_buffer> create(
-            core::device& dev,
+        [[nodiscard]] static Ref<VertexBuffer> Create(
+            Device& dev,
             std::span<const T> vertices,
-            buffer_usage usage,
-            std::string_view debug_name = "Lumina Vertex Buffer")
+            BufferUsage usage,
+            std::string_view debugName = "Lumina Vertex Buffer")
         {
-            return create(dev, vertices.data(), vertices.size_bytes(), sizeof(T), usage, debug_name);
+            return Create(dev, vertices.data(), vertices.size_bytes(), sizeof(T), usage, debugName);
         }
 
         /// Updates buffer using direct CPU mapping.
         /// Warning: has race conditions if buffer is in use by GPU. Prefer the command list version.
-        void update(const void* data, size_t size);
+        void Update(const void* data, size_t size);
 
         /// Updates buffer using command list (preferred for proper synchronization).
-        void update(const void* data, size_t size, nvrhi::ICommandList* cmd);
+        void Update(const void* data, size_t size, nvrhi::ICommandList* cmd);
 
         /// Updates a portion of the buffer at a byte offset.
-        void update_at_offset(const void* data, size_t size, size_t offset_bytes, nvrhi::ICommandList* cmd);
+        void UpdateAtOffset(const void* data, size_t size, size_t offsetBytes, nvrhi::ICommandList* cmd);
 
         template<typename T>
-        void update(std::span<const T> vertices)
+        void Update(std::span<const T> vertices)
         {
-            update(vertices.data(), vertices.size_bytes());
+            Update(vertices.data(), vertices.size_bytes());
         }
 
         template<typename T>
-        void update(std::span<const T> vertices, nvrhi::ICommandList* cmd)
+        void Update(std::span<const T> vertices, nvrhi::ICommandList* cmd)
         {
-            update(vertices.data(), vertices.size_bytes(), cmd);
+            Update(vertices.data(), vertices.size_bytes(), cmd);
         }
 
         template<typename T>
-        void update_at_offset(std::span<const T> vertices, size_t offset_bytes, nvrhi::ICommandList* cmd)
+        void UpdateAtOffset(std::span<const T> vertices, size_t offsetBytes, nvrhi::ICommandList* cmd)
         {
-            update_at_offset(vertices.data(), vertices.size_bytes(), offset_bytes, cmd);
+            UpdateAtOffset(vertices.data(), vertices.size_bytes(), offsetBytes, cmd);
         }
 
-        [[nodiscard]] size_t get_size() const noexcept { return m_size; }
-        [[nodiscard]] size_t get_stride() const noexcept { return m_stride; }
-        [[nodiscard]] size_t get_vertex_count() const noexcept { return m_stride > 0 ? m_size / m_stride : 0; }
-        [[nodiscard]] buffer_usage get_usage() const noexcept { return m_usage; }
-        [[nodiscard]] bool is_dynamic() const noexcept { return m_usage == buffer_usage::dynamic; }
-        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] size_t GetSize() const noexcept { return m_Size; }
+        [[nodiscard]] size_t GetStride() const noexcept { return m_Stride; }
+        [[nodiscard]] size_t GetVertexCount() const noexcept { return m_Stride > 0 ? m_Size / m_Stride : 0; }
+        [[nodiscard]] BufferUsage GetUsage() const noexcept { return m_Usage; }
+        [[nodiscard]] bool IsDynamic() const noexcept { return m_Usage == BufferUsage::Dynamic; }
+        [[nodiscard]] nvrhi::IBuffer* GetBuffer() const noexcept { return m_Handle.Get(); }
 
     private:
-        vertex_buffer(core::device& dev, nvrhi::BufferHandle handle, size_t size, size_t stride, buffer_usage usage)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_size(size)
-            , m_stride(stride)
-            , m_usage(usage)
+        VertexBuffer(Device& dev, nvrhi::BufferHandle handle, size_t size, size_t stride, BufferUsage usage)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Size(size)
+            , m_Stride(stride)
+            , m_Usage(usage)
         {}
 
-        void* map_for_write();
-        void unmap();
+        void* MapForWrite();
+        void Unmap();
 
-        core::device& m_device;
-        nvrhi::BufferHandle m_handle;
-        size_t m_size;
-        size_t m_stride;
-        buffer_usage m_usage;
+        Device& m_Device;
+        nvrhi::BufferHandle m_Handle;
+        size_t m_Size;
+        size_t m_Stride;
+        BufferUsage m_Usage;
     };
 }

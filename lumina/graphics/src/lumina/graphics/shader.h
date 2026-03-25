@@ -9,56 +9,56 @@
 #include <cstddef>
 #include <string>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// Configuration for shader creation from compiled bytecode.
-    struct shader_desc
+    struct ShaderDesc
     {
-        const void* vertex_blob = nullptr;
-        size_t vertex_size = 0;
-        const void* pixel_blob = nullptr;
-        size_t pixel_size = 0;
-        std::string vertex_entry = "main";
-        std::string pixel_entry = "main";
-        std::string debug_name = "Lumina Shader";
+        const void* VertexBlob = nullptr;
+        size_t VertexSize = 0;
+        const void* PixelBlob = nullptr;
+        size_t PixelSize = 0;
+        std::string VertexEntry = "main";
+        std::string PixelEntry = "main";
+        std::string DebugName = "Lumina Shader";
     };
 
     /// GPU shader program containing vertex and pixel shaders.
     /// Shaders are created from pre-compiled bytecode (DXBC/DXIL/SPIR-V).
-    class shader
+    class Shader
     {
     public:
-        ~shader();
+        ~Shader();
 
-        shader(const shader&) = delete;
-        shader& operator=(const shader&) = delete;
+        Shader(const Shader&) = delete;
+        Shader& operator=(const Shader&) = delete;
 
         /// Creates a shader from vertex and pixel shader bytecode. Returns nullptr on failure.
-        [[nodiscard]] static ref<shader> create(
-            core::device& dev,
-            const void* vertex_blob,
-            size_t vertex_size,
-            const void* pixel_blob,
-            size_t pixel_size);
+        [[nodiscard]] static Ref<Shader> Create(
+            Device& dev,
+            const void* vertexBlob,
+            size_t vertexSize,
+            const void* pixelBlob,
+            size_t pixelSize);
 
         /// Creates a shader from a descriptor. Returns nullptr on failure.
-        [[nodiscard]] static ref<shader> create(core::device& dev, const shader_desc& desc);
+        [[nodiscard]] static Ref<Shader> Create(Device& dev, const ShaderDesc& desc);
 
-        [[nodiscard]] bool is_valid() const noexcept { return m_vertex_shader && m_pixel_shader; }
-        [[nodiscard]] nvrhi::IShader* get_vertex_shader() const noexcept { return m_vertex_shader.Get(); }
-        [[nodiscard]] nvrhi::IShader* get_pixel_shader() const noexcept { return m_pixel_shader.Get(); }
+        [[nodiscard]] bool IsValid() const noexcept { return m_VertexShader && m_PixelShader; }
+        [[nodiscard]] nvrhi::IShader* GetVertexShader() const noexcept { return m_VertexShader.Get(); }
+        [[nodiscard]] nvrhi::IShader* GetPixelShader() const noexcept { return m_PixelShader.Get(); }
 
     private:
-        shader(core::device& dev, nvrhi::ShaderHandle vertex_shader, nvrhi::ShaderHandle pixel_shader)
-            : m_device(dev)
-            , m_vertex_shader(std::move(vertex_shader))
-            , m_pixel_shader(std::move(pixel_shader))
+        Shader(Device& dev, nvrhi::ShaderHandle vertexShader, nvrhi::ShaderHandle pixelShader)
+            : m_Device(dev)
+            , m_VertexShader(std::move(vertexShader))
+            , m_PixelShader(std::move(pixelShader))
         {}
 
-        core::device& m_device;
-        nvrhi::ShaderHandle m_vertex_shader;
-        nvrhi::ShaderHandle m_pixel_shader;
+        Device& m_Device;
+        nvrhi::ShaderHandle m_VertexShader;
+        nvrhi::ShaderHandle m_PixelShader;
     };
 }

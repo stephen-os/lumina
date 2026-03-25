@@ -1,26 +1,26 @@
 #pragma once
 
-#include "event.h"
+#include "Event.h"
 
 #include <string>
 
-namespace lumina::core
+namespace Lumina
 {
-    class layer
-    {
-    public:
-        layer(const std::string& name = "unnamed_layer") : m_name(name) {}
-        virtual ~layer() = default;
+	class Layer
+	{
+	public:
+		Layer(const std::string& name = "unnamed_layer") : m_Name(name) {}
+		virtual ~Layer() = default;
 
-        virtual void on_attach() {}
-        virtual void on_detach() {}
-        virtual void on_update(float dt) {}
-        virtual void on_render() {}
-        virtual void on_event(event& e) {}
+		virtual void OnAttach() {}
+		virtual void OnDetach() {}
+		virtual void OnUpdate(float dt) {}
+		virtual void OnRender() {}
+		virtual void OnEvent(Event& e) {}
 
-        [[nodiscard]] const std::string& get_name() const { return m_name; }
+		[[nodiscard]] const std::string& GetName() const { return m_Name; }
 
-    private:
-        std::string m_name;
-    };
+	private:
+		std::string m_Name;
+	};
 }

@@ -8,136 +8,136 @@
 
 #include <glm/glm.hpp>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class text_layer : public lumina::core::layer
+class TextLayer : public Lumina::Layer
 {
 public:
-    text_layer() : layer("text") {}
+    TextLayer() : Layer("Text") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 800, .height = 600});
+        Gfx::Renderer::Init({.Width = 800, .Height = 600});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_frame_time = dt;
+        m_FrameTime = dt;
     }
 
-    void on_render() override
+    void OnRender() override
     {
         const float width = 800.0f;
         const float height = 600.0f;
 
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.15f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.15f, 1.0f});
 
         float y = 30.0f;
 
         // Title
-        gfx::renderer::draw_text({
-            .text = "TrueType Font Rendering (Embedded Karla)",
-            .position = {30, y, 0},
-            .scale = 2.0f,
-            .color = {1.0f, 0.8f, 0.2f, 1.0f}
+        Gfx::Renderer::DrawText({
+            .Text = "TrueType Font Rendering (Embedded Karla)",
+            .Position = {30, y, 0},
+            .Scale = 2.0f,
+            .Color = {1.0f, 0.8f, 0.2f, 1.0f}
         });
         y += 50;
 
         // Different scales
-        gfx::renderer::draw_text({.text = "Scale 0.5", .position = {30, y, 0}, .scale = 0.5f, .color = {0.7f, 0.7f, 0.7f, 1.0f}});
+        Gfx::Renderer::DrawText({.Text = "Scale 0.5", .Position = {30, y, 0}, .Scale = 0.5f, .Color = {0.7f, 0.7f, 0.7f, 1.0f}});
         y += 15;
-        gfx::renderer::draw_text({.text = "Scale 1.0", .position = {30, y, 0}, .scale = 1.0f, .color = {0.8f, 0.8f, 0.8f, 1.0f}});
+        Gfx::Renderer::DrawText({.Text = "Scale 1.0", .Position = {30, y, 0}, .Scale = 1.0f, .Color = {0.8f, 0.8f, 0.8f, 1.0f}});
         y += 25;
-        gfx::renderer::draw_text({.text = "Scale 1.5", .position = {30, y, 0}, .scale = 1.5f, .color = {0.9f, 0.9f, 0.9f, 1.0f}});
+        Gfx::Renderer::DrawText({.Text = "Scale 1.5", .Position = {30, y, 0}, .Scale = 1.5f, .Color = {0.9f, 0.9f, 0.9f, 1.0f}});
         y += 35;
-        gfx::renderer::draw_text({.text = "Scale 2.0", .position = {30, y, 0}, .scale = 2.0f, .color = {1.0f, 1.0f, 1.0f, 1.0f}});
+        Gfx::Renderer::DrawText({.Text = "Scale 2.0", .Position = {30, y, 0}, .Scale = 2.0f, .Color = {1.0f, 1.0f, 1.0f, 1.0f}});
         y += 50;
 
         // Colors
-        gfx::renderer::draw_text({.text = "Red", .position = {30, y, 0}, .scale = 2.0f, .color = {1, 0.2f, 0.2f, 1}});
-        gfx::renderer::draw_text({.text = "Green", .position = {120, y, 0}, .scale = 2.0f, .color = {0.2f, 1, 0.2f, 1}});
-        gfx::renderer::draw_text({.text = "Blue", .position = {240, y, 0}, .scale = 2.0f, .color = {0.2f, 0.4f, 1, 1}});
-        gfx::renderer::draw_text({.text = "Yellow", .position = {340, y, 0}, .scale = 2.0f, .color = {1, 1, 0.2f, 1}});
+        Gfx::Renderer::DrawText({.Text = "Red", .Position = {30, y, 0}, .Scale = 2.0f, .Color = {1, 0.2f, 0.2f, 1}});
+        Gfx::Renderer::DrawText({.Text = "Green", .Position = {120, y, 0}, .Scale = 2.0f, .Color = {0.2f, 1, 0.2f, 1}});
+        Gfx::Renderer::DrawText({.Text = "Blue", .Position = {240, y, 0}, .Scale = 2.0f, .Color = {0.2f, 0.4f, 1, 1}});
+        Gfx::Renderer::DrawText({.Text = "Yellow", .Position = {340, y, 0}, .Scale = 2.0f, .Color = {1, 1, 0.2f, 1}});
         y += 50;
 
         // Alignment demo
         float cx = width * 0.5f;
-        gfx::renderer::draw_line({.start = {cx, y, 0}, .end = {cx, y + 100, 0}, .color = {0.5f, 0.5f, 0.5f, 0.5f}});
+        Gfx::Renderer::DrawLine({.Start = {cx, y, 0}, .End = {cx, y + 100, 0}, .Color = {0.5f, 0.5f, 0.5f, 0.5f}});
 
-        gfx::renderer::draw_text({
-            .text = "Left aligned",
-            .position = {cx, y, 0},
-            .scale = 1.5f,
-            .color = {1, 1, 1, 1},
-            .alignment = gfx::text_alignment::left
+        Gfx::Renderer::DrawText({
+            .Text = "Left aligned",
+            .Position = {cx, y, 0},
+            .Scale = 1.5f,
+            .Color = {1, 1, 1, 1},
+            .Alignment = Gfx::TextAlignment::Left
         });
         y += 30;
 
-        gfx::renderer::draw_text({
-            .text = "Center aligned",
-            .position = {cx, y, 0},
-            .scale = 1.5f,
-            .color = {1, 1, 1, 1},
-            .alignment = gfx::text_alignment::center
+        Gfx::Renderer::DrawText({
+            .Text = "Center aligned",
+            .Position = {cx, y, 0},
+            .Scale = 1.5f,
+            .Color = {1, 1, 1, 1},
+            .Alignment = Gfx::TextAlignment::Center
         });
         y += 30;
 
-        gfx::renderer::draw_text({
-            .text = "Right aligned",
-            .position = {cx, y, 0},
-            .scale = 1.5f,
-            .color = {1, 1, 1, 1},
-            .alignment = gfx::text_alignment::right
+        Gfx::Renderer::DrawText({
+            .Text = "Right aligned",
+            .Position = {cx, y, 0},
+            .Scale = 1.5f,
+            .Color = {1, 1, 1, 1},
+            .Alignment = Gfx::TextAlignment::Right
         });
         y += 50;
 
         // Character sets
-        gfx::renderer::draw_text({.text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", .position = {30, y, 0}, .scale = 1.5f, .color = {0.8f, 0.8f, 0.8f, 1}});
+        Gfx::Renderer::DrawText({.Text = "ABCDEFGHIJKLMNOPQRSTUVWXYZ", .Position = {30, y, 0}, .Scale = 1.5f, .Color = {0.8f, 0.8f, 0.8f, 1}});
         y += 30;
-        gfx::renderer::draw_text({.text = "abcdefghijklmnopqrstuvwxyz", .position = {30, y, 0}, .scale = 1.5f, .color = {0.8f, 0.8f, 0.8f, 1}});
+        Gfx::Renderer::DrawText({.Text = "abcdefghijklmnopqrstuvwxyz", .Position = {30, y, 0}, .Scale = 1.5f, .Color = {0.8f, 0.8f, 0.8f, 1}});
         y += 30;
-        gfx::renderer::draw_text({.text = "0123456789", .position = {30, y, 0}, .scale = 1.5f, .color = {0.8f, 0.8f, 0.8f, 1}});
+        Gfx::Renderer::DrawText({.Text = "0123456789", .Position = {30, y, 0}, .Scale = 1.5f, .Color = {0.8f, 0.8f, 0.8f, 1}});
         y += 30;
-        gfx::renderer::draw_text({.text = "!@#$%^&*()_+-=[]{}|;':\",./<>?", .position = {30, y, 0}, .scale = 1.5f, .color = {0.8f, 0.8f, 0.8f, 1}});
+        Gfx::Renderer::DrawText({.Text = "!@#$%^&*()_+-=[]{}|;':\",./<>?", .Position = {30, y, 0}, .Scale = 1.5f, .Color = {0.8f, 0.8f, 0.8f, 1}});
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // Display in UI window
-        ui::begin_window("Text Demo");
-        ui::text("Text Rendering Demo");
-        ui::separator();
+        UI::BeginWindow("Text Demo");
+        UI::Text("Text Rendering Demo");
+        UI::Separator();
 
-        const auto& stats = gfx::renderer::get_stats();
-        ui::text_fmt("Text Chars: {}", stats.text_char_count);
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("FPS: {:.0f}", m_frame_time > 0 ? 1.0f / m_frame_time : 0.0f);
-        gfx::renderer::reset_stats();
+        const auto& stats = Gfx::Renderer::GetStats();
+        UI::TextFmt("Text Chars: {}", stats.TextCharCount);
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("FPS: {:.0f}", m_FrameTime > 0 ? 1.0f / m_FrameTime : 0.0f);
+        Gfx::Renderer::ResetStats();
 
-        ui::separator();
-        auto tex = gfx::renderer::get_texture();
+        UI::Separator();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), ui::get_content_size());
+            UI::Image(tex->GetTexture(), UI::GetContentSize());
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    float m_frame_time = 0.0f;
+    float m_FrameTime = 0.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/04-text";
-    auto* app = new application(specs);
-    app->push_layer<text_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/04-text";
+    auto* app = new Application(specs);
+    app->PushLayer<TextLayer>();
     return app;
 }

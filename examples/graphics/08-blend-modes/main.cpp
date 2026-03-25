@@ -10,271 +10,271 @@
 #include <glm/glm.hpp>
 #include <cmath>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
-namespace input = lumina::core::input;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
+namespace Input = Lumina::Input;
 
-class blend_modes_layer : public lumina::core::layer
+class BlendModesLayer : public Lumina::Layer
 {
 public:
-    blend_modes_layer() : layer("blend-modes") {}
+    BlendModesLayer() : Layer("blend-modes") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        auto& device = lumina::core::application::get().get_device();
-        m_renderer = std::make_unique<gfx::renderer2d>(device);
-        m_renderer->init();
+        auto& device = Lumina::Application::Get().GetDevice();
+        m_Renderer = std::make_unique<Gfx::Renderer2D>(device);
+        m_Renderer->Init();
 
         // Create render target (square for simplicity)
-        m_render_target = gfx::render_target::create(
-            device, 600, 600, gfx::format::rgba8_unorm
+        m_RenderTarget = Gfx::RenderTarget::Create(
+            device, 600, 600, Gfx::Format::RGBA8Unorm
         );
 
         // Initialize camera centered at origin
-        m_camera = gfx::camera2d(600.0f, 1.0f);
-        m_camera.set_position({0.0f, 0.0f});
-        m_camera.update(0.0f);
+        m_Camera = Gfx::Camera2D(600.0f, 1.0f);
+        m_Camera.SetPosition({0.0f, 0.0f});
+        m_Camera.Update(0.0f);
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        m_render_target.reset();
-        m_renderer.reset();
+        m_RenderTarget.reset();
+        m_Renderer.reset();
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_time += dt;
+        m_Time += dt;
 
         // Camera movement (WASD/Arrows)
-        float move_speed = 300.0f * dt;
-        glm::vec2 move_dir{0.0f};
+        float moveSpeed = 300.0f * dt;
+        glm::vec2 moveDir{0.0f};
 
-        if (input::is_key_pressed(input::key_code::w) || input::is_key_pressed(input::key_code::up))
-            move_dir.y += 1.0f;
-        if (input::is_key_pressed(input::key_code::s) || input::is_key_pressed(input::key_code::down))
-            move_dir.y -= 1.0f;
-        if (input::is_key_pressed(input::key_code::a) || input::is_key_pressed(input::key_code::left))
-            move_dir.x -= 1.0f;
-        if (input::is_key_pressed(input::key_code::d) || input::is_key_pressed(input::key_code::right))
-            move_dir.x += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::W) || Input::IsKeyPressed(Input::KeyCode::Up))
+            moveDir.y += 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::S) || Input::IsKeyPressed(Input::KeyCode::Down))
+            moveDir.y -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::A) || Input::IsKeyPressed(Input::KeyCode::Left))
+            moveDir.x -= 1.0f;
+        if (Input::IsKeyPressed(Input::KeyCode::D) || Input::IsKeyPressed(Input::KeyCode::Right))
+            moveDir.x += 1.0f;
 
-        if (glm::length(move_dir) > 0.0f)
+        if (glm::length(moveDir) > 0.0f)
         {
-            move_dir = glm::normalize(move_dir);
-            m_camera.move(move_dir * move_speed / m_camera.get_zoom());
+            moveDir = glm::normalize(moveDir);
+            m_Camera.Move(moveDir * moveSpeed / m_Camera.GetZoom());
         }
 
         // Zoom controls (Q/E)
-        if (input::is_key_pressed(input::key_code::q))
-            m_camera.set_zoom(m_camera.get_zoom() * (1.0f + dt));
-        if (input::is_key_pressed(input::key_code::e))
-            m_camera.set_zoom(m_camera.get_zoom() * (1.0f - dt));
+        if (Input::IsKeyPressed(Input::KeyCode::Q))
+            m_Camera.SetZoom(m_Camera.GetZoom() * (1.0f + dt));
+        if (Input::IsKeyPressed(Input::KeyCode::E))
+            m_Camera.SetZoom(m_Camera.GetZoom() * (1.0f - dt));
 
-        m_camera.update(dt);
+        m_Camera.Update(dt);
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        if (!m_renderer || !m_render_target) return;
+        if (!m_Renderer || !m_RenderTarget) return;
 
-        m_renderer->begin(m_camera);
-        m_renderer->set_render_target(m_render_target);
-        m_renderer->clear({0.0f, 0.0f, 0.0f, 1.0f});  // Clear to black
+        m_Renderer->Begin(m_Camera);
+        m_Renderer->SetRenderTarget(m_RenderTarget);
+        m_Renderer->Clear({0.0f, 0.0f, 0.0f, 1.0f});  // Clear to black
 
         // Draw dark background
-        m_renderer->draw_quad({
-            .position = {0.0f, 0.0f, 0.0f},
-            .size = {800.0f, 800.0f},
-            .color = m_bg_color
+        m_Renderer->DrawQuad({
+            .Position = {0.0f, 0.0f, 0.0f},
+            .Size = {800.0f, 800.0f},
+            .Color = m_BgColor
         });
 
         // Draw a simple grid of colored squares
-        const int grid_size = 5;
-        const float quad_size = 80.0f;
+        const int gridSize = 5;
+        const float quadSize = 80.0f;
         const float spacing = 100.0f;
-        const float start = -(grid_size - 1) * spacing / 2.0f;
+        const float start = -(gridSize - 1) * spacing / 2.0f;
 
-        for (int row = 0; row < grid_size; row++)
+        for (int row = 0; row < gridSize; row++)
         {
-            for (int col = 0; col < grid_size; col++)
+            for (int col = 0; col < gridSize; col++)
             {
                 float x = start + col * spacing;
                 float y = start + row * spacing;
 
-                glm::vec4 color = ((row + col) % 2 == 0) ? m_grid_color1 : m_grid_color2;
+                glm::vec4 color = ((row + col) % 2 == 0) ? m_GridColor1 : m_GridColor2;
 
-                m_renderer->draw_quad({
-                    .position = {x, y, 0.1f},
-                    .size = {quad_size, quad_size},
-                    .color = color
+                m_Renderer->DrawQuad({
+                    .Position = {x, y, 0.1f},
+                    .Size = {quadSize, quadSize},
+                    .Color = color
                 });
             }
         }
 
         // Center quad with selectable blend mode
-        gfx::blend_mode blend = gfx::blend_mode::alpha;
-        switch (m_center_blend_mode)
+        Gfx::BlendMode blend = Gfx::BlendMode::Alpha;
+        switch (m_CenterBlendMode)
         {
-            case 0: blend = gfx::blend_mode::opaque; break;
-            case 1: blend = gfx::blend_mode::alpha; break;
-            case 2: blend = gfx::blend_mode::additive; break;
-            case 3: blend = gfx::blend_mode::multiply; break;
+            case 0: blend = Gfx::BlendMode::Opaque; break;
+            case 1: blend = Gfx::BlendMode::Alpha; break;
+            case 2: blend = Gfx::BlendMode::Additive; break;
+            case 3: blend = Gfx::BlendMode::Multiply; break;
         }
 
-        m_renderer->draw_quad({
-            .position = {0.0f, 0.0f, 0.2f},
-            .size = {50.0f, 50.0f},
-            .color = m_center_color,
-            .blend = blend
+        m_Renderer->DrawQuad({
+            .Position = {0.0f, 0.0f, 0.2f},
+            .Size = {50.0f, 50.0f},
+            .Color = m_CenterColor,
+            .Blend = blend
         });
 
         // Scissor test: draw quads clipped to a region
-        if (m_scissor_enabled)
+        if (m_ScissorEnabled)
         {
             // Push scissor region (centered, 200x200 pixels)
-            float scissor_size = 200.0f;
-            float scissor_x = (600.0f - scissor_size) / 2.0f;
-            float scissor_y = (600.0f - scissor_size) / 2.0f;
-            m_renderer->push_scissor(scissor_x, scissor_y, scissor_size, scissor_size);
+            float scissorSize = 200.0f;
+            float scissorX = (600.0f - scissorSize) / 2.0f;
+            float scissorY = (600.0f - scissorSize) / 2.0f;
+            m_Renderer->PushScissor(scissorX, scissorY, scissorSize, scissorSize);
 
             // Draw some quads that should be clipped
             for (int i = 0; i < 4; i++)
             {
-                float angle = m_time + i * 1.57f;
+                float angle = m_Time + i * 1.57f;
                 float x = std::cos(angle) * 150.0f;
                 float y = std::sin(angle) * 150.0f;
 
-                m_renderer->draw_quad({
-                    .position = {x, y, 0.5f},
-                    .size = {80.0f, 80.0f},
-                    .color = {0.0f, 0.5f, 1.0f, 0.8f},
-                    .blend = gfx::blend_mode::alpha
+                m_Renderer->DrawQuad({
+                    .Position = {x, y, 0.5f},
+                    .Size = {80.0f, 80.0f},
+                    .Color = {0.0f, 0.5f, 1.0f, 0.8f},
+                    .Blend = Gfx::BlendMode::Alpha
                 });
             }
 
-            m_renderer->pop_scissor();
+            m_Renderer->PopScissor();
 
             // Draw outline bars around the scissor region (in world space, follows camera)
             // Convert scissor screen coords to world coords relative to camera
-            glm::vec2 cam_pos = m_camera.get_position();
-            float half_size = scissor_size / 2.0f / m_camera.get_zoom();
-            float bar_thickness = 4.0f;
-            glm::vec4 bar_color = {1.0f, 0.0f, 1.0f, 1.0f};  // Magenta
+            glm::vec2 camPos = m_Camera.GetPosition();
+            float halfSize = scissorSize / 2.0f / m_Camera.GetZoom();
+            float barThickness = 4.0f;
+            glm::vec4 barColor = {1.0f, 0.0f, 1.0f, 1.0f};  // Magenta
 
             // Top bar
-            m_renderer->draw_quad({
-                .position = {cam_pos.x, cam_pos.y + half_size, 0.9f},
-                .size = {scissor_size / m_camera.get_zoom() + bar_thickness, bar_thickness},
-                .color = bar_color
+            m_Renderer->DrawQuad({
+                .Position = {camPos.x, camPos.y + halfSize, 0.9f},
+                .Size = {scissorSize / m_Camera.GetZoom() + barThickness, barThickness},
+                .Color = barColor
             });
             // Bottom bar
-            m_renderer->draw_quad({
-                .position = {cam_pos.x, cam_pos.y - half_size, 0.9f},
-                .size = {scissor_size / m_camera.get_zoom() + bar_thickness, bar_thickness},
-                .color = bar_color
+            m_Renderer->DrawQuad({
+                .Position = {camPos.x, camPos.y - halfSize, 0.9f},
+                .Size = {scissorSize / m_Camera.GetZoom() + barThickness, barThickness},
+                .Color = barColor
             });
             // Left bar
-            m_renderer->draw_quad({
-                .position = {cam_pos.x - half_size, cam_pos.y, 0.9f},
-                .size = {bar_thickness, scissor_size / m_camera.get_zoom() + bar_thickness},
-                .color = bar_color
+            m_Renderer->DrawQuad({
+                .Position = {camPos.x - halfSize, camPos.y, 0.9f},
+                .Size = {barThickness, scissorSize / m_Camera.GetZoom() + barThickness},
+                .Color = barColor
             });
             // Right bar
-            m_renderer->draw_quad({
-                .position = {cam_pos.x + half_size, cam_pos.y, 0.9f},
-                .size = {bar_thickness, scissor_size / m_camera.get_zoom() + bar_thickness},
-                .color = bar_color
+            m_Renderer->DrawQuad({
+                .Position = {camPos.x + halfSize, camPos.y, 0.9f},
+                .Size = {barThickness, scissorSize / m_Camera.GetZoom() + barThickness},
+                .Color = barColor
             });
         }
 
-        m_renderer->end();
+        m_Renderer->End();
 
         // UI
-        render_ui();
+        RenderUI();
     }
 
-    void render_ui()
+    void RenderUI()
     {
-        ui::begin_window("Blend Modes Demo");
+        UI::BeginWindow("Blend Modes Demo");
 
-        ui::text("Blend Mode Debug Test");
-        ui::separator();
+        UI::Text("Blend Mode Debug Test");
+        UI::Separator();
 
         // Color controls
-        ui::text("Colors:");
-        ImGui::ColorEdit4("Background", &m_bg_color.x);
-        ImGui::ColorEdit4("Grid Color 1", &m_grid_color1.x);
-        ImGui::ColorEdit4("Grid Color 2", &m_grid_color2.x);
-        ImGui::ColorEdit4("Center Quad", &m_center_color.x);
-        ui::separator();
+        UI::Text("Colors:");
+        ImGui::ColorEdit4("Background", &m_BgColor.x);
+        ImGui::ColorEdit4("Grid Color 1", &m_GridColor1.x);
+        ImGui::ColorEdit4("Grid Color 2", &m_GridColor2.x);
+        ImGui::ColorEdit4("Center Quad", &m_CenterColor.x);
+        UI::Separator();
 
         // Blend mode selection
-        ui::text("Center Quad Blend Mode:");
-        ImGui::RadioButton("Opaque", &m_center_blend_mode, 0);
-        ImGui::RadioButton("Alpha", &m_center_blend_mode, 1);
-        ImGui::RadioButton("Additive", &m_center_blend_mode, 2);
-        ImGui::RadioButton("Multiply", &m_center_blend_mode, 3);
-        ui::separator();
+        UI::Text("Center Quad Blend Mode:");
+        ImGui::RadioButton("Opaque", &m_CenterBlendMode, 0);
+        ImGui::RadioButton("Alpha", &m_CenterBlendMode, 1);
+        ImGui::RadioButton("Additive", &m_CenterBlendMode, 2);
+        ImGui::RadioButton("Multiply", &m_CenterBlendMode, 3);
+        UI::Separator();
 
         // Scissor test
-        ui::text("Scissor Clipping:");
-        ImGui::Checkbox("Enable Scissor Test", &m_scissor_enabled);
-        if (m_scissor_enabled)
+        UI::Text("Scissor Clipping:");
+        ImGui::Checkbox("Enable Scissor Test", &m_ScissorEnabled);
+        if (m_ScissorEnabled)
         {
-            ui::text("Blue quads orbit and are clipped to center 200x200 region");
+            UI::Text("Blue quads orbit and are clipped to center 200x200 region");
         }
-        ui::separator();
+        UI::Separator();
 
-        ui::text("Controls: WASD/Arrows=Pan, Q/E=Zoom");
-        ui::separator();
+        UI::Text("Controls: WASD/Arrows=Pan, Q/E=Zoom");
+        UI::Separator();
 
-        auto pos = m_camera.get_position();
-        ui::text_fmt("Camera: ({:.0f}, {:.0f}) Zoom: {:.2f}x", pos.x, pos.y, m_camera.get_zoom());
-        ui::separator();
+        auto pos = m_Camera.GetPosition();
+        UI::TextFmt("Camera: ({:.0f}, {:.0f}) Zoom: {:.2f}x", pos.x, pos.y, m_Camera.GetZoom());
+        UI::Separator();
 
-        const auto& stats = m_renderer->get_stats();
-        ui::text_fmt("Draw Calls: {}", stats.draw_calls);
-        ui::text_fmt("Quads: {}", stats.quad_count);
-        m_renderer->reset_stats();
+        const auto& stats = m_Renderer->GetStats();
+        UI::TextFmt("Draw Calls: {}", stats.DrawCalls);
+        UI::TextFmt("Quads: {}", stats.QuadCount);
+        m_Renderer->ResetStats();
 
-        ui::end_window();
+        UI::EndWindow();
 
         // Viewport
-        ui::push_style_var(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
-        ui::begin_window("Viewport");
+        UI::PushStyleVar(ImGuiStyleVar_WindowPadding, glm::vec2(0, 0));
+        UI::BeginWindow("Viewport");
 
-        auto content_size = ui::get_content_size();
-        if (auto tex = m_render_target->get_color_texture())
+        auto contentSize = UI::GetContentSize();
+        if (auto tex = m_RenderTarget->GetColorTexture())
         {
-            ui::image(tex->get_texture(), content_size);
+            UI::Image(tex->GetTexture(), contentSize);
         }
 
-        ui::end_window();
-        ui::pop_style_var();
+        UI::EndWindow();
+        UI::PopStyleVar();
     }
 
 private:
-    lumina::scope<gfx::renderer2d> m_renderer;
-    lumina::ref<gfx::render_target> m_render_target;
-    gfx::camera2d m_camera;
+    Lumina::Scope<Gfx::Renderer2D> m_Renderer;
+    Lumina::Ref<Gfx::RenderTarget> m_RenderTarget;
+    Gfx::Camera2D m_Camera;
 
-    float m_time = 0.0f;
+    float m_Time = 0.0f;
 
     // Color controls for debugging
-    glm::vec4 m_bg_color{0.1f, 0.1f, 0.15f, 1.0f};
-    glm::vec4 m_grid_color1{0.8f, 0.3f, 0.3f, 1.0f};  // Red
-    glm::vec4 m_grid_color2{0.3f, 0.8f, 0.3f, 1.0f};  // Green
-    glm::vec4 m_center_color{1.0f, 1.0f, 0.0f, 0.7f}; // Yellow
-    int m_center_blend_mode = 2;  // 0=opaque, 1=alpha, 2=additive, 3=multiply
-    bool m_scissor_enabled = false;
+    glm::vec4 m_BgColor{0.1f, 0.1f, 0.15f, 1.0f};
+    glm::vec4 m_GridColor1{0.8f, 0.3f, 0.3f, 1.0f};  // Red
+    glm::vec4 m_GridColor2{0.3f, 0.8f, 0.3f, 1.0f};  // Green
+    glm::vec4 m_CenterColor{1.0f, 1.0f, 0.0f, 0.7f}; // Yellow
+    int m_CenterBlendMode = 2;  // 0=opaque, 1=alpha, 2=additive, 3=multiply
+    bool m_ScissorEnabled = false;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/08-blend-modes";
-    auto* app = new application(specs);
-    app->push_layer<blend_modes_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/08-blend-modes";
+    auto* app = new Application(specs);
+    app->PushLayer<BlendModesLayer>();
     return app;
 }

@@ -14,71 +14,71 @@
 #include <functional>
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
     // Hash combining helper
-    static void hash_combine(size_t& seed, size_t value)
+    static void HashCombine(size_t& seed, size_t value)
     {
         seed ^= value + 0x9e3779b9 + (seed << 6) + (seed >> 2);
     }
 
-    size_t pipeline_desc::hash() const
+    size_t PipelineDesc::Hash() const
     {
         size_t h = 0;
 
         // Hash shader pointers
-        hash_combine(h, reinterpret_cast<size_t>(shader_program.get()));
-        hash_combine(h, reinterpret_cast<size_t>(vertex_layout.get()));
+        HashCombine(h, reinterpret_cast<size_t>(ShaderProgram.get()));
+        HashCombine(h, reinterpret_cast<size_t>(VertexLayout.get()));
 
         // Hash binding layouts
-        for (const auto& bl : binding_layouts)
+        for (const auto& bl : BindingLayouts)
         {
-            hash_combine(h, reinterpret_cast<size_t>(bl.get()));
+            HashCombine(h, reinterpret_cast<size_t>(bl.get()));
         }
 
         // Hash render state
-        hash_combine(h, static_cast<size_t>(state.blend));
-        hash_combine(h, static_cast<size_t>(state.depth));
-        hash_combine(h, static_cast<size_t>(state.cull));
-        hash_combine(h, static_cast<size_t>(state.primitive));
+        HashCombine(h, static_cast<size_t>(State.Blend));
+        HashCombine(h, static_cast<size_t>(State.Depth));
+        HashCombine(h, static_cast<size_t>(State.Cull));
+        HashCombine(h, static_cast<size_t>(State.Primitive));
 
         // Hash formats
-        hash_combine(h, static_cast<size_t>(color_format));
-        hash_combine(h, static_cast<size_t>(depth_format));
+        HashCombine(h, static_cast<size_t>(ColorFormat));
+        HashCombine(h, static_cast<size_t>(DepthFormat));
 
         // Hash MSAA sample count
-        hash_combine(h, static_cast<size_t>(sample_count));
+        HashCombine(h, static_cast<size_t>(SampleCount));
 
         return h;
     }
 
     // Convert Lumina blend mode to NVRHI
-    static nvrhi::BlendState to_nvrhi_blend_state(blend_mode mode)
+    static nvrhi::BlendState ToNvrhiBlendState(BlendMode mode)
     {
         nvrhi::BlendState bs;
         bs.targets[0].blendEnable = true;
 
         switch (mode)
         {
-            case blend_mode::opaque:
+            case BlendMode::Opaque:
                 bs.targets[0].blendEnable = false;
                 break;
 
-            case blend_mode::alpha:
+            case BlendMode::Alpha:
                 bs.targets[0].srcBlend = nvrhi::BlendFactor::SrcAlpha;
                 bs.targets[0].destBlend = nvrhi::BlendFactor::InvSrcAlpha;
                 bs.targets[0].srcBlendAlpha = nvrhi::BlendFactor::One;
                 bs.targets[0].destBlendAlpha = nvrhi::BlendFactor::InvSrcAlpha;
                 break;
 
-            case blend_mode::additive:
+            case BlendMode::Additive:
                 bs.targets[0].srcBlend = nvrhi::BlendFactor::SrcAlpha;
                 bs.targets[0].destBlend = nvrhi::BlendFactor::One;
                 bs.targets[0].srcBlendAlpha = nvrhi::BlendFactor::One;
                 bs.targets[0].destBlendAlpha = nvrhi::BlendFactor::One;
                 break;
 
-            case blend_mode::multiply:
+            case BlendMode::Multiply:
                 bs.targets[0].srcBlend = nvrhi::BlendFactor::DstColor;
                 bs.targets[0].destBlend = nvrhi::BlendFactor::Zero;
                 bs.targets[0].srcBlendAlpha = nvrhi::BlendFactor::DstAlpha;
@@ -90,24 +90,24 @@ namespace lumina::graphics
     }
 
     // Convert Lumina depth mode to NVRHI
-    static nvrhi::DepthStencilState to_nvrhi_depth_state(depth_mode mode)
+    static nvrhi::DepthStencilState ToNvrhiDepthState(DepthMode mode)
     {
         nvrhi::DepthStencilState ds;
 
         switch (mode)
         {
-            case depth_mode::none:
+            case DepthMode::None:
                 ds.depthTestEnable = false;
                 ds.depthWriteEnable = false;
                 break;
 
-            case depth_mode::read_only:
+            case DepthMode::ReadOnly:
                 ds.depthTestEnable = true;
                 ds.depthWriteEnable = false;
                 ds.depthFunc = nvrhi::ComparisonFunc::LessOrEqual;
                 break;
 
-            case depth_mode::read_write:
+            case DepthMode::ReadWrite:
                 ds.depthTestEnable = true;
                 ds.depthWriteEnable = true;
                 ds.depthFunc = nvrhi::ComparisonFunc::LessOrEqual;
@@ -118,19 +118,19 @@ namespace lumina::graphics
     }
 
     // Convert Lumina cull mode to NVRHI
-    static nvrhi::RasterState to_nvrhi_raster_state(cull_mode mode)
+    static nvrhi::RasterState ToNvrhiRasterState(CullMode mode)
     {
         nvrhi::RasterState rs;
 
         switch (mode)
         {
-            case cull_mode::none:
+            case CullMode::None:
                 rs.cullMode = nvrhi::RasterCullMode::None;
                 break;
-            case cull_mode::back:
+            case CullMode::Back:
                 rs.cullMode = nvrhi::RasterCullMode::Back;
                 break;
-            case cull_mode::front:
+            case CullMode::Front:
                 rs.cullMode = nvrhi::RasterCullMode::Front;
                 break;
         }
@@ -141,124 +141,124 @@ namespace lumina::graphics
     }
 
     // Convert Lumina topology to NVRHI
-    static nvrhi::PrimitiveType to_nvrhi_primitive_type(topology topo)
+    static nvrhi::PrimitiveType ToNvrhiPrimitiveType(Topology topo)
     {
         switch (topo)
         {
-            case topology::triangles:       return nvrhi::PrimitiveType::TriangleList;
-            case topology::triangle_strip:  return nvrhi::PrimitiveType::TriangleStrip;
-            case topology::lines:           return nvrhi::PrimitiveType::LineList;
-            case topology::line_strip:      return nvrhi::PrimitiveType::LineStrip;
-            case topology::points:          return nvrhi::PrimitiveType::PointList;
+            case Topology::Triangles:       return nvrhi::PrimitiveType::TriangleList;
+            case Topology::TriangleStrip:   return nvrhi::PrimitiveType::TriangleStrip;
+            case Topology::Lines:           return nvrhi::PrimitiveType::LineList;
+            case Topology::LineStrip:       return nvrhi::PrimitiveType::LineStrip;
+            case Topology::Points:          return nvrhi::PrimitiveType::PointList;
             default:                        return nvrhi::PrimitiveType::TriangleList;
         }
     }
 
-    // --- pipeline ---
+    // --- Pipeline ---
 
-    pipeline::~pipeline() = default;
+    Pipeline::~Pipeline() = default;
 
-    ref<pipeline> pipeline::create(core::device& dev, const pipeline_desc& desc)
+    Ref<Pipeline> Pipeline::Create(Core::Device& dev, const PipelineDesc& desc)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create pipeline: no device");
             return nullptr;
         }
 
-        if (!desc.shader_program)
+        if (!desc.ShaderProgram)
         {
             LUMINA_LOG_ERROR("Failed to create pipeline: shader required");
             return nullptr;
         }
 
-        if (!desc.vertex_layout)
+        if (!desc.VertexLayout)
         {
             LUMINA_LOG_ERROR("Failed to create pipeline: vertex layout required");
             return nullptr;
         }
 
         // Build NVRHI pipeline description
-        nvrhi::GraphicsPipelineDesc pso_desc;
+        nvrhi::GraphicsPipelineDesc psoDesc;
 
         // Shaders
-        pso_desc.VS = desc.shader_program->get_vertex_shader();
-        pso_desc.PS = desc.shader_program->get_pixel_shader();
+        psoDesc.VS = desc.ShaderProgram->GetVertexShader();
+        psoDesc.PS = desc.ShaderProgram->GetPixelShader();
 
         // Input layout
-        pso_desc.inputLayout = desc.vertex_layout->get_layout();
+        psoDesc.inputLayout = desc.VertexLayout->GetLayout();
 
         // Primitive type
-        pso_desc.primType = to_nvrhi_primitive_type(desc.state.primitive);
+        psoDesc.primType = ToNvrhiPrimitiveType(desc.State.Primitive);
 
         // Render state
-        pso_desc.renderState.blendState = to_nvrhi_blend_state(desc.state.blend);
-        pso_desc.renderState.depthStencilState = to_nvrhi_depth_state(desc.state.depth);
-        pso_desc.renderState.rasterState = to_nvrhi_raster_state(desc.state.cull);
+        psoDesc.renderState.blendState = ToNvrhiBlendState(desc.State.Blend);
+        psoDesc.renderState.depthStencilState = ToNvrhiDepthState(desc.State.Depth);
+        psoDesc.renderState.rasterState = ToNvrhiRasterState(desc.State.Cull);
 
         // Binding layouts
-        for (const auto& bl : desc.binding_layouts)
+        for (const auto& bl : desc.BindingLayouts)
         {
             if (bl)
             {
-                pso_desc.bindingLayouts.push_back(bl->get_layout());
+                psoDesc.bindingLayouts.push_back(bl->GetLayout());
             }
         }
 
         // Framebuffer info
-        nvrhi::FramebufferInfo fb_info;
-        fb_info.colorFormats.push_back(to_nvrhi_format(desc.color_format));
-        if (desc.depth_format != format::unknown)
+        nvrhi::FramebufferInfo fbInfo;
+        fbInfo.colorFormats.push_back(ToNvrhiFormat(desc.ColorFormat));
+        if (desc.DepthFormat != Format::Unknown)
         {
-            fb_info.depthFormat = to_nvrhi_format(desc.depth_format);
+            fbInfo.depthFormat = ToNvrhiFormat(desc.DepthFormat);
         }
-        fb_info.sampleCount = desc.sample_count;
+        fbInfo.sampleCount = desc.SampleCount;
 
-        nvrhi::GraphicsPipelineHandle pso = nvrhi_device->createGraphicsPipeline(pso_desc, fb_info);
+        nvrhi::GraphicsPipelineHandle pso = nvrhiDevice->createGraphicsPipeline(psoDesc, fbInfo);
         if (!pso)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI graphics pipeline");
             return nullptr;
         }
 
-        return ref<pipeline>(new pipeline(dev, std::move(pso), desc));
+        return Ref<Pipeline>(new Pipeline(dev, std::move(pso), desc));
     }
 
-    // --- pipeline_cache ---
+    // --- PipelineCache ---
 
-    pipeline_cache::pipeline_cache(core::device& dev)
-        : m_device(dev)
+    PipelineCache::PipelineCache(Core::Device& dev)
+        : m_Device(dev)
     {
     }
 
-    pipeline_cache::~pipeline_cache()
+    PipelineCache::~PipelineCache()
     {
-        clear();
+        Clear();
     }
 
-    ref<pipeline> pipeline_cache::get_or_create(const pipeline_desc& desc)
+    Ref<Pipeline> PipelineCache::GetOrCreate(const PipelineDesc& desc)
     {
-        size_t h = desc.hash();
+        size_t h = desc.Hash();
 
-        auto it = m_pipelines.find(h);
-        if (it != m_pipelines.end())
+        auto it = m_Pipelines.find(h);
+        if (it != m_Pipelines.end())
         {
             return it->second;
         }
 
         // Create new pipeline
-        auto pso = pipeline::create(m_device, desc);
+        auto pso = Pipeline::Create(m_Device, desc);
         if (pso)
         {
-            m_pipelines[h] = pso;
+            m_Pipelines[h] = pso;
         }
 
         return pso;
     }
 
-    void pipeline_cache::clear()
+    void PipelineCache::Clear()
     {
-        m_pipelines.clear();
+        m_Pipelines.clear();
     }
 }

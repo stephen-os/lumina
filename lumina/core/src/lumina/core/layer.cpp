@@ -1,7 +1,7 @@
-#include "layer.h"
+#include "Layer.h"
 
-namespace lumina::core
+namespace Lumina
 {
-    // Layer implementation is header-only for now
-    // This file exists for future extensions and to maintain the .h/.cpp pattern
+	// Layer implementation is header-only for now
+	// This file exists for future extensions and to maintain the .h/.cpp pattern
 }

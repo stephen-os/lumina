@@ -4,29 +4,29 @@
 
 #include <concepts>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    // tree_node() with lambda body is in scoped.h.
+    // TreeNode() with lambda body is in scoped.h.
     // This file adds selection-aware variants.
 
-    inline bool tree_node_leaf(const char* label, bool selected = false, ImGuiTreeNodeFlags extra_flags = 0)
+    inline bool TreeNodeLeaf(const char* label, bool selected = false, ImGuiTreeNodeFlags extraFlags = 0)
     {
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_Leaf
                                  | ImGuiTreeNodeFlags_NoTreePushOnOpen
                                  | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (selected) flags |= ImGuiTreeNodeFlags_Selected;
-        flags |= extra_flags;
+        flags |= extraFlags;
         ImGui::TreeNodeEx(label, flags);
         return ImGui::IsItemClicked();
     }
 
-    inline bool tree_node_selectable(const char* label, bool selected, std::invocable auto&& body,
-                                     ImGuiTreeNodeFlags extra_flags = 0)
+    inline bool TreeNodeSelectable(const char* label, bool selected, std::invocable auto&& body,
+                                     ImGuiTreeNodeFlags extraFlags = 0)
     {
         ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
                                  | ImGuiTreeNodeFlags_SpanAvailWidth;
         if (selected) flags |= ImGuiTreeNodeFlags_Selected;
-        flags |= extra_flags;
+        flags |= extraFlags;
 
         bool open = ImGui::TreeNodeEx(label, flags);
         bool clicked = ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen();

@@ -13,36 +13,36 @@
 
 #include <cstdint>
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// Opaque handle for render contexts
-    struct render_context
+    struct RenderContext
     {
-        uint32_t id = 0;
+        uint32_t Id = 0;
 
-        bool operator==(const render_context& other) const { return id == other.id; }
-        bool operator!=(const render_context& other) const { return id != other.id; }
+        bool operator==(const RenderContext& other) const { return Id == other.Id; }
+        bool operator!=(const RenderContext& other) const { return Id != other.Id; }
     };
 
-    enum class msaa_mode
+    enum class MSAAMode
     {
-        none = 1,   /// No multisampling
-        x2   = 2,   /// 2 samples per pixel
-        x4   = 4,   /// 4 samples per pixel
-        x8   = 8,   /// 8 samples per pixel
-        x16  = 16   /// 16 samples per pixel
+        None = 1,   /// No multisampling
+        X2   = 2,   /// 2 samples per pixel
+        X4   = 4,   /// 4 samples per pixel
+        X8   = 8,   /// 8 samples per pixel
+        X16  = 16   /// 16 samples per pixel
     };
 
-    struct renderer_config
+    struct RendererConfig
     {
-        uint32_t width = 800;              /// Initial width of the default render context
-        uint32_t height = 600;             /// Initial height of the default render context
-        msaa_mode msaa = msaa_mode::none;  /// MSAA sample count for the default context
+        uint32_t Width = 800;              /// Initial width of the default render context
+        uint32_t Height = 600;             /// Initial height of the default render context
+        MSAAMode Msaa = MSAAMode::None;    /// MSAA sample count for the default context
     };
 
     /// Static 2D renderer with simplified API
     /// Wraps renderer2d and manages render contexts internally
-    class renderer
+    class Renderer
     {
     public:
         // ========================================================================
@@ -50,139 +50,139 @@ namespace lumina::graphics
         // ========================================================================
 
         /// Initialize with default configuration
-        static void init(renderer_config config = {});
+        static void Init(RendererConfig config = {});
 
         /// Shutdown and cleanup all resources
-        static void shutdown();
+        static void Shutdown();
 
         /// Check if renderer is initialized
-        [[nodiscard]] static bool is_initialized();
+        [[nodiscard]] static bool IsInitialized();
 
         // ========================================================================
         // Context Management
         // ========================================================================
 
         /// Create an additional render context
-        [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height);
+        [[nodiscard]] static RenderContext CreateContext(uint32_t width, uint32_t height);
 
         /// Create an additional render context with MSAA
-        [[nodiscard]] static render_context create_context(uint32_t width, uint32_t height, msaa_mode msaa);
+        [[nodiscard]] static RenderContext CreateContext(uint32_t width, uint32_t height, MSAAMode msaa);
 
         /// Destroy a render context
-        static void destroy_context(render_context ctx);
+        static void DestroyContext(RenderContext ctx);
 
         /// Resize the default context
-        static void resize(uint32_t width, uint32_t height);
+        static void Resize(uint32_t width, uint32_t height);
 
         /// Resize a specific context
-        static void resize(render_context ctx, uint32_t width, uint32_t height);
+        static void Resize(RenderContext ctx, uint32_t width, uint32_t height);
 
         /// Get default context size
-        [[nodiscard]] static glm::uvec2 get_size();
+        [[nodiscard]] static glm::uvec2 GetSize();
 
         /// Get specific context size
-        [[nodiscard]] static glm::uvec2 get_size(render_context ctx);
+        [[nodiscard]] static glm::uvec2 GetSize(RenderContext ctx);
 
         // ========================================================================
         // Rendering
         // ========================================================================
 
         /// Begin rendering to default context
-        static void begin();
+        static void Begin();
 
         /// Begin rendering to specific context
-        static void begin(render_context ctx);
+        static void Begin(RenderContext ctx);
 
         /// End rendering and flush batches
-        static void end();
+        static void End();
 
         /// Clear current context with color
-        static void clear(const glm::vec4& color);
+        static void Clear(const glm::vec4& color);
 
         // ========================================================================
         // Camera / Projection
         // ========================================================================
 
         /// Set camera for current context
-        static void set_camera(const camera2d& camera);
+        static void SetCamera(const Camera2D& camera);
 
         /// Set raw projection matrix for current context
-        static void set_projection(const glm::mat4& projection);
+        static void SetProjection(const glm::mat4& projection);
 
         // ========================================================================
         // Output
         // ========================================================================
 
         /// Get rendered texture from default context
-        [[nodiscard]] static ref<texture> get_texture();
+        [[nodiscard]] static Ref<Texture> GetTexture();
 
         /// Get rendered texture from specific context
-        [[nodiscard]] static ref<texture> get_texture(render_context ctx);
+        [[nodiscard]] static Ref<Texture> GetTexture(RenderContext ctx);
 
         // ========================================================================
         // Drawing - Primitives
         // ========================================================================
 
-        static void draw_quad(const quad_desc& desc);
-        static void draw_circle(const circle_desc& desc);
-        static void draw_line(const line_desc& desc);
-        static void draw_triangle(const triangle_desc& desc);
-        static void draw_rect(const rect_desc& desc);
-        static void draw_pixel(const pixel_desc& desc);
-        static void draw_grid(const grid_desc& desc);
+        static void DrawQuad(const QuadDesc& desc);
+        static void DrawCircle(const CircleDesc& desc);
+        static void DrawLine(const LineDesc& desc);
+        static void DrawTriangle(const TriangleDesc& desc);
+        static void DrawRect(const RectDesc& desc);
+        static void DrawPixel(const PixelDesc& desc);
+        static void DrawGrid(const GridDesc& desc);
 
         // ========================================================================
         // Drawing - Text
         // ========================================================================
 
-        static void draw_text(const text_desc& desc);
-        static void set_default_font(ref<font_atlas> font);
-        [[nodiscard]] static ref<font_atlas> get_default_font();
+        static void DrawText(const TextDesc& desc);
+        static void SetDefaultFont(Ref<FontAtlas> font);
+        [[nodiscard]] static Ref<FontAtlas> GetDefaultFont();
 
         // ========================================================================
         // Drawing - Sprites
         // ========================================================================
 
-        static void draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc);
-        static void draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc);
-        static void draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc);
+        static void DrawSprite(const TextureAtlas& atlas, const std::string& regionName, const SpriteDesc& desc);
+        static void DrawSprite(const TextureAtlas& atlas, uint32_t regionIndex, const SpriteDesc& desc);
+        static void DrawSprite(const AtlasRegion& region, Ref<Texture> atlasTexture, const SpriteDesc& desc);
 
         // ========================================================================
         // Scissor / Clipping
         // ========================================================================
 
-        static void push_scissor(float x, float y, float width, float height);
-        static void push_scissor(const glm::vec4& rect);
-        static void pop_scissor();
-        [[nodiscard]] static bool has_scissor();
+        static void PushScissor(float x, float y, float width, float height);
+        static void PushScissor(const glm::vec4& rect);
+        static void PopScissor();
+        [[nodiscard]] static bool HasScissor();
 
         // ========================================================================
         // Texture Filtering
         // ========================================================================
 
-        static void set_filter_mode(filter_mode mode);
-        [[nodiscard]] static filter_mode get_filter_mode();
+        static void SetFilterMode(FilterMode mode);
+        [[nodiscard]] static FilterMode GetFilterMode();
 
         // ========================================================================
         // Lighting
         // ========================================================================
 
-        static void set_lighting_enabled(bool enabled);
-        [[nodiscard]] static bool is_lighting_enabled();
-        static void set_ambient_light(const glm::vec3& color, float intensity = 1.0f);
-        static void draw_point_light(const point_light_desc& desc);
+        static void SetLightingEnabled(bool enabled);
+        [[nodiscard]] static bool IsLightingEnabled();
+        static void SetAmbientLight(const glm::vec3& color, float intensity = 1.0f);
+        static void DrawPointLight(const PointLightDesc& desc);
 
         // ========================================================================
         // Stats
         // ========================================================================
 
-        [[nodiscard]] static const renderer2d_stats& get_stats();
-        static void reset_stats();
+        [[nodiscard]] static const Renderer2DStats& GetStats();
+        static void ResetStats();
 
     private:
-        renderer() = delete;
-        ~renderer() = delete;
-        renderer(const renderer&) = delete;
-        renderer& operator=(const renderer&) = delete;
+        Renderer() = delete;
+        ~Renderer() = delete;
+        Renderer(const Renderer&) = delete;
+        Renderer& operator=(const Renderer&) = delete;
     };
 }

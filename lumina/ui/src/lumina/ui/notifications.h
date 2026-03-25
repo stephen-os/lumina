@@ -2,18 +2,18 @@
 
 #include <string>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    enum class notification_type
+    enum class NotificationType
     {
-        info,
-        success,
-        warning,
-        error
+        Info,
+        Success,
+        Warning,
+        Error
     };
 
-    void notify(const std::string& message, notification_type type = notification_type::info,
-                float duration_seconds = 3.0f);
+    void Notify(const std::string& message, NotificationType type = NotificationType::Info,
+                float durationSeconds = 3.0f);
 
-    void render_notifications();
+    void RenderNotifications();
 }

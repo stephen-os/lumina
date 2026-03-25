@@ -6,66 +6,66 @@
 #include <lumina/graphics/graphics.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class hello_quad_layer : public lumina::core::layer
+class HelloQuadLayer : public Lumina::Layer
 {
 public:
-    hello_quad_layer() : layer("hello_quad") {}
+    HelloQuadLayer() : Layer("HelloQuad") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({
-            .width = static_cast<uint32_t>(m_viewport_size.x),
-            .height = static_cast<uint32_t>(m_viewport_size.y)
+        Gfx::Renderer::Init({
+            .Width = static_cast<uint32_t>(m_ViewportSize.x),
+            .Height = static_cast<uint32_t>(m_ViewportSize.y)
         });
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_render() override
+    void OnRender() override
     {
         // Calculate square size maintaining 1:1 aspect ratio
-        float size = std::min(m_viewport_size.x, m_viewport_size.y);
+        float size = std::min(m_ViewportSize.x, m_ViewportSize.y);
         float half = size * 0.5f;
 
-        gfx::renderer::begin();
-        gfx::renderer::resize(static_cast<uint32_t>(size), static_cast<uint32_t>(size));
-        gfx::renderer::clear({0.1f, 0.1f, 0.12f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Resize(static_cast<uint32_t>(size), static_cast<uint32_t>(size));
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.12f, 1.0f});
 
-        gfx::renderer::draw_quad({
-            .position = {half, half, 0.0f},
-            .size = {size * 0.375f, size * 0.375f},
-            .color = {0.2f, 0.6f, 1.0f, 1.0f}
+        Gfx::Renderer::DrawQuad({
+            .Position = {half, half, 0.0f},
+            .Size = {size * 0.375f, size * 0.375f},
+            .Color = {0.2f, 0.6f, 1.0f, 1.0f}
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // Display in ImGui window
-        ui::begin_window("Hello Quad");
+        UI::BeginWindow("Hello Quad");
 
-        m_viewport_size = ui::get_content_size();
-        auto tex = gfx::renderer::get_texture();
+        m_ViewportSize = UI::GetContentSize();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), {size, size});
+            UI::Image(tex->GetTexture(), {size, size});
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 
 private:
-    glm::vec2 m_viewport_size{400.0f, 400.0f};
+    glm::vec2 m_ViewportSize{400.0f, 400.0f};
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/00-hello-quad";
-    auto* app = new application(specs);
-    app->push_layer<hello_quad_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/00-hello-quad";
+    auto* app = new Application(specs);
+    app->PushLayer<HelloQuadLayer>();
     return app;
 }

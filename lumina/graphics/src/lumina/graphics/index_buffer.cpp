@@ -6,36 +6,36 @@
 #include <string>
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    index_buffer::~index_buffer() = default;
+    IndexBuffer::~IndexBuffer() = default;
 
-    index_buffer::index_buffer(index_buffer&& other) noexcept
-        : m_device(other.m_device)
-        , m_handle(std::move(other.m_handle))
-        , m_count(other.m_count)
-        , m_index_size(other.m_index_size)
+    IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+        : m_Device(other.m_Device)
+        , m_Handle(std::move(other.m_Handle))
+        , m_Count(other.m_Count)
+        , m_IndexSize(other.m_IndexSize)
     {
-        other.m_count = 0;
+        other.m_Count = 0;
     }
 
-    ref<index_buffer> index_buffer::create(
-        core::device& dev,
+    Ref<IndexBuffer> IndexBuffer::Create(
+        Core::Device& dev,
         const void* data,
         size_t count,
-        size_t index_size,
-        std::string_view debug_name)
+        size_t indexSize,
+        std::string_view debugName)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create index buffer: no device");
             return nullptr;
         }
 
-        if (index_size != 2 && index_size != 4)
+        if (indexSize != 2 && indexSize != 4)
         {
-            LUMINA_LOG_ERROR("Failed to create index buffer: index_size must be 2 (uint16) or 4 (uint32)");
+            LUMINA_LOG_ERROR("Failed to create index buffer: indexSize must be 2 (uint16) or 4 (uint32)");
             return nullptr;
         }
 
@@ -45,16 +45,16 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        size_t byte_size = count * index_size;
+        size_t byteSize = count * indexSize;
 
         nvrhi::BufferDesc desc;
-        desc.byteSize = byte_size;
+        desc.byteSize = byteSize;
         desc.isIndexBuffer = true;
-        desc.debugName = std::string(debug_name);
+        desc.debugName = std::string(debugName);
         desc.initialState = nvrhi::ResourceStates::IndexBuffer;
         desc.keepInitialState = true;
 
-        nvrhi::BufferHandle buffer = nvrhi_device->createBuffer(desc);
+        nvrhi::BufferHandle buffer = nvrhiDevice->createBuffer(desc);
         if (!buffer)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI index buffer");
@@ -64,14 +64,14 @@ namespace lumina::graphics
         // Upload initial data if provided
         if (data)
         {
-            nvrhi::CommandListHandle cmd = nvrhi_device->createCommandList();
+            nvrhi::CommandListHandle cmd = nvrhiDevice->createCommandList();
             cmd->open();
-            cmd->writeBuffer(buffer, data, byte_size);
+            cmd->writeBuffer(buffer, data, byteSize);
             cmd->close();
-            nvrhi_device->executeCommandList(cmd);
-            nvrhi_device->waitForIdle();
+            nvrhiDevice->executeCommandList(cmd);
+            nvrhiDevice->waitForIdle();
         }
 
-        return ref<index_buffer>(new index_buffer(dev, std::move(buffer), count, index_size));
+        return Ref<IndexBuffer>(new IndexBuffer(dev, std::move(buffer), count, indexSize));
     }
 }

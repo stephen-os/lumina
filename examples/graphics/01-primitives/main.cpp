@@ -6,100 +6,100 @@
 #include <lumina/graphics/graphics.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
-namespace gfx = lumina::graphics;
+namespace UI = Lumina::UI;
+namespace Gfx = Lumina::Graphics;
 
-class primitives_layer : public lumina::core::layer
+class PrimitivesLayer : public Lumina::Layer
 {
 public:
-    primitives_layer() : layer("primitives") {}
+    PrimitivesLayer() : Layer("Primitives") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
-        gfx::renderer::init({.width = 600, .height = 400});
+        Gfx::Renderer::Init({.Width = 600, .Height = 400});
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
-        gfx::renderer::shutdown();
+        Gfx::Renderer::Shutdown();
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        gfx::renderer::begin();
-        gfx::renderer::clear({0.1f, 0.1f, 0.12f, 1.0f});
+        Gfx::Renderer::Begin();
+        Gfx::Renderer::Clear({0.1f, 0.1f, 0.12f, 1.0f});
 
         // Row 1: Quad, Circle (filled), Circle (ring), Ellipse
-        gfx::renderer::draw_quad({
-            .position = {100.0f, 100.0f, 0.0f},
-            .size = {80.0f, 80.0f},
-            .color = {1.0f, 0.3f, 0.3f, 1.0f}  // Red
+        Gfx::Renderer::DrawQuad({
+            .Position = {100.0f, 100.0f, 0.0f},
+            .Size = {80.0f, 80.0f},
+            .Color = {1.0f, 0.3f, 0.3f, 1.0f}  // Red
         });
 
-        gfx::renderer::draw_circle({
-            .position = {250.0f, 100.0f, 0.0f},
-            .radius = {40.0f, 40.0f},
-            .color = {0.3f, 1.0f, 0.3f, 1.0f}  // Green
+        Gfx::Renderer::DrawCircle({
+            .Position = {250.0f, 100.0f, 0.0f},
+            .Radius = {40.0f, 40.0f},
+            .Color = {0.3f, 1.0f, 0.3f, 1.0f}  // Green
         });
 
-        gfx::renderer::draw_circle({
-            .position = {400.0f, 100.0f, 0.0f},
-            .radius = {40.0f, 40.0f},
-            .color = {0.3f, 0.3f, 1.0f, 1.0f},  // Blue
-            .thickness = 0.15f  // Ring instead of filled
+        Gfx::Renderer::DrawCircle({
+            .Position = {400.0f, 100.0f, 0.0f},
+            .Radius = {40.0f, 40.0f},
+            .Color = {0.3f, 0.3f, 1.0f, 1.0f},  // Blue
+            .Thickness = 0.15f  // Ring instead of filled
         });
 
-        gfx::renderer::draw_circle({
-            .position = {530.0f, 100.0f, 0.0f},
-            .radius = {50.0f, 30.0f},  // Wider than tall
-            .color = {1.0f, 0.6f, 0.2f, 1.0f}  // Orange
+        Gfx::Renderer::DrawCircle({
+            .Position = {530.0f, 100.0f, 0.0f},
+            .Radius = {50.0f, 30.0f},  // Wider than tall
+            .Color = {1.0f, 0.6f, 0.2f, 1.0f}  // Orange
         });
 
         // Row 2: Line, Triangle, Rectangle outline
-        gfx::renderer::draw_line({
-            .start = {60.0f, 250.0f, 0.0f},
-            .end = {140.0f, 350.0f, 0.0f},
-            .color = {1.0f, 1.0f, 0.3f, 1.0f},  // Yellow
-            .thickness = 4.0f
+        Gfx::Renderer::DrawLine({
+            .Start = {60.0f, 250.0f, 0.0f},
+            .End = {140.0f, 350.0f, 0.0f},
+            .Color = {1.0f, 1.0f, 0.3f, 1.0f},  // Yellow
+            .Thickness = 4.0f
         });
 
-        gfx::renderer::draw_triangle({
-            .p0 = {250.0f, 250.0f, 0.0f},
-            .p1 = {200.0f, 350.0f, 0.0f},
-            .p2 = {300.0f, 350.0f, 0.0f},
-            .color = {1.0f, 0.3f, 1.0f, 1.0f}  // Magenta
+        Gfx::Renderer::DrawTriangle({
+            .P0 = {250.0f, 250.0f, 0.0f},
+            .P1 = {200.0f, 350.0f, 0.0f},
+            .P2 = {300.0f, 350.0f, 0.0f},
+            .Color = {1.0f, 0.3f, 1.0f, 1.0f}  // Magenta
         });
 
-        gfx::renderer::draw_rect({
-            .position = {400.0f, 250.0f, 0.0f},
-            .size = {100.0f, 100.0f},
-            .color = {0.3f, 1.0f, 1.0f, 1.0f},  // Cyan
-            .thickness = 3.0f
+        Gfx::Renderer::DrawRect({
+            .Position = {400.0f, 250.0f, 0.0f},
+            .Size = {100.0f, 100.0f},
+            .Color = {0.3f, 1.0f, 1.0f, 1.0f},  // Cyan
+            .Thickness = 3.0f
         });
 
-        gfx::renderer::end();
+        Gfx::Renderer::End();
 
         // UI
-        ui::begin_window("Primitives");
-        ui::text("Basic 2D Shapes");
-        ui::separator();
-        ui::text("Row 1: Quad, Circle, Ring, Ellipse");
-        ui::text("Row 2: Line, Triangle, Rectangle");
-        ui::separator();
-        auto tex = gfx::renderer::get_texture();
+        UI::BeginWindow("Primitives");
+        UI::Text("Basic 2D Shapes");
+        UI::Separator();
+        UI::Text("Row 1: Quad, Circle, Ring, Ellipse");
+        UI::Text("Row 2: Line, Triangle, Rectangle");
+        UI::Separator();
+        auto tex = Gfx::Renderer::GetTexture();
         if (tex)
         {
-            ui::image(tex->get_texture(), {600, 400});
+            UI::Image(tex->GetTexture(), {600, 400});
         }
-        ui::end_window();
+        UI::EndWindow();
     }
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    application_specifications specs;
-    specs.title = "graphics/01-primitives";
-    auto* app = new application(specs);
-    app->push_layer<primitives_layer>();
+    ApplicationSpecifications specs;
+    specs.Title = "graphics/01-primitives";
+    auto* app = new Application(specs);
+    app->PushLayer<PrimitivesLayer>();
     return app;
 }

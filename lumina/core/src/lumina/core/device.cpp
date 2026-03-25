@@ -1,5 +1,5 @@
-#include "device.h"
-#include "log.h"
+#include "Device.h"
+#include "Log.h"
 
 #ifdef LUMINA_PLATFORM_WINDOWS
 #include "platform/d3d12/d3d12_device.h"
@@ -7,26 +7,26 @@
 
 #include "platform/vulkan/vulkan_device.h"
 
-namespace lumina::core
+namespace Lumina
 {
-    scope<device> device::create(graphics_api api)
-    {
-        switch (api)
-        {
-        case graphics_api::d3d12:
+	Scope<Device> Device::Create(GraphicsAPI api)
+	{
+		switch (api)
+		{
+		case GraphicsAPI::D3D12:
 #ifdef LUMINA_PLATFORM_WINDOWS
-            return make_scope<platform::d3d12::d3d12_device>();
+			return MakeScope<Platform::D3D12::D3D12Device>();
 #else
-            LUMINA_LOG_ERROR("D3D12 is only supported on Windows");
-            return nullptr;
+			LUMINA_LOG_ERROR("D3D12 is only supported on Windows");
+			return nullptr;
 #endif
 
-        case graphics_api::vulkan:
-            return make_scope<platform::vulkan::vulkan_device>();
+		case GraphicsAPI::Vulkan:
+			return MakeScope<Platform::Vulkan::VulkanDevice>();
 
-        default:
-            LUMINA_LOG_ERROR("Unknown graphics API");
-            return nullptr;
-        }
-    }
+		default:
+			LUMINA_LOG_ERROR("Unknown graphics API");
+			return nullptr;
+		}
+	}
 }

@@ -10,151 +10,151 @@
 #include <utility>
 #include <vector>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
-    class shader;
+    class Shader;
 
     /// Semantic hint for vertex attributes.
-    enum class vertex_semantic
+    enum class VertexSemantic
     {
-        position,   // Vertex position
-        color,      // Vertex color
-        texcoord,   // Texture coordinates
-        normal,     // Vertex normal
-        tangent,    // Vertex tangent
-        custom      // Custom attribute
+        Position,   // Vertex position
+        Color,      // Vertex color
+        Texcoord,   // Texture coordinates
+        Normal,     // Vertex normal
+        Tangent,    // Vertex tangent
+        Custom      // Custom attribute
     };
 
     /// Describes a single vertex attribute within a vertex buffer.
-    struct vertex_attribute
+    struct VertexAttribute
     {
-        std::string name;                                   // Shader input name (e.g., "POSITION", "COLOR")
-        format attr_format;                                 // Data format (e.g., format::rgba32_float)
-        uint32_t offset = 0;                                // Byte offset within vertex
-        vertex_semantic semantic = vertex_semantic::custom; // Semantic hint
+        std::string Name;                                   // Shader input name (e.g., "POSITION", "COLOR")
+        Format AttrFormat;                                  // Data format (e.g., Format::RGBA32Float)
+        uint32_t Offset = 0;                                // Byte offset within vertex
+        VertexSemantic Semantic = VertexSemantic::Custom;   // Semantic hint
 
-        vertex_attribute() = default;
-        vertex_attribute(const std::string& name, format fmt, uint32_t offset = 0, vertex_semantic sem = vertex_semantic::custom)
-            : name(name), attr_format(fmt), offset(offset), semantic(sem) {}
+        VertexAttribute() = default;
+        VertexAttribute(const std::string& name, Format fmt, uint32_t offset = 0, VertexSemantic sem = VertexSemantic::Custom)
+            : Name(name), AttrFormat(fmt), Offset(offset), Semantic(sem) {}
     };
 
     /// Configuration for vertex input layout.
     /// Use the builder methods to construct layouts incrementally.
-    struct input_layout_desc
+    struct InputLayoutDesc
     {
-        std::vector<vertex_attribute> attributes;
-        uint32_t stride = 0;
+        std::vector<VertexAttribute> Attributes;
+        uint32_t Stride = 0;
 
-        input_layout_desc& add(const std::string& name, format fmt, vertex_semantic sem = vertex_semantic::custom)
+        InputLayoutDesc& Add(const std::string& name, Format fmt, VertexSemantic sem = VertexSemantic::Custom)
         {
-            uint32_t offset = stride;
-            attributes.push_back({ name, fmt, offset, sem });
-            stride += static_cast<uint32_t>(format_bytes_per_pixel(fmt));
+            uint32_t offset = Stride;
+            Attributes.push_back({ name, fmt, offset, sem });
+            Stride += static_cast<uint32_t>(FormatBytesPerPixel(fmt));
             return *this;
         }
 
-        input_layout_desc& add_position(format fmt = format::rgba32_float)
+        InputLayoutDesc& AddPosition(Format fmt = Format::RGBA32Float)
         {
-            return add("POSITION", fmt, vertex_semantic::position);
+            return Add("POSITION", fmt, VertexSemantic::Position);
         }
 
-        input_layout_desc& add_color(format fmt = format::rgba32_float)
+        InputLayoutDesc& AddColor(Format fmt = Format::RGBA32Float)
         {
-            return add("COLOR", fmt, vertex_semantic::color);
+            return Add("COLOR", fmt, VertexSemantic::Color);
         }
 
-        input_layout_desc& add_texcoord(format fmt = format::rg32_float)
+        InputLayoutDesc& AddTexcoord(Format fmt = Format::RG32Float)
         {
-            return add("TEXCOORD", fmt, vertex_semantic::texcoord);
+            return Add("TEXCOORD", fmt, VertexSemantic::Texcoord);
         }
 
-        input_layout_desc& add_normal(format fmt = format::rgba32_float)
+        InputLayoutDesc& AddNormal(Format fmt = Format::RGBA32Float)
         {
-            return add("NORMAL", fmt, vertex_semantic::normal);
+            return Add("NORMAL", fmt, VertexSemantic::Normal);
         }
     };
 
     /// GPU input layout describing vertex data format for the vertex shader.
     /// Defines how vertex buffer data maps to shader input attributes.
-    class input_layout
+    class InputLayout
     {
     public:
-        ~input_layout();
+        ~InputLayout();
 
-        input_layout(const input_layout&) = delete;
-        input_layout& operator=(const input_layout&) = delete;
+        InputLayout(const InputLayout&) = delete;
+        InputLayout& operator=(const InputLayout&) = delete;
 
         /// Creates an input layout. Returns nullptr on failure.
-        [[nodiscard]] static ref<input_layout> create(
-            core::device& dev,
-            const input_layout_desc& desc,
-            ref<shader> vertex_shader);
+        [[nodiscard]] static Ref<InputLayout> Create(
+            Device& dev,
+            const InputLayoutDesc& desc,
+            Ref<Shader> vertexShader);
 
-        [[nodiscard]] const input_layout_desc& get_desc() const noexcept { return m_desc; }
-        [[nodiscard]] uint32_t get_stride() const noexcept { return m_desc.stride; }
-        [[nodiscard]] size_t get_attribute_count() const noexcept { return m_desc.attributes.size(); }
-        [[nodiscard]] nvrhi::IInputLayout* get_layout() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] const InputLayoutDesc& GetDesc() const noexcept { return m_Desc; }
+        [[nodiscard]] uint32_t GetStride() const noexcept { return m_Desc.Stride; }
+        [[nodiscard]] size_t GetAttributeCount() const noexcept { return m_Desc.Attributes.size(); }
+        [[nodiscard]] nvrhi::IInputLayout* GetLayout() const noexcept { return m_Handle.Get(); }
 
     private:
-        input_layout(core::device& dev, nvrhi::InputLayoutHandle handle, const input_layout_desc& desc)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_desc(desc)
+        InputLayout(Device& dev, nvrhi::InputLayoutHandle handle, const InputLayoutDesc& desc)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Desc(desc)
         {}
 
-        core::device& m_device;
-        nvrhi::InputLayoutHandle m_handle;
-        input_layout_desc m_desc;
+        Device& m_Device;
+        nvrhi::InputLayoutHandle m_Handle;
+        InputLayoutDesc m_Desc;
     };
 
     /// Common predefined vertex layouts.
-    namespace vertex_layouts
+    namespace VertexLayouts
     {
         /// Position only (4 floats for xyzw)
-        [[nodiscard]] inline input_layout_desc position() noexcept
+        [[nodiscard]] inline InputLayoutDesc Position() noexcept
         {
-            input_layout_desc desc;
-            desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
+            InputLayoutDesc desc;
+            desc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position);
             return desc;
         }
 
         /// Position + Color (4 + 4 floats)
-        [[nodiscard]] inline input_layout_desc position_color() noexcept
+        [[nodiscard]] inline InputLayoutDesc PositionColor() noexcept
         {
-            input_layout_desc desc;
-            desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
-            desc.add("COLOR", format::rgba32_float, vertex_semantic::color);
+            InputLayoutDesc desc;
+            desc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position);
+            desc.Add("COLOR", Format::RGBA32Float, VertexSemantic::Color);
             return desc;
         }
 
         /// Position + TexCoord (4 + 2 floats)
-        [[nodiscard]] inline input_layout_desc position_texcoord() noexcept
+        [[nodiscard]] inline InputLayoutDesc PositionTexcoord() noexcept
         {
-            input_layout_desc desc;
-            desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
-            desc.add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord);
+            InputLayoutDesc desc;
+            desc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position);
+            desc.Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord);
             return desc;
         }
 
         /// Position + Color + TexCoord (4 + 4 + 2 floats) - common for 2D
-        [[nodiscard]] inline input_layout_desc position_color_texcoord() noexcept
+        [[nodiscard]] inline InputLayoutDesc PositionColorTexcoord() noexcept
         {
-            input_layout_desc desc;
-            desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
-            desc.add("COLOR", format::rgba32_float, vertex_semantic::color);
-            desc.add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord);
+            InputLayoutDesc desc;
+            desc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position);
+            desc.Add("COLOR", Format::RGBA32Float, VertexSemantic::Color);
+            desc.Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord);
             return desc;
         }
 
         /// Full 3D vertex (position + normal + texcoord)
-        [[nodiscard]] inline input_layout_desc position_normal_texcoord() noexcept
+        [[nodiscard]] inline InputLayoutDesc PositionNormalTexcoord() noexcept
         {
-            input_layout_desc desc;
-            desc.add("POSITION", format::rgba32_float, vertex_semantic::position);
-            desc.add("NORMAL", format::rgba32_float, vertex_semantic::normal);
-            desc.add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord);
+            InputLayoutDesc desc;
+            desc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position);
+            desc.Add("NORMAL", Format::RGBA32Float, VertexSemantic::Normal);
+            desc.Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord);
             return desc;
         }
     }

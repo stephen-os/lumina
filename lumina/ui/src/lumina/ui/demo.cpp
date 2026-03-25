@@ -6,776 +6,776 @@
 
 #include <glm/glm.hpp>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
     // Demo state
     static struct
     {
         // Text demo
-        bool show_text = true;
+        bool showText = true;
 
         // Buttons demo
-        bool show_buttons = true;
-        bool toggle_state = false;
+        bool showButtons = true;
+        bool toggleState = false;
 
         // Properties demo
-        bool show_properties = true;
-        float prop_float = 1.5f;
-        int prop_int = 42;
-        bool prop_bool = true;
-        char prop_string[128] = "Hello Lumina";
-        std::string prop_std_string = "std::string value";
-        glm::vec2 prop_vec2 = {1.0f, 2.0f};
-        glm::vec3 prop_vec3 = {1.0f, 2.0f, 3.0f};
-        glm::vec4 prop_vec4 = {1.0f, 2.0f, 3.0f, 4.0f};
-        glm::vec3 prop_color3 = {1.0f, 0.5f, 0.0f};
-        glm::vec4 prop_color4 = {1.0f, 0.5f, 0.0f, 1.0f};
-        float prop_slider = 0.5f;
-        int prop_slider_int = 50;
-        float prop_angle = 0.0f;
-        int prop_dropdown = 0;
+        bool showProperties = true;
+        float propFloat = 1.5f;
+        int propInt = 42;
+        bool propBool = true;
+        char propString[128] = "Hello Lumina";
+        std::string propStdString = "std::string value";
+        glm::vec2 propVec2 = {1.0f, 2.0f};
+        glm::vec3 propVec3 = {1.0f, 2.0f, 3.0f};
+        glm::vec4 propVec4 = {1.0f, 2.0f, 3.0f, 4.0f};
+        glm::vec3 propColor3 = {1.0f, 0.5f, 0.0f};
+        glm::vec4 propColor4 = {1.0f, 0.5f, 0.0f, 1.0f};
+        float propSlider = 0.5f;
+        int propSliderInt = 50;
+        float propAngle = 0.0f;
+        int propDropdown = 0;
 
         // Panels demo
-        bool show_panels = true;
-        bool section_visible = true;
+        bool showPanels = true;
+        bool sectionVisible = true;
 
         // Layouts demo
-        bool show_layouts = true;
+        bool showLayouts = true;
 
         // Tables demo
-        bool show_tables = true;
+        bool showTables = true;
 
         // Trees demo
-        bool show_trees = true;
-        int selected_tree_item = -1;
+        bool showTrees = true;
+        int selectedTreeItem = -1;
 
         // Menus demo
-        bool show_menus = true;
-        bool menu_toggle = false;
+        bool showMenus = true;
+        bool menuToggle = false;
 
         // Toolbars demo
-        bool show_toolbars = true;
-        bool toolbar_toggle1 = false;
-        bool toolbar_toggle2 = true;
+        bool showToolbars = true;
+        bool toolbarToggle1 = false;
+        bool toolbarToggle2 = true;
 
         // Popups demo
-        bool show_popups = true;
-        char input_buffer[128] = "";
+        bool showPopups = true;
+        char inputBuffer[128] = "";
 
         // Tabs demo
-        bool show_tabs = true;
+        bool showTabs = true;
 
         // State queries demo
-        bool show_state = true;
+        bool showState = true;
 
         // Icons demo
-        bool show_icons = true;
+        bool showIcons = true;
 
         // Notifications demo
-        bool show_notifications = true;
-    } s_demo;
+        bool showNotifications = true;
+    } s_Demo;
 
-    static void demo_help_marker(const char* desc)
+    static void DemoHelpMarker(const char* desc)
     {
-        text_disabled("(?)");
-        if (is_item_hovered(ImGuiHoveredFlags_DelayShort))
+        TextDisabled("(?)");
+        if (IsItemHovered(ImGuiHoveredFlags_DelayShort))
         {
-            if (begin_tooltip())
+            if (BeginTooltip())
             {
-                push_style_var(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
-                text_wrapped(desc);
-                pop_style_var();
-                end_tooltip();
+                PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 8));
+                TextWrapped(desc);
+                PopStyleVar();
+                EndTooltip();
             }
         }
     }
 
-    static void show_text_demo()
+    static void ShowTextDemo()
     {
-        if (begin_section("Text", ImGuiTreeNodeFlags_DefaultOpen))
+        if (BeginSection("Text", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            text("text() - Basic text");
-            text(std::string("text(std::string) - String overload"));
+            Text("text() - Basic text");
+            Text(std::string("text(std::string) - String overload"));
 
-            text_colored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "text_colored() - Red text");
-            text_colored(glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), "text_colored(glm::vec4) - Green text");
-            text_colored(glm::vec3(0.4f, 0.4f, 1.0f), "text_colored(glm::vec3) - Blue text");
+            TextColored(ImVec4(1.0f, 0.4f, 0.4f, 1.0f), "text_colored() - Red text");
+            TextColored(glm::vec4(0.4f, 1.0f, 0.4f, 1.0f), "text_colored(glm::vec4) - Green text");
+            TextColored(glm::vec3(0.4f, 0.4f, 1.0f), "text_colored(glm::vec3) - Blue text");
 
-            text_disabled("text_disabled() - Grayed out text");
-            text_wrapped("text_wrapped() - This is a longer piece of text that will wrap to multiple lines when the window is too narrow to contain it all on one line.");
+            TextDisabled("text_disabled() - Grayed out text");
+            TextWrapped("text_wrapped() - This is a longer piece of text that will wrap to multiple lines when the window is too narrow to contain it all on one line.");
 
-            text_bullet("text_bullet() - Bulleted item 1");
-            text_bullet("text_bullet() - Bulleted item 2");
+            TextBullet("text_bullet() - Bulleted item 1");
+            TextBullet("text_bullet() - Bulleted item 2");
 
-            text_fmt("text_fmt() - Formatted: {} + {} = {}", 1, 2, 3);
-            text_colored_fmt({1.0f, 1.0f, 0.4f, 1.0f}, "text_colored_fmt() - Answer: {}", 42);
+            TextFmt("text_fmt() - Formatted: {} + {} = {}", 1, 2, 3);
+            TextColoredFmt({1.0f, 1.0f, 0.4f, 1.0f}, "text_colored_fmt() - Answer: {}", 42);
 
-            text_label("text_label()", "label: value");
+            TextLabel("text_label()", "label: value");
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_buttons_demo()
+    static void ShowButtonsDemo()
     {
-        if (begin_section("Buttons & Basic Widgets"))
+        if (BeginSection("Buttons & Basic Widgets"))
         {
-            if (button("button()"))
-                notify("Button clicked!", notification_type::info);
+            if (Button("button()"))
+                Notify("Button clicked!", NotificationType::Info);
 
-            same_line();
-            if (button_small("button_small()"))
-                notify("Small button clicked!", notification_type::info);
+            SameLine();
+            if (ButtonSmall("button_small()"))
+                Notify("Small button clicked!", NotificationType::Info);
 
-            if (button_primary("button_primary()"))
-                notify("Primary action!", notification_type::success);
+            if (ButtonPrimary("button_primary()"))
+                Notify("Primary action!", NotificationType::Success);
 
-            same_line();
-            if (button_success("button_success()"))
-                notify("Success!", notification_type::success);
+            SameLine();
+            if (ButtonSuccess("button_success()"))
+                Notify("Success!", NotificationType::Success);
 
-            same_line();
-            if (button_danger("button_danger()"))
-                notify("Danger!", notification_type::error);
+            SameLine();
+            if (ButtonDanger("button_danger()"))
+                Notify("Danger!", NotificationType::Error);
 
-            separator();
+            Separator();
 
-            checkbox("checkbox()", s_demo.toggle_state);
-            same_line();
-            text_fmt("State: {}", s_demo.toggle_state);
+            Checkbox("checkbox()", s_Demo.toggleState);
+            SameLine();
+            TextFmt("State: {}", s_Demo.toggleState);
 
-            separator();
+            Separator();
 
-            text("selectable():");
+            Text("selectable():");
             static int selected = 0;
             for (int i = 0; i < 3; i++)
             {
-                push_id(i);
-                if (selectable("Selectable item", selected == i))
+                PushID(i);
+                if (Selectable("Selectable item", selected == i))
                     selected = i;
-                pop_id();
+                PopID();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_properties_demo()
+    static void ShowPropertiesDemo()
     {
-        if (begin_section("Properties"))
+        if (BeginSection("Properties"))
         {
-            text("Property editor with label-left, widget-right layout:");
-            separator();
+            Text("Property editor with label-left, widget-right layout:");
+            Separator();
 
-            property("Float", s_demo.prop_float);
-            property("Int", s_demo.prop_int);
-            property("Bool", s_demo.prop_bool);
-            property("char[]", s_demo.prop_string, sizeof(s_demo.prop_string));
-            property("std::string", s_demo.prop_std_string);
+            Property("Float", s_Demo.propFloat);
+            Property("Int", s_Demo.propInt);
+            Property("Bool", s_Demo.propBool);
+            Property("char[]", s_Demo.propString, sizeof(s_Demo.propString));
+            Property("std::string", s_Demo.propStdString);
 
-            separator();
-            text("Vectors (glm):");
+            Separator();
+            Text("Vectors (glm):");
 
-            property("Vec2", s_demo.prop_vec2);
-            property("Vec3", s_demo.prop_vec3);
-            property("Vec4", s_demo.prop_vec4);
+            Property("Vec2", s_Demo.propVec2);
+            Property("Vec3", s_Demo.propVec3);
+            Property("Vec4", s_Demo.propVec4);
 
-            separator();
-            text("Colors:");
+            Separator();
+            Text("Colors:");
 
-            property_color("Color RGB", s_demo.prop_color3);
-            property_color("Color RGBA", s_demo.prop_color4);
+            PropertyColor("Color RGB", s_Demo.propColor3);
+            PropertyColor("Color RGBA", s_Demo.propColor4);
 
-            separator();
-            text("Sliders:");
+            Separator();
+            Text("Sliders:");
 
-            property_slider("Slider Float", s_demo.prop_slider, 0.0f, 1.0f);
-            property_slider("Slider Int", s_demo.prop_slider_int, 0, 100);
-            property_angle("Angle", s_demo.prop_angle);
+            PropertySlider("Slider Float", s_Demo.propSlider, 0.0f, 1.0f);
+            PropertySlider("Slider Int", s_Demo.propSliderInt, 0, 100);
+            PropertyAngle("Angle", s_Demo.propAngle);
 
-            separator();
-            text("Dropdown:");
+            Separator();
+            Text("Dropdown:");
 
             static const char* items[] = {"Option A", "Option B", "Option C"};
-            property_dropdown("Dropdown", s_demo.prop_dropdown, items, 3);
+            PropertyDropdown("Dropdown", s_Demo.propDropdown, items, 3);
 
-            separator();
-            text("Read-only:");
+            Separator();
+            Text("Read-only:");
 
-            property_text("Text Property", "Read-only value");
+            PropertyText("Text Property", "Read-only value");
 
-            separator();
-            text("Custom widget:");
+            Separator();
+            Text("Custom widget:");
 
-            property_custom("Custom", []() {
+            PropertyCustom("Custom", []() {
                 return ImGui::Button("Click Me!");
             });
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_panels_demo()
+    static void ShowPanelsDemo()
     {
-        if (begin_section("Panels & Sections"))
+        if (BeginSection("Panels & Sections"))
         {
-            text("begin_panel() / end_panel() - Styled window with padding");
-            text("begin_section() / end_section() - Collapsing sections");
+            Text("begin_panel() / end_panel() - Styled window with padding");
+            Text("begin_section() / end_section() - Collapsing sections");
 
-            spacing();
+            Spacing();
 
-            if (begin_section("Nested Section 1", s_demo.section_visible))
+            if (BeginSection("Nested Section 1", s_Demo.sectionVisible))
             {
-                text("Content inside section 1");
-                text("Sections auto-indent content");
-                end_section();
+                Text("Content inside section 1");
+                Text("Sections auto-indent content");
+                EndSection();
             }
 
-            if (begin_section("Nested Section 2"))
+            if (BeginSection("Nested Section 2"))
             {
-                text("Content inside section 2");
-                if (begin_section("Deeply Nested"))
+                Text("Content inside section 2");
+                if (BeginSection("Deeply Nested"))
                 {
-                    text("Sections can be nested");
-                    end_section();
+                    Text("Sections can be nested");
+                    EndSection();
                 }
-                end_section();
+                EndSection();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_layouts_demo()
+    static void ShowLayoutsDemo()
     {
-        if (begin_section("Layouts"))
+        if (BeginSection("Layouts"))
         {
-            text("separator():");
-            separator();
+            Text("separator():");
+            Separator();
 
-            text("spacing():");
-            spacing();
-            spacing();
-            spacing();
-            text("(3x spacing above)");
+            Text("spacing():");
+            Spacing();
+            Spacing();
+            Spacing();
+            Text("(3x spacing above)");
 
-            separator();
+            Separator();
 
-            text("same_line():");
-            button("Button 1"); same_line();
-            button("Button 2"); same_line();
-            button("Button 3");
+            Text("same_line():");
+            Button("Button 1"); SameLine();
+            Button("Button 2"); SameLine();
+            Button("Button 3");
 
-            separator();
+            Separator();
 
-            text("indent() / unindent():");
-            indent();
-            text("Indented once");
-            indent();
-            text("Indented twice");
-            unindent();
-            text("Back to one indent");
-            unindent();
-            text("No indent");
+            Text("indent() / unindent():");
+            Indent();
+            Text("Indented once");
+            Indent();
+            Text("Indented twice");
+            Unindent();
+            Text("Back to one indent");
+            Unindent();
+            Text("No indent");
 
-            separator();
+            Separator();
 
-            text("dummy() - invisible spacer:");
-            button("Before");
-            dummy(50, 20);
-            same_line();
-            text("<- 50x20 dummy");
-            button("After");
+            Text("dummy() - invisible spacer:");
+            Button("Before");
+            Dummy(50, 20);
+            SameLine();
+            Text("<- 50x20 dummy");
+            Button("After");
 
-            separator();
+            Separator();
 
-            text("push_item_width() / set_next_item_width():");
-            set_next_item_width(100);
+            Text("push_item_width() / set_next_item_width():");
+            SetNextItemWidth(100);
             static float w1 = 0;
             ImGui::DragFloat("##w1", &w1);
-            same_line(); text("<- 100px width");
+            SameLine(); Text("<- 100px width");
 
-            push_item_width(200);
+            PushItemWidth(200);
             static float w2 = 0;
             ImGui::DragFloat("##w2", &w2);
-            same_line(); text("<- 200px width");
-            pop_item_width();
+            SameLine(); Text("<- 200px width");
+            PopItemWidth();
 
-            separator();
+            Separator();
 
-            text("push_id() / pop_id():");
+            Text("push_id() / pop_id():");
             for (int i = 0; i < 3; i++)
             {
-                push_id(i);
-                button("Same Label");
-                same_line();
-                pop_id();
+                PushID(i);
+                Button("Same Label");
+                SameLine();
+                PopID();
             }
-            new_line();
-            text("(3 buttons with same label, different IDs)");
+            NewLine();
+            Text("(3 buttons with same label, different IDs)");
 
-            separator();
+            Separator();
 
-            text_fmt("get_content_width(): {:.0f}", get_content_width());
-            text_fmt("get_content_height(): {:.0f}", get_content_height());
+            TextFmt("get_content_width(): {:.0f}", GetContentWidth());
+            TextFmt("get_content_height(): {:.0f}", GetContentHeight());
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_tables_demo()
+    static void ShowTablesDemo()
     {
-        if (begin_section("Tables"))
+        if (BeginSection("Tables"))
         {
-            if (begin_table("demo_table", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
+            if (BeginTable("demo_table", 3, ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg))
             {
-                table_setup_column("ID");
-                table_setup_column("Name");
-                table_setup_column("Value");
-                table_headers_row();
+                TableSetupColumn("ID");
+                TableSetupColumn("Name");
+                TableSetupColumn("Value");
+                TableHeadersRow();
 
                 for (int i = 0; i < 5; i++)
                 {
-                    table_next_row();
-                    table_next_column(); text_fmt("{}", i);
-                    table_next_column(); text_fmt("Item {}", i);
-                    table_next_column(); text_fmt("{:.2f}", i * 1.5f);
+                    TableNextRow();
+                    TableNextColumn(); TextFmt("{}", i);
+                    TableNextColumn(); TextFmt("Item {}", i);
+                    TableNextColumn(); TextFmt("{:.2f}", i * 1.5f);
                 }
 
-                end_table();
+                EndTable();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_trees_demo()
+    static void ShowTreesDemo()
     {
-        if (begin_section("Trees"))
+        if (BeginSection("Trees"))
         {
-            text("tree_node_leaf() - leaf nodes with selection:");
+            Text("tree_node_leaf() - leaf nodes with selection:");
 
             for (int i = 0; i < 3; i++)
             {
-                push_id(i);
-                if (tree_node_leaf(i == 0 ? "Leaf Node A" : (i == 1 ? "Leaf Node B" : "Leaf Node C"),
-                                   s_demo.selected_tree_item == i))
+                PushID(i);
+                if (TreeNodeLeaf(i == 0 ? "Leaf Node A" : (i == 1 ? "Leaf Node B" : "Leaf Node C"),
+                                   s_Demo.selectedTreeItem == i))
                 {
-                    s_demo.selected_tree_item = i;
+                    s_Demo.selectedTreeItem = i;
                 }
-                pop_id();
+                PopID();
             }
 
-            separator();
+            Separator();
 
-            text("tree_node_selectable() - expandable with selection:");
+            Text("tree_node_selectable() - expandable with selection:");
 
-            if (begin_tree_node("Parent Node", ImGuiTreeNodeFlags_DefaultOpen))
+            if (BeginTreeNode("Parent Node", ImGuiTreeNodeFlags_DefaultOpen))
             {
-                if (tree_node_leaf("Child 1", s_demo.selected_tree_item == 10))
-                    s_demo.selected_tree_item = 10;
-                if (tree_node_leaf("Child 2", s_demo.selected_tree_item == 11))
-                    s_demo.selected_tree_item = 11;
+                if (TreeNodeLeaf("Child 1", s_Demo.selectedTreeItem == 10))
+                    s_Demo.selectedTreeItem = 10;
+                if (TreeNodeLeaf("Child 2", s_Demo.selectedTreeItem == 11))
+                    s_Demo.selectedTreeItem = 11;
 
-                if (begin_tree_node("Nested Parent"))
+                if (BeginTreeNode("Nested Parent"))
                 {
-                    if (tree_node_leaf("Grandchild", s_demo.selected_tree_item == 20))
-                        s_demo.selected_tree_item = 20;
-                    end_tree_node();
+                    if (TreeNodeLeaf("Grandchild", s_Demo.selectedTreeItem == 20))
+                        s_Demo.selectedTreeItem = 20;
+                    EndTreeNode();
                 }
-                end_tree_node();
+                EndTreeNode();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_menus_demo()
+    static void ShowMenusDemo()
     {
-        if (begin_section("Menus"))
+        if (BeginSection("Menus"))
         {
-            text("Right-click here for context_menu_window():");
+            Text("Right-click here for context_menu_window():");
 
-            context_menu_window([&]() {
-                if (menu_item("Action 1"))
-                    notify("Action 1 selected");
-                if (menu_item("Action 2"))
-                    notify("Action 2 selected");
-                menu_separator();
-                menu_item("Toggle Option", s_demo.menu_toggle);
+            ContextMenuWindow([&]() {
+                if (MenuItem("Action 1"))
+                    Notify("Action 1 selected");
+                if (MenuItem("Action 2"))
+                    Notify("Action 2 selected");
+                MenuSeparator();
+                MenuItem("Toggle Option", s_Demo.menuToggle);
             });
 
-            separator();
+            Separator();
 
-            button("Right-click me");
-            context_menu([&]() {
-                if (menu_item("Item Context Action"))
-                    notify("Item action!");
+            Button("Right-click me");
+            ContextMenu([&]() {
+                if (MenuItem("Item Context Action"))
+                    Notify("Item action!");
             });
 
-            separator();
+            Separator();
 
-            text("Menu bar in window (use ImGuiWindowFlags_MenuBar):");
-            text("begin_menu_bar() / end_menu_bar()");
-            text("begin_menu() / end_menu()");
-            text("menu_item() / menu_separator()");
+            Text("Menu bar in window (use ImGuiWindowFlags_MenuBar):");
+            Text("begin_menu_bar() / end_menu_bar()");
+            Text("begin_menu() / end_menu()");
+            Text("menu_item() / menu_separator()");
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_toolbars_demo()
+    static void ShowToolbarsDemo()
     {
-        if (begin_section("Toolbars"))
+        if (BeginSection("Toolbars"))
         {
-            text("toolbar() with toolbar_button() and toolbar_toggle():");
+            Text("toolbar() with toolbar_button() and toolbar_toggle():");
 
-            toolbar([&]() {
-                if (toolbar_button("New"))
-                    notify("New clicked");
-                if (toolbar_button("Open"))
-                    notify("Open clicked");
-                if (toolbar_button("Save"))
-                    notify("Save clicked");
+            Toolbar([&]() {
+                if (ToolbarButton("New"))
+                    Notify("New clicked");
+                if (ToolbarButton("Open"))
+                    Notify("Open clicked");
+                if (ToolbarButton("Save"))
+                    Notify("Save clicked");
 
-                toolbar_separator();
+                ToolbarSeparator();
 
-                toolbar_toggle("Toggle1", s_demo.toolbar_toggle1);
-                toolbar_toggle("Toggle2", s_demo.toolbar_toggle2);
+                ToolbarToggle("Toggle1", s_Demo.toolbarToggle1);
+                ToolbarToggle("Toggle2", s_Demo.toolbarToggle2);
             });
 
-            text_fmt("Toggle1: {}, Toggle2: {}", s_demo.toolbar_toggle1, s_demo.toolbar_toggle2);
+            TextFmt("Toggle1: {}, Toggle2: {}", s_Demo.toolbarToggle1, s_Demo.toolbarToggle2);
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_popups_demo()
+    static void ShowPopupsDemo()
     {
-        if (begin_section("Popups & Dialogs"))
+        if (BeginSection("Popups & Dialogs"))
         {
-            if (button("Open Popup"))
-                open_popup("demo_popup");
+            if (Button("Open Popup"))
+                OpenPopup("demo_popup");
 
-            if (begin_popup("demo_popup"))
+            if (BeginPopup("demo_popup"))
             {
-                text("This is a popup!");
-                if (button("Close"))
-                    close_current_popup();
-                end_popup();
+                Text("This is a popup!");
+                if (Button("Close"))
+                    CloseCurrentPopup();
+                EndPopup();
             }
 
-            separator();
+            Separator();
 
-            if (button("Open Modal"))
-                open_popup("Demo Modal");
+            if (Button("Open Modal"))
+                OpenPopup("Demo Modal");
 
-            if (begin_popup_modal("Demo Modal", ImGuiWindowFlags_AlwaysAutoResize))
+            if (BeginPopupModal("Demo Modal", ImGuiWindowFlags_AlwaysAutoResize))
             {
-                text("This is a modal dialog.");
-                text("Click outside won't close it.");
-                separator();
-                if (button("OK", {120, 0}))
-                    close_current_popup();
-                same_line();
-                if (button("Cancel", {120, 0}))
-                    close_current_popup();
-                end_popup();
+                Text("This is a modal dialog.");
+                Text("Click outside won't close it.");
+                Separator();
+                if (Button("OK", {120, 0}))
+                    CloseCurrentPopup();
+                SameLine();
+                if (Button("Cancel", {120, 0}))
+                    CloseCurrentPopup();
+                EndPopup();
             }
 
-            separator();
+            Separator();
 
-            if (button("Confirm Dialog"))
-                open_popup("Confirm?");
+            if (Button("Confirm Dialog"))
+                OpenPopup("Confirm?");
 
-            confirm_dialog("Confirm?", "Are you sure you want to proceed?",
-                []() { notify("Confirmed!", notification_type::success); },
-                []() { notify("Cancelled", notification_type::warning); }
+            ConfirmDialog("Confirm?", "Are you sure you want to proceed?",
+                []() { Notify("Confirmed!", NotificationType::Success); },
+                []() { Notify("Cancelled", NotificationType::Warning); }
             );
 
-            separator();
+            Separator();
 
-            if (button("Input Dialog"))
-                open_popup("Enter Name");
+            if (Button("Input Dialog"))
+                OpenPopup("Enter Name");
 
-            input_dialog("Enter Name", "Please enter your name:",
-                s_demo.input_buffer, sizeof(s_demo.input_buffer),
-                [&]() { notify(std::string("Hello, ") + s_demo.input_buffer, notification_type::info); }
+            InputDialog("Enter Name", "Please enter your name:",
+                s_Demo.inputBuffer, sizeof(s_Demo.inputBuffer),
+                [&]() { Notify(std::string("Hello, ") + s_Demo.inputBuffer, NotificationType::Info); }
             );
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_tabs_demo()
+    static void ShowTabsDemo()
     {
-        if (begin_section("Tabs"))
+        if (BeginSection("Tabs"))
         {
-            if (begin_tab_bar("demo_tabs"))
+            if (BeginTabBar("demo_tabs"))
             {
-                if (begin_tab_item("Tab 1"))
+                if (BeginTabItem("Tab 1"))
                 {
-                    text("Content of Tab 1");
-                    end_tab_item();
+                    Text("Content of Tab 1");
+                    EndTabItem();
                 }
-                if (begin_tab_item("Tab 2"))
+                if (BeginTabItem("Tab 2"))
                 {
-                    text("Content of Tab 2");
-                    end_tab_item();
+                    Text("Content of Tab 2");
+                    EndTabItem();
                 }
-                if (begin_tab_item("Tab 3"))
+                if (BeginTabItem("Tab 3"))
                 {
-                    text("Content of Tab 3");
-                    end_tab_item();
+                    Text("Content of Tab 3");
+                    EndTabItem();
                 }
-                end_tab_bar();
+                EndTabBar();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_state_demo()
+    static void ShowStateDemo()
     {
-        if (begin_section("State Queries"))
+        if (BeginSection("State Queries"))
         {
-            button("Hover or Click Me");
+            Button("Hover or Click Me");
 
-            text_fmt("is_item_hovered(): {}", is_item_hovered());
-            text_fmt("is_item_active(): {}", is_item_active());
-            text_fmt("is_item_clicked(): {}", is_item_clicked());
+            TextFmt("is_item_hovered(): {}", IsItemHovered());
+            TextFmt("is_item_active(): {}", IsItemActive());
+            TextFmt("is_item_clicked(): {}", IsItemClicked());
 
-            separator();
+            Separator();
 
-            text_fmt("is_window_focused(): {}", is_window_focused());
-            text_fmt("is_window_hovered(): {}", is_window_hovered());
+            TextFmt("is_window_focused(): {}", IsWindowFocused());
+            TextFmt("is_window_hovered(): {}", IsWindowHovered());
 
-            separator();
+            Separator();
 
-            auto pos = get_cursor_pos();
-            text_fmt("get_cursor_pos(): ({:.0f}, {:.0f})", pos.x, pos.y);
+            auto pos = GetCursorPos();
+            TextFmt("get_cursor_pos(): ({:.0f}, {:.0f})", pos.x, pos.y);
 
-            auto screen_pos = get_cursor_screen_pos();
-            text_fmt("get_cursor_screen_pos(): ({:.0f}, {:.0f})", screen_pos.x, screen_pos.y);
+            auto screenPos = GetCursorScreenPos();
+            TextFmt("get_cursor_screen_pos(): ({:.0f}, {:.0f})", screenPos.x, screenPos.y);
 
-            separator();
+            Separator();
 
-            auto mouse = get_mouse_pos();
-            text_fmt("get_mouse_pos(): ({:.0f}, {:.0f})", mouse.x, mouse.y);
-            text_fmt("is_mouse_down(Left): {}", is_mouse_down(ImGuiMouseButton_Left));
+            auto mouse = GetMousePos();
+            TextFmt("get_mouse_pos(): ({:.0f}, {:.0f})", mouse.x, mouse.y);
+            TextFmt("is_mouse_down(Left): {}", IsMouseDown(ImGuiMouseButton_Left));
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_icons_demo()
+    static void ShowIconsDemo()
     {
-        if (begin_section("Icons"))
+        if (BeginSection("Icons"))
         {
-            text("Placeholder icons (replace with font icons later):");
-            spacing();
+            Text("Placeholder icons (replace with font icons later):");
+            Spacing();
 
-            icon_button(icons::folder, "Folder");
-            same_line();
-            icon_button(icons::file, "File");
-            same_line();
-            icon_button(icons::save, "Save");
-            same_line();
-            icon_button(icons::open, "Open");
+            IconButton(Icons::Folder, "Folder");
+            SameLine();
+            IconButton(Icons::File, "File");
+            SameLine();
+            IconButton(Icons::Save, "Save");
+            SameLine();
+            IconButton(Icons::Open, "Open");
 
-            spacing();
+            Spacing();
 
-            icon_button(icons::play);
-            same_line();
-            icon_button(icons::pause);
-            same_line();
-            icon_button(icons::stop);
-            same_line();
-            icon_button(icons::add);
-            same_line();
-            icon_button(icons::remove);
+            IconButton(Icons::Play);
+            SameLine();
+            IconButton(Icons::Pause);
+            SameLine();
+            IconButton(Icons::Stop);
+            SameLine();
+            IconButton(Icons::Add);
+            SameLine();
+            IconButton(Icons::Remove);
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_notifications_demo()
+    static void ShowNotificationsDemo()
     {
-        if (begin_section("Notifications"))
+        if (BeginSection("Notifications"))
         {
-            text("notify() - Toast notifications:");
-            spacing();
+            Text("notify() - Toast notifications:");
+            Spacing();
 
-            if (button("Info"))
-                notify("This is an info notification", notification_type::info);
-            same_line();
-            if (button("Success"))
-                notify("Operation successful!", notification_type::success);
-            same_line();
-            if (button("Warning"))
-                notify("Warning: Check your input", notification_type::warning);
-            same_line();
-            if (button("Error"))
-                notify("Error: Something went wrong", notification_type::error);
+            if (Button("Info"))
+                Notify("This is an info notification", NotificationType::Info);
+            SameLine();
+            if (Button("Success"))
+                Notify("Operation successful!", NotificationType::Success);
+            SameLine();
+            if (Button("Warning"))
+                Notify("Warning: Check your input", NotificationType::Warning);
+            SameLine();
+            if (Button("Error"))
+                Notify("Error: Something went wrong", NotificationType::Error);
 
-            spacing();
-            text("Call render_notifications() at end of frame to display.");
+            Spacing();
+            Text("Call render_notifications() at end of frame to display.");
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_style_demo()
+    static void ShowStyleDemo()
     {
-        if (begin_section("Style"))
+        if (BeginSection("Style"))
         {
-            text("push_style_color() / pop_style_color():");
-            push_style_color(ImGuiCol_Text, ImVec4(1, 0.5f, 0, 1));
-            text("Orange text");
-            pop_style_color();
+            Text("push_style_color() / pop_style_color():");
+            PushStyleColor(ImGuiCol_Text, ImVec4(1, 0.5f, 0, 1));
+            Text("Orange text");
+            PopStyleColor();
 
-            spacing();
+            Spacing();
 
-            text("push_style_var() / pop_style_var():");
-            push_style_var(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
-            button("Extra Padding");
-            pop_style_var();
+            Text("push_style_var() / pop_style_var():");
+            PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(10, 10));
+            Button("Extra Padding");
+            PopStyleVar();
 
-            same_line();
-            button("Normal Padding");
+            SameLine();
+            Button("Normal Padding");
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_child_windows_demo()
+    static void ShowChildWindowsDemo()
     {
-        if (begin_section("Child Windows"))
+        if (BeginSection("Child Windows"))
         {
-            text("begin_child() / end_child():");
+            Text("begin_child() / end_child():");
 
             // Note: end_child() must ALWAYS be called after begin_child(), unlike begin_window()
-            begin_child("child1", {0, 100}, ImGuiChildFlags_Borders);
+            BeginChild("child1", {0, 100}, ImGuiChildFlags_Borders);
             for (int i = 0; i < 20; i++)
-                text_fmt("Scrollable item {}", i);
-            end_child();
+                TextFmt("Scrollable item {}", i);
+            EndChild();
 
-            spacing();
+            Spacing();
 
-            text("begin_group() / end_group() for layout:");
-            begin_group();
-            button("Grouped");
-            button("Buttons");
-            end_group();
+            Text("begin_group() / end_group() for layout:");
+            BeginGroup();
+            Button("Grouped");
+            Button("Buttons");
+            EndGroup();
 
-            same_line();
+            SameLine();
 
-            begin_group();
-            text("Grouped");
-            text("Text");
-            end_group();
+            BeginGroup();
+            Text("Grouped");
+            Text("Text");
+            EndGroup();
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_disabled_demo()
+    static void ShowDisabledDemo()
     {
-        if (begin_section("Disabled State"))
+        if (BeginSection("Disabled State"))
         {
-            text("begin_disabled() / end_disabled():");
+            Text("begin_disabled() / end_disabled():");
 
-            begin_disabled(true);
-            button("Disabled Button");
+            BeginDisabled(true);
+            Button("Disabled Button");
             static float val = 0.5f;
             ImGui::SliderFloat("Disabled Slider", &val, 0, 1);
-            end_disabled();
+            EndDisabled();
 
-            button("Enabled Button");
+            Button("Enabled Button");
 
-            end_section();
+            EndSection();
         }
     }
 
-    static void show_combos_listboxes_demo()
+    static void ShowCombosListboxesDemo()
     {
-        if (begin_section("Combos & Listboxes"))
+        if (BeginSection("Combos & Listboxes"))
         {
-            text("begin_combo() / end_combo():");
+            Text("begin_combo() / end_combo():");
 
-            static int combo_item = 0;
+            static int comboItem = 0;
             static const char* items[] = {"Apple", "Banana", "Cherry", "Date"};
 
-            if (begin_combo("Fruits", items[combo_item]))
+            if (BeginCombo("Fruits", items[comboItem]))
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    bool selected = (combo_item == i);
-                    if (selectable(items[i], static_cast<bool>(selected), ImGuiSelectableFlags_None))
-                        combo_item = i;
+                    bool selected = (comboItem == i);
+                    if (Selectable(items[i], static_cast<bool>(selected), ImGuiSelectableFlags_None))
+                        comboItem = i;
                     if (selected)
-                        set_item_default_focus();
+                        SetItemDefaultFocus();
                 }
-                end_combo();
+                EndCombo();
             }
 
-            separator();
+            Separator();
 
-            text("begin_listbox() / end_listbox():");
+            Text("begin_listbox() / end_listbox():");
 
-            static int listbox_item = 0;
-            if (begin_listbox("##listbox", {-1, 80}))
+            static int listboxItem = 0;
+            if (BeginListbox("##listbox", {-1, 80}))
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    if (selectable(items[i], listbox_item == i))
-                        listbox_item = i;
+                    if (Selectable(items[i], listboxItem == i))
+                        listboxItem = i;
                 }
-                end_listbox();
+                EndListbox();
             }
 
-            end_section();
+            EndSection();
         }
     }
 
-    void show_demo_window(bool* p_open)
+    void ShowDemoWindow(bool* pOpen)
     {
-        if (p_open && !*p_open)
+        if (pOpen && !*pOpen)
             return;
 
         ImGui::SetNextWindowSize(ImVec2(600, 800), ImGuiCond_FirstUseEver);
 
-        bool is_open = true;
-        bool& open_ref = p_open ? *p_open : is_open;
-        if (!begin_window("Lumina UI Demo", open_ref, ImGuiWindowFlags_None))
+        bool isOpen = true;
+        bool& openRef = pOpen ? *pOpen : isOpen;
+        if (!BeginWindow("Lumina UI Demo", openRef, ImGuiWindowFlags_None))
         {
-            end_window();
+            EndWindow();
             return;
         }
 
-        text("Lumina UI Module Demo");
-        text_disabled("All functions use the ui:: namespace");
-        separator();
+        Text("Lumina UI Module Demo");
+        TextDisabled("All functions use the ui:: namespace");
+        Separator();
 
-        show_text_demo();
-        show_buttons_demo();
-        show_properties_demo();
-        show_panels_demo();
-        show_layouts_demo();
-        show_style_demo();
-        show_child_windows_demo();
-        show_disabled_demo();
-        show_tables_demo();
-        show_trees_demo();
-        show_menus_demo();
-        show_toolbars_demo();
-        show_popups_demo();
-        show_tabs_demo();
-        show_combos_listboxes_demo();
-        show_state_demo();
-        show_icons_demo();
-        show_notifications_demo();
+        ShowTextDemo();
+        ShowButtonsDemo();
+        ShowPropertiesDemo();
+        ShowPanelsDemo();
+        ShowLayoutsDemo();
+        ShowStyleDemo();
+        ShowChildWindowsDemo();
+        ShowDisabledDemo();
+        ShowTablesDemo();
+        ShowTreesDemo();
+        ShowMenusDemo();
+        ShowToolbarsDemo();
+        ShowPopupsDemo();
+        ShowTabsDemo();
+        ShowCombosListboxesDemo();
+        ShowStateDemo();
+        ShowIconsDemo();
+        ShowNotificationsDemo();
 
-        end_window();
+        EndWindow();
     }
 }

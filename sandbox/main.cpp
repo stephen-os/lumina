@@ -4,47 +4,47 @@
 #include <lumina/core/entry_point.h>
 #include <lumina/ui/ui.h>
 
-namespace ui = lumina::ui;
+namespace UI = Lumina::UI;
 
-class sandbox_layer : public lumina::core::layer
+class SandboxLayer : public Lumina::Layer
 {
 public:
-    sandbox_layer() : layer("sandbox") {}
+    SandboxLayer() : Layer("Sandbox") {}
 
-    void on_attach() override
+    void OnAttach() override
     {
         LUMINA_LOG_INFO("Sandbox layer attached");
     }
 
-    void on_detach() override
+    void OnDetach() override
     {
         LUMINA_LOG_INFO("Sandbox layer detached");
     }
 
-    void on_update(float dt) override
+    void OnUpdate(float dt) override
     {
-        m_frame_time = dt;
+        m_FrameTime = dt;
     }
 
-    void on_render() override
+    void OnRender() override
     {
-        ui::begin_window("Sandbox");
-        ui::text("Welcome to Lumina!");
-        ui::separator();
-        ui::text_fmt("Frame Time: {:.3f} ms", m_frame_time * 1000.0f);
-        ui::text_fmt("FPS: {:.1f}", m_frame_time > 0.0f ? 1.0f / m_frame_time : 0.0f);
-        ui::end_window();
+        UI::BeginWindow("Sandbox");
+        UI::Text("Welcome to Lumina!");
+        UI::Separator();
+        UI::TextFmt("Frame Time: {:.3f} ms", m_FrameTime * 1000.0f);
+        UI::TextFmt("FPS: {:.1f}", m_FrameTime > 0.0f ? 1.0f / m_FrameTime : 0.0f);
+        UI::EndWindow();
     }
 
-    void on_event(lumina::core::event& e) override
+    void OnEvent(Lumina::Event& e) override
     {
-        lumina::core::event_dispatcher dispatcher(e);
+        Lumina::EventDispatcher dispatcher(e);
 
-        dispatcher.dispatch<lumina::core::key_pressed_event>([](lumina::core::key_pressed_event& e)
+        dispatcher.Dispatch<Lumina::KeyPressedEvent>([](Lumina::KeyPressedEvent& e)
         {
-            if (e.get_key() == lumina::core::input::key_code::escape)
+            if (e.GetKey() == Lumina::Input::KeyCode::Escape)
             {
-                lumina::core::application::get().shutdown();
+                Lumina::Application::Get().Shutdown();
                 return true;
             }
             return false;
@@ -52,14 +52,14 @@ public:
     }
 
 private:
-    float m_frame_time = 0.0f;
+    float m_FrameTime = 0.0f;
 };
 
-lumina::core::application* lumina::core::create_application(int argc, char** argv)
+Lumina::Application* Lumina::CreateApplication(int argc, char** argv)
 {
-    lumina::core::application_specifications specs;
-    specs.title = "Sandbox";
-    auto* app = new lumina::core::application(specs);
-    app->push_layer<sandbox_layer>();
+    Lumina::ApplicationSpecifications specs;
+    specs.Title = "Sandbox";
+    auto* app = new Lumina::Application(specs);
+    app->PushLayer<SandboxLayer>();
     return app;
 }

@@ -10,44 +10,44 @@
 
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    input_layout::~input_layout() = default;
+    InputLayout::~InputLayout() = default;
 
-    ref<input_layout> input_layout::create(core::device& dev, const input_layout_desc& desc, ref<shader> vertex_shader)
+    Ref<InputLayout> InputLayout::Create(Core::Device& dev, const InputLayoutDesc& desc, Ref<Shader> vertexShader)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create input layout: no device");
             return nullptr;
         }
 
-        if (!vertex_shader)
+        if (!vertexShader)
         {
             LUMINA_LOG_ERROR("Failed to create input layout: vertex shader required");
             return nullptr;
         }
 
-        std::vector<nvrhi::VertexAttributeDesc> nvrhi_attrs;
-        nvrhi_attrs.reserve(desc.attributes.size());
+        std::vector<nvrhi::VertexAttributeDesc> nvrhiAttrs;
+        nvrhiAttrs.reserve(desc.Attributes.size());
 
-        for (const auto& attr : desc.attributes)
+        for (const auto& attr : desc.Attributes)
         {
-            nvrhi::VertexAttributeDesc nvrhi_attr;
-            nvrhi_attr.name = attr.name;
-            nvrhi_attr.format = to_nvrhi_format(attr.attr_format);
-            nvrhi_attr.offset = attr.offset;
-            nvrhi_attr.elementStride = desc.stride;
-            nvrhi_attr.bufferIndex = 0;
-            nvrhi_attr.isInstanced = false;
-            nvrhi_attrs.push_back(nvrhi_attr);
+            nvrhi::VertexAttributeDesc nvrhiAttr;
+            nvrhiAttr.name = attr.Name;
+            nvrhiAttr.format = ToNvrhiFormat(attr.AttrFormat);
+            nvrhiAttr.offset = attr.Offset;
+            nvrhiAttr.elementStride = desc.Stride;
+            nvrhiAttr.bufferIndex = 0;
+            nvrhiAttr.isInstanced = false;
+            nvrhiAttrs.push_back(nvrhiAttr);
         }
 
-        nvrhi::InputLayoutHandle layout = nvrhi_device->createInputLayout(
-            nvrhi_attrs.data(),
-            static_cast<uint32_t>(nvrhi_attrs.size()),
-            vertex_shader->get_vertex_shader()
+        nvrhi::InputLayoutHandle layout = nvrhiDevice->createInputLayout(
+            nvrhiAttrs.data(),
+            static_cast<uint32_t>(nvrhiAttrs.size()),
+            vertexShader->GetVertexShader()
         );
 
         if (!layout)
@@ -56,6 +56,6 @@ namespace lumina::graphics
             return nullptr;
         }
 
-        return ref<input_layout>(new input_layout(dev, std::move(layout), desc));
+        return Ref<InputLayout>(new InputLayout(dev, std::move(layout), desc));
     }
 }

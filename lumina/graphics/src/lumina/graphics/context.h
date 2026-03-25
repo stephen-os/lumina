@@ -12,93 +12,93 @@ namespace nvrhi
     class ICommandList;
     class IFramebuffer;
 }
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
-    class vertex_buffer;
-    class index_buffer;
-    class uniform_buffer;
-    class texture;
-    class render_target;
-    class shader;
-    class input_layout;
-    class binding_layout;
-    class binding_set;
-    class sampler;
-    class pipeline;
+    class VertexBuffer;
+    class IndexBuffer;
+    class UniformBuffer;
+    class Texture;
+    class RenderTarget;
+    class Shader;
+    class InputLayout;
+    class BindingLayout;
+    class BindingSet;
+    class Sampler;
+    class Pipeline;
 
     /// Graphics rendering context managing state and draw commands.
     /// Wraps NVRHI command list with higher-level state management.
-    class context
+    class Context
     {
     public:
-        explicit context(core::device& dev);
-        ~context();
+        explicit Context(Device& dev);
+        ~Context();
 
-        context(const context&) = delete;
-        context& operator=(const context&) = delete;
+        Context(const Context&) = delete;
+        Context& operator=(const Context&) = delete;
 
         /// Frame management
-        void begin_frame();
-        void end_frame();
+        void BeginFrame();
+        void EndFrame();
 
         /// Render target management
-        void set_render_target(ref<render_target> target);
-        void set_default_render_target();
-        void set_swapchain_framebuffer(nvrhi::IFramebuffer* framebuffer);
-        void clear(const glm::vec4& color);
-        void clear(const clear_color& color);
-        void clear_depth(float depth = 1.0f, uint8_t stencil = 0);
+        void SetRenderTarget(Ref<RenderTarget> target);
+        void SetDefaultRenderTarget();
+        void SetSwapchainFramebuffer(nvrhi::IFramebuffer* framebuffer);
+        void Clear(const glm::vec4& color);
+        void Clear(const ClearColor& color);
+        void ClearDepth(float depth = 1.0f, uint8_t stencil = 0);
 
         /// Viewport and scissor
-        void set_viewport(float x, float y, float width, float height);
-        void set_viewport(const viewport& vp);
-        void set_scissor(int32_t x, int32_t y, int32_t width, int32_t height);
-        void set_scissor(const scissor_rect& rect);
+        void SetViewport(float x, float y, float width, float height);
+        void SetViewport(const Viewport& vp);
+        void SetScissor(int32_t x, int32_t y, int32_t width, int32_t height);
+        void SetScissor(const ScissorRect& rect);
 
         /// Pipeline binding
-        void set_pipeline(ref<pipeline> pso);
+        void SetPipeline(Ref<Pipeline> pso);
 
         /// Resource binding
-        void set_binding_set(ref<binding_set> bindings);
-        void set_vertex_buffer(ref<vertex_buffer> buffer);
-        void set_index_buffer(ref<index_buffer> buffer);
+        void SetBindingSet(Ref<BindingSet> bindings);
+        void SetVertexBuffer(Ref<VertexBuffer> buffer);
+        void SetIndexBuffer(Ref<IndexBuffer> buffer);
 
         /// Draw commands
-        void draw(uint32_t vertex_count, uint32_t start_vertex = 0);
-        void draw_indexed(uint32_t index_count, uint32_t start_index = 0, int32_t base_vertex = 0);
-        void draw_instanced(uint32_t vertex_count, uint32_t instance_count, uint32_t start_vertex = 0, uint32_t start_instance = 0);
-        void draw_indexed_instanced(uint32_t index_count, uint32_t instance_count, uint32_t start_index = 0, int32_t base_vertex = 0, uint32_t start_instance = 0);
+        void Draw(uint32_t vertexCount, uint32_t startVertex = 0);
+        void DrawIndexed(uint32_t indexCount, uint32_t startIndex = 0, int32_t baseVertex = 0);
+        void DrawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t startVertex = 0, uint32_t startInstance = 0);
+        void DrawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount, uint32_t startIndex = 0, int32_t baseVertex = 0, uint32_t startInstance = 0);
 
         /// State access
-        [[nodiscard]] core::device& get_device() noexcept { return m_device; }
-        [[nodiscard]] nvrhi::ICommandList* get_command_list() const noexcept { return m_command_list; }
-        [[nodiscard]] bool has_framebuffer() const noexcept { return m_swapchain_framebuffer != nullptr || m_current_render_target != nullptr; }
+        [[nodiscard]] Device& GetDevice() noexcept { return m_Device; }
+        [[nodiscard]] nvrhi::ICommandList* GetCommandList() const noexcept { return m_CommandList; }
+        [[nodiscard]] bool HasFramebuffer() const noexcept { return m_SwapchainFramebuffer != nullptr || m_CurrentRenderTarget != nullptr; }
 
         /// Sets the command list from core device (called by application).
-        void set_command_list(nvrhi::ICommandList* cmd_list);
+        void SetCommandList(nvrhi::ICommandList* cmdList);
 
     private:
-        void apply_state();
+        void ApplyState();
 
-        core::device& m_device;
+        Device& m_Device;
 
         // Current state
-        ref<render_target> m_current_render_target;
-        ref<pipeline> m_current_pipeline;
-        ref<binding_set> m_current_binding_set;
-        ref<vertex_buffer> m_current_vertex_buffer;
-        ref<index_buffer> m_current_index_buffer;
+        Ref<RenderTarget> m_CurrentRenderTarget;
+        Ref<Pipeline> m_CurrentPipeline;
+        Ref<BindingSet> m_CurrentBindingSet;
+        Ref<VertexBuffer> m_CurrentVertexBuffer;
+        Ref<IndexBuffer> m_CurrentIndexBuffer;
 
-        viewport m_current_viewport;
-        scissor_rect m_current_scissor;
+        Viewport m_CurrentViewport;
+        ScissorRect m_CurrentScissor;
 
         // State tracking
-        bool m_state_dirty = true;
+        bool m_StateDirty = true;
 
         // NVRHI command list and swapchain
-        nvrhi::ICommandList* m_command_list = nullptr;
-        nvrhi::IFramebuffer* m_swapchain_framebuffer = nullptr;
+        nvrhi::ICommandList* m_CommandList = nullptr;
+        nvrhi::IFramebuffer* m_SwapchainFramebuffer = nullptr;
     };
 }

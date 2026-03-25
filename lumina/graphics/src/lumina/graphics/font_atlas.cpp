@@ -10,233 +10,233 @@
 #include <cmath>
 #include <algorithm>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    font_atlas::~font_atlas()
+    FontAtlas::~FontAtlas()
     {
-        m_texture.reset();
-        m_glyphs.clear();
-        m_ttf_data.clear();
+        m_Texture.reset();
+        m_Glyphs.clear();
+        m_TtfData.clear();
     }
 
-    ref<font_atlas> font_atlas::create(core::device& dev, const uint8_t* ttf_data, size_t ttf_size, float pixel_height, const char* charset)
+    Ref<FontAtlas> FontAtlas::Create(Core::Device& dev, const uint8_t* ttfData, size_t ttfSize, float pixelHeight, const char* charset)
     {
-        if (!ttf_data || ttf_size == 0)
+        if (!ttfData || ttfSize == 0)
         {
-            LUMINA_LOG_ERROR("font_atlas::create - Invalid TTF data");
+            LUMINA_LOG_ERROR("FontAtlas::Create - Invalid TTF data");
             return nullptr;
         }
 
-        std::string default_charset;
+        std::string defaultCharset;
         if (!charset)
         {
             for (int c = 32; c <= 126; c++)
-                default_charset += static_cast<char>(c);
-            charset = default_charset.c_str();
+                defaultCharset += static_cast<char>(c);
+            charset = defaultCharset.c_str();
         }
 
-        size_t num_chars = strlen(charset);
-        if (num_chars == 0)
+        size_t numChars = strlen(charset);
+        if (numChars == 0)
         {
-            LUMINA_LOG_ERROR("font_atlas::create - Empty charset");
+            LUMINA_LOG_ERROR("FontAtlas::Create - Empty charset");
             return nullptr;
         }
 
-        stbtt_fontinfo font_info;
-        if (!stbtt_InitFont(&font_info, ttf_data, stbtt_GetFontOffsetForIndex(ttf_data, 0)))
+        stbtt_fontinfo fontInfo;
+        if (!stbtt_InitFont(&fontInfo, ttfData, stbtt_GetFontOffsetForIndex(ttfData, 0)))
         {
-            LUMINA_LOG_ERROR("font_atlas::create - Failed to initialize font");
+            LUMINA_LOG_ERROR("FontAtlas::Create - Failed to initialize font");
             return nullptr;
         }
 
-        float scale = stbtt_ScaleForPixelHeight(&font_info, pixel_height);
+        float scale = stbtt_ScaleForPixelHeight(&fontInfo, pixelHeight);
 
-        int ascent_i, descent_i, line_gap_i;
-        stbtt_GetFontVMetrics(&font_info, &ascent_i, &descent_i, &line_gap_i);
+        int ascentI, descentI, lineGapI;
+        stbtt_GetFontVMetrics(&fontInfo, &ascentI, &descentI, &lineGapI);
 
-        float ascent = ascent_i * scale;
-        float descent = descent_i * scale;
-        float line_gap = line_gap_i * scale;
-        float line_height = ascent - descent + line_gap;
+        float ascent = ascentI * scale;
+        float descent = descentI * scale;
+        float lineGap = lineGapI * scale;
+        float lineHeight = ascent - descent + lineGap;
 
-        int atlas_width = 256;
-        int atlas_height = 256;
+        int atlasWidth = 256;
+        int atlasHeight = 256;
 
-        int estimated_area = static_cast<int>(num_chars * pixel_height * pixel_height * 1.5f);
-        while (atlas_width * atlas_height < estimated_area && atlas_width < 4096)
+        int estimatedArea = static_cast<int>(numChars * pixelHeight * pixelHeight * 1.5f);
+        while (atlasWidth * atlasHeight < estimatedArea && atlasWidth < 4096)
         {
-            if (atlas_width <= atlas_height)
-                atlas_width *= 2;
+            if (atlasWidth <= atlasHeight)
+                atlasWidth *= 2;
             else
-                atlas_height *= 2;
+                atlasHeight *= 2;
         }
 
-        std::vector<uint8_t> atlas_bitmap(atlas_width * atlas_height, 0);
+        std::vector<uint8_t> atlasBitmap(atlasWidth * atlasHeight, 0);
 
-        stbtt_pack_context pack_ctx;
-        if (!stbtt_PackBegin(&pack_ctx, atlas_bitmap.data(), atlas_width, atlas_height, 0, 1, nullptr))
+        stbtt_pack_context packCtx;
+        if (!stbtt_PackBegin(&packCtx, atlasBitmap.data(), atlasWidth, atlasHeight, 0, 1, nullptr))
         {
-            LUMINA_LOG_ERROR("font_atlas::create - Failed to begin packing");
+            LUMINA_LOG_ERROR("FontAtlas::Create - Failed to begin packing");
             return nullptr;
         }
 
-        stbtt_PackSetOversampling(&pack_ctx, 2, 2);
+        stbtt_PackSetOversampling(&packCtx, 2, 2);
 
-        std::vector<stbtt_packedchar> packed_chars(num_chars);
+        std::vector<stbtt_packedchar> packedChars(numChars);
 
         stbtt_pack_range range;
-        range.font_size = pixel_height;
+        range.font_size = pixelHeight;
         range.first_unicode_codepoint_in_range = 0;
         range.array_of_unicode_codepoints = nullptr;
-        range.num_chars = static_cast<int>(num_chars);
-        range.chardata_for_range = packed_chars.data();
+        range.num_chars = static_cast<int>(numChars);
+        range.chardata_for_range = packedChars.data();
 
-        std::vector<int> codepoints(num_chars);
-        for (size_t i = 0; i < num_chars; i++)
+        std::vector<int> codepoints(numChars);
+        for (size_t i = 0; i < numChars; i++)
             codepoints[i] = static_cast<unsigned char>(charset[i]);
 
         range.array_of_unicode_codepoints = codepoints.data();
 
-        if (!stbtt_PackFontRanges(&pack_ctx, ttf_data, 0, &range, 1))
+        if (!stbtt_PackFontRanges(&packCtx, ttfData, 0, &range, 1))
         {
-            stbtt_PackEnd(&pack_ctx);
+            stbtt_PackEnd(&packCtx);
 
-            atlas_width *= 2;
-            atlas_height *= 2;
+            atlasWidth *= 2;
+            atlasHeight *= 2;
 
-            if (atlas_width > 4096 || atlas_height > 4096)
+            if (atlasWidth > 4096 || atlasHeight > 4096)
             {
-                LUMINA_LOG_ERROR("font_atlas::create - Font requires atlas larger than 4096x4096");
+                LUMINA_LOG_ERROR("FontAtlas::Create - Font requires atlas larger than 4096x4096");
                 return nullptr;
             }
 
-            atlas_bitmap.resize(atlas_width * atlas_height, 0);
+            atlasBitmap.resize(atlasWidth * atlasHeight, 0);
 
-            if (!stbtt_PackBegin(&pack_ctx, atlas_bitmap.data(), atlas_width, atlas_height, 0, 1, nullptr))
+            if (!stbtt_PackBegin(&packCtx, atlasBitmap.data(), atlasWidth, atlasHeight, 0, 1, nullptr))
             {
-                LUMINA_LOG_ERROR("font_atlas::create - Failed to begin packing (retry)");
+                LUMINA_LOG_ERROR("FontAtlas::Create - Failed to begin packing (retry)");
                 return nullptr;
             }
 
-            stbtt_PackSetOversampling(&pack_ctx, 2, 2);
+            stbtt_PackSetOversampling(&packCtx, 2, 2);
 
-            if (!stbtt_PackFontRanges(&pack_ctx, ttf_data, 0, &range, 1))
+            if (!stbtt_PackFontRanges(&packCtx, ttfData, 0, &range, 1))
             {
-                LUMINA_LOG_ERROR("font_atlas::create - Failed to pack font ranges");
-                stbtt_PackEnd(&pack_ctx);
+                LUMINA_LOG_ERROR("FontAtlas::Create - Failed to pack font ranges");
+                stbtt_PackEnd(&packCtx);
                 return nullptr;
             }
         }
 
-        stbtt_PackEnd(&pack_ctx);
+        stbtt_PackEnd(&packCtx);
 
-        std::vector<uint8_t> rgba_bitmap(atlas_width * atlas_height * 4);
-        for (int i = 0; i < atlas_width * atlas_height; i++)
+        std::vector<uint8_t> rgbaBitmap(atlasWidth * atlasHeight * 4);
+        for (int i = 0; i < atlasWidth * atlasHeight; i++)
         {
-            uint8_t alpha = atlas_bitmap[i];
-            rgba_bitmap[i * 4 + 0] = 255;
-            rgba_bitmap[i * 4 + 1] = 255;
-            rgba_bitmap[i * 4 + 2] = 255;
-            rgba_bitmap[i * 4 + 3] = alpha;
+            uint8_t alpha = atlasBitmap[i];
+            rgbaBitmap[i * 4 + 0] = 255;
+            rgbaBitmap[i * 4 + 1] = 255;
+            rgbaBitmap[i * 4 + 2] = 255;
+            rgbaBitmap[i * 4 + 3] = alpha;
         }
 
-        auto texture = texture::create(dev, atlas_width, atlas_height, format::rgba8_unorm, rgba_bitmap.data());
+        auto texture = Texture::Create(dev, atlasWidth, atlasHeight, Format::RGBA8Unorm, rgbaBitmap.data());
         if (!texture)
         {
-            LUMINA_LOG_ERROR("font_atlas::create - Failed to create atlas texture");
+            LUMINA_LOG_ERROR("FontAtlas::Create - Failed to create atlas texture");
             return nullptr;
         }
 
-        std::unordered_map<uint32_t, glyph_info> glyphs;
-        float inv_w = 1.0f / atlas_width;
-        float inv_h = 1.0f / atlas_height;
+        std::unordered_map<uint32_t, GlyphInfo> glyphs;
+        float invW = 1.0f / atlasWidth;
+        float invH = 1.0f / atlasHeight;
 
-        for (size_t i = 0; i < num_chars; i++)
+        for (size_t i = 0; i < numChars; i++)
         {
-            const stbtt_packedchar& pc = packed_chars[i];
+            const stbtt_packedchar& pc = packedChars[i];
             uint32_t codepoint = static_cast<uint32_t>(codepoints[i]);
 
-            glyph_info glyph;
-            glyph.u0 = pc.x0 * inv_w;
-            glyph.v0 = pc.y0 * inv_h;
-            glyph.u1 = pc.x1 * inv_w;
-            glyph.v1 = pc.y1 * inv_h;
+            GlyphInfo glyph;
+            glyph.u0 = pc.x0 * invW;
+            glyph.v0 = pc.y0 * invH;
+            glyph.u1 = pc.x1 * invW;
+            glyph.v1 = pc.y1 * invH;
             glyph.x0 = pc.xoff;
             glyph.y0 = pc.yoff + ascent;
             glyph.x1 = pc.xoff2;
             glyph.y1 = pc.yoff2 + ascent;
-            glyph.advance_x = pc.xadvance;
+            glyph.advanceX = pc.xadvance;
 
             glyphs[codepoint] = glyph;
         }
 
-        bool has_kerning = stbtt_GetKerningTableLength(&font_info) > 0;
+        bool hasKerning = stbtt_GetKerningTableLength(&fontInfo) > 0;
 
-        auto atlas = ref<font_atlas>(new font_atlas());
-        atlas->m_texture = texture;
-        atlas->m_glyphs = std::move(glyphs);
-        atlas->m_pixel_height = pixel_height;
-        atlas->m_line_height = line_height;
-        atlas->m_ascent = ascent;
-        atlas->m_descent = descent;
-        atlas->m_has_kerning = has_kerning;
+        auto atlas = Ref<FontAtlas>(new FontAtlas());
+        atlas->m_Texture = texture;
+        atlas->m_Glyphs = std::move(glyphs);
+        atlas->m_PixelHeight = pixelHeight;
+        atlas->m_LineHeight = lineHeight;
+        atlas->m_Ascent = ascent;
+        atlas->m_Descent = descent;
+        atlas->m_HasKerning = hasKerning;
 
-        if (has_kerning)
+        if (hasKerning)
         {
-            atlas->m_ttf_data.assign(ttf_data, ttf_data + ttf_size);
+            atlas->m_TtfData.assign(ttfData, ttfData + ttfSize);
         }
 
-        LUMINA_LOG_INFO("font_atlas created: {}x{} atlas, {} glyphs, {:.1f}px height",
-                        atlas_width, atlas_height, num_chars, pixel_height);
+        LUMINA_LOG_INFO("FontAtlas created: {}x{} atlas, {} glyphs, {:.1f}px height",
+                        atlasWidth, atlasHeight, numChars, pixelHeight);
 
         return atlas;
     }
 
-    ref<font_atlas> font_atlas::load(core::device& dev, const std::string& path, float pixel_height, const char* charset)
+    Ref<FontAtlas> FontAtlas::Load(Core::Device& dev, const std::string& path, float pixelHeight, const char* charset)
     {
         std::ifstream file(path, std::ios::binary | std::ios::ate);
         if (!file.is_open())
         {
-            LUMINA_LOG_ERROR("font_atlas::load - Failed to open file: {}", path);
+            LUMINA_LOG_ERROR("FontAtlas::Load - Failed to open file: {}", path);
             return nullptr;
         }
 
-        size_t file_size = static_cast<size_t>(file.tellg());
+        size_t fileSize = static_cast<size_t>(file.tellg());
         file.seekg(0, std::ios::beg);
 
-        std::vector<uint8_t> ttf_data(file_size);
-        if (!file.read(reinterpret_cast<char*>(ttf_data.data()), file_size))
+        std::vector<uint8_t> ttfData(fileSize);
+        if (!file.read(reinterpret_cast<char*>(ttfData.data()), fileSize))
         {
-            LUMINA_LOG_ERROR("font_atlas::load - Failed to read file: {}", path);
+            LUMINA_LOG_ERROR("FontAtlas::Load - Failed to read file: {}", path);
             return nullptr;
         }
 
-        return create(dev, ttf_data.data(), ttf_data.size(), pixel_height, charset);
+        return Create(dev, ttfData.data(), ttfData.size(), pixelHeight, charset);
     }
 
-    const glyph_info* font_atlas::get_glyph(uint32_t codepoint) const
+    const GlyphInfo* FontAtlas::GetGlyph(uint32_t codepoint) const
     {
-        auto it = m_glyphs.find(codepoint);
-        if (it != m_glyphs.end())
+        auto it = m_Glyphs.find(codepoint);
+        if (it != m_Glyphs.end())
             return &it->second;
 
-        it = m_glyphs.find(' ');
-        if (it != m_glyphs.end())
+        it = m_Glyphs.find(' ');
+        if (it != m_Glyphs.end())
             return &it->second;
 
         return nullptr;
     }
 
-    glm::vec2 font_atlas::measure_text(std::string_view text) const
+    glm::vec2 FontAtlas::MeasureText(std::string_view text) const
     {
         if (text.empty())
             return glm::vec2(0.0f);
 
         float width = 0.0f;
-        float max_height = m_line_height;
-        int line_count = 1;
+        float maxHeight = m_LineHeight;
+        int lineCount = 1;
 
-        uint32_t prev_codepoint = 0;
+        uint32_t prevCodepoint = 0;
 
         for (size_t i = 0; i < text.size(); i++)
         {
@@ -244,38 +244,38 @@ namespace lumina::graphics
 
             if (codepoint == '\n')
             {
-                line_count++;
-                prev_codepoint = 0;
+                lineCount++;
+                prevCodepoint = 0;
                 continue;
             }
 
-            const glyph_info* glyph = get_glyph(codepoint);
+            const GlyphInfo* glyph = GetGlyph(codepoint);
             if (!glyph)
                 continue;
 
-            if (prev_codepoint != 0 && m_has_kerning)
+            if (prevCodepoint != 0 && m_HasKerning)
             {
-                width += get_kerning(prev_codepoint, codepoint);
+                width += GetKerning(prevCodepoint, codepoint);
             }
 
-            width += glyph->advance_x;
-            prev_codepoint = codepoint;
+            width += glyph->advanceX;
+            prevCodepoint = codepoint;
         }
 
-        return glm::vec2(width, m_line_height * line_count);
+        return glm::vec2(width, m_LineHeight * lineCount);
     }
 
-    float font_atlas::get_kerning(uint32_t first, uint32_t second) const
+    float FontAtlas::GetKerning(uint32_t first, uint32_t second) const
     {
-        if (!m_has_kerning || m_ttf_data.empty())
+        if (!m_HasKerning || m_TtfData.empty())
             return 0.0f;
 
-        stbtt_fontinfo font_info;
-        if (!stbtt_InitFont(&font_info, m_ttf_data.data(), 0))
+        stbtt_fontinfo fontInfo;
+        if (!stbtt_InitFont(&fontInfo, m_TtfData.data(), 0))
             return 0.0f;
 
-        float scale = stbtt_ScaleForPixelHeight(&font_info, m_pixel_height);
-        int kern = stbtt_GetCodepointKernAdvance(&font_info, first, second);
+        float scale = stbtt_ScaleForPixelHeight(&fontInfo, m_PixelHeight);
+        int kern = stbtt_GetCodepointKernAdvance(&fontInfo, first, second);
 
         return kern * scale;
     }

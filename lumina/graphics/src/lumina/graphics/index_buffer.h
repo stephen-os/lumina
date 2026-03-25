@@ -11,67 +11,67 @@
 #include <span>
 #include <string_view>
 
-namespace lumina::core { class device; }
+namespace Lumina { class Device; }
 
-namespace lumina::graphics
+namespace Lumina
 {
     /// GPU index buffer for indexed drawing.
-    class index_buffer
+    class IndexBuffer
     {
     public:
-        ~index_buffer();
+        ~IndexBuffer();
 
-        index_buffer(const index_buffer&) = delete;
-        index_buffer& operator=(const index_buffer&) = delete;
+        IndexBuffer(const IndexBuffer&) = delete;
+        IndexBuffer& operator=(const IndexBuffer&) = delete;
 
-        index_buffer(index_buffer&& other) noexcept;
-        index_buffer& operator=(index_buffer&&) = delete;
+        IndexBuffer(IndexBuffer&& other) noexcept;
+        IndexBuffer& operator=(IndexBuffer&&) = delete;
 
         /// Creates an index buffer. Returns nullptr on failure.
-        /// index_size must be 2 (uint16) or 4 (uint32).
-        [[nodiscard]] static ref<index_buffer> create(
-            core::device& dev,
+        /// indexSize must be 2 (uint16) or 4 (uint32).
+        [[nodiscard]] static Ref<IndexBuffer> Create(
+            Device& dev,
             const void* data,
             size_t count,
-            size_t index_size,
-            std::string_view debug_name = "Lumina Index Buffer");
+            size_t indexSize,
+            std::string_view debugName = "Lumina Index Buffer");
 
         /// Creates an index buffer from 16-bit indices.
-        [[nodiscard]] static ref<index_buffer> create(
-            core::device& dev,
+        [[nodiscard]] static Ref<IndexBuffer> Create(
+            Device& dev,
             std::span<const uint16_t> indices,
-            std::string_view debug_name = "Lumina Index Buffer")
+            std::string_view debugName = "Lumina Index Buffer")
         {
-            return create(dev, indices.data(), indices.size(), sizeof(uint16_t), debug_name);
+            return Create(dev, indices.data(), indices.size(), sizeof(uint16_t), debugName);
         }
 
         /// Creates an index buffer from 32-bit indices.
-        [[nodiscard]] static ref<index_buffer> create(
-            core::device& dev,
+        [[nodiscard]] static Ref<IndexBuffer> Create(
+            Device& dev,
             std::span<const uint32_t> indices,
-            std::string_view debug_name = "Lumina Index Buffer")
+            std::string_view debugName = "Lumina Index Buffer")
         {
-            return create(dev, indices.data(), indices.size(), sizeof(uint32_t), debug_name);
+            return Create(dev, indices.data(), indices.size(), sizeof(uint32_t), debugName);
         }
 
-        [[nodiscard]] size_t get_count() const noexcept { return m_count; }
-        [[nodiscard]] size_t get_index_size() const noexcept { return m_index_size; }
-        [[nodiscard]] size_t get_byte_size() const noexcept { return m_count * m_index_size; }
-        [[nodiscard]] bool is_32bit() const noexcept { return m_index_size == 4; }
-        [[nodiscard]] bool is_16bit() const noexcept { return m_index_size == 2; }
-        [[nodiscard]] nvrhi::IBuffer* get_buffer() const noexcept { return m_handle.Get(); }
+        [[nodiscard]] size_t GetCount() const noexcept { return m_Count; }
+        [[nodiscard]] size_t GetIndexSize() const noexcept { return m_IndexSize; }
+        [[nodiscard]] size_t GetByteSize() const noexcept { return m_Count * m_IndexSize; }
+        [[nodiscard]] bool Is32Bit() const noexcept { return m_IndexSize == 4; }
+        [[nodiscard]] bool Is16Bit() const noexcept { return m_IndexSize == 2; }
+        [[nodiscard]] nvrhi::IBuffer* GetBuffer() const noexcept { return m_Handle.Get(); }
 
     private:
-        index_buffer(core::device& dev, nvrhi::BufferHandle handle, size_t count, size_t index_size)
-            : m_device(dev)
-            , m_handle(std::move(handle))
-            , m_count(count)
-            , m_index_size(index_size)
+        IndexBuffer(Device& dev, nvrhi::BufferHandle handle, size_t count, size_t indexSize)
+            : m_Device(dev)
+            , m_Handle(std::move(handle))
+            , m_Count(count)
+            , m_IndexSize(indexSize)
         {}
 
-        core::device& m_device;
-        nvrhi::BufferHandle m_handle;
-        size_t m_count;
-        size_t m_index_size;
+        Device& m_Device;
+        nvrhi::BufferHandle m_Handle;
+        size_t m_Count;
+        size_t m_IndexSize;
     };
 }

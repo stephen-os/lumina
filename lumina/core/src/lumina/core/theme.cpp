@@ -1,126 +1,126 @@
-#include "theme.h"
+#include "Theme.h"
 
 #include <imgui.h>
 
-namespace lumina::core
+namespace Lumina
 {
-    void theme::apply_lumina_theme()
-    {
-        ImGui::StyleColorsDark();
+	void Theme::ApplyLuminaTheme()
+	{
+		ImGui::StyleColorsDark();
 
-        ImGuiStyle& s = ImGui::GetStyle();
-        ImVec4* colors = s.Colors;
+		ImGuiStyle& s = ImGui::GetStyle();
+		ImVec4* colors = s.Colors;
 
-        // Window
-        colors[ImGuiCol_WindowBg] = color::dark_gray;
-        colors[ImGuiCol_ChildBg] = color::dark_gray;
-        colors[ImGuiCol_PopupBg] = color::medium_gray;
-        colors[ImGuiCol_MenuBarBg] = color::medium_gray;
+		// Window
+		colors[ImGuiCol_WindowBg] = Color::DarkGray;
+		colors[ImGuiCol_ChildBg] = Color::DarkGray;
+		colors[ImGuiCol_PopupBg] = Color::MediumGray;
+		colors[ImGuiCol_MenuBarBg] = Color::MediumGray;
 
-        // Title bar
-        colors[ImGuiCol_TitleBg] = color::medium_gray;
-        colors[ImGuiCol_TitleBgActive] = color::light_gray;
-        colors[ImGuiCol_TitleBgCollapsed] = color::medium_gray_transparent;
+		// Title bar
+		colors[ImGuiCol_TitleBg] = Color::MediumGray;
+		colors[ImGuiCol_TitleBgActive] = Color::LightGray;
+		colors[ImGuiCol_TitleBgCollapsed] = Color::MediumGrayTransparent;
 
-        // Frame (inputs, combo boxes, etc.)
-        colors[ImGuiCol_FrameBg] = color::medium_gray;
-        colors[ImGuiCol_FrameBgHovered] = color::light_gray;
-        colors[ImGuiCol_FrameBgActive] = color::extra_light_gray;
+		// Frame (inputs, combo boxes, etc.)
+		colors[ImGuiCol_FrameBg] = Color::MediumGray;
+		colors[ImGuiCol_FrameBgHovered] = Color::LightGray;
+		colors[ImGuiCol_FrameBgActive] = Color::ExtraLightGray;
 
-        // Buttons
-        colors[ImGuiCol_Button] = color::medium_gray;
-        colors[ImGuiCol_ButtonHovered] = color::light_gray;
-        colors[ImGuiCol_ButtonActive] = color::extra_light_gray;
+		// Buttons
+		colors[ImGuiCol_Button] = Color::MediumGray;
+		colors[ImGuiCol_ButtonHovered] = Color::LightGray;
+		colors[ImGuiCol_ButtonActive] = Color::ExtraLightGray;
 
-        // Headers (tree nodes, collapsing headers, etc.)
-        colors[ImGuiCol_Header] = color::orange_secondary;
-        colors[ImGuiCol_HeaderHovered] = color::orange_hover;
-        colors[ImGuiCol_HeaderActive] = color::orange_active;
+		// Headers (tree nodes, collapsing headers, etc.)
+		colors[ImGuiCol_Header] = Color::OrangeSecondary;
+		colors[ImGuiCol_HeaderHovered] = Color::OrangeHover;
+		colors[ImGuiCol_HeaderActive] = Color::OrangeActive;
 
-        // Selection
-        colors[ImGuiCol_CheckMark] = color::orange_primary;
-        colors[ImGuiCol_SliderGrab] = color::orange_primary;
-        colors[ImGuiCol_SliderGrabActive] = color::orange_light;
+		// Selection
+		colors[ImGuiCol_CheckMark] = Color::OrangePrimary;
+		colors[ImGuiCol_SliderGrab] = Color::OrangePrimary;
+		colors[ImGuiCol_SliderGrabActive] = Color::OrangeLight;
 
-        // Tabs
-        colors[ImGuiCol_Tab] = color::orange_secondary;
-        colors[ImGuiCol_TabHovered] = color::orange_hover;
-        colors[ImGuiCol_TabActive] = color::orange_active;
-        colors[ImGuiCol_TabUnfocused] = color::dark_gray;
-        colors[ImGuiCol_TabUnfocusedActive] = color::medium_gray;
+		// Tabs
+		colors[ImGuiCol_Tab] = Color::OrangeSecondary;
+		colors[ImGuiCol_TabHovered] = Color::OrangeHover;
+		colors[ImGuiCol_TabActive] = Color::OrangeActive;
+		colors[ImGuiCol_TabUnfocused] = Color::DarkGray;
+		colors[ImGuiCol_TabUnfocusedActive] = Color::MediumGray;
 
-        // Text
-        colors[ImGuiCol_Text] = color::text_primary;
-        colors[ImGuiCol_TextDisabled] = color::text_disabled;
-        colors[ImGuiCol_TextSelectedBg] = color::orange_secondary;
+		// Text
+		colors[ImGuiCol_Text] = Color::TextPrimary;
+		colors[ImGuiCol_TextDisabled] = Color::TextDisabled;
+		colors[ImGuiCol_TextSelectedBg] = Color::OrangeSecondary;
 
-        // Scrollbar
-        colors[ImGuiCol_ScrollbarBg] = color::dark_gray;
-        colors[ImGuiCol_ScrollbarGrab] = color::medium_gray;
-        colors[ImGuiCol_ScrollbarGrabHovered] = color::light_gray;
-        colors[ImGuiCol_ScrollbarGrabActive] = color::orange_primary;
+		// Scrollbar
+		colors[ImGuiCol_ScrollbarBg] = Color::DarkGray;
+		colors[ImGuiCol_ScrollbarGrab] = Color::MediumGray;
+		colors[ImGuiCol_ScrollbarGrabHovered] = Color::LightGray;
+		colors[ImGuiCol_ScrollbarGrabActive] = Color::OrangePrimary;
 
-        // Separator
-        colors[ImGuiCol_Separator] = color::medium_gray;
-        colors[ImGuiCol_SeparatorHovered] = color::orange_hover;
-        colors[ImGuiCol_SeparatorActive] = color::orange_active;
+		// Separator
+		colors[ImGuiCol_Separator] = Color::MediumGray;
+		colors[ImGuiCol_SeparatorHovered] = Color::OrangeHover;
+		colors[ImGuiCol_SeparatorActive] = Color::OrangeActive;
 
-        // Resize grip
-        colors[ImGuiCol_ResizeGrip] = color::medium_gray;
-        colors[ImGuiCol_ResizeGripHovered] = color::orange_hover;
-        colors[ImGuiCol_ResizeGripActive] = color::orange_active;
+		// Resize grip
+		colors[ImGuiCol_ResizeGrip] = Color::MediumGray;
+		colors[ImGuiCol_ResizeGripHovered] = Color::OrangeHover;
+		colors[ImGuiCol_ResizeGripActive] = Color::OrangeActive;
 
-        // Docking
-        colors[ImGuiCol_DockingPreview] = color::orange_secondary;
-        colors[ImGuiCol_DockingEmptyBg] = color::dark_gray;
+		// Docking
+		colors[ImGuiCol_DockingPreview] = Color::OrangeSecondary;
+		colors[ImGuiCol_DockingEmptyBg] = Color::DarkGray;
 
-        // Tables
-        colors[ImGuiCol_TableHeaderBg] = color::medium_gray;
-        colors[ImGuiCol_TableBorderStrong] = color::light_gray;
-        colors[ImGuiCol_TableBorderLight] = color::medium_gray;
-        colors[ImGuiCol_TableRowBg] = color::transparent;
-        colors[ImGuiCol_TableRowBgAlt] = color::subtle_white;
+		// Tables
+		colors[ImGuiCol_TableHeaderBg] = Color::MediumGray;
+		colors[ImGuiCol_TableBorderStrong] = Color::LightGray;
+		colors[ImGuiCol_TableBorderLight] = Color::MediumGray;
+		colors[ImGuiCol_TableRowBg] = Color::Transparent;
+		colors[ImGuiCol_TableRowBgAlt] = Color::SubtleWhite;
 
-        // Navigation
-        colors[ImGuiCol_NavHighlight] = color::orange_primary;
-        colors[ImGuiCol_NavWindowingHighlight] = color::orange_active;
-        colors[ImGuiCol_NavWindowingDimBg] = color::nav_dim;
+		// Navigation
+		colors[ImGuiCol_NavHighlight] = Color::OrangePrimary;
+		colors[ImGuiCol_NavWindowingHighlight] = Color::OrangeActive;
+		colors[ImGuiCol_NavWindowingDimBg] = Color::NavDim;
 
-        // Modal
-        colors[ImGuiCol_ModalWindowDimBg] = color::modal_dim;
+		// Modal
+		colors[ImGuiCol_ModalWindowDimBg] = Color::ModalDim;
 
-        // Plots
-        colors[ImGuiCol_PlotLines] = color::orange_primary;
-        colors[ImGuiCol_PlotLinesHovered] = color::orange_light;
-        colors[ImGuiCol_PlotHistogram] = color::orange_secondary;
-        colors[ImGuiCol_PlotHistogramHovered] = color::orange_active;
+		// Plots
+		colors[ImGuiCol_PlotLines] = Color::OrangePrimary;
+		colors[ImGuiCol_PlotLinesHovered] = Color::OrangeLight;
+		colors[ImGuiCol_PlotHistogram] = Color::OrangeSecondary;
+		colors[ImGuiCol_PlotHistogramHovered] = Color::OrangeActive;
 
-        // Borders
-        colors[ImGuiCol_Border] = color::medium_gray;
-        colors[ImGuiCol_BorderShadow] = color::transparent;
+		// Borders
+		colors[ImGuiCol_Border] = Color::MediumGray;
+		colors[ImGuiCol_BorderShadow] = Color::Transparent;
 
-        // Style settings
-        s.WindowRounding = style::window_rounding;
-        s.WindowPadding = style::window_padding;
-        s.FrameRounding = style::frame_rounding;
-        s.FramePadding = style::frame_padding;
-        s.ItemSpacing = style::item_spacing;
-        s.ItemInnerSpacing = style::item_inner_spacing;
-        s.IndentSpacing = style::indent_spacing;
-        s.ScrollbarSize = style::scrollbar_size;
-        s.ScrollbarRounding = style::scrollbar_rounding;
-        s.GrabMinSize = style::grab_min_size;
-        s.GrabRounding = style::grab_rounding;
-        s.TabRounding = style::tab_rounding;
-        s.TabBorderSize = style::tab_border_size;
-        s.FrameBorderSize = style::frame_border_size;
+		// Style settings
+		s.WindowRounding = Style::WindowRounding;
+		s.WindowPadding = Style::WindowPadding;
+		s.FrameRounding = Style::FrameRounding;
+		s.FramePadding = Style::FramePadding;
+		s.ItemSpacing = Style::ItemSpacing;
+		s.ItemInnerSpacing = Style::ItemInnerSpacing;
+		s.IndentSpacing = Style::IndentSpacing;
+		s.ScrollbarSize = Style::ScrollbarSize;
+		s.ScrollbarRounding = Style::ScrollbarRounding;
+		s.GrabMinSize = Style::GrabMinSize;
+		s.GrabRounding = Style::GrabRounding;
+		s.TabRounding = Style::TabRounding;
+		s.TabBorderSize = Style::TabBorderSize;
+		s.FrameBorderSize = Style::FrameBorderSize;
 
-        // Viewport compatibility
-        ImGuiIO& io = ImGui::GetIO();
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            s.WindowRounding = 0.0f;
-            colors[ImGuiCol_WindowBg].w = 1.0f;
-        }
-    }
+		// Viewport compatibility
+		ImGuiIO& io = ImGui::GetIO();
+		if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+		{
+			s.WindowRounding = 0.0f;
+			colors[ImGuiCol_WindowBg].w = 1.0f;
+		}
+	}
 }

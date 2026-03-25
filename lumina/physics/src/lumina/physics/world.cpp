@@ -2,215 +2,215 @@
 #include "body.h"
 #include "conversions.h"
 
-namespace lumina::physics
+namespace Lumina
 {
-    world::world(const world_def& def)
-        : m_config(def)
+    World::World(const WorldDef& def)
+        : m_Config(def)
     {
-        b2WorldDef world_def = b2DefaultWorldDef();
-        world_def.gravity = to_b2(def.gravity);
-        world_def.enableSleep = def.enable_sleep;
-        world_def.enableContinuous = def.enable_continuous;
+        b2WorldDef worldDef = b2DefaultWorldDef();
+        worldDef.gravity = ToB2(def.Gravity);
+        worldDef.enableSleep = def.EnableSleep;
+        worldDef.enableContinuous = def.EnableContinuous;
 
-        m_world_id = b2CreateWorld(&world_def);
+        m_WorldId = b2CreateWorld(&worldDef);
     }
 
-    world::~world()
+    World::~World()
     {
-        if (b2World_IsValid(m_world_id))
+        if (b2World_IsValid(m_WorldId))
         {
-            m_bodies.clear();
-            b2DestroyWorld(m_world_id);
+            m_Bodies.clear();
+            b2DestroyWorld(m_WorldId);
         }
     }
 
-    world::world(world&& other) noexcept
-        : m_world_id(other.m_world_id)
-        , m_config(other.m_config)
-        , m_bodies(std::move(other.m_bodies))
-        , m_contact_events(std::move(other.m_contact_events))
-        , m_sensor_events(std::move(other.m_sensor_events))
+    World::World(World&& other) noexcept
+        : m_WorldId(other.m_WorldId)
+        , m_Config(other.m_Config)
+        , m_Bodies(std::move(other.m_Bodies))
+        , m_ContactEvents(std::move(other.m_ContactEvents))
+        , m_SensorEvents(std::move(other.m_SensorEvents))
     {
-        other.m_world_id = {};
+        other.m_WorldId = {};
     }
 
-    world& world::operator=(world&& other) noexcept
+    World& World::operator=(World&& other) noexcept
     {
         if (this != &other)
         {
-            if (b2World_IsValid(m_world_id))
+            if (b2World_IsValid(m_WorldId))
             {
-                m_bodies.clear();
-                b2DestroyWorld(m_world_id);
+                m_Bodies.clear();
+                b2DestroyWorld(m_WorldId);
             }
 
-            m_world_id = other.m_world_id;
-            m_config = other.m_config;
-            m_bodies = std::move(other.m_bodies);
-            m_contact_events = std::move(other.m_contact_events);
-            m_sensor_events = std::move(other.m_sensor_events);
+            m_WorldId = other.m_WorldId;
+            m_Config = other.m_Config;
+            m_Bodies = std::move(other.m_Bodies);
+            m_ContactEvents = std::move(other.m_ContactEvents);
+            m_SensorEvents = std::move(other.m_SensorEvents);
 
-            other.m_world_id = {};
+            other.m_WorldId = {};
         }
         return *this;
     }
 
-    void world::step()
+    void World::Step()
     {
-        step(m_config.time_step, m_config.sub_step_count);
+        Step(m_Config.TimeStep, m_Config.SubStepCount);
     }
 
-    void world::step(float time_step)
+    void World::Step(float timeStep)
     {
-        step(time_step, m_config.sub_step_count);
+        Step(timeStep, m_Config.SubStepCount);
     }
 
-    void world::step(float time_step, int sub_steps)
+    void World::Step(float timeStep, int subSteps)
     {
-        b2World_Step(m_world_id, time_step, sub_steps);
-        process_events();
+        b2World_Step(m_WorldId, timeStep, subSteps);
+        ProcessEvents();
     }
 
-    void world::set_gravity(const glm::vec2& gravity)
+    void World::SetGravity(const glm::vec2& gravity)
     {
-        b2World_SetGravity(m_world_id, to_b2(gravity));
-        m_config.gravity = gravity;
+        b2World_SetGravity(m_WorldId, ToB2(gravity));
+        m_Config.Gravity = gravity;
     }
 
-    glm::vec2 world::get_gravity() const
+    glm::vec2 World::GetGravity() const
     {
-        return to_glm(b2World_GetGravity(m_world_id));
+        return ToGlm(b2World_GetGravity(m_WorldId));
     }
 
-    ref<body> world::create_body(const body_def& def)
+    Ref<Body> World::CreateBody(const BodyDef& def)
     {
         b2BodyDef bd = b2DefaultBodyDef();
 
-        switch (def.type)
+        switch (def.Type)
         {
-        case body_type::static_body: bd.type = b2_staticBody; break;
-        case body_type::kinematic:   bd.type = b2_kinematicBody; break;
-        case body_type::dynamic:     bd.type = b2_dynamicBody; break;
+        case BodyType::StaticBody: bd.type = b2_staticBody; break;
+        case BodyType::Kinematic:   bd.type = b2_kinematicBody; break;
+        case BodyType::Dynamic:     bd.type = b2_dynamicBody; break;
         }
 
-        bd.position = to_b2(def.position);
-        bd.rotation = to_b2_rot(def.rotation);
-        bd.linearVelocity = to_b2(def.linear_velocity);
-        bd.angularVelocity = def.angular_velocity;
-        bd.linearDamping = def.linear_damping;
-        bd.angularDamping = def.angular_damping;
-        bd.gravityScale = def.gravity_scale;
-        bd.isBullet = def.is_bullet;
-        bd.isAwake = def.is_awake;
-        bd.enableSleep = def.enable_sleep;
-        bd.isEnabled = def.is_enabled;
+        bd.position = ToB2(def.Position);
+        bd.rotation = ToB2Rot(def.Rotation);
+        bd.linearVelocity = ToB2(def.LinearVelocity);
+        bd.angularVelocity = def.AngularVelocity;
+        bd.linearDamping = def.LinearDamping;
+        bd.angularDamping = def.AngularDamping;
+        bd.gravityScale = def.GravityScale;
+        bd.isBullet = def.IsBullet;
+        bd.isAwake = def.IsAwake;
+        bd.enableSleep = def.EnableSleep;
+        bd.isEnabled = def.IsEnabled;
 
-        b2BodyId body_id = b2CreateBody(m_world_id, &bd);
+        b2BodyId bodyId = b2CreateBody(m_WorldId, &bd);
 
-        auto b = ref<body>(new body(body_id, def));
-        m_bodies.push_back(b);
+        auto b = Ref<Body>(new Body(bodyId, def));
+        m_Bodies.push_back(b);
         return b;
     }
 
-    void world::destroy_body(ref<body>& b)
+    void World::DestroyBody(Ref<Body>& b)
     {
-        if (b && b->is_valid())
+        if (b && b->IsValid())
         {
-            b2DestroyBody(b->get_native_id());
+            b2DestroyBody(b->GetNativeId());
         }
-        m_bodies.erase(std::remove(m_bodies.begin(), m_bodies.end(), b), m_bodies.end());
+        m_Bodies.erase(std::remove(m_Bodies.begin(), m_Bodies.end(), b), m_Bodies.end());
         b.reset();
     }
 
-    void world::process_events()
+    void World::ProcessEvents()
     {
-        m_contact_events.clear();
-        m_sensor_events.clear();
+        m_ContactEvents.clear();
+        m_SensorEvents.clear();
 
         // Process contact events
-        b2ContactEvents contact_events = b2World_GetContactEvents(m_world_id);
+        b2ContactEvents contactEvents = b2World_GetContactEvents(m_WorldId);
 
-        for (int i = 0; i < contact_events.beginCount; ++i)
+        for (int i = 0; i < contactEvents.beginCount; ++i)
         {
-            const b2ContactBeginTouchEvent& e = contact_events.beginEvents[i];
-            contact_event event;
-            event.type = contact_event_type::begin;
-            event.shape_id_a = e.shapeIdA;
-            event.shape_id_b = e.shapeIdB;
-            event.point = { 0, 0 };
-            event.normal = { 0, 0 };
-            event.approach_speed = 0;
-            m_contact_events.push_back(event);
+            const b2ContactBeginTouchEvent& e = contactEvents.beginEvents[i];
+            ContactEvent event;
+            event.Type = ContactEventType::Begin;
+            event.ShapeIdA = e.shapeIdA;
+            event.ShapeIdB = e.shapeIdB;
+            event.Point = { 0, 0 };
+            event.Normal = { 0, 0 };
+            event.ApproachSpeed = 0;
+            m_ContactEvents.push_back(event);
         }
 
-        for (int i = 0; i < contact_events.endCount; ++i)
+        for (int i = 0; i < contactEvents.endCount; ++i)
         {
-            const b2ContactEndTouchEvent& e = contact_events.endEvents[i];
-            contact_event event;
-            event.type = contact_event_type::end;
-            event.shape_id_a = e.shapeIdA;
-            event.shape_id_b = e.shapeIdB;
-            event.point = { 0, 0 };
-            event.normal = { 0, 0 };
-            event.approach_speed = 0;
-            m_contact_events.push_back(event);
+            const b2ContactEndTouchEvent& e = contactEvents.endEvents[i];
+            ContactEvent event;
+            event.Type = ContactEventType::End;
+            event.ShapeIdA = e.shapeIdA;
+            event.ShapeIdB = e.shapeIdB;
+            event.Point = { 0, 0 };
+            event.Normal = { 0, 0 };
+            event.ApproachSpeed = 0;
+            m_ContactEvents.push_back(event);
         }
 
-        for (int i = 0; i < contact_events.hitCount; ++i)
+        for (int i = 0; i < contactEvents.hitCount; ++i)
         {
-            const b2ContactHitEvent& e = contact_events.hitEvents[i];
-            contact_event event;
-            event.type = contact_event_type::hit;
-            event.shape_id_a = e.shapeIdA;
-            event.shape_id_b = e.shapeIdB;
-            event.point = to_glm(e.point);
-            event.normal = to_glm(e.normal);
-            event.approach_speed = e.approachSpeed;
-            m_contact_events.push_back(event);
+            const b2ContactHitEvent& e = contactEvents.hitEvents[i];
+            ContactEvent event;
+            event.Type = ContactEventType::Hit;
+            event.ShapeIdA = e.shapeIdA;
+            event.ShapeIdB = e.shapeIdB;
+            event.Point = ToGlm(e.point);
+            event.Normal = ToGlm(e.normal);
+            event.ApproachSpeed = e.approachSpeed;
+            m_ContactEvents.push_back(event);
         }
 
         // Process sensor events
-        b2SensorEvents sensor_events = b2World_GetSensorEvents(m_world_id);
+        b2SensorEvents sensorEvents = b2World_GetSensorEvents(m_WorldId);
 
-        for (int i = 0; i < sensor_events.beginCount; ++i)
+        for (int i = 0; i < sensorEvents.beginCount; ++i)
         {
-            const b2SensorBeginTouchEvent& e = sensor_events.beginEvents[i];
-            sensor_event event;
-            event.type = sensor_event_type::begin;
-            event.sensor_shape_id = e.sensorShapeId;
-            event.visitor_shape_id = e.visitorShapeId;
-            m_sensor_events.push_back(event);
+            const b2SensorBeginTouchEvent& e = sensorEvents.beginEvents[i];
+            SensorEvent event;
+            event.Type = SensorEventType::Begin;
+            event.SensorShapeId = e.sensorShapeId;
+            event.VisitorShapeId = e.visitorShapeId;
+            m_SensorEvents.push_back(event);
         }
 
-        for (int i = 0; i < sensor_events.endCount; ++i)
+        for (int i = 0; i < sensorEvents.endCount; ++i)
         {
-            const b2SensorEndTouchEvent& e = sensor_events.endEvents[i];
-            sensor_event event;
-            event.type = sensor_event_type::end;
-            event.sensor_shape_id = e.sensorShapeId;
-            event.visitor_shape_id = e.visitorShapeId;
-            m_sensor_events.push_back(event);
+            const b2SensorEndTouchEvent& e = sensorEvents.endEvents[i];
+            SensorEvent event;
+            event.Type = SensorEventType::End;
+            event.SensorShapeId = e.sensorShapeId;
+            event.VisitorShapeId = e.visitorShapeId;
+            m_SensorEvents.push_back(event);
         }
     }
 
-    ray_cast_result world::ray_cast_closest(glm::vec2 origin, glm::vec2 direction, float max_distance) const
+    RayCastResult World::RayCastClosest(glm::vec2 origin, glm::vec2 direction, float maxDistance) const
     {
-        glm::vec2 translation = direction * max_distance;
+        glm::vec2 translation = direction * maxDistance;
         b2RayResult result = b2World_CastRayClosest(
-            m_world_id,
-            to_b2(origin),
-            to_b2(translation),
+            m_WorldId,
+            ToB2(origin),
+            ToB2(translation),
             b2DefaultQueryFilter()
         );
 
-        ray_cast_result r;
-        r.hit = result.hit;
+        RayCastResult r;
+        r.Hit = result.hit;
         if (result.hit)
         {
-            r.shape_id = result.shapeId;
-            r.point = to_glm(result.point);
-            r.normal = to_glm(result.normal);
-            r.fraction = result.fraction;
+            r.ShapeId = result.shapeId;
+            r.Point = ToGlm(result.point);
+            r.Normal = ToGlm(result.normal);
+            r.Fraction = result.fraction;
         }
         return r;
     }

@@ -4,54 +4,54 @@
 #include <unordered_map>
 #include <vector>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    enum class dock_position
+    enum class DockPosition
     {
-        left,
-        right,
-        top,
-        bottom,
-        center
+        Left,
+        Right,
+        Top,
+        Bottom,
+        Center
     };
 
-    class dock_layout
+    class DockLayout
     {
     public:
-        void split(const std::string& window_name, dock_position position, float size_ratio = 1.0f);
-        void sub_split(const std::string& window_name, const std::string& split_from,
-                       dock_position direction, float size_ratio = 0.5f);
-        void tabbed(const std::string& window_name, const std::string& tab_with);
+        void Split(const std::string& windowName, DockPosition position, float sizeRatio = 1.0f);
+        void SubSplit(const std::string& windowName, const std::string& splitFrom,
+                       DockPosition direction, float sizeRatio = 0.5f);
+        void Tabbed(const std::string& windowName, const std::string& tabWith);
 
-        void apply(unsigned int dockspace_id);
-        [[nodiscard]] bool has_requests() const { return !m_requests.empty(); }
+        void Apply(unsigned int dockspaceId);
+        [[nodiscard]] bool HasRequests() const { return !m_Requests.empty(); }
 
     private:
-        enum class dock_relation
+        enum class DockRelation
         {
-            split,
-            tab,
-            sub_split
+            Split,
+            Tab,
+            SubSplit
         };
 
-        struct dock_request
+        struct DockRequest
         {
-            std::string window_name;
-            dock_relation relation;
-            dock_position position;
-            float size_ratio;
-            std::string relative_to;
+            std::string WindowName;
+            DockRelation Relation;
+            DockPosition Position;
+            float SizeRatio;
+            std::string RelativeTo;
 
-            bool operator<(const dock_request& other) const
+            bool operator<(const DockRequest& other) const
             {
-                if (relation != other.relation)
-                    return relation < other.relation;
+                if (Relation != other.Relation)
+                    return Relation < other.Relation;
 
-                if (relation == dock_relation::split)
+                if (Relation == DockRelation::Split)
                 {
-                    if (position == dock_position::center && other.position != dock_position::center)
+                    if (Position == DockPosition::Center && other.Position != DockPosition::Center)
                         return false;
-                    if (position != dock_position::center && other.position == dock_position::center)
+                    if (Position != DockPosition::Center && other.Position == DockPosition::Center)
                         return true;
                 }
 
@@ -59,7 +59,7 @@ namespace lumina::ui
             }
         };
 
-        std::vector<dock_request> m_requests;
-        std::unordered_map<std::string, unsigned int> m_window_dock_ids;
+        std::vector<DockRequest> m_Requests;
+        std::unordered_map<std::string, unsigned int> m_WindowDockIds;
     };
 }

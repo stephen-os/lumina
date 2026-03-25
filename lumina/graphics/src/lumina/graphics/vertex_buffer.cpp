@@ -8,31 +8,31 @@
 #include <string>
 #include <utility>
 
-namespace lumina::graphics
+namespace Lumina
 {
-    vertex_buffer::~vertex_buffer() = default;
+    VertexBuffer::~VertexBuffer() = default;
 
-    vertex_buffer::vertex_buffer(vertex_buffer&& other) noexcept
-        : m_device(other.m_device)
-        , m_handle(std::move(other.m_handle))
-        , m_size(other.m_size)
-        , m_stride(other.m_stride)
-        , m_usage(other.m_usage)
+    VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+        : m_Device(other.m_Device)
+        , m_Handle(std::move(other.m_Handle))
+        , m_Size(other.m_Size)
+        , m_Stride(other.m_Stride)
+        , m_Usage(other.m_Usage)
     {
-        other.m_size = 0;
-        other.m_stride = 0;
+        other.m_Size = 0;
+        other.m_Stride = 0;
     }
 
-    ref<vertex_buffer> vertex_buffer::create(
-        core::device& dev,
+    Ref<VertexBuffer> VertexBuffer::Create(
+        Core::Device& dev,
         const void* data,
         size_t size,
         size_t stride,
-        buffer_usage usage,
-        std::string_view debug_name)
+        BufferUsage usage,
+        std::string_view debugName)
     {
-        auto* nvrhi_device = dev.get_nvrhi_device();
-        if (!nvrhi_device)
+        auto* nvrhiDevice = dev.GetNvrhiDevice();
+        if (!nvrhiDevice)
         {
             LUMINA_LOG_ERROR("Failed to create vertex buffer: no device");
             return nullptr;
@@ -53,9 +53,9 @@ namespace lumina::graphics
         nvrhi::BufferDesc desc;
         desc.byteSize = size;
         desc.isVertexBuffer = true;
-        desc.debugName = std::string(debug_name);
+        desc.debugName = std::string(debugName);
 
-        if (usage == buffer_usage::dynamic)
+        if (usage == BufferUsage::Dynamic)
         {
             desc.cpuAccess = nvrhi::CpuAccessMode::Write;
             desc.initialState = nvrhi::ResourceStates::CopyDest;
@@ -68,7 +68,7 @@ namespace lumina::graphics
             desc.keepInitialState = true;
         }
 
-        nvrhi::BufferHandle buffer = nvrhi_device->createBuffer(desc);
+        nvrhi::BufferHandle buffer = nvrhiDevice->createBuffer(desc);
         if (!buffer)
         {
             LUMINA_LOG_ERROR("Failed to create NVRHI vertex buffer");
@@ -78,24 +78,24 @@ namespace lumina::graphics
         // Upload initial data if provided
         if (data)
         {
-            if (usage == buffer_usage::immutable)
+            if (usage == BufferUsage::Immutable)
             {
                 // Immutable buffers require command list upload
-                nvrhi::CommandListHandle cmd = nvrhi_device->createCommandList();
+                nvrhi::CommandListHandle cmd = nvrhiDevice->createCommandList();
                 cmd->open();
                 cmd->writeBuffer(buffer, data, size);
                 cmd->close();
-                nvrhi_device->executeCommandList(cmd);
-                nvrhi_device->waitForIdle();
+                nvrhiDevice->executeCommandList(cmd);
+                nvrhiDevice->waitForIdle();
             }
             else
             {
                 // Dynamic buffers use direct CPU mapping
-                void* mapped = nvrhi_device->mapBuffer(buffer, nvrhi::CpuAccessMode::Write);
+                void* mapped = nvrhiDevice->mapBuffer(buffer, nvrhi::CpuAccessMode::Write);
                 if (mapped)
                 {
                     std::memcpy(mapped, data, size);
-                    nvrhi_device->unmapBuffer(buffer);
+                    nvrhiDevice->unmapBuffer(buffer);
                 }
                 else
                 {
@@ -104,45 +104,45 @@ namespace lumina::graphics
             }
         }
 
-        return ref<vertex_buffer>(new vertex_buffer(dev, std::move(buffer), size, stride, usage));
+        return Ref<VertexBuffer>(new VertexBuffer(dev, std::move(buffer), size, stride, usage));
     }
 
-    void* vertex_buffer::map_for_write()
+    void* VertexBuffer::MapForWrite()
     {
-        auto* nvrhi_device = m_device.get_nvrhi_device();
-        return nvrhi_device->mapBuffer(m_handle.Get(), nvrhi::CpuAccessMode::Write);
+        auto* nvrhiDevice = m_Device.GetNvrhiDevice();
+        return nvrhiDevice->mapBuffer(m_Handle.Get(), nvrhi::CpuAccessMode::Write);
     }
 
-    void vertex_buffer::unmap()
+    void VertexBuffer::Unmap()
     {
-        auto* nvrhi_device = m_device.get_nvrhi_device();
-        nvrhi_device->unmapBuffer(m_handle.Get());
+        auto* nvrhiDevice = m_Device.GetNvrhiDevice();
+        nvrhiDevice->unmapBuffer(m_Handle.Get());
     }
 
-    void vertex_buffer::update(const void* data, size_t size)
+    void VertexBuffer::Update(const void* data, size_t size)
     {
         LUMINA_ASSERT(data != nullptr, "Cannot update vertex buffer with null data");
-        LUMINA_ASSERT(m_handle != nullptr, "Vertex buffer handle is null");
+        LUMINA_ASSERT(m_Handle != nullptr, "Vertex buffer handle is null");
 
-        if (!data || !m_handle)
+        if (!data || !m_Handle)
         {
-            LUMINA_LOG_ERROR("vertex_buffer::update called with invalid state");
+            LUMINA_LOG_ERROR("VertexBuffer::Update called with invalid state");
             return;
         }
 
-        if (!is_dynamic())
+        if (!IsDynamic())
         {
             LUMINA_LOG_WARN("Cannot update immutable vertex buffer via CPU mapping");
             return;
         }
 
-        if (size > m_size)
+        if (size > m_Size)
         {
-            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}, clamping", size, m_size);
-            size = m_size;
+            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}, clamping", size, m_Size);
+            size = m_Size;
         }
 
-        void* mapped = map_for_write();
+        void* mapped = MapForWrite();
         if (!mapped)
         {
             LUMINA_LOG_ERROR("Failed to map vertex buffer for update");
@@ -150,34 +150,34 @@ namespace lumina::graphics
         }
 
         std::memcpy(mapped, data, size);
-        unmap();
+        Unmap();
     }
 
-    void vertex_buffer::update(const void* data, size_t size, nvrhi::ICommandList* cmd)
+    void VertexBuffer::Update(const void* data, size_t size, nvrhi::ICommandList* cmd)
     {
         LUMINA_ASSERT(data != nullptr, "Cannot update vertex buffer with null data");
-        LUMINA_ASSERT(m_handle != nullptr, "Vertex buffer handle is null");
+        LUMINA_ASSERT(m_Handle != nullptr, "Vertex buffer handle is null");
 
-        if (!data || !m_handle)
+        if (!data || !m_Handle)
         {
-            LUMINA_LOG_ERROR("vertex_buffer::update called with invalid state");
+            LUMINA_LOG_ERROR("VertexBuffer::Update called with invalid state");
             return;
         }
 
-        if (size > m_size)
+        if (size > m_Size)
         {
-            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}, clamping", size, m_size);
-            size = m_size;
+            LUMINA_LOG_WARN("Update size {} exceeds buffer size {}, clamping", size, m_Size);
+            size = m_Size;
         }
 
-        if (is_dynamic())
+        if (IsDynamic())
         {
             // Dynamic buffers use CPU mapping (cmd is not used but accepted for API consistency)
-            void* mapped = map_for_write();
+            void* mapped = MapForWrite();
             if (mapped)
             {
                 std::memcpy(mapped, data, size);
-                unmap();
+                Unmap();
             }
             else
             {
@@ -192,46 +192,46 @@ namespace lumina::graphics
                 LUMINA_LOG_ERROR("Command list required for update on immutable buffer");
                 return;
             }
-            cmd->writeBuffer(m_handle.Get(), data, size);
+            cmd->writeBuffer(m_Handle.Get(), data, size);
         }
     }
 
-    void vertex_buffer::update_at_offset(const void* data, size_t size, size_t offset_bytes, nvrhi::ICommandList* cmd)
+    void VertexBuffer::UpdateAtOffset(const void* data, size_t size, size_t offsetBytes, nvrhi::ICommandList* cmd)
     {
         LUMINA_ASSERT(data != nullptr, "Cannot update vertex buffer with null data");
-        LUMINA_ASSERT(m_handle != nullptr, "Vertex buffer handle is null");
+        LUMINA_ASSERT(m_Handle != nullptr, "Vertex buffer handle is null");
 
-        if (!data || !m_handle)
+        if (!data || !m_Handle)
         {
-            LUMINA_LOG_ERROR("vertex_buffer::update_at_offset called with invalid state");
+            LUMINA_LOG_ERROR("VertexBuffer::UpdateAtOffset called with invalid state");
             return;
         }
 
-        if (offset_bytes >= m_size)
+        if (offsetBytes >= m_Size)
         {
-            LUMINA_LOG_WARN("Update offset {} is beyond buffer size {}", offset_bytes, m_size);
+            LUMINA_LOG_WARN("Update offset {} is beyond buffer size {}", offsetBytes, m_Size);
             return;
         }
 
-        if (offset_bytes + size > m_size)
+        if (offsetBytes + size > m_Size)
         {
             LUMINA_LOG_WARN("Update at offset {} with size {} exceeds buffer size {}, clamping",
-                offset_bytes, size, m_size);
-            size = m_size - offset_bytes;
+                offsetBytes, size, m_Size);
+            size = m_Size - offsetBytes;
         }
 
-        if (is_dynamic())
+        if (IsDynamic())
         {
             // Dynamic buffers use CPU mapping
-            void* mapped = map_for_write();
+            void* mapped = MapForWrite();
             if (mapped)
             {
-                std::memcpy(static_cast<uint8_t*>(mapped) + offset_bytes, data, size);
-                unmap();
+                std::memcpy(static_cast<uint8_t*>(mapped) + offsetBytes, data, size);
+                Unmap();
             }
             else
             {
-                LUMINA_LOG_ERROR("Failed to map vertex buffer for update_at_offset");
+                LUMINA_LOG_ERROR("Failed to map vertex buffer for UpdateAtOffset");
             }
         }
         else
@@ -239,10 +239,10 @@ namespace lumina::graphics
             // Immutable buffers require command list
             if (!cmd)
             {
-                LUMINA_LOG_ERROR("Command list required for update_at_offset on immutable buffer");
+                LUMINA_LOG_ERROR("Command list required for UpdateAtOffset on immutable buffer");
                 return;
             }
-            cmd->writeBuffer(m_handle.Get(), data, size, offset_bytes);
+            cmd->writeBuffer(m_Handle.Get(), data, size, offsetBytes);
         }
     }
 }

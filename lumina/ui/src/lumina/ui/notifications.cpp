@@ -8,103 +8,103 @@
 #include <chrono>
 #include <mutex>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
     namespace
     {
-        struct notification_entry
+        struct NotificationEntry
         {
             std::string message;
-            notification_type type;
+            NotificationType type;
             float duration;
-            std::chrono::steady_clock::time_point creation_time;
+            std::chrono::steady_clock::time_point creationTime;
         };
 
-        std::vector<notification_entry> s_notifications;
-        std::mutex s_notifications_mutex;
+        std::vector<NotificationEntry> s_Notifications;
+        std::mutex s_NotificationsMutex;
 
-        ImVec4 get_notification_color(notification_type type)
+        ImVec4 GetNotificationColor(NotificationType type)
         {
             switch (type)
             {
-            case notification_type::info:    return lumina::core::color::text_secondary;
-            case notification_type::success: return lumina::core::color::success;
-            case notification_type::warning: return lumina::core::color::warning;
-            case notification_type::error:   return lumina::core::color::error;
-            default:                         return lumina::core::color::text_secondary;
+            case NotificationType::Info:    return Lumina::Core::Color::TextSecondary;
+            case NotificationType::Success: return Lumina::Core::Color::Success;
+            case NotificationType::Warning: return Lumina::Core::Color::Warning;
+            case NotificationType::Error:   return Lumina::Core::Color::Error;
+            default:                        return Lumina::Core::Color::TextSecondary;
             }
         }
 
-        const char* get_notification_prefix(notification_type type)
+        const char* GetNotificationPrefix(NotificationType type)
         {
             switch (type)
             {
-            case notification_type::info:    return "[INFO]";
-            case notification_type::success: return "[OK]";
-            case notification_type::warning: return "[WARN]";
-            case notification_type::error:   return "[ERROR]";
-            default:                         return "[INFO]";
+            case NotificationType::Info:    return "[INFO]";
+            case NotificationType::Success: return "[OK]";
+            case NotificationType::Warning: return "[WARN]";
+            case NotificationType::Error:   return "[ERROR]";
+            default:                        return "[INFO]";
             }
         }
     }
 
-    void notify(const std::string& message, notification_type type, float duration_seconds)
+    void Notify(const std::string& message, NotificationType type, float durationSeconds)
     {
-        std::lock_guard<std::mutex> lock(s_notifications_mutex);
-        s_notifications.push_back({
+        std::lock_guard<std::mutex> lock(s_NotificationsMutex);
+        s_Notifications.push_back({
             message,
             type,
-            duration_seconds,
+            durationSeconds,
             std::chrono::steady_clock::now()
         });
     }
 
-    void render_notifications()
+    void RenderNotifications()
     {
-        std::lock_guard<std::mutex> lock(s_notifications_mutex);
+        std::lock_guard<std::mutex> lock(s_NotificationsMutex);
 
-        if (s_notifications.empty())
+        if (s_Notifications.empty())
             return;
 
         auto now = std::chrono::steady_clock::now();
 
         const ImGuiViewport* viewport = ImGui::GetMainViewport();
         const float padding = 16.0f;
-        const float notification_width = 300.0f;
-        float y_offset = padding;
+        const float notificationWidth = 300.0f;
+        float yOffset = padding;
 
-        for (int i = static_cast<int>(s_notifications.size()) - 1; i >= 0; --i)
+        for (int i = static_cast<int>(s_Notifications.size()) - 1; i >= 0; --i)
         {
-            auto& entry = s_notifications[i];
-            float elapsed = std::chrono::duration<float>(now - entry.creation_time).count();
+            auto& entry = s_Notifications[i];
+            float elapsed = std::chrono::duration<float>(now - entry.creationTime).count();
 
             if (elapsed >= entry.duration)
             {
-                s_notifications.erase(s_notifications.begin() + i);
+                s_Notifications.erase(s_Notifications.begin() + i);
                 continue;
             }
 
             // Fade out in the last 0.5 seconds
             float alpha = 1.0f;
-            float fade_start = entry.duration - 0.5f;
-            if (elapsed > fade_start)
-                alpha = 1.0f - (elapsed - fade_start) / 0.5f;
+            float fadeStart = entry.duration - 0.5f;
+            if (elapsed > fadeStart)
+                alpha = 1.0f - (elapsed - fadeStart) / 0.5f;
 
-            ImVec2 window_pos = ImVec2(
-                viewport->WorkPos.x + viewport->WorkSize.x - notification_width - padding,
-                viewport->WorkPos.y + viewport->WorkSize.y - y_offset - 50.0f
+            ImVec2 windowPos = ImVec2(
+                viewport->WorkPos.x + viewport->WorkSize.x - notificationWidth - padding,
+                viewport->WorkPos.y + viewport->WorkSize.y - yOffset - 50.0f
             );
 
-            ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always);
-            ImGui::SetNextWindowSize(ImVec2(notification_width, 0));
+            ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+            ImGui::SetNextWindowSize(ImVec2(notificationWidth, 0));
             ImGui::SetNextWindowBgAlpha(0.85f * alpha);
 
-            char window_name[64];
-            snprintf(window_name, sizeof(window_name), "##notification_%d", i);
+            char windowName[64];
+            snprintf(windowName, sizeof(windowName), "##notification_%d", i);
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 8.0f));
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, lumina::core::color::medium_gray);
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, Lumina::Core::Color::MediumGray);
 
             ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration
                                    | ImGuiWindowFlags_NoInputs
@@ -113,24 +113,24 @@ namespace lumina::ui
                                    | ImGuiWindowFlags_NoSavedSettings
                                    | ImGuiWindowFlags_AlwaysAutoResize;
 
-            if (ImGui::Begin(window_name, nullptr, flags))
+            if (ImGui::Begin(windowName, nullptr, flags))
             {
-                ImVec4 color = get_notification_color(entry.type);
+                ImVec4 color = GetNotificationColor(entry.type);
                 color.w *= alpha;
 
                 ImGui::PushStyleColor(ImGuiCol_Text, color);
-                ImGui::TextUnformatted(get_notification_prefix(entry.type));
+                ImGui::TextUnformatted(GetNotificationPrefix(entry.type));
                 ImGui::PopStyleColor();
 
                 ImGui::SameLine();
 
-                ImVec4 text_color = lumina::core::color::text_primary;
-                text_color.w *= alpha;
-                ImGui::PushStyleColor(ImGuiCol_Text, text_color);
+                ImVec4 textColor = Lumina::Core::Color::TextPrimary;
+                textColor.w *= alpha;
+                ImGui::PushStyleColor(ImGuiCol_Text, textColor);
                 ImGui::TextWrapped("%s", entry.message.c_str());
                 ImGui::PopStyleColor();
 
-                y_offset += ImGui::GetWindowHeight() + 4.0f;
+                yOffset += ImGui::GetWindowHeight() + 4.0f;
             }
             ImGui::End();
 

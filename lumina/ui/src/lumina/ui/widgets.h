@@ -5,78 +5,78 @@
 
 #include <cstdint>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    namespace utils
+    namespace Utils
     {
-        inline ImTextureID to_imgui_tex(void* tex) { return (ImTextureID)(uintptr_t)tex; }
-        inline ImVec2 to_imvec2(const glm::vec2& v) { return ImVec2(v.x, v.y); }
-        inline ImVec2 to_imvec2(float x, float y) { return ImVec2(x, y); }
-        inline glm::vec2 to_glm(const ImVec2& v) { return glm::vec2(v.x, v.y); }
+        inline ImTextureID ToImGuiTex(void* tex) { return (ImTextureID)(uintptr_t)tex; }
+        inline ImVec2 ToImVec2(const glm::vec2& v) { return ImVec2(v.x, v.y); }
+        inline ImVec2 ToImVec2(float x, float y) { return ImVec2(x, y); }
+        inline glm::vec2 ToGlm(const ImVec2& v) { return glm::vec2(v.x, v.y); }
     }
 
     // Image display
-    inline void image(void* tex_id, const glm::vec2& size)
+    inline void Image(void* texId, const glm::vec2& size)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), utils::to_imvec2(size));
+        ImGui::Image(Utils::ToImGuiTex(texId), Utils::ToImVec2(size));
     }
 
-    inline void image(void* tex_id, float width, float height)
+    inline void Image(void* texId, float width, float height)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), ImVec2(width, height));
+        ImGui::Image(Utils::ToImGuiTex(texId), ImVec2(width, height));
     }
 
-    inline void image(void* tex_id, const glm::vec2& size, const glm::vec2& uv0, const glm::vec2& uv1)
+    inline void Image(void* texId, const glm::vec2& size, const glm::vec2& uv0, const glm::vec2& uv1)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), utils::to_imvec2(size),
-                     utils::to_imvec2(uv0), utils::to_imvec2(uv1));
+        ImGui::Image(Utils::ToImGuiTex(texId), Utils::ToImVec2(size),
+                     Utils::ToImVec2(uv0), Utils::ToImVec2(uv1));
     }
 
     // Image bounds returned after drawing - useful for mouse picking, coordinate mapping
-    struct image_rect
+    struct ImageRect
     {
-        glm::vec2 pos;   // Screen position (top-left)
-        glm::vec2 size;  // Actual rendered size
+        glm::vec2 Pos;   // Screen position (top-left)
+        glm::vec2 Size;  // Actual rendered size
     };
 
-    inline image_rect image_with_rect(void* tex_id, const glm::vec2& size)
+    inline ImageRect ImageWithRect(void* texId, const glm::vec2& size)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), utils::to_imvec2(size));
-        return { utils::to_glm(ImGui::GetItemRectMin()), utils::to_glm(ImGui::GetItemRectSize()) };
+        ImGui::Image(Utils::ToImGuiTex(texId), Utils::ToImVec2(size));
+        return { Utils::ToGlm(ImGui::GetItemRectMin()), Utils::ToGlm(ImGui::GetItemRectSize()) };
     }
 
-    inline image_rect image_with_rect(void* tex_id, float width, float height)
+    inline ImageRect ImageWithRect(void* texId, float width, float height)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), ImVec2(width, height));
-        return { utils::to_glm(ImGui::GetItemRectMin()), utils::to_glm(ImGui::GetItemRectSize()) };
+        ImGui::Image(Utils::ToImGuiTex(texId), ImVec2(width, height));
+        return { Utils::ToGlm(ImGui::GetItemRectMin()), Utils::ToGlm(ImGui::GetItemRectSize()) };
     }
 
-    inline image_rect image_with_rect(void* tex_id, const glm::vec2& size, const glm::vec2& uv0, const glm::vec2& uv1)
+    inline ImageRect ImageWithRect(void* texId, const glm::vec2& size, const glm::vec2& uv0, const glm::vec2& uv1)
     {
-        ImGui::Image(utils::to_imgui_tex(tex_id), utils::to_imvec2(size),
-                     utils::to_imvec2(uv0), utils::to_imvec2(uv1));
-        return { utils::to_glm(ImGui::GetItemRectMin()), utils::to_glm(ImGui::GetItemRectSize()) };
+        ImGui::Image(Utils::ToImGuiTex(texId), Utils::ToImVec2(size),
+                     Utils::ToImVec2(uv0), Utils::ToImVec2(uv1));
+        return { Utils::ToGlm(ImGui::GetItemRectMin()), Utils::ToGlm(ImGui::GetItemRectSize()) };
     }
 
     // Image buttons
-    inline bool image_button(const char* str_id, void* tex_id, const glm::vec2& size)
+    inline bool ImageButton(const char* strId, void* texId, const glm::vec2& size)
     {
-        return ImGui::ImageButton(str_id, utils::to_imgui_tex(tex_id), utils::to_imvec2(size));
+        return ImGui::ImageButton(strId, Utils::ToImGuiTex(texId), Utils::ToImVec2(size));
     }
 
-    inline bool image_button(const char* str_id, void* tex_id, float width, float height)
+    inline bool ImageButton(const char* strId, void* texId, float width, float height)
     {
-        return ImGui::ImageButton(str_id, utils::to_imgui_tex(tex_id), ImVec2(width, height));
+        return ImGui::ImageButton(strId, Utils::ToImGuiTex(texId), ImVec2(width, height));
     }
 
-    inline bool image_button(const char* str_id, void* tex_id, const glm::vec2& size,
+    inline bool ImageButton(const char* strId, void* texId, const glm::vec2& size,
                             const glm::vec2& uv0, const glm::vec2& uv1,
-                            const glm::vec4& bg_col = glm::vec4(0, 0, 0, 0),
-                            const glm::vec4& tint_col = glm::vec4(1, 1, 1, 1))
+                            const glm::vec4& bgCol = glm::vec4(0, 0, 0, 0),
+                            const glm::vec4& tintCol = glm::vec4(1, 1, 1, 1))
     {
-        return ImGui::ImageButton(str_id, utils::to_imgui_tex(tex_id), utils::to_imvec2(size),
-                                  utils::to_imvec2(uv0), utils::to_imvec2(uv1),
-                                  ImVec4(bg_col.r, bg_col.g, bg_col.b, bg_col.a),
-                                  ImVec4(tint_col.r, tint_col.g, tint_col.b, tint_col.a));
+        return ImGui::ImageButton(strId, Utils::ToImGuiTex(texId), Utils::ToImVec2(size),
+                                  Utils::ToImVec2(uv0), Utils::ToImVec2(uv1),
+                                  ImVec4(bgCol.r, bgCol.g, bgCol.b, bgCol.a),
+                                  ImVec4(tintCol.r, tintCol.g, tintCol.b, tintCol.a));
     }
 }

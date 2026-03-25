@@ -33,243 +33,243 @@
 namespace
 {
     // Helper to get correct bytecode for current backend
-    struct shader_bytecode
+    struct ShaderBytecode
     {
-        const void* data;
-        size_t size;
+        const void* Data;
+        size_t Size;
     };
 
     // Quad shaders
-    shader_bytecode get_quad_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetQuadVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_quad_vs_dxil, sizeof(g_quad_vs_dxil) };
         else
             return { g_quad_vs_spirv, sizeof(g_quad_vs_spirv) };
     }
 
-    shader_bytecode get_quad_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetQuadPS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_quad_ps_dxil, sizeof(g_quad_ps_dxil) };
         else
             return { g_quad_ps_spirv, sizeof(g_quad_ps_spirv) };
     }
 
     // Line shaders
-    shader_bytecode get_line_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetLineVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_line_vs_dxil, sizeof(g_line_vs_dxil) };
         else
             return { g_line_vs_spirv, sizeof(g_line_vs_spirv) };
     }
 
-    shader_bytecode get_line_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetLinePS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_line_ps_dxil, sizeof(g_line_ps_dxil) };
         else
             return { g_line_ps_spirv, sizeof(g_line_ps_spirv) };
     }
 
     // Circle shaders
-    shader_bytecode get_circle_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetCircleVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_circle_vs_dxil, sizeof(g_circle_vs_dxil) };
         else
             return { g_circle_vs_spirv, sizeof(g_circle_vs_spirv) };
     }
 
-    shader_bytecode get_circle_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetCirclePS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_circle_ps_dxil, sizeof(g_circle_ps_dxil) };
         else
             return { g_circle_ps_spirv, sizeof(g_circle_ps_spirv) };
     }
 
     // Text shaders
-    shader_bytecode get_text_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetTextVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_text_vs_dxil, sizeof(g_text_vs_dxil) };
         else
             return { g_text_vs_spirv, sizeof(g_text_vs_spirv) };
     }
 
-    shader_bytecode get_text_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetTextPS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_text_ps_dxil, sizeof(g_text_ps_dxil) };
         else
             return { g_text_ps_spirv, sizeof(g_text_ps_spirv) };
     }
 
     // Triangle shaders
-    shader_bytecode get_triangle_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetTriangleVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_triangle_vs_dxil, sizeof(g_triangle_vs_dxil) };
         else
             return { g_triangle_vs_spirv, sizeof(g_triangle_vs_spirv) };
     }
 
-    shader_bytecode get_triangle_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetTrianglePS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_triangle_ps_dxil, sizeof(g_triangle_ps_dxil) };
         else
             return { g_triangle_ps_spirv, sizeof(g_triangle_ps_spirv) };
     }
 
     // Pixel shaders
-    shader_bytecode get_pixel_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetPixelVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_pixel_vs_dxil, sizeof(g_pixel_vs_dxil) };
         else
             return { g_pixel_vs_spirv, sizeof(g_pixel_vs_spirv) };
     }
 
-    shader_bytecode get_pixel_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetPixelPS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_pixel_ps_dxil, sizeof(g_pixel_ps_dxil) };
         else
             return { g_pixel_ps_spirv, sizeof(g_pixel_ps_spirv) };
     }
 
     // Grid shaders
-    shader_bytecode get_grid_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetGridVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_grid_vs_dxil, sizeof(g_grid_vs_dxil) };
         else
             return { g_grid_vs_spirv, sizeof(g_grid_vs_spirv) };
     }
 
-    shader_bytecode get_grid_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetGridPS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_grid_ps_dxil, sizeof(g_grid_ps_dxil) };
         else
             return { g_grid_ps_spirv, sizeof(g_grid_ps_spirv) };
     }
 
     // Point light shaders
-    shader_bytecode get_point_light_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetPointLightVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_point_light_vs_dxil, sizeof(g_point_light_vs_dxil) };
         else
             return { g_point_light_vs_spirv, sizeof(g_point_light_vs_spirv) };
     }
 
-    shader_bytecode get_point_light_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetPointLightPS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_point_light_ps_dxil, sizeof(g_point_light_ps_dxil) };
         else
             return { g_point_light_ps_spirv, sizeof(g_point_light_ps_spirv) };
     }
 
     // Composite shaders
-    shader_bytecode get_composite_vs(lumina::core::graphics_api api)
+    ShaderBytecode GetCompositeVS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_composite_vs_dxil, sizeof(g_composite_vs_dxil) };
         else
             return { g_composite_vs_spirv, sizeof(g_composite_vs_spirv) };
     }
 
-    shader_bytecode get_composite_ps(lumina::core::graphics_api api)
+    ShaderBytecode GetCompositePS(Lumina::Core::GraphicsAPI api)
     {
-        if (api == lumina::core::graphics_api::d3d12)
+        if (api == Lumina::Core::GraphicsAPI::D3D12)
             return { g_composite_ps_dxil, sizeof(g_composite_ps_dxil) };
         else
             return { g_composite_ps_spirv, sizeof(g_composite_ps_spirv) };
     }
 }
 
-namespace lumina::graphics
+namespace Lumina
 {
-    renderer2d::renderer2d(core::device& dev)
-        : m_device(dev)
+    Renderer2D::Renderer2D(Core::Device& dev)
+        : m_Device(dev)
     {
     }
 
-    renderer2d::~renderer2d()
+    Renderer2D::~Renderer2D()
     {
-        shutdown();
+        Shutdown();
     }
 
-    bool renderer2d::init(const renderer2d_config& config)
+    bool Renderer2D::Init(const Renderer2DConfig& config)
     {
-        if (m_initialized)
+        if (m_Initialized)
             return true;
 
-        m_config = config;
+        m_Config = config;
 
         // Create rendering context
-        m_context = lumina::make_scope<context>(m_device);
-        if (!m_context)
+        m_Context = MakeScope<Context>(m_Device);
+        if (!m_Context)
         {
             LUMINA_LOG_ERROR("Failed to create rendering context");
             return false;
         }
 
         // Create pipeline cache to keep pipelines alive across flushes
-        m_pipeline_cache = lumina::make_scope<pipeline_cache>(m_device);
+        m_PipelineCache = MakeScope<PipelineCache>(m_Device);
 
         // Reserve point lights storage (layers are created on-demand)
-        m_point_lights.reserve(config.max_point_lights);
+        m_PointLights.reserve(config.MaxPointLights);
 
         // ========================================================================
         // Create shared resources
         // ========================================================================
 
         // Default sampler (linear)
-        m_default_sampler = sampler::create(m_device, samplers::linear_clamp());
-        if (!m_default_sampler)
+        m_DefaultSampler = Sampler::Create(m_Device, Samplers::LinearClamp());
+        if (!m_DefaultSampler)
         {
             LUMINA_LOG_ERROR("Failed to create default sampler");
             return false;
         }
 
         // Point sampler (for pixel art)
-        m_point_sampler = sampler::create(m_device, samplers::point_clamp());
-        if (!m_point_sampler)
+        m_PointSampler = Sampler::Create(m_Device, Samplers::PointClamp());
+        if (!m_PointSampler)
         {
             LUMINA_LOG_ERROR("Failed to create point sampler");
             return false;
         }
 
         // Set current sampler to default (linear)
-        m_current_sampler = m_default_sampler;
-        m_filter_mode = filter_mode::linear;
+        m_CurrentSampler = m_DefaultSampler;
+        m_FilterMode = FilterMode::Linear;
 
         // 1x1 white texture
-        uint32_t white_pixel = 0xFFFFFFFF;
-        m_white_texture = texture::create(m_device, 1, 1, format::rgba8_unorm, &white_pixel);
-        if (!m_white_texture)
+        uint32_t whitePixel = 0xFFFFFFFF;
+        m_WhiteTexture = Texture::Create(m_Device, 1, 1, Format::RGBA8Unorm, &whitePixel);
+        if (!m_WhiteTexture)
         {
             LUMINA_LOG_ERROR("Failed to create white texture");
             return false;
         }
 
         // Camera constant buffer
-        m_camera_buffer = uniform_buffer::create<camera_data>(m_device);
-        if (!m_camera_buffer)
+        m_CameraBuffer = UniformBuffer::Create<CameraData>(m_Device);
+        if (!m_CameraBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create camera buffer");
             return false;
         }
 
         // Create default font from embedded TTF
-        m_default_font = font_atlas::create(m_device, embedded_font_data, embedded_font_size, 16.0f);
-        if (!m_default_font)
+        m_DefaultFont = FontAtlas::Create(m_Device, embedded_font_data, embedded_font_size, 16.0f);
+        if (!m_DefaultFont)
         {
             LUMINA_LOG_ERROR("Failed to create default font atlas");
             return false;
@@ -280,29 +280,29 @@ namespace lumina::graphics
         // ========================================================================
 
         // Quad vertex buffer
-        size_t quad_vb_size = config.max_quads * vertices_per_quad * sizeof(quad_vertex);
-        m_quad_vertex_buffer = vertex_buffer::create(m_device, nullptr, quad_vb_size, sizeof(quad_vertex), buffer_usage::dynamic);
-        if (!m_quad_vertex_buffer)
+        size_t quadVbSize = config.MaxQuads * VerticesPerQuad * sizeof(QuadVertex);
+        m_QuadVertexBuffer = VertexBuffer::Create(m_Device, nullptr, quadVbSize, sizeof(QuadVertex), BufferUsage::Dynamic);
+        if (!m_QuadVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create quad vertex buffer");
             return false;
         }
 
         // Quad index buffer (static - precomputed)
-        std::vector<uint32_t> quad_indices(config.max_quads * indices_per_quad);
+        std::vector<uint32_t> quadIndices(config.MaxQuads * IndicesPerQuad);
         uint32_t offset = 0;
-        for (uint32_t i = 0; i < config.max_quads; i++)
+        for (uint32_t i = 0; i < config.MaxQuads; i++)
         {
-            quad_indices[i * 6 + 0] = offset + 0;
-            quad_indices[i * 6 + 1] = offset + 1;
-            quad_indices[i * 6 + 2] = offset + 2;
-            quad_indices[i * 6 + 3] = offset + 2;
-            quad_indices[i * 6 + 4] = offset + 3;
-            quad_indices[i * 6 + 5] = offset + 0;
+            quadIndices[i * 6 + 0] = offset + 0;
+            quadIndices[i * 6 + 1] = offset + 1;
+            quadIndices[i * 6 + 2] = offset + 2;
+            quadIndices[i * 6 + 3] = offset + 2;
+            quadIndices[i * 6 + 4] = offset + 3;
+            quadIndices[i * 6 + 5] = offset + 0;
             offset += 4;
         }
-        m_quad_index_buffer = index_buffer::create(m_device, quad_indices.data(), quad_indices.size(), sizeof(uint32_t));
-        if (!m_quad_index_buffer)
+        m_QuadIndexBuffer = IndexBuffer::Create(m_Device, quadIndices.data(), quadIndices.size(), sizeof(uint32_t));
+        if (!m_QuadIndexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create quad index buffer");
             return false;
@@ -310,20 +310,20 @@ namespace lumina::graphics
 
         // Quad shader
         {
-            auto vs = get_quad_vs(m_device.get_api());
-            auto ps = get_quad_ps(m_device.get_api());
+            auto vs = GetQuadVS(m_Device.GetAPI());
+            auto ps = GetQuadPS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Quad";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Quad";
 
-            m_quad_shader = shader::create(m_device, desc);
-            if (!m_quad_shader)
+            m_QuadShader = Shader::Create(m_Device, desc);
+            if (!m_QuadShader)
             {
                 LUMINA_LOG_ERROR("Failed to create quad shader");
                 return false;
@@ -331,28 +331,28 @@ namespace lumina::graphics
         }
 
         // Quad input layout
-        input_layout_desc quad_layout_desc;
-        quad_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
-                        .add("COLOR", format::rgba32_float, vertex_semantic::color)
-                        .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord)
-                        .add("TEXINDEX", format::r32_float, vertex_semantic::custom)
-                        .add("ZINDEX", format::r32_float, vertex_semantic::custom);
+        InputLayoutDesc quadLayoutDesc;
+        quadLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)
+                      .Add("COLOR", Format::RGBA32Float, VertexSemantic::Color)
+                      .Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord)
+                      .Add("TEXINDEX", Format::R32Float, VertexSemantic::Custom)
+                      .Add("ZINDEX", Format::R32Float, VertexSemantic::Custom);
 
-        m_quad_input_layout = input_layout::create(m_device, quad_layout_desc, m_quad_shader);
-        if (!m_quad_input_layout)
+        m_QuadInputLayout = InputLayout::Create(m_Device, quadLayoutDesc, m_QuadShader);
+        if (!m_QuadInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create quad input layout");
             return false;
         }
 
         // Quad binding layout (constant buffer + texture array + sampler)
-        binding_layout_desc quad_binding_desc;
-        quad_binding_desc.add_constant_buffer(0);     // Camera view-projection
-        quad_binding_desc.add_texture_array(0, 32);   // Up to 32 textures per batch
-        quad_binding_desc.add_sampler(0);
+        BindingLayoutDesc quadBindingDesc;
+        quadBindingDesc.AddConstantBuffer(0);     // Camera view-projection
+        quadBindingDesc.AddTextureArray(0, 32);   // Up to 32 textures per batch
+        quadBindingDesc.AddSampler(0);
 
-        m_quad_binding_layout = binding_layout::create(m_device, quad_binding_desc);
-        if (!m_quad_binding_layout)
+        m_QuadBindingLayout = BindingLayout::Create(m_Device, quadBindingDesc);
+        if (!m_QuadBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create quad binding layout");
             return false;
@@ -362,33 +362,33 @@ namespace lumina::graphics
         // Create circle resources
         // ========================================================================
 
-        size_t circle_vb_size = config.max_circles * vertices_per_quad * sizeof(circle_vertex);
-        m_circle_vertex_buffer = vertex_buffer::create(m_device, nullptr, circle_vb_size, sizeof(circle_vertex), buffer_usage::dynamic);
-        if (!m_circle_vertex_buffer)
+        size_t circleVbSize = config.MaxCircles * VerticesPerQuad * sizeof(CircleVertex);
+        m_CircleVertexBuffer = VertexBuffer::Create(m_Device, nullptr, circleVbSize, sizeof(CircleVertex), BufferUsage::Dynamic);
+        if (!m_CircleVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create circle vertex buffer");
             return false;
         }
 
         // Reuse quad index buffer for circles
-        m_circle_index_buffer = m_quad_index_buffer;
+        m_CircleIndexBuffer = m_QuadIndexBuffer;
 
         // Circle shader
         {
-            auto vs = get_circle_vs(m_device.get_api());
-            auto ps = get_circle_ps(m_device.get_api());
+            auto vs = GetCircleVS(m_Device.GetAPI());
+            auto ps = GetCirclePS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Circle";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Circle";
 
-            m_circle_shader = shader::create(m_device, desc);
-            if (!m_circle_shader)
+            m_CircleShader = Shader::Create(m_Device, desc);
+            if (!m_CircleShader)
             {
                 LUMINA_LOG_ERROR("Failed to create circle shader");
                 return false;
@@ -396,33 +396,33 @@ namespace lumina::graphics
         }
 
         // Circle input layout
-        input_layout_desc circle_layout_desc;
-        circle_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)    // world_position
-                          .add("LOCALPOS", format::rgba32_float, vertex_semantic::custom)      // local_position
-                          .add("COLOR", format::rgba32_float, vertex_semantic::color)
-                          .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord)
-                          .add("TEXINDEX", format::r32_float, vertex_semantic::custom)
-                          .add("THICKNESS", format::r32_float, vertex_semantic::custom)
-                          .add("FADE", format::r32_float, vertex_semantic::custom)
-                          .add("ZINDEX", format::r32_float, vertex_semantic::custom);
+        InputLayoutDesc circleLayoutDesc;
+        circleLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)    // world_position
+                        .Add("LOCALPOS", Format::RGBA32Float, VertexSemantic::Custom)      // local_position
+                        .Add("COLOR", Format::RGBA32Float, VertexSemantic::Color)
+                        .Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord)
+                        .Add("TEXINDEX", Format::R32Float, VertexSemantic::Custom)
+                        .Add("THICKNESS", Format::R32Float, VertexSemantic::Custom)
+                        .Add("FADE", Format::R32Float, VertexSemantic::Custom)
+                        .Add("ZINDEX", Format::R32Float, VertexSemantic::Custom);
 
-        m_circle_input_layout = input_layout::create(m_device, circle_layout_desc, m_circle_shader);
-        if (!m_circle_input_layout)
+        m_CircleInputLayout = InputLayout::Create(m_Device, circleLayoutDesc, m_CircleShader);
+        if (!m_CircleInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create circle input layout");
             return false;
         }
 
         // Circle binding layout (same as quad)
-        m_circle_binding_layout = m_quad_binding_layout;
+        m_CircleBindingLayout = m_QuadBindingLayout;
 
         // ========================================================================
         // Create line resources
         // ========================================================================
 
-        size_t line_vb_size = config.max_lines * 2 * sizeof(line_vertex);
-        m_line_vertex_buffer = vertex_buffer::create(m_device, nullptr, line_vb_size, sizeof(line_vertex), buffer_usage::dynamic);
-        if (!m_line_vertex_buffer)
+        size_t lineVbSize = config.MaxLines * 2 * sizeof(LineVertex);
+        m_LineVertexBuffer = VertexBuffer::Create(m_Device, nullptr, lineVbSize, sizeof(LineVertex), BufferUsage::Dynamic);
+        if (!m_LineVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create line vertex buffer");
             return false;
@@ -430,20 +430,20 @@ namespace lumina::graphics
 
         // Line shader
         {
-            auto vs = get_line_vs(m_device.get_api());
-            auto ps = get_line_ps(m_device.get_api());
+            auto vs = GetLineVS(m_Device.GetAPI());
+            auto ps = GetLinePS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Line";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Line";
 
-            m_line_shader = shader::create(m_device, desc);
-            if (!m_line_shader)
+            m_LineShader = Shader::Create(m_Device, desc);
+            if (!m_LineShader)
             {
                 LUMINA_LOG_ERROR("Failed to create line shader");
                 return false;
@@ -451,23 +451,23 @@ namespace lumina::graphics
         }
 
         // Line input layout
-        input_layout_desc line_layout_desc;
-        line_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
-                        .add("COLOR", format::rgba32_float, vertex_semantic::color);
+        InputLayoutDesc lineLayoutDesc;
+        lineLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)
+                      .Add("COLOR", Format::RGBA32Float, VertexSemantic::Color);
 
-        m_line_input_layout = input_layout::create(m_device, line_layout_desc, m_line_shader);
-        if (!m_line_input_layout)
+        m_LineInputLayout = InputLayout::Create(m_Device, lineLayoutDesc, m_LineShader);
+        if (!m_LineInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create line input layout");
             return false;
         }
 
         // Line binding layout (just camera constant buffer)
-        binding_layout_desc line_binding_desc;
-        line_binding_desc.add_constant_buffer(0);
+        BindingLayoutDesc lineBindingDesc;
+        lineBindingDesc.AddConstantBuffer(0);
 
-        m_line_binding_layout = binding_layout::create(m_device, line_binding_desc);
-        if (!m_line_binding_layout)
+        m_LineBindingLayout = BindingLayout::Create(m_Device, lineBindingDesc);
+        if (!m_LineBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create line binding layout");
             return false;
@@ -477,33 +477,33 @@ namespace lumina::graphics
         // Create text resources
         // ========================================================================
 
-        size_t text_vb_size = config.max_text_chars * vertices_per_quad * sizeof(text_vertex);
-        m_text_vertex_buffer = vertex_buffer::create(m_device, nullptr, text_vb_size, sizeof(text_vertex), buffer_usage::dynamic);
-        if (!m_text_vertex_buffer)
+        size_t textVbSize = config.MaxTextChars * VerticesPerQuad * sizeof(TextVertex);
+        m_TextVertexBuffer = VertexBuffer::Create(m_Device, nullptr, textVbSize, sizeof(TextVertex), BufferUsage::Dynamic);
+        if (!m_TextVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create text vertex buffer");
             return false;
         }
 
         // Reuse quad index buffer for text
-        m_text_index_buffer = m_quad_index_buffer;
+        m_TextIndexBuffer = m_QuadIndexBuffer;
 
         // Text shader
         {
-            auto vs = get_text_vs(m_device.get_api());
-            auto ps = get_text_ps(m_device.get_api());
+            auto vs = GetTextVS(m_Device.GetAPI());
+            auto ps = GetTextPS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Text";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Text";
 
-            m_text_shader = shader::create(m_device, desc);
-            if (!m_text_shader)
+            m_TextShader = Shader::Create(m_Device, desc);
+            if (!m_TextShader)
             {
                 LUMINA_LOG_ERROR("Failed to create text shader");
                 return false;
@@ -511,18 +511,18 @@ namespace lumina::graphics
         }
 
         // Text input layout (same structure as quad)
-        m_text_input_layout = m_quad_input_layout;
+        m_TextInputLayout = m_QuadInputLayout;
 
         // Text binding layout (same as quad)
-        m_text_binding_layout = m_quad_binding_layout;
+        m_TextBindingLayout = m_QuadBindingLayout;
 
         // ========================================================================
         // Create triangle resources
         // ========================================================================
 
-        size_t triangle_vb_size = config.max_triangles * 3 * sizeof(triangle_vertex);
-        m_triangle_vertex_buffer = vertex_buffer::create(m_device, nullptr, triangle_vb_size, sizeof(triangle_vertex), buffer_usage::dynamic);
-        if (!m_triangle_vertex_buffer)
+        size_t triangleVbSize = config.MaxTriangles * 3 * sizeof(TriangleVertex);
+        m_TriangleVertexBuffer = VertexBuffer::Create(m_Device, nullptr, triangleVbSize, sizeof(TriangleVertex), BufferUsage::Dynamic);
+        if (!m_TriangleVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create triangle vertex buffer");
             return false;
@@ -530,20 +530,20 @@ namespace lumina::graphics
 
         // Triangle shader
         {
-            auto vs = get_triangle_vs(m_device.get_api());
-            auto ps = get_triangle_ps(m_device.get_api());
+            auto vs = GetTriangleVS(m_Device.GetAPI());
+            auto ps = GetTrianglePS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Triangle";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Triangle";
 
-            m_triangle_shader = shader::create(m_device, desc);
-            if (!m_triangle_shader)
+            m_TriangleShader = Shader::Create(m_Device, desc);
+            if (!m_TriangleShader)
             {
                 LUMINA_LOG_ERROR("Failed to create triangle shader");
                 return false;
@@ -551,18 +551,18 @@ namespace lumina::graphics
         }
 
         // Triangle input layout (same structure as quad)
-        m_triangle_input_layout = m_quad_input_layout;
+        m_TriangleInputLayout = m_QuadInputLayout;
 
         // Triangle binding layout (same as quad)
-        m_triangle_binding_layout = m_quad_binding_layout;
+        m_TriangleBindingLayout = m_QuadBindingLayout;
 
         // ========================================================================
         // Create pixel resources
         // ========================================================================
 
-        size_t pixel_vb_size = config.max_pixels * sizeof(pixel_vertex);
-        m_pixel_vertex_buffer = vertex_buffer::create(m_device, nullptr, pixel_vb_size, sizeof(pixel_vertex), buffer_usage::dynamic);
-        if (!m_pixel_vertex_buffer)
+        size_t pixelVbSize = config.MaxPixels * sizeof(PixelVertex);
+        m_PixelVertexBuffer = VertexBuffer::Create(m_Device, nullptr, pixelVbSize, sizeof(PixelVertex), BufferUsage::Dynamic);
+        if (!m_PixelVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create pixel vertex buffer");
             return false;
@@ -570,20 +570,20 @@ namespace lumina::graphics
 
         // Pixel shader
         {
-            auto vs = get_pixel_vs(m_device.get_api());
-            auto ps = get_pixel_ps(m_device.get_api());
+            auto vs = GetPixelVS(m_Device.GetAPI());
+            auto ps = GetPixelPS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Pixel";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Pixel";
 
-            m_pixel_shader = shader::create(m_device, desc);
-            if (!m_pixel_shader)
+            m_PixelShader = Shader::Create(m_Device, desc);
+            if (!m_PixelShader)
             {
                 LUMINA_LOG_ERROR("Failed to create pixel shader");
                 return false;
@@ -591,24 +591,24 @@ namespace lumina::graphics
         }
 
         // Pixel input layout
-        input_layout_desc pixel_layout_desc;
-        pixel_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
-                         .add("COLOR", format::rgba32_float, vertex_semantic::color)
-                         .add("PSIZE", format::rgba32_float, vertex_semantic::custom);  // size + _pad[3]
+        InputLayoutDesc pixelLayoutDesc;
+        pixelLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)
+                       .Add("COLOR", Format::RGBA32Float, VertexSemantic::Color)
+                       .Add("PSIZE", Format::RGBA32Float, VertexSemantic::Custom);  // size + _pad[3]
 
-        m_pixel_input_layout = input_layout::create(m_device, pixel_layout_desc, m_pixel_shader);
-        if (!m_pixel_input_layout)
+        m_PixelInputLayout = InputLayout::Create(m_Device, pixelLayoutDesc, m_PixelShader);
+        if (!m_PixelInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create pixel input layout");
             return false;
         }
 
         // Pixel binding layout (just camera constant buffer)
-        binding_layout_desc pixel_binding_desc;
-        pixel_binding_desc.add_constant_buffer(0);
+        BindingLayoutDesc pixelBindingDesc;
+        pixelBindingDesc.AddConstantBuffer(0);
 
-        m_pixel_binding_layout = binding_layout::create(m_device, pixel_binding_desc);
-        if (!m_pixel_binding_layout)
+        m_PixelBindingLayout = BindingLayout::Create(m_Device, pixelBindingDesc);
+        if (!m_PixelBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create pixel binding layout");
             return false;
@@ -618,33 +618,33 @@ namespace lumina::graphics
         // Create grid resources
         // ========================================================================
 
-        size_t grid_vb_size = config.max_grids * vertices_per_quad * sizeof(grid_vertex);
-        m_grid_vertex_buffer = vertex_buffer::create(m_device, nullptr, grid_vb_size, sizeof(grid_vertex), buffer_usage::dynamic);
-        if (!m_grid_vertex_buffer)
+        size_t gridVbSize = config.MaxGrids * VerticesPerQuad * sizeof(GridVertex);
+        m_GridVertexBuffer = VertexBuffer::Create(m_Device, nullptr, gridVbSize, sizeof(GridVertex), BufferUsage::Dynamic);
+        if (!m_GridVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create grid vertex buffer");
             return false;
         }
 
         // Reuse quad index buffer for grids
-        m_grid_index_buffer = m_quad_index_buffer;
+        m_GridIndexBuffer = m_QuadIndexBuffer;
 
         // Grid shader
         {
-            auto vs = get_grid_vs(m_device.get_api());
-            auto ps = get_grid_ps(m_device.get_api());
+            auto vs = GetGridVS(m_Device.GetAPI());
+            auto ps = GetGridPS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Renderer2D Grid";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Renderer2D Grid";
 
-            m_grid_shader = shader::create(m_device, desc);
-            if (!m_grid_shader)
+            m_GridShader = Shader::Create(m_Device, desc);
+            if (!m_GridShader)
             {
                 LUMINA_LOG_ERROR("Failed to create grid shader");
                 return false;
@@ -652,30 +652,30 @@ namespace lumina::graphics
         }
 
         // Grid input layout (complex - many per-vertex attributes)
-        input_layout_desc grid_layout_desc;
-        grid_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
-                        .add("LOCALPOS", format::rgba32_float, vertex_semantic::custom)
-                        .add("LINECOLOR", format::rgba32_float, vertex_semantic::custom)
-                        .add("GRIDSIZE", format::rg32_float, vertex_semantic::custom)
-                        .add("CELLSIZE", format::r32_float, vertex_semantic::custom)
-                        .add("LINEWIDTH", format::r32_float, vertex_semantic::custom)
-                        .add("CHECKER", format::r32_float, vertex_semantic::custom)
-                        .add("CHECKERCOLOR1", format::rgba32_float, vertex_semantic::custom)
-                        .add("CHECKERCOLOR2", format::rgba32_float, vertex_semantic::custom);
+        InputLayoutDesc gridLayoutDesc;
+        gridLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)
+                      .Add("LOCALPOS", Format::RGBA32Float, VertexSemantic::Custom)
+                      .Add("LINECOLOR", Format::RGBA32Float, VertexSemantic::Custom)
+                      .Add("GRIDSIZE", Format::RG32Float, VertexSemantic::Custom)
+                      .Add("CELLSIZE", Format::R32Float, VertexSemantic::Custom)
+                      .Add("LINEWIDTH", Format::R32Float, VertexSemantic::Custom)
+                      .Add("CHECKER", Format::R32Float, VertexSemantic::Custom)
+                      .Add("CHECKERCOLOR1", Format::RGBA32Float, VertexSemantic::Custom)
+                      .Add("CHECKERCOLOR2", Format::RGBA32Float, VertexSemantic::Custom);
 
-        m_grid_input_layout = input_layout::create(m_device, grid_layout_desc, m_grid_shader);
-        if (!m_grid_input_layout)
+        m_GridInputLayout = InputLayout::Create(m_Device, gridLayoutDesc, m_GridShader);
+        if (!m_GridInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create grid input layout");
             return false;
         }
 
         // Grid binding layout (just camera constant buffer)
-        binding_layout_desc grid_binding_desc;
-        grid_binding_desc.add_constant_buffer(0);
+        BindingLayoutDesc gridBindingDesc;
+        gridBindingDesc.AddConstantBuffer(0);
 
-        m_grid_binding_layout = binding_layout::create(m_device, grid_binding_desc);
-        if (!m_grid_binding_layout)
+        m_GridBindingLayout = BindingLayout::Create(m_Device, gridBindingDesc);
+        if (!m_GridBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create grid binding layout");
             return false;
@@ -684,329 +684,329 @@ namespace lumina::graphics
         // Pipelines will be created lazily based on render target format
 
         // Initialize lighting resources
-        init_lighting_resources();
+        InitLightingResources();
 
-        m_initialized = true;
+        m_Initialized = true;
 
         LUMINA_LOG_INFO("Renderer2D initialized (quads: {}, circles: {}, lines: {}, text: {}, triangles: {}, pixels: {}, grids: {})",
-                        config.max_quads, config.max_circles, config.max_lines,
-                        config.max_text_chars, config.max_triangles, config.max_pixels, config.max_grids);
+                        config.MaxQuads, config.MaxCircles, config.MaxLines,
+                        config.MaxTextChars, config.MaxTriangles, config.MaxPixels, config.MaxGrids);
         return true;
     }
 
-    void renderer2d::shutdown()
+    void Renderer2D::Shutdown()
     {
-        if (!m_initialized)
+        if (!m_Initialized)
             return;
 
         // Shutdown lighting resources
-        shutdown_lighting_resources();
+        ShutdownLightingResources();
 
         // Clear pipelines
-        m_quad_pipeline.reset();
-        m_circle_pipeline.reset();
-        m_line_pipeline.reset();
-        m_text_pipeline.reset();
-        m_triangle_pipeline.reset();
-        m_pixel_pipeline.reset();
-        m_grid_pipeline.reset();
+        m_QuadPipeline.reset();
+        m_CirclePipeline.reset();
+        m_LinePipeline.reset();
+        m_TextPipeline.reset();
+        m_TrianglePipeline.reset();
+        m_PixelPipeline.reset();
+        m_GridPipeline.reset();
 
         // Clear binding layouts
-        m_quad_binding_layout.reset();
-        m_circle_binding_layout.reset();
-        m_line_binding_layout.reset();
-        m_text_binding_layout.reset();
-        m_triangle_binding_layout.reset();
-        m_pixel_binding_layout.reset();
-        m_grid_binding_layout.reset();
+        m_QuadBindingLayout.reset();
+        m_CircleBindingLayout.reset();
+        m_LineBindingLayout.reset();
+        m_TextBindingLayout.reset();
+        m_TriangleBindingLayout.reset();
+        m_PixelBindingLayout.reset();
+        m_GridBindingLayout.reset();
 
         // Clear input layouts
-        m_quad_input_layout.reset();
-        m_circle_input_layout.reset();
-        m_line_input_layout.reset();
-        m_text_input_layout.reset();
-        m_triangle_input_layout.reset();
-        m_pixel_input_layout.reset();
-        m_grid_input_layout.reset();
+        m_QuadInputLayout.reset();
+        m_CircleInputLayout.reset();
+        m_LineInputLayout.reset();
+        m_TextInputLayout.reset();
+        m_TriangleInputLayout.reset();
+        m_PixelInputLayout.reset();
+        m_GridInputLayout.reset();
 
         // Clear shaders
-        m_quad_shader.reset();
-        m_circle_shader.reset();
-        m_line_shader.reset();
-        m_text_shader.reset();
-        m_triangle_shader.reset();
-        m_pixel_shader.reset();
-        m_grid_shader.reset();
+        m_QuadShader.reset();
+        m_CircleShader.reset();
+        m_LineShader.reset();
+        m_TextShader.reset();
+        m_TriangleShader.reset();
+        m_PixelShader.reset();
+        m_GridShader.reset();
 
         // Clear textures
-        m_white_texture.reset();
-        m_default_font.reset();
-        m_current_sampler.reset();
-        m_point_sampler.reset();
-        m_default_sampler.reset();
+        m_WhiteTexture.reset();
+        m_DefaultFont.reset();
+        m_CurrentSampler.reset();
+        m_PointSampler.reset();
+        m_DefaultSampler.reset();
 
         // Clear buffers
-        m_quad_vertex_buffer.reset();
-        m_quad_index_buffer.reset();
-        m_circle_vertex_buffer.reset();
-        m_circle_index_buffer.reset();
-        m_line_vertex_buffer.reset();
-        m_text_vertex_buffer.reset();
-        m_text_index_buffer.reset();
-        m_triangle_vertex_buffer.reset();
-        m_pixel_vertex_buffer.reset();
-        m_grid_vertex_buffer.reset();
-        m_camera_buffer.reset();
+        m_QuadVertexBuffer.reset();
+        m_QuadIndexBuffer.reset();
+        m_CircleVertexBuffer.reset();
+        m_CircleIndexBuffer.reset();
+        m_LineVertexBuffer.reset();
+        m_TextVertexBuffer.reset();
+        m_TextIndexBuffer.reset();
+        m_TriangleVertexBuffer.reset();
+        m_PixelVertexBuffer.reset();
+        m_GridVertexBuffer.reset();
+        m_CameraBuffer.reset();
 
         // Clear binding sets that may hold texture references
-        m_frame_binding_sets.clear();
+        m_FrameBindingSets.clear();
 
         // Clear render target reference
-        m_current_target.reset();
+        m_CurrentTarget.reset();
 
         // Clear context and pipeline cache
-        m_context.reset();
-        m_pipeline_cache.reset();
+        m_Context.reset();
+        m_PipelineCache.reset();
 
         // Clear layer data
-        m_layers.clear();
-        m_point_lights.clear();
+        m_Layers.clear();
+        m_PointLights.clear();
 
-        m_initialized = false;
+        m_Initialized = false;
     }
 
-    void renderer2d::begin(const glm::mat4& projection)
+    void Renderer2D::Begin(const glm::mat4& projection)
     {
-        begin(glm::mat4(1.0f), projection);
+        Begin(glm::mat4(1.0f), projection);
     }
 
-    void renderer2d::begin(const glm::mat4& view, const glm::mat4& projection)
+    void Renderer2D::Begin(const glm::mat4& view, const glm::mat4& projection)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::Begin", 0x44FF44);
 
         // Set up context with current frame's command list
-        m_context->set_command_list(m_device.get_command_list());
+        m_Context->SetCommandList(m_Device.GetCommandList());
 
         // Clear frame resources from previous frame (keep binding sets alive until now)
-        m_frame_binding_sets.clear();
+        m_FrameBindingSets.clear();
 
         // Reset vertex buffer offsets for new frame
-        m_quad_vertex_offset = 0;
-        m_circle_vertex_offset = 0;
-        m_line_vertex_offset = 0;
-        m_text_vertex_offset = 0;
-        m_triangle_vertex_offset = 0;
-        m_pixel_vertex_offset = 0;
-        m_grid_vertex_offset = 0;
+        m_QuadVertexOffset = 0;
+        m_CircleVertexOffset = 0;
+        m_LineVertexOffset = 0;
+        m_TextVertexOffset = 0;
+        m_TriangleVertexOffset = 0;
+        m_PixelVertexOffset = 0;
+        m_GridVertexOffset = 0;
 
         // Clear scissor stack for new frame
-        while (!m_scissor_stack.empty())
-            m_scissor_stack.pop();
+        while (!m_ScissorStack.empty())
+            m_ScissorStack.pop();
 
         // Auto-set default render target if none is currently set
-        if (!m_current_target && !m_context->has_framebuffer())
+        if (!m_CurrentTarget && !m_Context->HasFramebuffer())
         {
-            set_default_render_target();
+            SetDefaultRenderTarget();
         }
 
-        m_view_projection = projection * view;
+        m_ViewProjection = projection * view;
 
         // Update camera constant buffer
-        camera_data cam_data;
-        cam_data.view_projection = m_view_projection;
-        m_camera_buffer->update(cam_data, m_device.get_command_list());
+        CameraData camData;
+        camData.ViewProjection = m_ViewProjection;
+        m_CameraBuffer->Update(camData, m_Device.GetCommandList());
 
         // If lighting is enabled, redirect rendering to the scene target
-        if (m_lighting_enabled)
+        if (m_LightingEnabled)
         {
-            uint32_t width = m_current_target ? m_current_target->get_width() : m_device.get_width();
-            uint32_t height = m_current_target ? m_current_target->get_height() : m_device.get_height();
+            uint32_t width = m_CurrentTarget ? m_CurrentTarget->GetWidth() : m_Device.GetWidth();
+            uint32_t height = m_CurrentTarget ? m_CurrentTarget->GetHeight() : m_Device.GetHeight();
 
-            ensure_lighting_targets(width, height);
+            EnsureLightingTargets(width, height);
 
             // Render scene to the scene target
-            m_context->set_render_target(m_scene_target);
-            m_context->clear(clear_color(0.0f, 0.0f, 0.0f, 0.0f));
-            m_context->set_viewport(0, 0, static_cast<float>(width), static_cast<float>(height));
+            m_Context->SetRenderTarget(m_SceneTarget);
+            m_Context->Clear(ClearColor(0.0f, 0.0f, 0.0f, 0.0f));
+            m_Context->SetViewport(0, 0, static_cast<float>(width), static_cast<float>(height));
 
             // Update format tracking for pipeline creation
-            m_current_color_format = m_scene_target->get_color_format();
-            m_current_depth_format = m_scene_target->get_depth_format();
+            m_CurrentColorFormat = m_SceneTarget->GetColorFormat();
+            m_CurrentDepthFormat = m_SceneTarget->GetDepthFormat();
         }
 
-        start_batch();
+        StartBatch();
     }
 
-    void renderer2d::begin(const camera2d& camera)
+    void Renderer2D::Begin(const Camera2D& camera)
     {
-        begin(camera.get_view_matrix(), camera.get_projection_matrix());
+        Begin(camera.GetViewMatrix(), camera.GetProjectionMatrix());
     }
 
-    void renderer2d::end()
+    void Renderer2D::End()
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::End", 0x44FF44);
 
-        flush_all();
+        FlushAll();
 
         // If lighting is enabled, render lights and composite
-        if (m_lighting_enabled)
+        if (m_LightingEnabled)
         {
-            flush_lights();
-            composite_scene();
+            FlushLights();
+            CompositeScene();
         }
 
         // Resolve MSAA if the current render target uses it
-        if (m_current_target && m_current_target->is_msaa())
+        if (m_CurrentTarget && m_CurrentTarget->IsMsaa())
         {
-            m_current_target->resolve(m_context->get_command_list());
+            m_CurrentTarget->Resolve(m_Context->GetCommandList());
         }
     }
 
-    void renderer2d::set_render_target(ref<render_target> target)
+    void Renderer2D::SetRenderTarget(Ref<RenderTarget> target)
     {
-        if (m_current_target != target)
+        if (m_CurrentTarget != target)
         {
-            flush_all();
+            FlushAll();
 
-            m_current_target = target;
-            m_context->set_render_target(target);
+            m_CurrentTarget = target;
+            m_Context->SetRenderTarget(target);
 
             if (target)
             {
-                m_current_color_format = target->get_color_format();
-                m_current_depth_format = target->get_depth_format();
-                m_current_sample_count = target->get_sample_count();
+                m_CurrentColorFormat = target->GetColorFormat();
+                m_CurrentDepthFormat = target->GetDepthFormat();
+                m_CurrentSampleCount = target->GetSampleCount();
 
                 // Set viewport to match render target size
-                m_context->set_viewport(0, 0,
-                    static_cast<float>(target->get_width()),
-                    static_cast<float>(target->get_height()));
+                m_Context->SetViewport(0, 0,
+                    static_cast<float>(target->GetWidth()),
+                    static_cast<float>(target->GetHeight()));
             }
         }
     }
 
-    void renderer2d::set_default_render_target()
+    void Renderer2D::SetDefaultRenderTarget()
     {
-        flush_all();
+        FlushAll();
 
-        m_current_target = nullptr;
-        m_context->set_swapchain_framebuffer(m_device.get_current_framebuffer());
-        m_context->set_viewport(0, 0, static_cast<float>(m_device.get_width()), static_cast<float>(m_device.get_height()));
+        m_CurrentTarget = nullptr;
+        m_Context->SetSwapchainFramebuffer(m_Device.GetCurrentFramebuffer());
+        m_Context->SetViewport(0, 0, static_cast<float>(m_Device.GetWidth()), static_cast<float>(m_Device.GetHeight()));
 
-        m_current_color_format = from_nvrhi_format(m_device.get_swapchain_format());
-        m_current_depth_format = format::unknown;
+        m_CurrentColorFormat = FromNvrhiFormat(m_Device.GetSwapchainFormat());
+        m_CurrentDepthFormat = Format::Unknown;
     }
 
-    void renderer2d::clear(const glm::vec4& color)
+    void Renderer2D::Clear(const glm::vec4& color)
     {
-        m_context->clear(clear_color(color.r, color.g, color.b, color.a));
+        m_Context->Clear(ClearColor(color.r, color.g, color.b, color.a));
     }
 
-    void renderer2d::start_batch()
+    void Renderer2D::StartBatch()
     {
         // Clear all layer batches
-        for (auto& [layer_id, batch] : m_layers)
+        for (auto& [layerId, batch] : m_Layers)
         {
-            batch.clear();
-            batch.texture_slots[0] = m_white_texture;
-            batch.texture_slot_index = 1;
+            batch.Clear();
+            batch.TextureSlots[0] = m_WhiteTexture;
+            batch.TextureSlotIndex = 1;
         }
 
-        m_point_lights.clear();
+        m_PointLights.clear();
     }
 
-    renderer2d::layer_batch& renderer2d::get_layer(uint32_t layer_id)
+    Renderer2D::LayerBatch& Renderer2D::GetLayer(uint32_t layerId)
     {
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
         {
             // Create new layer batch
-            auto& batch = m_layers[layer_id];
-            batch.texture_slots[0] = m_white_texture;
-            batch.texture_slot_index = 1;
+            auto& batch = m_Layers[layerId];
+            batch.TextureSlots[0] = m_WhiteTexture;
+            batch.TextureSlotIndex = 1;
             return batch;
         }
         return it->second;
     }
 
-    float renderer2d::get_texture_index(uint32_t layer_id, ref<texture> tex)
+    float Renderer2D::GetTextureIndex(uint32_t layerId, Ref<Texture> tex)
     {
-        auto& batch = get_layer(layer_id);
+        auto& batch = GetLayer(layerId);
 
         // If no texture specified, use white texture
         if (!tex)
-            tex = m_white_texture;
+            tex = m_WhiteTexture;
 
         // Check if texture is already bound in this layer
-        for (uint32_t i = 0; i < batch.texture_slot_index; i++)
+        for (uint32_t i = 0; i < batch.TextureSlotIndex; i++)
         {
-            if (batch.texture_slots[i] == tex)
+            if (batch.TextureSlots[i] == tex)
                 return static_cast<float>(i);
         }
 
         // Need to bind new texture
-        if (batch.texture_slot_index >= m_config.max_textures)
+        if (batch.TextureSlotIndex >= m_Config.MaxTextures)
         {
             // Out of texture slots for this layer, flush and reset texture slots
-            // Note: flush_layer clears vertex data, but we must preserve blend modes
-            // which were already set by the caller before calling get_texture_index
-            blend_mode saved_quad_blend = batch.quad_blend;
-            blend_mode saved_circle_blend = batch.circle_blend;
-            blend_mode saved_triangle_blend = batch.triangle_blend;
+            // Note: FlushLayer clears vertex data, but we must preserve blend modes
+            // which were already set by the caller before calling GetTextureIndex
+            BlendMode savedQuadBlend = batch.QuadBlend;
+            BlendMode savedCircleBlend = batch.CircleBlend;
+            BlendMode savedTriangleBlend = batch.TriangleBlend;
 
-            flush_layer(layer_id);
+            FlushLayer(layerId);
 
-            // Reset only texture slots - vertex data was cleared by flush_layer
-            batch.texture_slots.fill(nullptr);
-            batch.texture_slot_index = 0;
+            // Reset only texture slots - vertex data was cleared by FlushLayer
+            batch.TextureSlots.fill(nullptr);
+            batch.TextureSlotIndex = 0;
 
             // Restore blend modes (they may have been set before this call)
-            batch.quad_blend = saved_quad_blend;
-            batch.circle_blend = saved_circle_blend;
-            batch.triangle_blend = saved_triangle_blend;
+            batch.QuadBlend = savedQuadBlend;
+            batch.CircleBlend = savedCircleBlend;
+            batch.TriangleBlend = savedTriangleBlend;
         }
 
-        batch.texture_slots[batch.texture_slot_index] = tex;
-        m_stats.texture_binds++;
-        return static_cast<float>(batch.texture_slot_index++);
+        batch.TextureSlots[batch.TextureSlotIndex] = tex;
+        m_Stats.TextureBinds++;
+        return static_cast<float>(batch.TextureSlotIndex++);
     }
 
     // ========================================================================
     // Drawing implementations
     // ========================================================================
 
-    void renderer2d::draw_quad(const quad_desc& desc)
+    void Renderer2D::DrawQuad(const QuadDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if blend mode changes - must flush lower layers first to maintain order
-        if (batch.quad_count > 0 && batch.quad_blend != desc.blend)
+        if (batch.QuadCount > 0 && batch.QuadBlend != desc.Blend)
         {
-            flush_layers_up_to(layer_id);
-            flush_quads(layer_id);
-            // Note: flush_quads clears quad_vertices and quad_count at the end
+            FlushLayersUpTo(layerId);
+            FlushQuads(layerId);
+            // Note: FlushQuads clears QuadVertices and QuadCount at the end
         }
-        batch.quad_blend = desc.blend;
+        batch.QuadBlend = desc.Blend;
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.quad_count >= m_config.max_quads)
+        if (batch.QuadCount >= m_Config.MaxQuads)
         {
-            flush_layers_up_to(layer_id);
-            flush_quads(layer_id);
-            // Note: flush_quads clears quad_vertices and quad_count at the end
+            FlushLayersUpTo(layerId);
+            FlushQuads(layerId);
+            // Note: FlushQuads clears QuadVertices and QuadCount at the end
         }
 
-        float tex_index = get_texture_index(layer_id, desc.texture);
+        float texIndex = GetTextureIndex(layerId, desc.Texture);
 
         // Calculate corners based on rotation
-        glm::vec2 size = desc.size;
-        glm::vec2 origin = desc.origin * size;
-        glm::vec3 pos = desc.position;
+        glm::vec2 size = desc.Size;
+        glm::vec2 origin = desc.Origin * size;
+        glm::vec3 pos = desc.Position;
 
         glm::vec2 p0, p1, p2, p3;
 
-        if (std::abs(desc.rotation) < 0.0001f)
+        if (std::abs(desc.Rotation) < 0.0001f)
         {
             // No rotation - simple case
             p0 = glm::vec2(pos) - origin;
@@ -1017,13 +1017,13 @@ namespace lumina::graphics
         else
         {
             // Rotated quad
-            float cos_r = std::cos(desc.rotation);
-            float sin_r = std::sin(desc.rotation);
+            float cosR = std::cos(desc.Rotation);
+            float sinR = std::sin(desc.Rotation);
 
             auto rotate = [&](const glm::vec2& offset) -> glm::vec2 {
                 return glm::vec2(pos) + glm::vec2(
-                    offset.x * cos_r - offset.y * sin_r,
-                    offset.x * sin_r + offset.y * cos_r
+                    offset.x * cosR - offset.y * sinR,
+                    offset.x * sinR + offset.y * cosR
                 );
             };
 
@@ -1040,42 +1040,42 @@ namespace lumina::graphics
         glm::vec4 world3 = glm::vec4(p3, pos.z, 1.0f);
 
         // Add vertices (CCW winding) with z_index from desc
-        batch.quad_vertices.push_back({ world0, desc.color, desc.uv_min, tex_index, desc.z });
-        batch.quad_vertices.push_back({ world1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.z });
-        batch.quad_vertices.push_back({ world2, desc.color, desc.uv_max, tex_index, desc.z });
-        batch.quad_vertices.push_back({ world3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.z });
+        batch.QuadVertices.push_back({ world0, desc.Color, desc.UvMin, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world1, desc.Color, { desc.UvMax.x, desc.UvMin.y }, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world2, desc.Color, desc.UvMax, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world3, desc.Color, { desc.UvMin.x, desc.UvMax.y }, texIndex, desc.Z });
 
-        batch.quad_count++;
-        m_stats.quad_count++;
+        batch.QuadCount++;
+        m_Stats.QuadCount++;
     }
 
-    void renderer2d::draw_circle(const circle_desc& desc)
+    void Renderer2D::DrawCircle(const CircleDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if blend mode changes - must flush lower layers first to maintain order
-        if (batch.circle_count > 0 && batch.circle_blend != desc.blend)
+        if (batch.CircleCount > 0 && batch.CircleBlend != desc.Blend)
         {
-            flush_layers_up_to(layer_id);
-            flush_circles(layer_id);
-            // Note: flush_circles clears circle_vertices and circle_count at the end
+            FlushLayersUpTo(layerId);
+            FlushCircles(layerId);
+            // Note: FlushCircles clears CircleVertices and CircleCount at the end
         }
-        batch.circle_blend = desc.blend;
+        batch.CircleBlend = desc.Blend;
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.circle_count >= m_config.max_circles)
+        if (batch.CircleCount >= m_Config.MaxCircles)
         {
-            flush_layers_up_to(layer_id);
-            flush_circles(layer_id);
-            // Note: flush_circles clears circle_vertices and circle_count at the end
+            FlushLayersUpTo(layerId);
+            FlushCircles(layerId);
+            // Note: FlushCircles clears CircleVertices and CircleCount at the end
         }
 
-        float tex_index = get_texture_index(layer_id, desc.texture);
+        float texIndex = GetTextureIndex(layerId, desc.Texture);
 
         // Circle is rendered as a quad with SDF in shader
-        glm::vec2 radius = desc.radius;
-        glm::vec3 pos = desc.position;
+        glm::vec2 radius = desc.Radius;
+        glm::vec3 pos = desc.Position;
 
         // Quad corners
         glm::vec2 p0 = glm::vec2(pos) + glm::vec2(-radius.x, -radius.y);
@@ -1096,124 +1096,124 @@ namespace lumina::graphics
         glm::vec4 local3 = glm::vec4(-1.0f,  1.0f, 0.0f, 0.0f);
 
         // Add vertices with z_index from desc
-        circle_vertex v0 = { world0, local0, desc.color, desc.uv_min, tex_index, desc.thickness, desc.fade, desc.z };
-        circle_vertex v1 = { world1, local1, desc.color, { desc.uv_max.x, desc.uv_min.y }, tex_index, desc.thickness, desc.fade, desc.z };
-        circle_vertex v2 = { world2, local2, desc.color, desc.uv_max, tex_index, desc.thickness, desc.fade, desc.z };
-        circle_vertex v3 = { world3, local3, desc.color, { desc.uv_min.x, desc.uv_max.y }, tex_index, desc.thickness, desc.fade, desc.z };
+        CircleVertex v0 = { world0, local0, desc.Color, desc.UvMin, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v1 = { world1, local1, desc.Color, { desc.UvMax.x, desc.UvMin.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v2 = { world2, local2, desc.Color, desc.UvMax, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v3 = { world3, local3, desc.Color, { desc.UvMin.x, desc.UvMax.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
 
-        batch.circle_vertices.push_back(v0);
-        batch.circle_vertices.push_back(v1);
-        batch.circle_vertices.push_back(v2);
-        batch.circle_vertices.push_back(v3);
+        batch.CircleVertices.push_back(v0);
+        batch.CircleVertices.push_back(v1);
+        batch.CircleVertices.push_back(v2);
+        batch.CircleVertices.push_back(v3);
 
-        batch.circle_count++;
-        m_stats.circle_count++;
+        batch.CircleCount++;
+        m_Stats.CircleCount++;
     }
 
-    void renderer2d::draw_line(const line_desc& desc)
+    void Renderer2D::DrawLine(const LineDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.line_count >= m_config.max_lines)
+        if (batch.LineCount >= m_Config.MaxLines)
         {
-            flush_layers_up_to(layer_id);
-            flush_lines(layer_id);
-            batch.line_vertices.clear();
-            batch.line_count = 0;
+            FlushLayersUpTo(layerId);
+            FlushLines(layerId);
+            batch.LineVertices.clear();
+            batch.LineCount = 0;
         }
 
-        if (desc.thickness <= 1.0f)
+        if (desc.Thickness <= 1.0f)
         {
             // Simple thin line - store world positions with z_index in w
-            glm::vec4 world_start = glm::vec4(desc.start, desc.z);
-            glm::vec4 world_end = glm::vec4(desc.end, desc.z);
+            glm::vec4 worldStart = glm::vec4(desc.Start, desc.Z);
+            glm::vec4 worldEnd = glm::vec4(desc.End, desc.Z);
 
-            batch.line_vertices.push_back({ world_start, desc.color });
-            batch.line_vertices.push_back({ world_end, desc.color });
+            batch.LineVertices.push_back({ worldStart, desc.Color });
+            batch.LineVertices.push_back({ worldEnd, desc.Color });
 
-            batch.line_count++;
-            m_stats.line_count++;
+            batch.LineCount++;
+            m_Stats.LineCount++;
         }
         else
         {
             // Thick line as quad
-            glm::vec3 dir = glm::normalize(desc.end - desc.start);
-            glm::vec3 normal = glm::vec3(-dir.y, dir.x, 0.0f) * (desc.thickness * 0.5f);
+            glm::vec3 dir = glm::normalize(desc.End - desc.Start);
+            glm::vec3 normal = glm::vec3(-dir.y, dir.x, 0.0f) * (desc.Thickness * 0.5f);
 
-            glm::vec3 p0 = desc.start - normal;
-            glm::vec3 p1 = desc.start + normal;
-            glm::vec3 p2 = desc.end + normal;
-            glm::vec3 p3 = desc.end - normal;
+            glm::vec3 p0 = desc.Start - normal;
+            glm::vec3 p1 = desc.Start + normal;
+            glm::vec3 p2 = desc.End + normal;
+            glm::vec3 p3 = desc.End - normal;
 
-            draw_quad({
-                .position = p0,
-                .size = glm::vec2(glm::length(desc.end - desc.start), desc.thickness),
-                .color = desc.color,
-                .rotation = std::atan2(dir.y, dir.x),
-                .origin = {0.0f, 0.5f},
-                .layer = desc.layer,
-                .z = desc.z
+            DrawQuad({
+                .Position = p0,
+                .Size = glm::vec2(glm::length(desc.End - desc.Start), desc.Thickness),
+                .Color = desc.Color,
+                .Rotation = std::atan2(dir.y, dir.x),
+                .Origin = {0.0f, 0.5f},
+                .Layer = desc.Layer,
+                .Z = desc.Z
             });
         }
     }
 
-    void renderer2d::draw_text(const text_desc& desc)
+    void Renderer2D::DrawText(const TextDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
-        ref<font_atlas> font = desc.font ? desc.font : m_default_font;
+        Ref<FontAtlas> font = desc.Font ? desc.Font : m_DefaultFont;
         if (!font)
             return;
 
-        ref<texture> font_tex = font->get_texture();
-        float tex_index = get_texture_index(layer_id, font_tex);
+        Ref<Texture> fontTex = font->GetTexture();
+        float texIndex = GetTextureIndex(layerId, fontTex);
 
-        float scale = desc.scale;
+        float scale = desc.Scale;
 
-        glm::vec2 text_size = font->measure_text(desc.text);
-        float total_width = text_size.x * scale;
-        float start_x = desc.position.x;
+        glm::vec2 textSize = font->MeasureText(desc.Text);
+        float totalWidth = textSize.x * scale;
+        float startX = desc.Position.x;
 
-        switch (desc.alignment)
+        switch (desc.Alignment)
         {
-            case text_alignment::center:
-                start_x -= total_width * 0.5f;
+            case TextAlignment::Center:
+                startX -= totalWidth * 0.5f;
                 break;
-            case text_alignment::right:
-                start_x -= total_width;
+            case TextAlignment::Right:
+                startX -= totalWidth;
                 break;
-            case text_alignment::left:
+            case TextAlignment::Left:
             default:
                 break;
         }
 
-        float x = start_x;
-        float y = desc.position.y;
-        float z = desc.position.z;
+        float x = startX;
+        float y = desc.Position.y;
+        float z = desc.Position.z;
 
-        for (char c : desc.text)
+        for (char c : desc.Text)
         {
             // Flush if batch is full - must flush lower layers first to maintain order
-            if (batch.text_char_count >= m_config.max_text_chars)
+            if (batch.TextCharCount >= m_Config.MaxTextChars)
             {
-                flush_layers_up_to(layer_id);
-                flush_text(layer_id);
-                batch.text_vertices.clear();
-                batch.text_char_count = 0;
-                tex_index = get_texture_index(layer_id, font_tex);
+                FlushLayersUpTo(layerId);
+                FlushText(layerId);
+                batch.TextVertices.clear();
+                batch.TextCharCount = 0;
+                texIndex = GetTextureIndex(layerId, fontTex);
             }
 
-            const glyph_info* glyph = font->get_glyph(static_cast<uint8_t>(c));
+            const GlyphInfo* glyph = font->GetGlyph(static_cast<uint8_t>(c));
             if (!glyph)
                 continue;
 
-            float x0 = x + glyph->x0 * scale;
-            float y0 = y + glyph->y0 * scale;
-            float x1 = x + glyph->x1 * scale;
-            float y1 = y + glyph->y1 * scale;
+            float x0 = x + glyph->X0 * scale;
+            float y0 = y + glyph->Y0 * scale;
+            float x1 = x + glyph->X1 * scale;
+            float y1 = y + glyph->Y1 * scale;
 
             glm::vec2 p0 = glm::vec2(x0, y0);
             glm::vec2 p1 = glm::vec2(x1, y0);
@@ -1226,195 +1226,195 @@ namespace lumina::graphics
             glm::vec4 world2 = glm::vec4(p2, z, 1.0f);
             glm::vec4 world3 = glm::vec4(p3, z, 1.0f);
 
-            batch.text_vertices.push_back({ world0, desc.color, { glyph->u0, glyph->v0 }, tex_index, desc.z });
-            batch.text_vertices.push_back({ world1, desc.color, { glyph->u1, glyph->v0 }, tex_index, desc.z });
-            batch.text_vertices.push_back({ world2, desc.color, { glyph->u1, glyph->v1 }, tex_index, desc.z });
-            batch.text_vertices.push_back({ world3, desc.color, { glyph->u0, glyph->v1 }, tex_index, desc.z });
+            batch.TextVertices.push_back({ world0, desc.Color, { glyph->U0, glyph->V0 }, texIndex, desc.Z });
+            batch.TextVertices.push_back({ world1, desc.Color, { glyph->U1, glyph->V0 }, texIndex, desc.Z });
+            batch.TextVertices.push_back({ world2, desc.Color, { glyph->U1, glyph->V1 }, texIndex, desc.Z });
+            batch.TextVertices.push_back({ world3, desc.Color, { glyph->U0, glyph->V1 }, texIndex, desc.Z });
 
-            batch.text_char_count++;
-            m_stats.text_char_count++;
+            batch.TextCharCount++;
+            m_Stats.TextCharCount++;
 
-            x += glyph->advance_x * scale;
+            x += glyph->AdvanceX * scale;
         }
     }
 
-    void renderer2d::draw_triangle(const triangle_desc& desc)
+    void Renderer2D::DrawTriangle(const TriangleDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if blend mode changes - must flush lower layers first to maintain order
-        if (batch.triangle_count > 0 && batch.triangle_blend != desc.blend)
+        if (batch.TriangleCount > 0 && batch.TriangleBlend != desc.Blend)
         {
-            flush_layers_up_to(layer_id);
-            flush_triangles(layer_id);
-            // Note: flush_triangles clears triangle_vertices and triangle_count at the end
+            FlushLayersUpTo(layerId);
+            FlushTriangles(layerId);
+            // Note: FlushTriangles clears TriangleVertices and TriangleCount at the end
         }
-        batch.triangle_blend = desc.blend;
+        batch.TriangleBlend = desc.Blend;
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.triangle_count >= m_config.max_triangles)
+        if (batch.TriangleCount >= m_Config.MaxTriangles)
         {
-            flush_layers_up_to(layer_id);
-            flush_triangles(layer_id);
-            // Note: flush_triangles clears triangle_vertices and triangle_count at the end
+            FlushLayersUpTo(layerId);
+            FlushTriangles(layerId);
+            // Note: FlushTriangles clears TriangleVertices and TriangleCount at the end
         }
 
-        float tex_index = get_texture_index(layer_id, desc.texture);
+        float texIndex = GetTextureIndex(layerId, desc.Texture);
 
         // Store world positions - GPU will transform via camera buffer
-        glm::vec4 world0 = glm::vec4(desc.p0, 1.0f);
-        glm::vec4 world1 = glm::vec4(desc.p1, 1.0f);
-        glm::vec4 world2 = glm::vec4(desc.p2, 1.0f);
+        glm::vec4 world0 = glm::vec4(desc.P0, 1.0f);
+        glm::vec4 world1 = glm::vec4(desc.P1, 1.0f);
+        glm::vec4 world2 = glm::vec4(desc.P2, 1.0f);
 
         // Add vertices with z_index from desc
-        batch.triangle_vertices.push_back({ world0, desc.color, desc.uv0, tex_index, desc.z });
-        batch.triangle_vertices.push_back({ world1, desc.color, desc.uv1, tex_index, desc.z });
-        batch.triangle_vertices.push_back({ world2, desc.color, desc.uv2, tex_index, desc.z });
+        batch.TriangleVertices.push_back({ world0, desc.Color, desc.Uv0, texIndex, desc.Z });
+        batch.TriangleVertices.push_back({ world1, desc.Color, desc.Uv1, texIndex, desc.Z });
+        batch.TriangleVertices.push_back({ world2, desc.Color, desc.Uv2, texIndex, desc.Z });
 
-        batch.triangle_count++;
-        m_stats.triangle_count++;
+        batch.TriangleCount++;
+        m_Stats.TriangleCount++;
     }
 
-    void renderer2d::draw_pixel(const pixel_desc& desc)
+    void Renderer2D::DrawPixel(const PixelDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.pixel_count >= m_config.max_pixels)
+        if (batch.PixelCount >= m_Config.MaxPixels)
         {
-            flush_layers_up_to(layer_id);
-            flush_pixels(layer_id);
-            batch.pixel_vertices.clear();
-            batch.pixel_count = 0;
+            FlushLayersUpTo(layerId);
+            FlushPixels(layerId);
+            batch.PixelVertices.clear();
+            batch.PixelCount = 0;
         }
 
         // Store world position with z_index in w
-        glm::vec4 world_pos = glm::vec4(desc.position, desc.z);
+        glm::vec4 worldPos = glm::vec4(desc.Position, desc.Z);
 
-        batch.pixel_vertices.push_back({ world_pos, desc.color, desc.size, {0, 0, 0} });
+        batch.PixelVertices.push_back({ worldPos, desc.Color, desc.Size, {0, 0, 0} });
 
-        batch.pixel_count++;
-        m_stats.pixel_count++;
+        batch.PixelCount++;
+        m_Stats.PixelCount++;
     }
 
-    void renderer2d::draw_rect(const rect_desc& desc)
+    void Renderer2D::DrawRect(const RectDesc& desc)
     {
         // Draw 4 lines forming a rectangle
-        glm::vec3 p0 = desc.position;
-        glm::vec3 p1 = desc.position + glm::vec3(desc.size.x, 0.0f, 0.0f);
-        glm::vec3 p2 = desc.position + glm::vec3(desc.size.x, desc.size.y, 0.0f);
-        glm::vec3 p3 = desc.position + glm::vec3(0.0f, desc.size.y, 0.0f);
+        glm::vec3 p0 = desc.Position;
+        glm::vec3 p1 = desc.Position + glm::vec3(desc.Size.x, 0.0f, 0.0f);
+        glm::vec3 p2 = desc.Position + glm::vec3(desc.Size.x, desc.Size.y, 0.0f);
+        glm::vec3 p3 = desc.Position + glm::vec3(0.0f, desc.Size.y, 0.0f);
 
-        if (std::abs(desc.rotation) > 0.0001f)
+        if (std::abs(desc.Rotation) > 0.0001f)
         {
             // Rotated rectangle
-            glm::vec2 center = glm::vec2(desc.position) + desc.size * 0.5f;
-            float cos_r = std::cos(desc.rotation);
-            float sin_r = std::sin(desc.rotation);
+            glm::vec2 center = glm::vec2(desc.Position) + desc.Size * 0.5f;
+            float cosR = std::cos(desc.Rotation);
+            float sinR = std::sin(desc.Rotation);
 
             auto rotate = [&](const glm::vec2& p) -> glm::vec3 {
                 glm::vec2 offset = p - center;
                 return glm::vec3(
-                    center.x + offset.x * cos_r - offset.y * sin_r,
-                    center.y + offset.x * sin_r + offset.y * cos_r,
-                    desc.position.z
+                    center.x + offset.x * cosR - offset.y * sinR,
+                    center.y + offset.x * sinR + offset.y * cosR,
+                    desc.Position.z
                 );
             };
 
-            p0 = rotate(glm::vec2(desc.position));
-            p1 = rotate(glm::vec2(desc.position) + glm::vec2(desc.size.x, 0.0f));
-            p2 = rotate(glm::vec2(desc.position) + desc.size);
-            p3 = rotate(glm::vec2(desc.position) + glm::vec2(0.0f, desc.size.y));
+            p0 = rotate(glm::vec2(desc.Position));
+            p1 = rotate(glm::vec2(desc.Position) + glm::vec2(desc.Size.x, 0.0f));
+            p2 = rotate(glm::vec2(desc.Position) + desc.Size);
+            p3 = rotate(glm::vec2(desc.Position) + glm::vec2(0.0f, desc.Size.y));
         }
 
-        draw_line({ .start = p0, .end = p1, .color = desc.color, .thickness = desc.thickness, .layer = desc.layer });
-        draw_line({ .start = p1, .end = p2, .color = desc.color, .thickness = desc.thickness, .layer = desc.layer });
-        draw_line({ .start = p2, .end = p3, .color = desc.color, .thickness = desc.thickness, .layer = desc.layer });
-        draw_line({ .start = p3, .end = p0, .color = desc.color, .thickness = desc.thickness, .layer = desc.layer });
+        DrawLine({ .Start = p0, .End = p1, .Color = desc.Color, .Thickness = desc.Thickness, .Layer = desc.Layer });
+        DrawLine({ .Start = p1, .End = p2, .Color = desc.Color, .Thickness = desc.Thickness, .Layer = desc.Layer });
+        DrawLine({ .Start = p2, .End = p3, .Color = desc.Color, .Thickness = desc.Thickness, .Layer = desc.Layer });
+        DrawLine({ .Start = p3, .End = p0, .Color = desc.Color, .Thickness = desc.Thickness, .Layer = desc.Layer });
     }
 
-    void renderer2d::draw_sprite(const texture_atlas& atlas, const std::string& region_name, const sprite_desc& desc)
+    void Renderer2D::DrawSprite(const TextureAtlas& atlas, const std::string& regionName, const SpriteDesc& desc)
     {
-        const atlas_region* region = atlas.get_region(region_name);
+        const AtlasRegion* region = atlas.GetRegion(regionName);
         if (!region)
         {
-            LUMINA_LOG_WARN("Sprite region '{}' not found in atlas", region_name);
+            LUMINA_LOG_WARN("Sprite region '{}' not found in atlas", regionName);
             return;
         }
 
-        draw_sprite(*region, atlas.get_texture(), desc);
+        DrawSprite(*region, atlas.GetTexture(), desc);
     }
 
-    void renderer2d::draw_sprite(const texture_atlas& atlas, uint32_t region_index, const sprite_desc& desc)
+    void Renderer2D::DrawSprite(const TextureAtlas& atlas, uint32_t regionIndex, const SpriteDesc& desc)
     {
-        const atlas_region* region = atlas.get_region(region_index);
+        const AtlasRegion* region = atlas.GetRegion(regionIndex);
         if (!region)
         {
-            LUMINA_LOG_WARN("Sprite region index {} not found in atlas", region_index);
+            LUMINA_LOG_WARN("Sprite region index {} not found in atlas", regionIndex);
             return;
         }
 
-        draw_sprite(*region, atlas.get_texture(), desc);
+        DrawSprite(*region, atlas.GetTexture(), desc);
     }
 
-    void renderer2d::draw_sprite(const atlas_region& region, ref<texture> atlas_texture, const sprite_desc& desc)
+    void Renderer2D::DrawSprite(const AtlasRegion& region, Ref<Texture> atlasTexture, const SpriteDesc& desc)
     {
         // Determine size (use region size if not specified)
-        glm::vec2 size = desc.size;
+        glm::vec2 size = desc.Size;
         if (size.x <= 0.0f || size.y <= 0.0f)
         {
-            size = region.size;
+            size = region.Size;
         }
 
         // Handle UV flipping
-        glm::vec2 uv_min = region.uv_min;
-        glm::vec2 uv_max = region.uv_max;
+        glm::vec2 uvMin = region.UvMin;
+        glm::vec2 uvMax = region.UvMax;
 
-        if (desc.flip_x)
+        if (desc.FlipX)
         {
-            std::swap(uv_min.x, uv_max.x);
+            std::swap(uvMin.x, uvMax.x);
         }
-        if (desc.flip_y)
+        if (desc.FlipY)
         {
-            std::swap(uv_min.y, uv_max.y);
+            std::swap(uvMin.y, uvMax.y);
         }
 
         // Draw as a textured quad
-        quad_desc quad;
-        quad.position = desc.position;
-        quad.size = size;
-        quad.color = desc.color;
-        quad.rotation = desc.rotation;
-        quad.origin = desc.origin;
-        quad.texture = atlas_texture;
-        quad.uv_min = uv_min;
-        quad.uv_max = uv_max;
-        quad.layer = desc.layer;
-        quad.z = desc.z;
-        quad.blend = desc.blend;
+        QuadDesc quad;
+        quad.Position = desc.Position;
+        quad.Size = size;
+        quad.Color = desc.Color;
+        quad.Rotation = desc.Rotation;
+        quad.Origin = desc.Origin;
+        quad.Texture = atlasTexture;
+        quad.UvMin = uvMin;
+        quad.UvMax = uvMax;
+        quad.Layer = desc.Layer;
+        quad.Z = desc.Z;
+        quad.Blend = desc.Blend;
 
-        draw_quad(quad);
+        DrawQuad(quad);
     }
 
-    void renderer2d::draw_grid(const grid_desc& desc)
+    void Renderer2D::DrawGrid(const GridDesc& desc)
     {
-        uint32_t layer_id = static_cast<uint32_t>(desc.layer);
-        auto& batch = get_layer(layer_id);
+        uint32_t layerId = static_cast<uint32_t>(desc.Layer);
+        auto& batch = GetLayer(layerId);
 
         // Flush if batch is full - must flush lower layers first to maintain order
-        if (batch.grid_count >= m_config.max_grids)
+        if (batch.GridCount >= m_Config.MaxGrids)
         {
-            flush_layers_up_to(layer_id);
-            flush_grids(layer_id);
-            batch.grid_vertices.clear();
-            batch.grid_count = 0;
+            FlushLayersUpTo(layerId);
+            FlushGrids(layerId);
+            batch.GridVertices.clear();
+            batch.GridCount = 0;
         }
 
         // Grid is rendered as a quad with procedural pattern in shader
-        glm::vec3 pos = desc.position;
-        glm::vec2 size = desc.size;
+        glm::vec3 pos = desc.Position;
+        glm::vec2 size = desc.Size;
 
         // Quad corners
         glm::vec2 p0 = glm::vec2(pos);
@@ -1423,10 +1423,10 @@ namespace lumina::graphics
         glm::vec2 p3 = glm::vec2(pos) + glm::vec2(0.0f, size.y);
 
         // Store world positions with z_index in w
-        glm::vec4 world0 = glm::vec4(p0, pos.z, desc.z);
-        glm::vec4 world1 = glm::vec4(p1, pos.z, desc.z);
-        glm::vec4 world2 = glm::vec4(p2, pos.z, desc.z);
-        glm::vec4 world3 = glm::vec4(p3, pos.z, desc.z);
+        glm::vec4 world0 = glm::vec4(p0, pos.z, desc.Z);
+        glm::vec4 world1 = glm::vec4(p1, pos.z, desc.Z);
+        glm::vec4 world2 = glm::vec4(p2, pos.z, desc.Z);
+        glm::vec4 world3 = glm::vec4(p3, pos.z, desc.Z);
 
         // Local positions (0 to size for grid calculation)
         glm::vec4 local0 = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
@@ -1434,33 +1434,33 @@ namespace lumina::graphics
         glm::vec4 local2 = glm::vec4(size.x, size.y, 0.0f, 0.0f);
         glm::vec4 local3 = glm::vec4(0.0f, size.y, 0.0f, 0.0f);
 
-        float show_checker = desc.checkerboard ? 1.0f : 0.0f;
+        float showChecker = desc.Checkerboard ? 1.0f : 0.0f;
 
         // Add vertices (all vertices have same grid parameters)
-        grid_vertex v0 = { world0, local0, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v1 = { world1, local1, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v2 = { world2, local2, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
-        grid_vertex v3 = { world3, local3, desc.line_color, desc.size, desc.cell_size, desc.line_width, show_checker, desc.checker_color1, desc.checker_color2 };
+        GridVertex v0 = { world0, local0, desc.LineColor, desc.Size, desc.CellSize, desc.LineWidth, showChecker, desc.CheckerColor1, desc.CheckerColor2 };
+        GridVertex v1 = { world1, local1, desc.LineColor, desc.Size, desc.CellSize, desc.LineWidth, showChecker, desc.CheckerColor1, desc.CheckerColor2 };
+        GridVertex v2 = { world2, local2, desc.LineColor, desc.Size, desc.CellSize, desc.LineWidth, showChecker, desc.CheckerColor1, desc.CheckerColor2 };
+        GridVertex v3 = { world3, local3, desc.LineColor, desc.Size, desc.CellSize, desc.LineWidth, showChecker, desc.CheckerColor1, desc.CheckerColor2 };
 
-        batch.grid_vertices.push_back(v0);
-        batch.grid_vertices.push_back(v1);
-        batch.grid_vertices.push_back(v2);
-        batch.grid_vertices.push_back(v3);
+        batch.GridVertices.push_back(v0);
+        batch.GridVertices.push_back(v1);
+        batch.GridVertices.push_back(v2);
+        batch.GridVertices.push_back(v3);
 
-        batch.grid_count++;
-        m_stats.grid_count++;
+        batch.GridCount++;
+        m_Stats.GridCount++;
     }
 
     // ========================================================================
     // Texture Filtering
     // ========================================================================
 
-    void renderer2d::set_filter_mode(filter_mode mode)
+    void Renderer2D::SetFilterMode(FilterMode mode)
     {
-        if (m_filter_mode != mode)
+        if (m_FilterMode != mode)
         {
-            m_filter_mode = mode;
-            m_current_sampler = (mode == filter_mode::point) ? m_point_sampler : m_default_sampler;
+            m_FilterMode = mode;
+            m_CurrentSampler = (mode == FilterMode::Point) ? m_PointSampler : m_DefaultSampler;
         }
     }
 
@@ -1468,22 +1468,22 @@ namespace lumina::graphics
     // Scissor/Clipping
     // ========================================================================
 
-    void renderer2d::push_scissor(float x, float y, float width, float height)
+    void Renderer2D::PushScissor(float x, float y, float width, float height)
     {
-        push_scissor(glm::vec4(x, y, width, height));
+        PushScissor(glm::vec4(x, y, width, height));
     }
 
-    void renderer2d::push_scissor(const glm::vec4& rect)
+    void Renderer2D::PushScissor(const glm::vec4& rect)
     {
         // Flush all current primitives before changing scissor state
-        flush_all();
+        FlushAll();
 
-        glm::vec4 new_scissor = rect;
+        glm::vec4 newScissor = rect;
 
         // If there's already a scissor active, intersect with it
-        if (!m_scissor_stack.empty())
+        if (!m_ScissorStack.empty())
         {
-            const glm::vec4& current = m_scissor_stack.top();
+            const glm::vec4& current = m_ScissorStack.top();
 
             // Calculate intersection of rectangles
             float x1 = std::max(rect.x, current.x);
@@ -1494,49 +1494,49 @@ namespace lumina::graphics
             // If no intersection, create a zero-sized rect (nothing will render)
             if (x2 <= x1 || y2 <= y1)
             {
-                new_scissor = glm::vec4(x1, y1, 0, 0);
+                newScissor = glm::vec4(x1, y1, 0, 0);
             }
             else
             {
-                new_scissor = glm::vec4(x1, y1, x2 - x1, y2 - y1);
+                newScissor = glm::vec4(x1, y1, x2 - x1, y2 - y1);
             }
         }
 
-        m_scissor_stack.push(new_scissor);
+        m_ScissorStack.push(newScissor);
     }
 
-    void renderer2d::pop_scissor()
+    void Renderer2D::PopScissor()
     {
-        if (m_scissor_stack.empty())
+        if (m_ScissorStack.empty())
         {
-            LUMINA_LOG_WARN("pop_scissor called with empty scissor stack");
+            LUMINA_LOG_WARN("PopScissor called with empty scissor stack");
             return;
         }
 
         // Flush all current primitives before changing scissor state
-        flush_all();
+        FlushAll();
 
-        m_scissor_stack.pop();
+        m_ScissorStack.pop();
     }
 
-    glm::vec4 renderer2d::get_current_scissor() const
+    glm::vec4 Renderer2D::GetCurrentScissor() const
     {
-        if (m_scissor_stack.empty())
+        if (m_ScissorStack.empty())
             return glm::vec4(0, 0, 0, 0);
-        return m_scissor_stack.top();
+        return m_ScissorStack.top();
     }
 
-    void renderer2d::apply_scissor()
+    void Renderer2D::ApplyScissor()
     {
-        if (m_scissor_stack.empty())
+        if (m_ScissorStack.empty())
         {
             // No scissor - use full viewport (set to 0,0,0,0 to let context use viewport default)
-            m_context->set_scissor(0, 0, 0, 0);
+            m_Context->SetScissor(0, 0, 0, 0);
         }
         else
         {
-            const glm::vec4& scissor = m_scissor_stack.top();
-            m_context->set_scissor(
+            const glm::vec4& scissor = m_ScissorStack.top();
+            m_Context->SetScissor(
                 static_cast<int32_t>(scissor.x),
                 static_cast<int32_t>(scissor.y),
                 static_cast<int32_t>(scissor.z),
@@ -1549,218 +1549,218 @@ namespace lumina::graphics
     // Lighting
     // ========================================================================
 
-    void renderer2d::set_lighting_enabled(bool enabled)
+    void Renderer2D::SetLightingEnabled(bool enabled)
     {
-        m_lighting_enabled = enabled;
+        m_LightingEnabled = enabled;
     }
 
-    void renderer2d::set_ambient_light(const glm::vec3& color, float intensity)
+    void Renderer2D::SetAmbientLight(const glm::vec3& color, float intensity)
     {
-        m_ambient_color = color;
-        m_ambient_intensity = intensity;
+        m_AmbientColor = color;
+        m_AmbientIntensity = intensity;
     }
 
-    void renderer2d::draw_point_light(const point_light_desc& desc)
+    void Renderer2D::DrawPointLight(const PointLightDesc& desc)
     {
-        if (m_point_lights.size() >= m_config.max_point_lights)
+        if (m_PointLights.size() >= m_Config.MaxPointLights)
         {
-            LUMINA_LOG_WARN("Maximum point lights ({}) exceeded", m_config.max_point_lights);
+            LUMINA_LOG_WARN("Maximum point lights ({}) exceeded", m_Config.MaxPointLights);
             return;
         }
 
-        point_light_data light;
-        light.position = desc.position;
-        light.intensity = desc.intensity;
-        light.color = desc.color;
-        light.radius = desc.radius;
-        light.blend_mode = static_cast<float>(desc.blend);
-        light.blend_alpha = desc.blend_alpha;
-        light.attenuation = static_cast<float>(desc.attenuation);
-        light.falloff = desc.falloff;
+        PointLightData light;
+        light.Position = desc.Position;
+        light.Intensity = desc.Intensity;
+        light.Color = desc.Color;
+        light.Radius = desc.Radius;
+        light.BlendMode = static_cast<float>(desc.Blend);
+        light.BlendAlpha = desc.BlendAlpha;
+        light.Attenuation = static_cast<float>(desc.Attenuation);
+        light.Falloff = desc.Falloff;
 
-        m_point_lights.push_back(light);
-        m_stats.point_light_count++;
+        m_PointLights.push_back(light);
+        m_Stats.PointLightCount++;
     }
 
     // ========================================================================
     // Flush methods
     // ========================================================================
 
-    void renderer2d::flush_all()
+    void Renderer2D::FlushAll()
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushAll", 0x44FF44);
 
         // Iterate layers in sorted order (std::map is ordered by key)
-        for (auto& [layer_id, batch] : m_layers)
+        for (auto& [layerId, batch] : m_Layers)
         {
-            if (!batch.is_empty())
+            if (!batch.IsEmpty())
             {
-                flush_layer(layer_id);
+                FlushLayer(layerId);
             }
         }
     }
 
-    void renderer2d::flush_layer(uint32_t layer_id)
+    void Renderer2D::FlushLayer(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLayer", 0x44FF44);
 
         // Flush all primitive types for this layer in order
-        flush_quads(layer_id);
-        flush_circles(layer_id);
-        flush_lines(layer_id);
-        flush_text(layer_id);
-        flush_triangles(layer_id);
-        flush_pixels(layer_id);
-        flush_grids(layer_id);
+        FlushQuads(layerId);
+        FlushCircles(layerId);
+        FlushLines(layerId);
+        FlushText(layerId);
+        FlushTriangles(layerId);
+        FlushPixels(layerId);
+        FlushGrids(layerId);
 
         // Reset texture slots after all primitives are flushed
         // This ensures all primitive types can access textures added during the batch
-        auto it = m_layers.find(layer_id);
-        if (it != m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it != m_Layers.end())
         {
             auto& batch = it->second;
-            batch.texture_slots.fill(nullptr);
-            batch.texture_slots[0] = m_white_texture;
-            batch.texture_slot_index = 1;
+            batch.TextureSlots.fill(nullptr);
+            batch.TextureSlots[0] = m_WhiteTexture;
+            batch.TextureSlotIndex = 1;
         }
     }
 
-    void renderer2d::flush_layers_up_to(uint32_t layer_id)
+    void Renderer2D::FlushLayersUpTo(uint32_t layerId)
     {
-        // Flush all layers with IDs less than the given layer_id
+        // Flush all layers with IDs less than the given layerId
         // This ensures correct render order when a higher layer needs to flush early
-        for (auto& [id, batch] : m_layers)
+        for (auto& [id, batch] : m_Layers)
         {
-            if (id >= layer_id)
+            if (id >= layerId)
                 break;  // std::map is ordered, so we can stop early
-            if (!batch.is_empty())
+            if (!batch.IsEmpty())
             {
-                flush_layer(id);
+                FlushLayer(id);
             }
         }
     }
 
-    void renderer2d::flush_quads(uint32_t layer_id)
+    void Renderer2D::FlushQuads(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushQuads", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.quad_count == 0)
+        if (batch.QuadCount == 0)
             return;
 
         // Get or create pipeline with correct blend mode (cached to keep alive)
-        pipeline_desc desc;
-        desc.shader_program = m_quad_shader;
-        desc.vertex_layout = m_quad_input_layout;
-        desc.binding_layouts.push_back(m_quad_binding_layout);
-        desc.state.blend = batch.quad_blend;
-        desc.state.depth = depth_mode::none;
-        desc.state.cull = cull_mode::none;
-        desc.state.primitive = topology::triangles;
-        desc.color_format = m_current_color_format;
-        desc.depth_format = m_current_depth_format;
-        desc.sample_count = m_current_sample_count;
+        PipelineDesc desc;
+        desc.ShaderProgram = m_QuadShader;
+        desc.VertexLayout = m_QuadInputLayout;
+        desc.BindingLayouts.push_back(m_QuadBindingLayout);
+        desc.State.Blend = batch.QuadBlend;
+        desc.State.Depth = DepthMode::None;
+        desc.State.Cull = CullMode::None;
+        desc.State.Primitive = Topology::Triangles;
+        desc.ColorFormat = m_CurrentColorFormat;
+        desc.DepthFormat = m_CurrentDepthFormat;
+        desc.SampleCount = m_CurrentSampleCount;
 
-        m_quad_pipeline = m_pipeline_cache->get_or_create(desc);
-        if (!m_quad_pipeline)
+        m_QuadPipeline = m_PipelineCache->GetOrCreate(desc);
+        if (!m_QuadPipeline)
         {
             LUMINA_LOG_ERROR("Failed to create quad pipeline");
             return;
         }
 
         // Check if we have room in the vertex buffer
-        uint32_t vertices_needed = batch.quad_count * vertices_per_quad;
-        if (m_quad_vertex_offset + vertices_needed > m_config.max_quads * vertices_per_quad)
+        uint32_t verticesNeeded = batch.QuadCount * VerticesPerQuad;
+        if (m_QuadVertexOffset + verticesNeeded > m_Config.MaxQuads * VerticesPerQuad)
         {
             // Buffer is full, reset offset (this may cause issues if GPU hasn't finished previous draws)
             // In practice, this shouldn't happen often with a large enough buffer
             LUMINA_LOG_WARN("Quad vertex buffer full, resetting offset (may cause visual artifacts)");
-            m_quad_vertex_offset = 0;
+            m_QuadVertexOffset = 0;
         }
 
         // Calculate byte offset for vertex data
-        size_t offset_bytes = m_quad_vertex_offset * sizeof(quad_vertex);
+        size_t offsetBytes = m_QuadVertexOffset * sizeof(QuadVertex);
 
         // Update vertex buffer at current offset using command list for proper GPU synchronization
-        m_quad_vertex_buffer->update_at_offset(batch.quad_vertices.data(), batch.quad_vertices.size() * sizeof(quad_vertex), offset_bytes, m_context->get_command_list());
+        m_QuadVertexBuffer->UpdateAtOffset(batch.QuadVertices.data(), batch.QuadVertices.size() * sizeof(QuadVertex), offsetBytes, m_Context->GetCommandList());
 
         // Create binding set with camera buffer and all texture slots
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_quad_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_QuadBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
         // Bind all 32 texture slots (fill unused with white texture)
         for (uint32_t i = 0; i < 32; i++)
         {
-            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
-            bs_desc.add_texture_array_element(0, i, tex);
+            Ref<Texture> tex = batch.TextureSlots[i] ? batch.TextureSlots[i] : m_WhiteTexture;
+            bsDesc.AddTextureArrayElement(0, i, tex);
         }
-        bs_desc.add_sampler(0, m_current_sampler);
+        bsDesc.AddSampler(0, m_CurrentSampler);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create quad binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with base vertex offset to read from correct position in vertex buffer
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_quad_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_quad_vertex_buffer);
-        ctx.set_index_buffer(m_quad_index_buffer);
-        apply_scissor();
-        ctx.draw_indexed(batch.quad_count * indices_per_quad, 0, static_cast<int32_t>(m_quad_vertex_offset));
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_QuadPipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_QuadVertexBuffer);
+        ctx.SetIndexBuffer(m_QuadIndexBuffer);
+        ApplyScissor();
+        ctx.DrawIndexed(batch.QuadCount * IndicesPerQuad, 0, static_cast<int32_t>(m_QuadVertexOffset));
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_quad_vertex_offset += batch.quad_count * vertices_per_quad;
+        m_QuadVertexOffset += batch.QuadCount * VerticesPerQuad;
 
-        batch.quad_vertices.clear();
-        batch.quad_count = 0;
-        // Note: texture slots are reset at end of flush_layer, not here
+        batch.QuadVertices.clear();
+        batch.QuadCount = 0;
+        // Note: texture slots are reset at end of FlushLayer, not here
     }
 
-    void renderer2d::flush_circles(uint32_t layer_id)
+    void Renderer2D::FlushCircles(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushCircles", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.circle_count == 0)
+        if (batch.CircleCount == 0)
             return;
 
         // Ensure pipeline exists with correct blend mode and sample count
-        if (!m_circle_pipeline ||
-            m_circle_pipeline->get_desc().color_format != m_current_color_format ||
-            m_circle_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_circle_pipeline->get_desc().sample_count != m_current_sample_count ||
-            m_circle_pipeline->get_desc().state.blend != batch.circle_blend)
+        if (!m_CirclePipeline ||
+            m_CirclePipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_CirclePipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_CirclePipeline->GetDesc().SampleCount != m_CurrentSampleCount ||
+            m_CirclePipeline->GetDesc().State.Blend != batch.CircleBlend)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_circle_shader;
-            desc.vertex_layout = m_circle_input_layout;
-            desc.binding_layouts.push_back(m_circle_binding_layout);
-            desc.state.blend = batch.circle_blend;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_CircleShader;
+            desc.VertexLayout = m_CircleInputLayout;
+            desc.BindingLayouts.push_back(m_CircleBindingLayout);
+            desc.State.Blend = batch.CircleBlend;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_circle_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_circle_pipeline)
+            m_CirclePipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_CirclePipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create circle pipeline");
                 return;
@@ -1768,88 +1768,88 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer
-        uint32_t vertices_needed = batch.circle_count * vertices_per_quad;
-        if (m_circle_vertex_offset + vertices_needed > m_config.max_circles * vertices_per_quad)
+        uint32_t verticesNeeded = batch.CircleCount * VerticesPerQuad;
+        if (m_CircleVertexOffset + verticesNeeded > m_Config.MaxCircles * VerticesPerQuad)
         {
             LUMINA_LOG_WARN("Circle vertex buffer full, resetting offset");
-            m_circle_vertex_offset = 0;
+            m_CircleVertexOffset = 0;
         }
 
         // Calculate byte offset and update vertex buffer at current offset
-        size_t offset_bytes = m_circle_vertex_offset * sizeof(circle_vertex);
-        m_circle_vertex_buffer->update_at_offset(batch.circle_vertices.data(), batch.circle_vertices.size() * sizeof(circle_vertex), offset_bytes, m_context->get_command_list());
+        size_t offsetBytes = m_CircleVertexOffset * sizeof(CircleVertex);
+        m_CircleVertexBuffer->UpdateAtOffset(batch.CircleVertices.data(), batch.CircleVertices.size() * sizeof(CircleVertex), offsetBytes, m_Context->GetCommandList());
 
         // Create binding set with camera buffer and all texture slots
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_circle_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_CircleBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
         // Bind all 32 texture slots (fill unused with white texture)
         for (uint32_t i = 0; i < 32; i++)
         {
-            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
-            bs_desc.add_texture_array_element(0, i, tex);
+            Ref<Texture> tex = batch.TextureSlots[i] ? batch.TextureSlots[i] : m_WhiteTexture;
+            bsDesc.AddTextureArrayElement(0, i, tex);
         }
-        bs_desc.add_sampler(0, m_current_sampler);
+        bsDesc.AddSampler(0, m_CurrentSampler);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create circle binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with base vertex offset
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_circle_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_circle_vertex_buffer);
-        ctx.set_index_buffer(m_circle_index_buffer);
-        apply_scissor();
-        ctx.draw_indexed(batch.circle_count * indices_per_quad, 0, static_cast<int32_t>(m_circle_vertex_offset));
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_CirclePipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_CircleVertexBuffer);
+        ctx.SetIndexBuffer(m_CircleIndexBuffer);
+        ApplyScissor();
+        ctx.DrawIndexed(batch.CircleCount * IndicesPerQuad, 0, static_cast<int32_t>(m_CircleVertexOffset));
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_circle_vertex_offset += batch.circle_count * vertices_per_quad;
+        m_CircleVertexOffset += batch.CircleCount * VerticesPerQuad;
 
-        batch.circle_vertices.clear();
-        batch.circle_count = 0;
+        batch.CircleVertices.clear();
+        batch.CircleCount = 0;
     }
 
-    void renderer2d::flush_lines(uint32_t layer_id)
+    void Renderer2D::FlushLines(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLines", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.line_count == 0)
+        if (batch.LineCount == 0)
             return;
 
         // Ensure pipeline exists
-        if (!m_line_pipeline ||
-            m_line_pipeline->get_desc().color_format != m_current_color_format ||
-            m_line_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_line_pipeline->get_desc().sample_count != m_current_sample_count)
+        if (!m_LinePipeline ||
+            m_LinePipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_LinePipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_LinePipeline->GetDesc().SampleCount != m_CurrentSampleCount)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_line_shader;
-            desc.vertex_layout = m_line_input_layout;
-            desc.binding_layouts.push_back(m_line_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::lines;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_LineShader;
+            desc.VertexLayout = m_LineInputLayout;
+            desc.BindingLayouts.push_back(m_LineBindingLayout);
+            desc.State.Blend = BlendMode::Alpha;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Lines;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_line_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_line_pipeline)
+            m_LinePipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_LinePipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create line pipeline");
                 return;
@@ -1857,79 +1857,79 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer (2 vertices per line)
-        uint32_t vertices_needed = batch.line_count * 2;
-        if (m_line_vertex_offset + vertices_needed > m_config.max_lines * 2)
+        uint32_t verticesNeeded = batch.LineCount * 2;
+        if (m_LineVertexOffset + verticesNeeded > m_Config.MaxLines * 2)
         {
             LUMINA_LOG_WARN("Line vertex buffer full, resetting offset");
-            m_line_vertex_offset = 0;
+            m_LineVertexOffset = 0;
         }
 
         // Calculate byte offset and update vertex buffer at current offset
-        size_t offset_bytes = m_line_vertex_offset * sizeof(line_vertex);
-        m_line_vertex_buffer->update_at_offset(batch.line_vertices.data(), batch.line_vertices.size() * sizeof(line_vertex), offset_bytes, m_context->get_command_list());
+        size_t offsetBytes = m_LineVertexOffset * sizeof(LineVertex);
+        m_LineVertexBuffer->UpdateAtOffset(batch.LineVertices.data(), batch.LineVertices.size() * sizeof(LineVertex), offsetBytes, m_Context->GetCommandList());
 
         // Create binding set with camera buffer
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_line_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_LineBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create line binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with start vertex offset (lines don't use index buffer)
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_line_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_line_vertex_buffer);
-        apply_scissor();
-        ctx.draw(batch.line_count * 2, m_line_vertex_offset);
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_LinePipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_LineVertexBuffer);
+        ApplyScissor();
+        ctx.Draw(batch.LineCount * 2, m_LineVertexOffset);
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_line_vertex_offset += batch.line_count * 2;
+        m_LineVertexOffset += batch.LineCount * 2;
 
-        batch.line_vertices.clear();
-        batch.line_count = 0;
+        batch.LineVertices.clear();
+        batch.LineCount = 0;
     }
 
-    void renderer2d::flush_text(uint32_t layer_id)
+    void Renderer2D::FlushText(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushText", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.text_char_count == 0)
+        if (batch.TextCharCount == 0)
             return;
 
         // Ensure pipeline exists
-        if (!m_text_pipeline ||
-            m_text_pipeline->get_desc().color_format != m_current_color_format ||
-            m_text_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_text_pipeline->get_desc().sample_count != m_current_sample_count)
+        if (!m_TextPipeline ||
+            m_TextPipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_TextPipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_TextPipeline->GetDesc().SampleCount != m_CurrentSampleCount)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_text_shader;
-            desc.vertex_layout = m_text_input_layout;
-            desc.binding_layouts.push_back(m_text_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_TextShader;
+            desc.VertexLayout = m_TextInputLayout;
+            desc.BindingLayouts.push_back(m_TextBindingLayout);
+            desc.State.Blend = BlendMode::Alpha;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_text_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_text_pipeline)
+            m_TextPipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_TextPipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create text pipeline");
                 return;
@@ -1937,89 +1937,89 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer (4 vertices per character)
-        uint32_t vertices_needed = batch.text_char_count * vertices_per_quad;
-        if (m_text_vertex_offset + vertices_needed > m_config.max_text_chars * vertices_per_quad)
+        uint32_t verticesNeeded = batch.TextCharCount * VerticesPerQuad;
+        if (m_TextVertexOffset + verticesNeeded > m_Config.MaxTextChars * VerticesPerQuad)
         {
             LUMINA_LOG_WARN("Text vertex buffer full, resetting offset");
-            m_text_vertex_offset = 0;
+            m_TextVertexOffset = 0;
         }
 
         // Calculate byte offset and update vertex buffer at current offset
-        size_t offset_bytes = m_text_vertex_offset * sizeof(text_vertex);
-        m_text_vertex_buffer->update_at_offset(batch.text_vertices.data(), batch.text_vertices.size() * sizeof(text_vertex), offset_bytes, m_context->get_command_list());
+        size_t offsetBytes = m_TextVertexOffset * sizeof(TextVertex);
+        m_TextVertexBuffer->UpdateAtOffset(batch.TextVertices.data(), batch.TextVertices.size() * sizeof(TextVertex), offsetBytes, m_Context->GetCommandList());
 
         // Create binding set with camera buffer and all texture slots
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_text_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_TextBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
         // Bind all 32 texture slots (fill unused with white texture)
         for (uint32_t i = 0; i < 32; i++)
         {
-            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
-            bs_desc.add_texture_array_element(0, i, tex);
+            Ref<Texture> tex = batch.TextureSlots[i] ? batch.TextureSlots[i] : m_WhiteTexture;
+            bsDesc.AddTextureArrayElement(0, i, tex);
         }
-        bs_desc.add_sampler(0, m_current_sampler);
+        bsDesc.AddSampler(0, m_CurrentSampler);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create text binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with base vertex offset
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_text_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_text_vertex_buffer);
-        ctx.set_index_buffer(m_text_index_buffer);
-        apply_scissor();
-        ctx.draw_indexed(batch.text_char_count * indices_per_quad, 0, static_cast<int32_t>(m_text_vertex_offset));
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_TextPipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_TextVertexBuffer);
+        ctx.SetIndexBuffer(m_TextIndexBuffer);
+        ApplyScissor();
+        ctx.DrawIndexed(batch.TextCharCount * IndicesPerQuad, 0, static_cast<int32_t>(m_TextVertexOffset));
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_text_vertex_offset += batch.text_char_count * vertices_per_quad;
+        m_TextVertexOffset += batch.TextCharCount * VerticesPerQuad;
 
-        batch.text_vertices.clear();
-        batch.text_char_count = 0;
+        batch.TextVertices.clear();
+        batch.TextCharCount = 0;
     }
 
-    void renderer2d::flush_triangles(uint32_t layer_id)
+    void Renderer2D::FlushTriangles(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushTriangles", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.triangle_count == 0)
+        if (batch.TriangleCount == 0)
             return;
 
         // Ensure pipeline exists with correct blend mode
-        if (!m_triangle_pipeline ||
-            m_triangle_pipeline->get_desc().color_format != m_current_color_format ||
-            m_triangle_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_triangle_pipeline->get_desc().sample_count != m_current_sample_count ||
-            m_triangle_pipeline->get_desc().state.blend != batch.triangle_blend)
+        if (!m_TrianglePipeline ||
+            m_TrianglePipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_TrianglePipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_TrianglePipeline->GetDesc().SampleCount != m_CurrentSampleCount ||
+            m_TrianglePipeline->GetDesc().State.Blend != batch.TriangleBlend)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_triangle_shader;
-            desc.vertex_layout = m_triangle_input_layout;
-            desc.binding_layouts.push_back(m_triangle_binding_layout);
-            desc.state.blend = batch.triangle_blend;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_TriangleShader;
+            desc.VertexLayout = m_TriangleInputLayout;
+            desc.BindingLayouts.push_back(m_TriangleBindingLayout);
+            desc.State.Blend = batch.TriangleBlend;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_triangle_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_triangle_pipeline)
+            m_TrianglePipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_TrianglePipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create triangle pipeline");
                 return;
@@ -2027,87 +2027,87 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer (3 vertices per triangle)
-        uint32_t vertices_needed = batch.triangle_count * 3;
-        if (m_triangle_vertex_offset + vertices_needed > m_config.max_triangles * 3)
+        uint32_t verticesNeeded = batch.TriangleCount * 3;
+        if (m_TriangleVertexOffset + verticesNeeded > m_Config.MaxTriangles * 3)
         {
             LUMINA_LOG_WARN("Triangle vertex buffer full, resetting offset");
-            m_triangle_vertex_offset = 0;
+            m_TriangleVertexOffset = 0;
         }
 
         // Calculate byte offset and update vertex buffer at current offset
-        size_t offset_bytes = m_triangle_vertex_offset * sizeof(triangle_vertex);
-        m_triangle_vertex_buffer->update_at_offset(batch.triangle_vertices.data(), batch.triangle_vertices.size() * sizeof(triangle_vertex), offset_bytes, m_context->get_command_list());
+        size_t offsetBytes = m_TriangleVertexOffset * sizeof(TriangleVertex);
+        m_TriangleVertexBuffer->UpdateAtOffset(batch.TriangleVertices.data(), batch.TriangleVertices.size() * sizeof(TriangleVertex), offsetBytes, m_Context->GetCommandList());
 
         // Create binding set with camera buffer and all texture slots
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_triangle_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_TriangleBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
         // Bind all 32 texture slots (fill unused with white texture)
         for (uint32_t i = 0; i < 32; i++)
         {
-            ref<texture> tex = batch.texture_slots[i] ? batch.texture_slots[i] : m_white_texture;
-            bs_desc.add_texture_array_element(0, i, tex);
+            Ref<Texture> tex = batch.TextureSlots[i] ? batch.TextureSlots[i] : m_WhiteTexture;
+            bsDesc.AddTextureArrayElement(0, i, tex);
         }
-        bs_desc.add_sampler(0, m_current_sampler);
+        bsDesc.AddSampler(0, m_CurrentSampler);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create triangle binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with start vertex offset (no index buffer - raw triangles)
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_triangle_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_triangle_vertex_buffer);
-        apply_scissor();
-        ctx.draw(batch.triangle_count * 3, m_triangle_vertex_offset);
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_TrianglePipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_TriangleVertexBuffer);
+        ApplyScissor();
+        ctx.Draw(batch.TriangleCount * 3, m_TriangleVertexOffset);
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_triangle_vertex_offset += batch.triangle_count * 3;
+        m_TriangleVertexOffset += batch.TriangleCount * 3;
 
-        batch.triangle_vertices.clear();
-        batch.triangle_count = 0;
+        batch.TriangleVertices.clear();
+        batch.TriangleCount = 0;
     }
 
-    void renderer2d::flush_pixels(uint32_t layer_id)
+    void Renderer2D::FlushPixels(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushPixels", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.pixel_count == 0)
+        if (batch.PixelCount == 0)
             return;
 
         // Ensure pipeline exists
-        if (!m_pixel_pipeline ||
-            m_pixel_pipeline->get_desc().color_format != m_current_color_format ||
-            m_pixel_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_pixel_pipeline->get_desc().sample_count != m_current_sample_count)
+        if (!m_PixelPipeline ||
+            m_PixelPipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_PixelPipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_PixelPipeline->GetDesc().SampleCount != m_CurrentSampleCount)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_pixel_shader;
-            desc.vertex_layout = m_pixel_input_layout;
-            desc.binding_layouts.push_back(m_pixel_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::points;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_PixelShader;
+            desc.VertexLayout = m_PixelInputLayout;
+            desc.BindingLayouts.push_back(m_PixelBindingLayout);
+            desc.State.Blend = BlendMode::Alpha;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Points;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_pixel_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_pixel_pipeline)
+            m_PixelPipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_PixelPipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create pixel pipeline");
                 return;
@@ -2115,79 +2115,79 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer
-        uint32_t max_vertices = m_config.max_pixels;
-        if (m_pixel_vertex_offset + batch.pixel_count > max_vertices)
+        uint32_t maxVertices = m_Config.MaxPixels;
+        if (m_PixelVertexOffset + batch.PixelCount > maxVertices)
         {
             LUMINA_LOG_WARN("Pixel vertex buffer full, resetting offset (may cause visual artifacts)");
-            m_pixel_vertex_offset = 0;
+            m_PixelVertexOffset = 0;
         }
 
         // Update vertex buffer at current offset
-        size_t byte_offset = m_pixel_vertex_offset * sizeof(pixel_vertex);
-        m_pixel_vertex_buffer->update_at_offset(batch.pixel_vertices.data(), batch.pixel_vertices.size() * sizeof(pixel_vertex), byte_offset, m_context->get_command_list());
+        size_t byteOffset = m_PixelVertexOffset * sizeof(PixelVertex);
+        m_PixelVertexBuffer->UpdateAtOffset(batch.PixelVertices.data(), batch.PixelVertices.size() * sizeof(PixelVertex), byteOffset, m_Context->GetCommandList());
 
         // Create binding set with camera buffer
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_pixel_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_PixelBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create pixel binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with start_vertex offset
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_pixel_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_pixel_vertex_buffer);
-        apply_scissor();
-        ctx.draw(batch.pixel_count, m_pixel_vertex_offset);
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_PixelPipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_PixelVertexBuffer);
+        ApplyScissor();
+        ctx.Draw(batch.PixelCount, m_PixelVertexOffset);
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_pixel_vertex_offset += batch.pixel_count;
+        m_PixelVertexOffset += batch.PixelCount;
 
-        batch.pixel_vertices.clear();
-        batch.pixel_count = 0;
+        batch.PixelVertices.clear();
+        batch.PixelCount = 0;
     }
 
-    void renderer2d::flush_grids(uint32_t layer_id)
+    void Renderer2D::FlushGrids(uint32_t layerId)
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushGrids", 0x44FF44);
 
-        auto it = m_layers.find(layer_id);
-        if (it == m_layers.end())
+        auto it = m_Layers.find(layerId);
+        if (it == m_Layers.end())
             return;
 
         auto& batch = it->second;
-        if (batch.grid_count == 0)
+        if (batch.GridCount == 0)
             return;
 
         // Ensure pipeline exists
-        if (!m_grid_pipeline ||
-            m_grid_pipeline->get_desc().color_format != m_current_color_format ||
-            m_grid_pipeline->get_desc().depth_format != m_current_depth_format ||
-            m_grid_pipeline->get_desc().sample_count != m_current_sample_count)
+        if (!m_GridPipeline ||
+            m_GridPipeline->GetDesc().ColorFormat != m_CurrentColorFormat ||
+            m_GridPipeline->GetDesc().DepthFormat != m_CurrentDepthFormat ||
+            m_GridPipeline->GetDesc().SampleCount != m_CurrentSampleCount)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_grid_shader;
-            desc.vertex_layout = m_grid_input_layout;
-            desc.binding_layouts.push_back(m_grid_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_GridShader;
+            desc.VertexLayout = m_GridInputLayout;
+            desc.BindingLayouts.push_back(m_GridBindingLayout);
+            desc.State.Blend = BlendMode::Alpha;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_grid_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_grid_pipeline)
+            m_GridPipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_GridPipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create grid pipeline");
                 return;
@@ -2195,65 +2195,65 @@ namespace lumina::graphics
         }
 
         // Check if we have room in the vertex buffer
-        uint32_t vertices_needed = batch.grid_count * vertices_per_quad;
-        uint32_t max_vertices = m_config.max_grids * vertices_per_quad;
-        if (m_grid_vertex_offset + vertices_needed > max_vertices)
+        uint32_t verticesNeeded = batch.GridCount * VerticesPerQuad;
+        uint32_t maxVertices = m_Config.MaxGrids * VerticesPerQuad;
+        if (m_GridVertexOffset + verticesNeeded > maxVertices)
         {
             LUMINA_LOG_WARN("Grid vertex buffer full, resetting offset (may cause visual artifacts)");
-            m_grid_vertex_offset = 0;
+            m_GridVertexOffset = 0;
         }
 
         // Update vertex buffer at current offset
-        size_t byte_offset = m_grid_vertex_offset * sizeof(grid_vertex);
-        m_grid_vertex_buffer->update_at_offset(batch.grid_vertices.data(), batch.grid_vertices.size() * sizeof(grid_vertex), byte_offset, m_context->get_command_list());
+        size_t byteOffset = m_GridVertexOffset * sizeof(GridVertex);
+        m_GridVertexBuffer->UpdateAtOffset(batch.GridVertices.data(), batch.GridVertices.size() * sizeof(GridVertex), byteOffset, m_Context->GetCommandList());
 
         // Create binding set with camera buffer
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_grid_binding_layout;
-        bs_desc.add_constant_buffer(0, m_camera_buffer);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_GridBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CameraBuffer);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create grid binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw with base_vertex offset for indexed drawing
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_grid_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_grid_vertex_buffer);
-        ctx.set_index_buffer(m_grid_index_buffer);
-        apply_scissor();
-        ctx.draw_indexed(batch.grid_count * indices_per_quad, 0, m_grid_vertex_offset);
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_GridPipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_GridVertexBuffer);
+        ctx.SetIndexBuffer(m_GridIndexBuffer);
+        ApplyScissor();
+        ctx.DrawIndexed(batch.GridCount * IndicesPerQuad, 0, m_GridVertexOffset);
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
 
         // Advance vertex offset for next flush
-        m_grid_vertex_offset += vertices_needed;
+        m_GridVertexOffset += verticesNeeded;
 
-        batch.grid_vertices.clear();
-        batch.grid_count = 0;
+        batch.GridVertices.clear();
+        batch.GridCount = 0;
     }
 
     // ========================================================================
     // Lighting Implementation
     // ========================================================================
 
-    void renderer2d::init_lighting_resources()
+    void Renderer2D::InitLightingResources()
     {
         // Create fullscreen quad vertex buffer (NDC coordinates)
-        fullscreen_vertex fullscreen_verts[4] = {
+        FullscreenVertex fullscreenVerts[4] = {
             {{ -1.0f, -1.0f, 0.0f, 1.0f }, { 0.0f, 1.0f }},  // Bottom-left
             {{  1.0f, -1.0f, 0.0f, 1.0f }, { 1.0f, 1.0f }},  // Bottom-right
             {{  1.0f,  1.0f, 0.0f, 1.0f }, { 1.0f, 0.0f }},  // Top-right
             {{ -1.0f,  1.0f, 0.0f, 1.0f }, { 0.0f, 0.0f }},  // Top-left
         };
 
-        m_fullscreen_vertex_buffer = vertex_buffer::create(m_device, fullscreen_verts, sizeof(fullscreen_verts), sizeof(fullscreen_vertex), buffer_usage::immutable);
-        if (!m_fullscreen_vertex_buffer)
+        m_FullscreenVertexBuffer = VertexBuffer::Create(m_Device, fullscreenVerts, sizeof(fullscreenVerts), sizeof(FullscreenVertex), BufferUsage::Immutable);
+        if (!m_FullscreenVertexBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create fullscreen vertex buffer");
             return;
@@ -2261,20 +2261,20 @@ namespace lumina::graphics
 
         // Point light shader
         {
-            auto vs = get_point_light_vs(m_device.get_api());
-            auto ps = get_point_light_ps(m_device.get_api());
+            auto vs = GetPointLightVS(m_Device.GetAPI());
+            auto ps = GetPointLightPS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Point Light";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Point Light";
 
-            m_point_light_shader = shader::create(m_device, desc);
-            if (!m_point_light_shader)
+            m_PointLightShader = Shader::Create(m_Device, desc);
+            if (!m_PointLightShader)
             {
                 LUMINA_LOG_ERROR("Failed to create point light shader");
                 return;
@@ -2282,23 +2282,23 @@ namespace lumina::graphics
         }
 
         // Point light input layout
-        input_layout_desc light_layout_desc;
-        light_layout_desc.add("POSITION", format::rgba32_float, vertex_semantic::position)
-                         .add("TEXCOORD", format::rg32_float, vertex_semantic::texcoord);
+        InputLayoutDesc lightLayoutDesc;
+        lightLayoutDesc.Add("POSITION", Format::RGBA32Float, VertexSemantic::Position)
+                       .Add("TEXCOORD", Format::RG32Float, VertexSemantic::Texcoord);
 
-        m_point_light_input_layout = input_layout::create(m_device, light_layout_desc, m_point_light_shader);
-        if (!m_point_light_input_layout)
+        m_PointLightInputLayout = InputLayout::Create(m_Device, lightLayoutDesc, m_PointLightShader);
+        if (!m_PointLightInputLayout)
         {
             LUMINA_LOG_ERROR("Failed to create point light input layout");
             return;
         }
 
         // Point light binding layout (constant buffer only)
-        binding_layout_desc light_binding_desc;
-        light_binding_desc.add_constant_buffer(0);
+        BindingLayoutDesc lightBindingDesc;
+        lightBindingDesc.AddConstantBuffer(0);
 
-        m_point_light_binding_layout = binding_layout::create(m_device, light_binding_desc);
-        if (!m_point_light_binding_layout)
+        m_PointLightBindingLayout = BindingLayout::Create(m_Device, lightBindingDesc);
+        if (!m_PointLightBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create point light binding layout");
             return;
@@ -2307,8 +2307,8 @@ namespace lumina::graphics
         // Point light constant buffer
         // Structure: float2 position, float2 viewport_size, float3 color, float intensity,
         //            float radius, float attenuation, float falloff, float pad, mat4 inv_view_proj
-        m_light_params_buffer = uniform_buffer::create(m_device, 128); // Generous size for alignment
-        if (!m_light_params_buffer)
+        m_LightParamsBuffer = UniformBuffer::Create(m_Device, 128); // Generous size for alignment
+        if (!m_LightParamsBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create light params buffer");
             return;
@@ -2316,20 +2316,20 @@ namespace lumina::graphics
 
         // Composite shader
         {
-            auto vs = get_composite_vs(m_device.get_api());
-            auto ps = get_composite_ps(m_device.get_api());
+            auto vs = GetCompositeVS(m_Device.GetAPI());
+            auto ps = GetCompositePS(m_Device.GetAPI());
 
-            shader_desc desc;
-            desc.vertex_blob = vs.data;
-            desc.vertex_size = vs.size;
-            desc.pixel_blob = ps.data;
-            desc.pixel_size = ps.size;
-            desc.vertex_entry = "VSMain";
-            desc.pixel_entry = "PSMain";
-            desc.debug_name = "Composite";
+            ShaderDesc desc;
+            desc.VertexBlob = vs.Data;
+            desc.VertexSize = vs.Size;
+            desc.PixelBlob = ps.Data;
+            desc.PixelSize = ps.Size;
+            desc.VertexEntry = "VSMain";
+            desc.PixelEntry = "PSMain";
+            desc.DebugName = "Composite";
 
-            m_composite_shader = shader::create(m_device, desc);
-            if (!m_composite_shader)
+            m_CompositeShader = Shader::Create(m_Device, desc);
+            if (!m_CompositeShader)
             {
                 LUMINA_LOG_ERROR("Failed to create composite shader");
                 return;
@@ -2337,17 +2337,17 @@ namespace lumina::graphics
         }
 
         // Composite input layout (same as point light)
-        m_composite_input_layout = m_point_light_input_layout;
+        m_CompositeInputLayout = m_PointLightInputLayout;
 
         // Composite binding layout (constant buffer + 2 textures + sampler)
-        binding_layout_desc composite_binding_desc;
-        composite_binding_desc.add_constant_buffer(0);
-        composite_binding_desc.add_texture(0);  // Scene texture
-        composite_binding_desc.add_texture(1);  // Light texture
-        composite_binding_desc.add_sampler(0);
+        BindingLayoutDesc compositeBindingDesc;
+        compositeBindingDesc.AddConstantBuffer(0);
+        compositeBindingDesc.AddTexture(0);  // Scene texture
+        compositeBindingDesc.AddTexture(1);  // Light texture
+        compositeBindingDesc.AddSampler(0);
 
-        m_composite_binding_layout = binding_layout::create(m_device, composite_binding_desc);
-        if (!m_composite_binding_layout)
+        m_CompositeBindingLayout = BindingLayout::Create(m_Device, compositeBindingDesc);
+        if (!m_CompositeBindingLayout)
         {
             LUMINA_LOG_ERROR("Failed to create composite binding layout");
             return;
@@ -2355,8 +2355,8 @@ namespace lumina::graphics
 
         // Composite constant buffer
         // Structure: float3 ambient_color, float ambient_intensity
-        m_composite_params_buffer = uniform_buffer::create(m_device, 32);
-        if (!m_composite_params_buffer)
+        m_CompositeParamsBuffer = UniformBuffer::Create(m_Device, 32);
+        if (!m_CompositeParamsBuffer)
         {
             LUMINA_LOG_ERROR("Failed to create composite params buffer");
             return;
@@ -2365,36 +2365,36 @@ namespace lumina::graphics
         LUMINA_LOG_INFO("Lighting resources initialized");
     }
 
-    void renderer2d::shutdown_lighting_resources()
+    void Renderer2D::ShutdownLightingResources()
     {
-        m_scene_target.reset();
-        m_light_accumulation.reset();
-        m_fullscreen_vertex_buffer.reset();
-        m_point_light_shader.reset();
-        m_point_light_input_layout.reset();
-        m_point_light_binding_layout.reset();
-        m_point_light_pipeline.reset();
-        m_composite_shader.reset();
-        m_composite_input_layout.reset();
-        m_composite_binding_layout.reset();
-        m_composite_pipeline.reset();
-        m_light_params_buffer.reset();
-        m_composite_params_buffer.reset();
+        m_SceneTarget.reset();
+        m_LightAccumulation.reset();
+        m_FullscreenVertexBuffer.reset();
+        m_PointLightShader.reset();
+        m_PointLightInputLayout.reset();
+        m_PointLightBindingLayout.reset();
+        m_PointLightPipeline.reset();
+        m_CompositeShader.reset();
+        m_CompositeInputLayout.reset();
+        m_CompositeBindingLayout.reset();
+        m_CompositePipeline.reset();
+        m_LightParamsBuffer.reset();
+        m_CompositeParamsBuffer.reset();
 
-        m_lighting_target_width = 0;
-        m_lighting_target_height = 0;
+        m_LightingTargetWidth = 0;
+        m_LightingTargetHeight = 0;
     }
 
-    void renderer2d::ensure_lighting_targets(uint32_t width, uint32_t height)
+    void Renderer2D::EnsureLightingTargets(uint32_t width, uint32_t height)
     {
-        if (m_lighting_target_width == width && m_lighting_target_height == height)
+        if (m_LightingTargetWidth == width && m_LightingTargetHeight == height)
             return;
 
         // Create or resize scene target
-        if (!m_scene_target || m_scene_target->get_width() != width || m_scene_target->get_height() != height)
+        if (!m_SceneTarget || m_SceneTarget->GetWidth() != width || m_SceneTarget->GetHeight() != height)
         {
-            m_scene_target = render_target::create(m_device, width, height, format::rgba16_float);
-            if (!m_scene_target)
+            m_SceneTarget = RenderTarget::Create(m_Device, width, height, Format::RGBA16Float);
+            if (!m_SceneTarget)
             {
                 LUMINA_LOG_ERROR("Failed to create scene render target for lighting");
                 return;
@@ -2402,45 +2402,45 @@ namespace lumina::graphics
         }
 
         // Create or resize light accumulation target
-        if (!m_light_accumulation || m_light_accumulation->get_width() != width || m_light_accumulation->get_height() != height)
+        if (!m_LightAccumulation || m_LightAccumulation->GetWidth() != width || m_LightAccumulation->GetHeight() != height)
         {
-            m_light_accumulation = render_target::create(m_device, width, height, format::rgba16_float);
-            if (!m_light_accumulation)
+            m_LightAccumulation = RenderTarget::Create(m_Device, width, height, Format::RGBA16Float);
+            if (!m_LightAccumulation)
             {
                 LUMINA_LOG_ERROR("Failed to create light accumulation render target");
                 return;
             }
         }
 
-        m_lighting_target_width = width;
-        m_lighting_target_height = height;
+        m_LightingTargetWidth = width;
+        m_LightingTargetHeight = height;
 
         LUMINA_LOG_INFO("Lighting targets resized to {}x{}", width, height);
     }
 
-    void renderer2d::flush_lights()
+    void Renderer2D::FlushLights()
     {
         LUMINA_PROFILE_SCOPE_NC("Renderer2D::FlushLights", 0x44FF44);
 
-        if (m_point_lights.empty())
+        if (m_PointLights.empty())
             return;
 
         // Ensure point light pipeline exists
-        if (!m_point_light_pipeline)
+        if (!m_PointLightPipeline)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_point_light_shader;
-            desc.vertex_layout = m_point_light_input_layout;
-            desc.binding_layouts.push_back(m_point_light_binding_layout);
-            desc.state.blend = blend_mode::additive;  // Additive blending for light accumulation
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_light_accumulation ? m_light_accumulation->get_color_format() : format::rgba16_float;
-            desc.depth_format = format::unknown;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_PointLightShader;
+            desc.VertexLayout = m_PointLightInputLayout;
+            desc.BindingLayouts.push_back(m_PointLightBindingLayout);
+            desc.State.Blend = BlendMode::Additive;  // Additive blending for light accumulation
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_LightAccumulation ? m_LightAccumulation->GetColorFormat() : Format::RGBA16Float;
+            desc.DepthFormat = Format::Unknown;
 
-            m_point_light_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_point_light_pipeline)
+            m_PointLightPipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_PointLightPipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create point light pipeline");
                 return;
@@ -2448,90 +2448,90 @@ namespace lumina::graphics
         }
 
         // Clear light accumulation buffer
-        m_context->set_render_target(m_light_accumulation);
-        m_context->clear(clear_color(0.0f, 0.0f, 0.0f, 0.0f));
+        m_Context->SetRenderTarget(m_LightAccumulation);
+        m_Context->Clear(ClearColor(0.0f, 0.0f, 0.0f, 0.0f));
 
         // Calculate inverse view-projection matrix
-        glm::mat4 inv_view_proj = glm::inverse(m_view_projection);
+        glm::mat4 invViewProj = glm::inverse(m_ViewProjection);
 
         // Render each point light
-        for (const auto& light : m_point_lights)
+        for (const auto& light : m_PointLights)
         {
             // Light params structure (must match HLSL cbuffer layout)
-            struct alignas(16) light_params
+            struct alignas(16) LightParams
             {
-                glm::vec2 position;
-                glm::vec2 viewport_size;
-                glm::vec3 color;
-                float intensity;
-                float radius;
-                float attenuation_model;
-                float falloff;
-                float _pad;
-                glm::mat4 inv_view_proj;
+                glm::vec2 Position;
+                glm::vec2 ViewportSize;
+                glm::vec3 Color;
+                float Intensity;
+                float Radius;
+                float AttenuationModel;
+                float Falloff;
+                float Pad;
+                glm::mat4 InvViewProj;
             };
 
-            light_params params;
-            params.position = glm::vec2(light.position.x, light.position.y);
-            params.viewport_size = glm::vec2(static_cast<float>(m_lighting_target_width), static_cast<float>(m_lighting_target_height));
-            params.color = light.color;
-            params.intensity = light.intensity;
-            params.radius = light.radius;
-            params.attenuation_model = light.attenuation;
-            params.falloff = light.falloff;
-            params._pad = 0.0f;
-            params.inv_view_proj = inv_view_proj;
+            LightParams params;
+            params.Position = glm::vec2(light.Position.x, light.Position.y);
+            params.ViewportSize = glm::vec2(static_cast<float>(m_LightingTargetWidth), static_cast<float>(m_LightingTargetHeight));
+            params.Color = light.Color;
+            params.Intensity = light.Intensity;
+            params.Radius = light.Radius;
+            params.AttenuationModel = light.Attenuation;
+            params.Falloff = light.Falloff;
+            params.Pad = 0.0f;
+            params.InvViewProj = invViewProj;
 
             // Update constant buffer
-            m_light_params_buffer->update(params, m_device.get_command_list());
+            m_LightParamsBuffer->Update(params, m_Device.GetCommandList());
 
             // Create binding set for this light
-            binding_set_desc bs_desc;
-            bs_desc.layout = m_point_light_binding_layout;
-            bs_desc.add_constant_buffer(0, m_light_params_buffer);
+            BindingSetDesc bsDesc;
+            bsDesc.Layout = m_PointLightBindingLayout;
+            bsDesc.AddConstantBuffer(0, m_LightParamsBuffer);
 
-            auto binding_set = binding_set::create(m_device, bs_desc);
-            if (!binding_set)
+            auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+            if (!bindingSet)
             {
                 LUMINA_LOG_ERROR("Failed to create point light binding set");
                 continue;
             }
-            m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+            m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
             // Draw fullscreen quad
-            auto& ctx = *m_context;
-            ctx.set_pipeline(m_point_light_pipeline);
-            ctx.set_binding_set(binding_set);
-            ctx.set_vertex_buffer(m_fullscreen_vertex_buffer);
-            ctx.set_index_buffer(m_quad_index_buffer); // Reuse quad index buffer
-            ctx.draw_indexed(6);
+            auto& ctx = *m_Context;
+            ctx.SetPipeline(m_PointLightPipeline);
+            ctx.SetBindingSet(bindingSet);
+            ctx.SetVertexBuffer(m_FullscreenVertexBuffer);
+            ctx.SetIndexBuffer(m_QuadIndexBuffer); // Reuse quad index buffer
+            ctx.DrawIndexed(6);
 
-            m_stats.draw_calls++;
+            m_Stats.DrawCalls++;
         }
     }
 
-    void renderer2d::composite_scene()
+    void Renderer2D::CompositeScene()
     {
-        if (!m_scene_target || !m_light_accumulation)
+        if (!m_SceneTarget || !m_LightAccumulation)
             return;
 
         // Ensure composite pipeline exists
-        if (!m_composite_pipeline)
+        if (!m_CompositePipeline)
         {
-            pipeline_desc desc;
-            desc.shader_program = m_composite_shader;
-            desc.vertex_layout = m_composite_input_layout;
-            desc.binding_layouts.push_back(m_composite_binding_layout);
-            desc.state.blend = blend_mode::alpha;
-            desc.state.depth = depth_mode::none;
-            desc.state.cull = cull_mode::none;
-            desc.state.primitive = topology::triangles;
-            desc.color_format = m_current_color_format;
-            desc.depth_format = m_current_depth_format;
-            desc.sample_count = m_current_sample_count;
+            PipelineDesc desc;
+            desc.ShaderProgram = m_CompositeShader;
+            desc.VertexLayout = m_CompositeInputLayout;
+            desc.BindingLayouts.push_back(m_CompositeBindingLayout);
+            desc.State.Blend = BlendMode::Alpha;
+            desc.State.Depth = DepthMode::None;
+            desc.State.Cull = CullMode::None;
+            desc.State.Primitive = Topology::Triangles;
+            desc.ColorFormat = m_CurrentColorFormat;
+            desc.DepthFormat = m_CurrentDepthFormat;
+            desc.SampleCount = m_CurrentSampleCount;
 
-            m_composite_pipeline = m_pipeline_cache->get_or_create(desc);
-            if (!m_composite_pipeline)
+            m_CompositePipeline = m_PipelineCache->GetOrCreate(desc);
+            if (!m_CompositePipeline)
             {
                 LUMINA_LOG_ERROR("Failed to create composite pipeline");
                 return;
@@ -2539,53 +2539,53 @@ namespace lumina::graphics
         }
 
         // Composite params structure (must match HLSL cbuffer layout)
-        struct alignas(16) composite_params
+        struct alignas(16) CompositeParams
         {
-            glm::vec3 ambient_color;
-            float ambient_intensity;
+            glm::vec3 AmbientColor;
+            float AmbientIntensity;
         };
 
-        composite_params params;
-        params.ambient_color = m_ambient_color;
-        params.ambient_intensity = m_ambient_intensity;
+        CompositeParams params;
+        params.AmbientColor = m_AmbientColor;
+        params.AmbientIntensity = m_AmbientIntensity;
 
         // Update constant buffer
-        m_composite_params_buffer->update(params, m_device.get_command_list());
+        m_CompositeParamsBuffer->Update(params, m_Device.GetCommandList());
 
         // Set render target back to original (swapchain or user target)
-        if (m_current_target)
+        if (m_CurrentTarget)
         {
-            m_context->set_render_target(m_current_target);
+            m_Context->SetRenderTarget(m_CurrentTarget);
         }
         else
         {
-            m_context->set_swapchain_framebuffer(m_device.get_current_framebuffer());
+            m_Context->SetSwapchainFramebuffer(m_Device.GetCurrentFramebuffer());
         }
 
         // Create binding set
-        binding_set_desc bs_desc;
-        bs_desc.layout = m_composite_binding_layout;
-        bs_desc.add_constant_buffer(0, m_composite_params_buffer);
-        bs_desc.add_texture(0, m_scene_target->get_color_texture());
-        bs_desc.add_texture(1, m_light_accumulation->get_color_texture());
-        bs_desc.add_sampler(0, m_current_sampler);
+        BindingSetDesc bsDesc;
+        bsDesc.Layout = m_CompositeBindingLayout;
+        bsDesc.AddConstantBuffer(0, m_CompositeParamsBuffer);
+        bsDesc.AddTexture(0, m_SceneTarget->GetColorTexture());
+        bsDesc.AddTexture(1, m_LightAccumulation->GetColorTexture());
+        bsDesc.AddSampler(0, m_CurrentSampler);
 
-        auto binding_set = binding_set::create(m_device, bs_desc);
-        if (!binding_set)
+        auto bindingSet = BindingSet::Create(m_Device, bsDesc);
+        if (!bindingSet)
         {
             LUMINA_LOG_ERROR("Failed to create composite binding set");
             return;
         }
-        m_frame_binding_sets.push_back(binding_set);  // Keep alive until frame ends
+        m_FrameBindingSets.push_back(bindingSet);  // Keep alive until frame ends
 
         // Draw fullscreen quad
-        auto& ctx = *m_context;
-        ctx.set_pipeline(m_composite_pipeline);
-        ctx.set_binding_set(binding_set);
-        ctx.set_vertex_buffer(m_fullscreen_vertex_buffer);
-        ctx.set_index_buffer(m_quad_index_buffer);
-        ctx.draw_indexed(6);
+        auto& ctx = *m_Context;
+        ctx.SetPipeline(m_CompositePipeline);
+        ctx.SetBindingSet(bindingSet);
+        ctx.SetVertexBuffer(m_FullscreenVertexBuffer);
+        ctx.SetIndexBuffer(m_QuadIndexBuffer);
+        ctx.DrawIndexed(6);
 
-        m_stats.draw_calls++;
+        m_Stats.DrawCalls++;
     }
 }

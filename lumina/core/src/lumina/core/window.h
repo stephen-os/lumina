@@ -1,86 +1,86 @@
 #pragma once
 
-#include "event.h"
+#include "Event.h"
 
 #include <string>
 #include <functional>
 
 struct GLFWwindow;
 
-namespace lumina::core
+namespace Lumina
 {
-    struct window_spec
-    {
-        std::string title = "Lumina Application";
-        std::string icon_path;
-        uint32_t width = 1600;
-        uint32_t height = 900;
-        bool fullscreen = false;
-        bool maximized = false;
-        bool centered = false;
-        bool resizable = true;
-        bool decorated = true;
-        bool vsync = true;
-    };
+	struct WindowSpec
+	{
+		std::string Title = "Lumina Application";
+		std::string IconPath;
+		uint32_t Width = 1600;
+		uint32_t Height = 900;
+		bool Fullscreen = false;
+		bool Maximized = false;
+		bool Centered = false;
+		bool Resizable = true;
+		bool Decorated = true;
+		bool VSync = true;
+	};
 
-    class window
-    {
-    public:
-        using event_callback = std::function<void(event&)>;
+	class Window
+	{
+	public:
+		using EventCallback = std::function<void(Event&)>;
 
-        window(const window_spec& spec);
-        ~window();
+		Window(const WindowSpec& spec);
+		~Window();
 
-        window(const window&) = delete;
-        window& operator=(const window&) = delete;
+		Window(const Window&) = delete;
+		Window& operator=(const Window&) = delete;
 
-        void update();
-        [[nodiscard]] bool should_close() const;
+		void Update();
+		[[nodiscard]] bool ShouldClose() const;
 
-        void set_event_callback(const event_callback& callback) { m_event_callback = callback; }
+		void SetEventCallback(const EventCallback& callback) { m_EventCallback = callback; }
 
-        // Runtime operations
-        void set_vsync(bool enabled);
-        void set_fullscreen(bool fullscreen);
-        void set_position(int32_t x, int32_t y);
-        void maximize();
-        void minimize();
-        void restore();
-        void show();
-        void center_on_monitor();
+		// Runtime operations
+		void SetVSync(bool enabled);
+		void SetFullscreen(bool fullscreen);
+		void SetPosition(int32_t x, int32_t y);
+		void Maximize();
+		void Minimize();
+		void Restore();
+		void Show();
+		void CenterOnMonitor();
 
-        // Titlebar theming (Windows only)
-        void set_titlebar_color(uint8_t r, uint8_t g, uint8_t b);
-        void set_titlebar_text_color(uint8_t r, uint8_t g, uint8_t b);
+		// Titlebar theming (Windows only)
+		void SetTitlebarColor(uint8_t r, uint8_t g, uint8_t b);
+		void SetTitlebarTextColor(uint8_t r, uint8_t g, uint8_t b);
 
-        // State queries
-        [[nodiscard]] uint32_t get_width() const { return m_width; }
-        [[nodiscard]] uint32_t get_height() const { return m_height; }
-        [[nodiscard]] bool is_vsync() const { return m_vsync; }
-        [[nodiscard]] bool is_fullscreen() const { return m_fullscreen; }
-        [[nodiscard]] bool is_maximized() const;
-        [[nodiscard]] bool is_minimized() const;
+		// State queries
+		[[nodiscard]] uint32_t GetWidth() const { return m_Width; }
+		[[nodiscard]] uint32_t GetHeight() const { return m_Height; }
+		[[nodiscard]] bool IsVSync() const { return m_VSync; }
+		[[nodiscard]] bool IsFullscreen() const { return m_Fullscreen; }
+		[[nodiscard]] bool IsMaximized() const;
+		[[nodiscard]] bool IsMinimized() const;
 
-        [[nodiscard]] GLFWwindow* get_native_window() const { return m_window; }
+		[[nodiscard]] GLFWwindow* GetNativeWindow() const { return m_Window; }
 
-        static void terminate_glfw();
+		static void TerminateGLFW();
 
-    private:
-        void setup_callbacks();
-        void set_icon(const std::string& icon_path);
-        void set_default_icon();
+	private:
+		void SetupCallbacks();
+		void SetIcon(const std::string& iconPath);
+		void SetDefaultIcon();
 
-        GLFWwindow* m_window = nullptr;
-        event_callback m_event_callback;
+		GLFWwindow* m_Window = nullptr;
+		EventCallback m_EventCallback;
 
-        // Cached state
-        uint32_t m_width = 0;
-        uint32_t m_height = 0;
-        int32_t m_windowed_x = 100;
-        int32_t m_windowed_y = 100;
-        uint32_t m_windowed_width = 0;
-        uint32_t m_windowed_height = 0;
-        bool m_vsync = true;
-        bool m_fullscreen = false;
-    };
+		// Cached state
+		uint32_t m_Width = 0;
+		uint32_t m_Height = 0;
+		int32_t m_WindowedX = 100;
+		int32_t m_WindowedY = 100;
+		uint32_t m_WindowedWidth = 0;
+		uint32_t m_WindowedHeight = 0;
+		bool m_VSync = true;
+		bool m_Fullscreen = false;
+	};
 }

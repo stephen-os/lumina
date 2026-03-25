@@ -2,10 +2,10 @@
 
 #include <imgui.h>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
     // Panel - a styled window with consistent padding
-    inline bool begin_panel(const char* title, ImGuiWindowFlags flags = 0)
+    inline bool BeginPanel(const char* title, ImGuiWindowFlags flags = 0)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
         bool visible = ImGui::Begin(title, nullptr, flags);
@@ -13,7 +13,7 @@ namespace lumina::ui
         return visible;
     }
 
-    inline bool begin_panel(const char* title, bool& open, ImGuiWindowFlags flags = 0)
+    inline bool BeginPanel(const char* title, bool& open, ImGuiWindowFlags flags = 0)
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8.0f, 8.0f));
         bool visible = ImGui::Begin(title, &open, flags);
@@ -21,14 +21,14 @@ namespace lumina::ui
         return visible;
     }
 
-    inline void end_panel()
+    inline void EndPanel()
     {
         ImGui::End();
     }
 
     // Section - collapsing header with indented content
     // Returns true if the section is open (content should be rendered)
-    inline bool begin_section(const char* label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
+    inline bool BeginSection(const char* label, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
     {
         bool open = ImGui::CollapsingHeader(label, flags);
         if (open)
@@ -39,7 +39,7 @@ namespace lumina::ui
         return open;
     }
 
-    inline bool begin_section(const char* label, bool& visible, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
+    inline bool BeginSection(const char* label, bool& visible, ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_DefaultOpen)
     {
         bool open = ImGui::CollapsingHeader(label, &visible, flags);
         if (open)
@@ -50,8 +50,8 @@ namespace lumina::ui
         return open;
     }
 
-    // Call only if begin_section returned true
-    inline void end_section()
+    // Call only if BeginSection returned true
+    inline void EndSection()
     {
         ImGui::Spacing();
         ImGui::Unindent();

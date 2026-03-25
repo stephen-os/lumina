@@ -4,20 +4,20 @@
 
 #include <concepts>
 
-namespace lumina::ui
+namespace Lumina::UI
 {
-    struct toolbar_config
+    struct ToolbarConfig
     {
-        float height = 32.0f;
-        float button_size = 24.0f;
-        float spacing = 4.0f;
+        float Height = 32.0f;
+        float ButtonSize = 24.0f;
+        float Spacing = 4.0f;
     };
 
-    inline void toolbar(std::invocable auto&& body, const toolbar_config& config = {})
+    inline void Toolbar(std::invocable auto&& body, const ToolbarConfig& config = {})
     {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(config.spacing, 0.0f));
-        ImGui::BeginChild("##toolbar", ImVec2(0, config.height), ImGuiChildFlags_None,
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(config.Spacing, 0.0f));
+        ImGui::BeginChild("##toolbar", ImVec2(0, config.Height), ImGuiChildFlags_None,
                           ImGuiWindowFlags_NoScrollbar);
         body();
         ImGui::EndChild();
@@ -25,14 +25,14 @@ namespace lumina::ui
         ImGui::Separator();
     }
 
-    inline bool toolbar_button(const char* label, const ImVec2& size = {0, 0})
+    inline bool ToolbarButton(const char* label, const ImVec2& size = {0, 0})
     {
         bool clicked = ImGui::Button(label, size);
         ImGui::SameLine();
         return clicked;
     }
 
-    inline bool toolbar_toggle(const char* label, bool& active, const ImVec2& size = {0, 0})
+    inline bool ToolbarToggle(const char* label, bool& active, const ImVec2& size = {0, 0})
     {
         if (active)
             ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetStyleColorVec4(ImGuiCol_ButtonActive));
@@ -47,7 +47,7 @@ namespace lumina::ui
         return clicked;
     }
 
-    inline void toolbar_separator()
+    inline void ToolbarSeparator()
     {
         ImGui::SameLine(0, 8.0f);
         ImVec2 p = ImGui::GetCursorScreenPos();
