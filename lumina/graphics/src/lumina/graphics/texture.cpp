@@ -13,7 +13,7 @@ namespace Lumina
 {
     Texture::~Texture() = default;
 
-    Ref<Texture> Texture::Wrap(Core::Device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, Format fmt)
+    Ref<Texture> Texture::Wrap(Device& dev, nvrhi::ITexture* handle, uint32_t width, uint32_t height, Format fmt)
     {
         if (!handle)
             return nullptr;
@@ -22,7 +22,7 @@ namespace Lumina
         return Ref<Texture>(new Texture(dev, nvrhi::TextureHandle(handle), width, height, fmt));
     }
 
-    Ref<Texture> Texture::Create(Core::Device& dev, uint32_t width, uint32_t height, Format fmt, const void* data, std::string_view debugName)
+    Ref<Texture> Texture::Create(Device& dev, uint32_t width, uint32_t height, Format fmt, const void* data, std::string_view debugName)
     {
         TextureDesc desc;
         desc.Width = width;
@@ -31,7 +31,7 @@ namespace Lumina
         return Create(dev, desc, data, debugName);
     }
 
-    Ref<Texture> Texture::Create(Core::Device& dev, const TextureDesc& desc, const void* data, std::string_view debugName)
+    Ref<Texture> Texture::Create(Device& dev, const TextureDesc& desc, const void* data, std::string_view debugName)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)
@@ -69,6 +69,12 @@ namespace Lumina
             texDesc.isUAV = true;
         }
 
+        if (desc.AllowUAV)
+        {
+            texDesc.isUAV = true;
+            texDesc.initialState = nvrhi::ResourceStates::UnorderedAccess;
+        }
+
         nvrhi::TextureHandle tex = nvrhiDevice->createTexture(texDesc);
         if (!tex)
         {
@@ -91,7 +97,22 @@ namespace Lumina
         return Ref<Texture>(new Texture(dev, std::move(tex), desc.Width, desc.Height, desc.PixelFormat));
     }
 
-    Ref<Texture> Texture::LoadFromFile(Core::Device& dev, const std::string& path, std::string_view debugName)
+    Ref<Texture> Texture::CreateStorage(
+        Device& dev,
+        uint32_t width,
+        uint32_t height,
+        Format fmt,
+        std::string_view debugName)
+    {
+        TextureDesc desc;
+        desc.Width = width;
+        desc.Height = height;
+        desc.PixelFormat = fmt;
+        desc.AllowUAV = true;
+        return Create(dev, desc, nullptr, debugName);
+    }
+
+    Ref<Texture> Texture::LoadFromFile(Device& dev, const std::string& path, std::string_view debugName)
     {
         int width, height, channels;
         stbi_set_flip_vertically_on_load(false);

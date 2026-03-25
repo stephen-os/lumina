@@ -4,6 +4,7 @@
 #include "texture.h"
 #include "sampler.h"
 #include "uniform_buffer.h"
+#include "storage_buffer.h"
 
 #include <lumina/core/log.h>
 
@@ -17,12 +18,13 @@ namespace Lumina
     {
         switch (type)
         {
-            case BindingType::Texture:         return nvrhi::ResourceType::Texture_SRV;
-            case BindingType::Sampler:         return nvrhi::ResourceType::Sampler;
-            case BindingType::ConstantBuffer:  return nvrhi::ResourceType::ConstantBuffer;
-            case BindingType::StorageTexture:  return nvrhi::ResourceType::Texture_UAV;
-            case BindingType::StorageBuffer:   return nvrhi::ResourceType::StructuredBuffer_UAV;
-            default:                           return nvrhi::ResourceType::None;
+            case BindingType::Texture:          return nvrhi::ResourceType::Texture_SRV;
+            case BindingType::Sampler:          return nvrhi::ResourceType::Sampler;
+            case BindingType::ConstantBuffer:   return nvrhi::ResourceType::ConstantBuffer;
+            case BindingType::StorageTexture:   return nvrhi::ResourceType::Texture_UAV;
+            case BindingType::StorageBuffer:    return nvrhi::ResourceType::StructuredBuffer_UAV;
+            case BindingType::StructuredBuffer: return nvrhi::ResourceType::StructuredBuffer_SRV;
+            default:                            return nvrhi::ResourceType::None;
         }
     }
 
@@ -52,11 +54,29 @@ namespace Lumina
         return *this;
     }
 
+    BindingSetDesc& BindingSetDesc::AddStorageTexture(uint32_t slot, Ref<Texture> tex)
+    {
+        Bindings.push_back({ slot, BindingType::StorageTexture, tex ? tex->GetTexture() : nullptr, 0 });
+        return *this;
+    }
+
+    BindingSetDesc& BindingSetDesc::AddStorageBuffer(uint32_t slot, Ref<StorageBuffer> buf)
+    {
+        Bindings.push_back({ slot, BindingType::StorageBuffer, buf ? buf->GetBuffer() : nullptr, 0 });
+        return *this;
+    }
+
+    BindingSetDesc& BindingSetDesc::AddStructuredBuffer(uint32_t slot, Ref<StorageBuffer> buf)
+    {
+        Bindings.push_back({ slot, BindingType::StructuredBuffer, buf ? buf->GetBuffer() : nullptr, 0 });
+        return *this;
+    }
+
     // --- BindingLayout ---
 
     BindingLayout::~BindingLayout() = default;
 
-    Ref<BindingLayout> BindingLayout::Create(Core::Device& dev, const BindingLayoutDesc& desc)
+    Ref<BindingLayout> BindingLayout::Create(Device& dev, const BindingLayoutDesc& desc)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)
@@ -71,6 +91,8 @@ namespace Lumina
             visibility = visibility | nvrhi::ShaderType::Vertex;
         if (desc.PixelShaderVisible)
             visibility = visibility | nvrhi::ShaderType::Pixel;
+        if (desc.ComputeShaderVisible)
+            visibility = visibility | nvrhi::ShaderType::Compute;
 
         nvrhi::BindingLayoutDesc nvrhiDesc;
         nvrhiDesc.visibility = visibility;
@@ -105,7 +127,7 @@ namespace Lumina
 
     BindingSet::~BindingSet() = default;
 
-    Ref<BindingSet> BindingSet::Create(Core::Device& dev, const BindingSetDesc& desc)
+    Ref<BindingSet> BindingSet::Create(Device& dev, const BindingSetDesc& desc)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)
@@ -156,6 +178,12 @@ namespace Lumina
                 {
                     auto* buf = static_cast<nvrhi::IBuffer*>(item.Resource);
                     nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_UAV(item.Slot, buf));
+                    break;
+                }
+                case BindingType::StructuredBuffer:
+                {
+                    auto* buf = static_cast<nvrhi::IBuffer*>(item.Resource);
+                    nvrhiDesc.bindings.push_back(nvrhi::BindingSetItem::StructuredBuffer_SRV(item.Slot, buf));
                     break;
                 }
                 default:

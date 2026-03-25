@@ -21,8 +21,9 @@ namespace Lumina
     {
         uint32_t Width = 1;
         uint32_t Height = 1;
-        Format PixelFormat = Format::RGBA8Unorm;
+        Format PixelFormat = Format::RGBA8_UNORM;
         bool GenerateMips = false;
+        bool AllowUAV = false;     // Enable UAV access for compute shaders
     };
 
     /// GPU texture for storing 2D image data.
@@ -64,6 +65,14 @@ namespace Lumina
             uint32_t width,
             uint32_t height,
             Format fmt);
+
+        /// Creates a texture that can be used as a storage texture (UAV) in compute shaders.
+        [[nodiscard]] static Ref<Texture> CreateStorage(
+            Device& dev,
+            uint32_t width,
+            uint32_t height,
+            Format fmt = Format::RGBA8_UNORM,
+            std::string_view debugName = "Lumina Storage Texture");
 
         [[nodiscard]] uint32_t GetWidth() const noexcept { return m_Width; }
         [[nodiscard]] uint32_t GetHeight() const noexcept { return m_Height; }

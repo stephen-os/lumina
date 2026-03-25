@@ -15,6 +15,7 @@ namespace Lumina
 {
     class Texture;
     class UniformBuffer;
+    class StorageBuffer;
 
     /// Types of shader resource bindings.
     enum class BindingType
@@ -23,7 +24,8 @@ namespace Lumina
         Sampler,            // Texture sampler
         ConstantBuffer,     // Uniform/constant buffer
         StorageTexture,     // Read-write texture (UAV)
-        StorageBuffer       // Read-write buffer (UAV)
+        StorageBuffer,      // Read-write buffer (UAV)
+        StructuredBuffer    // Read-only structured buffer (SRV)
     };
 
     /// Describes a single binding slot in a binding layout.
@@ -40,6 +42,9 @@ namespace Lumina
         [[nodiscard]] static BindingItem TextureArray(uint32_t slot, uint32_t count) noexcept { return { slot, BindingType::Texture, count }; }
         [[nodiscard]] static BindingItem Sampler(uint32_t slot) noexcept { return { slot, BindingType::Sampler, 1 }; }
         [[nodiscard]] static BindingItem ConstantBuffer(uint32_t slot) noexcept { return { slot, BindingType::ConstantBuffer, 1 }; }
+        [[nodiscard]] static BindingItem StorageTexture(uint32_t slot) noexcept { return { slot, BindingType::StorageTexture, 1 }; }
+        [[nodiscard]] static BindingItem StorageBuffer(uint32_t slot) noexcept { return { slot, BindingType::StorageBuffer, 1 }; }
+        [[nodiscard]] static BindingItem StructuredBuffer(uint32_t slot) noexcept { return { slot, BindingType::StructuredBuffer, 1 }; }
     };
 
     /// Configuration for binding layout creation.
@@ -48,6 +53,7 @@ namespace Lumina
         std::vector<BindingItem> Bindings;
         bool VertexShaderVisible = true;
         bool PixelShaderVisible = true;
+        bool ComputeShaderVisible = false;
 
         BindingLayoutDesc& AddTexture(uint32_t slot)
         {
@@ -70,6 +76,42 @@ namespace Lumina
         BindingLayoutDesc& AddConstantBuffer(uint32_t slot)
         {
             Bindings.push_back(BindingItem::ConstantBuffer(slot));
+            return *this;
+        }
+
+        BindingLayoutDesc& AddStorageTexture(uint32_t slot)
+        {
+            Bindings.push_back(BindingItem::StorageTexture(slot));
+            return *this;
+        }
+
+        BindingLayoutDesc& AddStorageBuffer(uint32_t slot)
+        {
+            Bindings.push_back(BindingItem::StorageBuffer(slot));
+            return *this;
+        }
+
+        BindingLayoutDesc& AddStructuredBuffer(uint32_t slot)
+        {
+            Bindings.push_back(BindingItem::StructuredBuffer(slot));
+            return *this;
+        }
+
+        /// Sets visibility for compute shaders only.
+        BindingLayoutDesc& ForCompute()
+        {
+            VertexShaderVisible = false;
+            PixelShaderVisible = false;
+            ComputeShaderVisible = true;
+            return *this;
+        }
+
+        /// Sets visibility for all shader stages.
+        BindingLayoutDesc& ForAllStages()
+        {
+            VertexShaderVisible = true;
+            PixelShaderVisible = true;
+            ComputeShaderVisible = true;
             return *this;
         }
     };
@@ -128,6 +170,9 @@ namespace Lumina
         BindingSetDesc& AddTextureArrayElement(uint32_t slot, uint32_t arrayIndex, Ref<Texture> tex);
         BindingSetDesc& AddSampler(uint32_t slot, Ref<Sampler> samp);
         BindingSetDesc& AddConstantBuffer(uint32_t slot, Ref<UniformBuffer> ubo);
+        BindingSetDesc& AddStorageTexture(uint32_t slot, Ref<Texture> tex);
+        BindingSetDesc& AddStorageBuffer(uint32_t slot, Ref<StorageBuffer> buf);
+        BindingSetDesc& AddStructuredBuffer(uint32_t slot, Ref<StorageBuffer> buf);
     };
 
     /// GPU binding set containing actual resource bindings.
