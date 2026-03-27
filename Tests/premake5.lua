@@ -15,18 +15,18 @@ project "tests"
 
     includedirs
     {
-        "%{wks.location}/dependencies/catch2/src",
+        "%{wks.location}/Lumina/vendor/catch2/src",
         "%{wks.location}/Lumina/src",
-        "%{wks.location}/dependencies/glfw/include",
-        "%{wks.location}/dependencies/glm",
-        "%{wks.location}/dependencies/imgui",
-        "%{wks.location}/dependencies/box2d/include",
-        "%{wks.location}/dependencies/spdlog/include",
-        "%{wks.location}/dependencies/nvrhi/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
-        "%{wks.location}/dependencies/stb_truetype",
-        "%{wks.location}/dependencies/stb_image",
+        "%{wks.location}/Lumina/vendor/glfw/include",
+        "%{wks.location}/Lumina/vendor/glm",
+        "%{wks.location}/Lumina/vendor/imgui",
+        "%{wks.location}/Lumina/vendor/box2d/include",
+        "%{wks.location}/Lumina/vendor/spdlog/include",
+        "%{wks.location}/Lumina/vendor/nvrhi/include",
+        "%{wks.location}/Lumina/vendor/nvrhi/thirdparty/DirectX-Headers/include",
+        "%{wks.location}/Lumina/vendor/nvrhi/thirdparty/Vulkan-Headers/include",
+        "%{wks.location}/Lumina/vendor/stb_truetype",
+        "%{wks.location}/Lumina/vendor/stb_image",
     }
 
     links

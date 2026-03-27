@@ -14,14 +14,14 @@ workspace "Lumina"
 
 -- Dependencies (external libraries)
 group "dependencies"
-    include "dependencies/config/glfw"
-    include "dependencies/config/imgui"
-    include "dependencies/config/imgui-node-editor"
-    include "dependencies/config/imgui-file-dialog"
-    include "dependencies/config/nvrhi"
-    include "dependencies/config/catch2"
-    include "dependencies/config/box2d"
-    include "dependencies/config/tracy"
+    include "Premake/vendor/glfw"
+    include "Premake/vendor/imgui"
+    include "Premake/vendor/imgui-node-editor"
+    include "Premake/vendor/imgui-file-dialog"
+    include "Premake/vendor/nvrhi"
+    include "Premake/vendor/catch2"
+    include "Premake/vendor/box2d"
+    include "Premake/vendor/tracy"
     -- spdlog is header-only, no build needed
 group ""
 
@@ -53,17 +53,17 @@ group "sandbox"
 
         includedirs {
             "Lumina/src",
-            "dependencies/glfw/include",
-            "dependencies/glm",
-            "dependencies/imgui",
-            "dependencies/imgui/backends",
-            "dependencies/imgui-node-editor",
-            "dependencies/imgui-file-dialog",
-            "dependencies/box2d/include",
-            "dependencies/spdlog/include",
-            "dependencies/nvrhi/include",
-            "dependencies/nvrhi/thirdparty/DirectX-Headers/include",
-            "dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
+            "Lumina/vendor/glfw/include",
+            "Lumina/vendor/glm",
+            "Lumina/vendor/imgui",
+            "Lumina/vendor/imgui/backends",
+            "Lumina/vendor/imgui-node-editor",
+            "Lumina/vendor/imgui-file-dialog",
+            "Lumina/vendor/box2d/include",
+            "Lumina/vendor/spdlog/include",
+            "Lumina/vendor/nvrhi/include",
+            "Lumina/vendor/nvrhi/thirdparty/DirectX-Headers/include",
+            "Lumina/vendor/nvrhi/thirdparty/Vulkan-Headers/include",
         }
 
         links {

@@ -52,21 +52,21 @@ project "Lumina"
     includedirs {
         "src",
 
-        -- Dependencies
-        "%{wks.location}/dependencies/glfw/include",
-        "%{wks.location}/dependencies/imgui",
-        "%{wks.location}/dependencies/imgui/backends",
-        "%{wks.location}/dependencies/imgui-node-editor",
-        "%{wks.location}/dependencies/imgui-file-dialog",
-        "%{wks.location}/dependencies/glm",
-        "%{wks.location}/dependencies/spdlog/include",
-        "%{wks.location}/dependencies/nvrhi/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
-        "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
-        "%{wks.location}/dependencies/stb_image",
-        "%{wks.location}/dependencies/stb_truetype",
-        "%{wks.location}/dependencies/box2d/include",
-        "%{wks.location}/dependencies/tracy/public",
+        -- Dependencies (in vendor folder next to src)
+        "vendor/glfw/include",
+        "vendor/imgui",
+        "vendor/imgui/backends",
+        "vendor/imgui-node-editor",
+        "vendor/imgui-file-dialog",
+        "vendor/glm",
+        "vendor/spdlog/include",
+        "vendor/nvrhi/include",
+        "vendor/nvrhi/thirdparty/DirectX-Headers/include",
+        "vendor/nvrhi/thirdparty/Vulkan-Headers/include",
+        "vendor/stb_image",
+        "vendor/stb_truetype",
+        "vendor/box2d/include",
+        "vendor/tracy/public",
     }
 
     links {

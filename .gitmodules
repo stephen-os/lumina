@@ -1,30 +1,30 @@
-[submodule "dependencies/glfw"]
-	path = dependencies/glfw
+[submodule "Lumina/vendor/glfw"]
+	path = Lumina/vendor/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "dependencies/spdlog"]
-	path = dependencies/spdlog
+[submodule "Lumina/vendor/spdlog"]
+	path = Lumina/vendor/spdlog
 	url = https://github.com/gabime/spdlog.git
-[submodule "dependencies/glm"]
-	path = dependencies/glm
+[submodule "Lumina/vendor/glm"]
+	path = Lumina/vendor/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "dependencies/imgui-node-editor"]
-	path = dependencies/imgui-node-editor
+[submodule "Lumina/vendor/imgui-node-editor"]
+	path = Lumina/vendor/imgui-node-editor
 	url = https://github.com/stephen-os/imgui-node-editor.git
-[submodule "dependencies/imgui"]
-	path = dependencies/imgui
+[submodule "Lumina/vendor/imgui"]
+	path = Lumina/vendor/imgui
 	url = https://github.com/stephen-os/imgui.git
-[submodule "dependencies/imgui-file-dialog"]
-	path = dependencies/imgui-file-dialog
+[submodule "Lumina/vendor/imgui-file-dialog"]
+	path = Lumina/vendor/imgui-file-dialog
 	url = https://github.com/stephen-os/imgui-file-dialog.git
-[submodule "dependencies/nvrhi"]
-	path = dependencies/nvrhi
+[submodule "Lumina/vendor/nvrhi"]
+	path = Lumina/vendor/nvrhi
 	url = https://github.com/stephen-os/nvrhi.git
-[submodule "dependencies/catch2"]
-	path = dependencies/catch2
+[submodule "Lumina/vendor/catch2"]
+	path = Lumina/vendor/catch2
 	url = https://github.com/catchorg/Catch2.git
-[submodule "dependencies/box2d"]
-	path = dependencies/box2d
+[submodule "Lumina/vendor/box2d"]
+	path = Lumina/vendor/box2d
 	url = https://github.com/stephen-os/box2d.git
-[submodule "dependencies/tracy"]
-	path = dependencies/tracy
+[submodule "Lumina/vendor/tracy"]
+	path = Lumina/vendor/tracy
 	url = https://github.com/wolfpld/tracy.git

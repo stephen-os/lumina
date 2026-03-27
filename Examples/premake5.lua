@@ -18,17 +18,17 @@ local function create_example(name, folder)
 
         includedirs {
             "%{wks.location}/Lumina/src",
-            "%{wks.location}/dependencies/glfw/include",
-            "%{wks.location}/dependencies/glm",
-            "%{wks.location}/dependencies/imgui",
-            "%{wks.location}/dependencies/imgui/backends",
-            "%{wks.location}/dependencies/imgui-node-editor",
-            "%{wks.location}/dependencies/imgui-file-dialog",
-            "%{wks.location}/dependencies/spdlog/include",
-            "%{wks.location}/dependencies/nvrhi/include",
-            "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
-            "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
-            "%{wks.location}/dependencies/box2d/include",
+            "%{wks.location}/Lumina/vendor/glfw/include",
+            "%{wks.location}/Lumina/vendor/glm",
+            "%{wks.location}/Lumina/vendor/imgui",
+            "%{wks.location}/Lumina/vendor/imgui/backends",
+            "%{wks.location}/Lumina/vendor/imgui-node-editor",
+            "%{wks.location}/Lumina/vendor/imgui-file-dialog",
+            "%{wks.location}/Lumina/vendor/spdlog/include",
+            "%{wks.location}/Lumina/vendor/nvrhi/include",
+            "%{wks.location}/Lumina/vendor/nvrhi/thirdparty/DirectX-Headers/include",
+            "%{wks.location}/Lumina/vendor/nvrhi/thirdparty/Vulkan-Headers/include",
+            "%{wks.location}/Lumina/vendor/box2d/include",
         }
 
         links {

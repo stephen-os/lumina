@@ -1,0 +1,18 @@
+.vs
+.vscode
+.build*
+.DS_Store
+bin
+[Bb]uild
+*.VC.db
+*.VC.opendb
+*.user
+*.ini
+*.json
+
+
+# Directories
+bin/
+bin-int/
+*.filters
+*.vcxproj

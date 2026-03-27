@@ -1,0 +1,42 @@
+# Ignore binary directories
+/bin/
+/bin-int/
+
+# Ignore Visual Studio project files
+*.vcxproj
+*.vcxproj.filters
+
+# Ignore build artifacts
+*.obj
+*.exe
+*.dll
+*.pdb
+*.ilk
+*.idb
+*.suo
+*.user
+*.ncb
+*.log
+*.tlog
+*.ipch
+*.aps
+*.sdf
+*.opendb
+
+# Ignore CMake-generated files
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+
+# Ignore backup and temporary files
+*.tmp
+*.bak
+*.swp
+*.swo
+*.~*
+
+# Ignore dependencies
+/dependencies/
+.vscode/
