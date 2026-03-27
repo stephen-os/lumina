@@ -128,7 +128,7 @@ namespace Lumina
         std::string_view effectiveDebugName = debugName.empty() ? std::string_view(path) : debugName;
 
         auto tex = Create(dev, static_cast<uint32_t>(width), static_cast<uint32_t>(height),
-                          Format::RGBA8_UNORM, data, effectiveDebugName);
+                          Format::RGBA8Unorm, data, effectiveDebugName);
 
         stbi_image_free(data);
 

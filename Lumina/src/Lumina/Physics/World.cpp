@@ -88,7 +88,7 @@ namespace Lumina
 
         switch (def.Type)
         {
-        case BodyType::StaticBody: bd.type = b2_staticBody; break;
+        case BodyType::Static: bd.type = b2_staticBody; break;
         case BodyType::Kinematic:   bd.type = b2_kinematicBody; break;
         case BodyType::Dynamic:     bd.type = b2_dynamicBody; break;
         }

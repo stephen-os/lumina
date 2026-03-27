@@ -3,7 +3,7 @@
 #include "Assert.h"
 #include "Theme.h"
 #include "Profiler.h"
-#include "imgui/imgui_nvrhi.h"
+#include "imgui/ImGuiNvrhi.h"
 
 #include <imgui.h>
 #include <backends/imgui_impl_glfw.h>

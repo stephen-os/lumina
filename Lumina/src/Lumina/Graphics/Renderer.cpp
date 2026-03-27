@@ -6,6 +6,11 @@
 
 #include <unordered_map>
 
+// Windows defines DrawText as a macro
+#ifdef DrawText
+#undef DrawText
+#endif
+
 namespace Lumina
 {
     // ============================================================================
@@ -104,7 +109,7 @@ namespace Lumina
 
         s_State = new RendererState();
 
-        auto& device = Core::Application::Get().GetDevice();
+        auto& device = Application::Get().GetDevice();
 
         // Create Renderer2D
         s_State->Renderer = MakeScope<Renderer2D>(device);
@@ -149,14 +154,14 @@ namespace Lumina
 
     RenderContext Renderer::CreateContext(uint32_t width, uint32_t height)
     {
-        return CreateContext(width, height, MsaaMode::None);
+        return CreateContext(width, height, MSAAMode::None);
     }
 
-    RenderContext Renderer::CreateContext(uint32_t width, uint32_t height, MsaaMode msaa)
+    RenderContext Renderer::CreateContext(uint32_t width, uint32_t height, MSAAMode msaa)
     {
         RENDERER_CHECK_INIT_RET(RenderContext{0});
 
-        auto& device = Core::Application::Get().GetDevice();
+        auto& device = Application::Get().GetDevice();
 
         RendererState::ContextData ctxData;
         ctxData.Target = RenderTarget::Create(device, width, height, Format::RGBA8Unorm, Format::Unknown, static_cast<uint32_t>(msaa));
@@ -191,7 +196,7 @@ namespace Lumina
         if (s_State->DefaultContext.Width == width &&
             s_State->DefaultContext.Height == height) return;
 
-        auto& device = Core::Application::Get().GetDevice();
+        auto& device = Application::Get().GetDevice();
 
         // Preserve MSAA sample count when resizing
         uint32_t sampleCount = s_State->DefaultContext.SampleCount;
@@ -219,7 +224,7 @@ namespace Lumina
 
         if (ctxData->Width == width && ctxData->Height == height) return;
 
-        auto& device = Core::Application::Get().GetDevice();
+        auto& device = Application::Get().GetDevice();
 
         // Preserve MSAA sample count when resizing
         ctxData->Target = RenderTarget::Create(device, width, height, Format::RGBA8Unorm, Format::Unknown, ctxData->SampleCount);

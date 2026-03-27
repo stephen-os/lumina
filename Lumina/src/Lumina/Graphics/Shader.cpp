@@ -10,7 +10,7 @@ namespace Lumina
 {
     Shader::~Shader() = default;
 
-    Ref<Shader> Shader::Create(Core::Device& dev, const void* vertexBlob, size_t vertexSize, const void* pixelBlob, size_t pixelSize)
+    Ref<Shader> Shader::Create(Device& dev, const void* vertexBlob, size_t vertexSize, const void* pixelBlob, size_t pixelSize)
     {
         ShaderDesc desc;
         desc.VertexBlob = vertexBlob;
@@ -20,7 +20,7 @@ namespace Lumina
         return Create(dev, desc);
     }
 
-    Ref<Shader> Shader::Create(Core::Device& dev, const ShaderDesc& desc)
+    Ref<Shader> Shader::Create(Device& dev, const ShaderDesc& desc)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)

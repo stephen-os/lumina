@@ -27,11 +27,11 @@ namespace Lumina::UI
         {
             switch (type)
             {
-            case NotificationType::Info:    return Lumina::Core::Color::TextSecondary;
-            case NotificationType::Success: return Lumina::Core::Color::Success;
-            case NotificationType::Warning: return Lumina::Core::Color::Warning;
-            case NotificationType::Error:   return Lumina::Core::Color::Error;
-            default:                        return Lumina::Core::Color::TextSecondary;
+            case NotificationType::Info:    return Lumina::Color::TextSecondary;
+            case NotificationType::Success: return Lumina::Color::Success;
+            case NotificationType::Warning: return Lumina::Color::Warning;
+            case NotificationType::Error:   return Lumina::Color::Error;
+            default:                        return Lumina::Color::TextSecondary;
             }
         }
 
@@ -104,7 +104,7 @@ namespace Lumina::UI
 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 6.0f);
             ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(12.0f, 8.0f));
-            ImGui::PushStyleColor(ImGuiCol_WindowBg, Lumina::Core::Color::MediumGray);
+            ImGui::PushStyleColor(ImGuiCol_WindowBg, Lumina::Color::MediumGray);
 
             ImGuiWindowFlags flags = ImGuiWindowFlags_NoDecoration
                                    | ImGuiWindowFlags_NoInputs
@@ -124,7 +124,7 @@ namespace Lumina::UI
 
                 ImGui::SameLine();
 
-                ImVec4 textColor = Lumina::Core::Color::TextPrimary;
+                ImVec4 textColor = Lumina::Color::TextPrimary;
                 textColor.w *= alpha;
                 ImGui::PushStyleColor(ImGuiCol_Text, textColor);
                 ImGui::TextWrapped("%s", entry.message.c_str());

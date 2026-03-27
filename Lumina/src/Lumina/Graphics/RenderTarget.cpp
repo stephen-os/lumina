@@ -10,7 +10,7 @@ namespace Lumina
 {
     RenderTarget::~RenderTarget() = default;
 
-    Ref<RenderTarget> RenderTarget::Create(Core::Device& dev, uint32_t width, uint32_t height, Format colorFormat, Format depthFormat, uint32_t sampleCount)
+    Ref<RenderTarget> RenderTarget::Create(Device& dev, uint32_t width, uint32_t height, Format colorFormat, Format depthFormat, uint32_t sampleCount)
     {
         // Validate sample count (must be 1, 2, 4, or 8)
         if (sampleCount != 1 && sampleCount != 2 && sampleCount != 4 && sampleCount != 8)

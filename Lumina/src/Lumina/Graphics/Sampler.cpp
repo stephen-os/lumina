@@ -22,7 +22,7 @@ namespace Lumina
 
     Sampler::~Sampler() = default;
 
-    Ref<Sampler> Sampler::Create(Core::Device& dev, const SamplerDesc& desc)
+    Ref<Sampler> Sampler::Create(Device& dev, const SamplerDesc& desc)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)

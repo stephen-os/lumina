@@ -245,7 +245,7 @@ namespace Lumina
         b2BodyType t = b2Body_GetType(m_BodyId);
         switch (t)
         {
-        case b2_staticBody:    return BodyType::StaticBody;
+        case b2_staticBody:    return BodyType::Static;
         case b2_kinematicBody: return BodyType::Kinematic;
         case b2_dynamicBody:
         default:               return BodyType::Dynamic;
@@ -257,7 +257,7 @@ namespace Lumina
         b2BodyType t = b2_dynamicBody;
         switch (type)
         {
-        case BodyType::StaticBody: t = b2_staticBody; break;
+        case BodyType::Static: t = b2_staticBody; break;
         case BodyType::Kinematic:   t = b2_kinematicBody; break;
         case BodyType::Dynamic:     t = b2_dynamicBody; break;
         }

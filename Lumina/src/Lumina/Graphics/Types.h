@@ -20,44 +20,44 @@ namespace Lumina
         Unknown,
 
         // 8-bit
-        R8_UNORM,
-        R8_SNORM,
-        R8_UINT,
-        R8_SINT,
+        R8Unorm,
+        R8Snorm,
+        R8Uint,
+        R8Sint,
 
         // 16-bit
-        R16_Float,
-        R16_UNORM,
-        R16_UINT,
-        R16_SINT,
-        RG8_UNORM,
-        RG8_SNORM,
+        R16Float,
+        R16Unorm,
+        R16Uint,
+        R16Sint,
+        RG8Unorm,
+        RG8Snorm,
 
         // 32-bit
-        R32_Float,
-        R32_UINT,
-        R32_SINT,
-        RG16_Float,
-        RG16_UNORM,
-        RGBA8_UNORM,
-        RGBA8_UNORM_SRGB,
-        RGBA8_SNORM,
-        BGRA8_UNORM,
-        BGRA8_UNORM_SRGB,
+        R32Float,
+        R32Uint,
+        R32Sint,
+        RG16Float,
+        RG16Unorm,
+        RGBA8Unorm,
+        RGBA8UnormSrgb,
+        RGBA8Snorm,
+        BGRA8Unorm,
+        BGRA8UnormSrgb,
 
         // 64-bit
-        RG32_Float,
-        RGBA16_Float,
-        RGBA16_UNORM,
+        RG32Float,
+        RGBA16Float,
+        RGBA16Unorm,
 
         // 128-bit
-        RGBA32_Float,
+        RGBA32Float,
 
         // Depth/stencil
-        D16_UNORM,
-        D24_UNORM_S8_UINT,
-        D32_Float,
-        D32_Float_S8_UINT,
+        D16Unorm,
+        D24UnormS8Uint,
+        D32Float,
+        D32FloatS8Uint,
     };
 
     // --- Blend modes ---
@@ -217,42 +217,42 @@ namespace Lumina
     {
         switch (fmt)
         {
-            case Format::R8_UNORM:
-            case Format::R8_SNORM:
-            case Format::R8_UINT:
-            case Format::R8_SINT:
+            case Format::R8Unorm:
+            case Format::R8Snorm:
+            case Format::R8Uint:
+            case Format::R8Sint:
                 return 1;
 
-            case Format::R16_Float:
-            case Format::R16_UNORM:
-            case Format::R16_UINT:
-            case Format::R16_SINT:
-            case Format::RG8_UNORM:
-            case Format::RG8_SNORM:
-            case Format::D16_UNORM:
+            case Format::R16Float:
+            case Format::R16Unorm:
+            case Format::R16Uint:
+            case Format::R16Sint:
+            case Format::RG8Unorm:
+            case Format::RG8Snorm:
+            case Format::D16Unorm:
                 return 2;
 
-            case Format::R32_Float:
-            case Format::R32_UINT:
-            case Format::R32_SINT:
-            case Format::RG16_Float:
-            case Format::RG16_UNORM:
-            case Format::RGBA8_UNORM:
-            case Format::RGBA8_UNORM_SRGB:
-            case Format::RGBA8_SNORM:
-            case Format::BGRA8_UNORM:
-            case Format::BGRA8_UNORM_SRGB:
-            case Format::D24_UNORM_S8_UINT:
-            case Format::D32_Float:
+            case Format::R32Float:
+            case Format::R32Uint:
+            case Format::R32Sint:
+            case Format::RG16Float:
+            case Format::RG16Unorm:
+            case Format::RGBA8Unorm:
+            case Format::RGBA8UnormSrgb:
+            case Format::RGBA8Snorm:
+            case Format::BGRA8Unorm:
+            case Format::BGRA8UnormSrgb:
+            case Format::D24UnormS8Uint:
+            case Format::D32Float:
                 return 4;
 
-            case Format::RG32_Float:
-            case Format::RGBA16_Float:
-            case Format::RGBA16_UNORM:
-            case Format::D32_Float_S8_UINT:
+            case Format::RG32Float:
+            case Format::RGBA16Float:
+            case Format::RGBA16Unorm:
+            case Format::D32FloatS8Uint:
                 return 8;
 
-            case Format::RGBA32_Float:
+            case Format::RGBA32Float:
                 return 16;
 
             default:
@@ -264,10 +264,10 @@ namespace Lumina
     {
         switch (fmt)
         {
-            case Format::D16_UNORM:
-            case Format::D24_UNORM_S8_UINT:
-            case Format::D32_Float:
-            case Format::D32_Float_S8_UINT:
+            case Format::D16Unorm:
+            case Format::D24UnormS8Uint:
+            case Format::D32Float:
+            case Format::D32FloatS8Uint:
                 return true;
             default:
                 return false;
@@ -278,8 +278,8 @@ namespace Lumina
     {
         switch (fmt)
         {
-            case Format::D24_UNORM_S8_UINT:
-            case Format::D32_Float_S8_UINT:
+            case Format::D24UnormS8Uint:
+            case Format::D32FloatS8Uint:
                 return true;
             default:
                 return false;

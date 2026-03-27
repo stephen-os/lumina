@@ -90,17 +90,17 @@ namespace Lumina
     void Camera2D::StartShake(const Camera2DShakeParams& params)
     {
         m_ShakeParams = params;
-        m_ShakeRemaining = params.duration > 0.0f ? params.duration : std::numeric_limits<float>::max();
+        m_ShakeRemaining = params.Duration > 0.0f ? params.Duration : std::numeric_limits<float>::max();
         m_ShakeTime = 0.0f;
     }
 
     void Camera2D::StartShake(float intensity, float duration)
     {
         Camera2DShakeParams params;
-        params.intensity = intensity;
-        params.duration = duration;
-        params.frequency = 20.0f;
-        params.decay = 5.0f;
+        params.Intensity = intensity;
+        params.Duration = duration;
+        params.Frequency = 20.0f;
+        params.Decay = 5.0f;
         StartShake(params);
     }
 
@@ -120,10 +120,10 @@ namespace Lumina
 
     void Camera2D::SetBounds(float minX, float minY, float maxX, float maxY)
     {
-        m_Bounds.minX = minX;
-        m_Bounds.minY = minY;
-        m_Bounds.maxX = maxX;
-        m_Bounds.maxY = maxY;
+        m_Bounds.MinX = minX;
+        m_Bounds.MinY = minY;
+        m_Bounds.MaxX = maxX;
+        m_Bounds.MaxY = maxY;
         ApplyBounds();
         m_ViewDirty = true;
     }
@@ -281,17 +281,17 @@ namespace Lumina
 
         // Calculate decay factor
         float decayFactor = 1.0f;
-        if (m_ShakeParams.duration > 0.0f)
+        if (m_ShakeParams.Duration > 0.0f)
         {
-            float elapsed = m_ShakeParams.duration - m_ShakeRemaining;
-            decayFactor = std::exp(-m_ShakeParams.decay * elapsed);
+            float elapsed = m_ShakeParams.Duration - m_ShakeRemaining;
+            decayFactor = std::exp(-m_ShakeParams.Decay * elapsed);
         }
 
         // Use sin/cos with different frequencies for x/y to avoid circular patterns
-        float time = m_ShakeTime * m_ShakeParams.frequency;
+        float time = m_ShakeTime * m_ShakeParams.Frequency;
         float offsetX = std::sin(time * 1.0f) * std::cos(time * 0.7f);
         float offsetY = std::sin(time * 1.3f) * std::cos(time * 0.9f);
 
-        return glm::vec2(offsetX, offsetY) * m_ShakeParams.intensity * decayFactor;
+        return glm::vec2(offsetX, offsetY) * m_ShakeParams.Intensity * decayFactor;
     }
 }

@@ -17,7 +17,7 @@
 
 namespace Lumina
 {
-    Context::Context(Core::Device& dev)
+    Context::Context(Device& dev)
         : m_Device(dev)
     {
     }
@@ -87,7 +87,7 @@ namespace Lumina
 
         if (fb)
         {
-            nvrhi::utils::ClearColorAttachment(m_CommandList, fb, 0, nvrhi::Color(color.r, color.g, color.b, color.a));
+            nvrhi::utils::ClearColorAttachment(m_CommandList, fb, 0, nvrhi::Color(color.R, color.G, color.B, color.A));
         }
     }
 
@@ -115,10 +115,10 @@ namespace Lumina
     void Context::SetViewport(float x, float y, float width, float height)
     {
         Viewport vp;
-        vp.x = x;
-        vp.y = y;
-        vp.width = width;
-        vp.height = height;
+        vp.X = x;
+        vp.Y = y;
+        vp.Width = width;
+        vp.Height = height;
         SetViewport(vp);
     }
 
@@ -131,10 +131,10 @@ namespace Lumina
     void Context::SetScissor(int32_t x, int32_t y, int32_t width, int32_t height)
     {
         ScissorRect rect;
-        rect.x = x;
-        rect.y = y;
-        rect.width = width;
-        rect.height = height;
+        rect.X = x;
+        rect.Y = y;
+        rect.Width = width;
+        rect.Height = height;
         SetScissor(rect);
     }
 
@@ -197,31 +197,31 @@ namespace Lumina
 
         // Viewport
         state.viewport.addViewport(nvrhi::Viewport(
-            m_CurrentViewport.x,
-            m_CurrentViewport.x + m_CurrentViewport.width,
-            m_CurrentViewport.y,
-            m_CurrentViewport.y + m_CurrentViewport.height,
-            m_CurrentViewport.minDepth,
-            m_CurrentViewport.maxDepth
+            m_CurrentViewport.X,
+            m_CurrentViewport.X + m_CurrentViewport.Width,
+            m_CurrentViewport.Y,
+            m_CurrentViewport.Y + m_CurrentViewport.Height,
+            m_CurrentViewport.MinDepth,
+            m_CurrentViewport.MaxDepth
         ));
 
         // Scissor (use viewport as default if not set)
-        if (m_CurrentScissor.width > 0 && m_CurrentScissor.height > 0)
+        if (m_CurrentScissor.Width > 0 && m_CurrentScissor.Height > 0)
         {
             state.viewport.addScissorRect(nvrhi::Rect(
-                m_CurrentScissor.x,
-                m_CurrentScissor.x + m_CurrentScissor.width,
-                m_CurrentScissor.y,
-                m_CurrentScissor.y + m_CurrentScissor.height
+                m_CurrentScissor.X,
+                m_CurrentScissor.X + m_CurrentScissor.Width,
+                m_CurrentScissor.Y,
+                m_CurrentScissor.Y + m_CurrentScissor.Height
             ));
         }
         else
         {
             state.viewport.addScissorRect(nvrhi::Rect(
-                static_cast<int>(m_CurrentViewport.x),
-                static_cast<int>(m_CurrentViewport.x + m_CurrentViewport.width),
-                static_cast<int>(m_CurrentViewport.y),
-                static_cast<int>(m_CurrentViewport.y + m_CurrentViewport.height)
+                static_cast<int>(m_CurrentViewport.X),
+                static_cast<int>(m_CurrentViewport.X + m_CurrentViewport.Width),
+                static_cast<int>(m_CurrentViewport.Y),
+                static_cast<int>(m_CurrentViewport.Y + m_CurrentViewport.Height)
             ));
         }
 

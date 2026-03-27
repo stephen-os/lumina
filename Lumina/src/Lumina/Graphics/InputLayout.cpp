@@ -14,7 +14,7 @@ namespace Lumina
 {
     InputLayout::~InputLayout() = default;
 
-    Ref<InputLayout> InputLayout::Create(Core::Device& dev, const InputLayoutDesc& desc, Ref<Shader> vertexShader)
+    Ref<InputLayout> InputLayout::Create(Device& dev, const InputLayoutDesc& desc, Ref<Shader> vertexShader)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)

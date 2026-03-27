@@ -22,7 +22,7 @@ namespace Lumina
         other.m_AlignedSize = 0;
     }
 
-    Ref<UniformBuffer> UniformBuffer::Create(Core::Device& dev, size_t size, std::string_view debugName)
+    Ref<UniformBuffer> UniformBuffer::Create(Device& dev, size_t size, std::string_view debugName)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)

@@ -20,7 +20,7 @@ namespace Lumina
     }
 
     Ref<IndexBuffer> IndexBuffer::Create(
-        Core::Device& dev,
+        Device& dev,
         const void* data,
         size_t count,
         size_t indexSize,

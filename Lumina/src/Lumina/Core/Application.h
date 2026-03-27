@@ -77,7 +77,7 @@ namespace Lumina
 		void PushLayer(std::unique_ptr<Layer> layer)
 		{
 			m_LayerStack.emplace_back(std::move(layer));
-			LayerPtr->OnAttach();
+			m_LayerStack.back()->OnAttach();
 		}
 
 		// Events

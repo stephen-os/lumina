@@ -26,9 +26,9 @@ namespace Lumina
         {
             LUMINA_LOG_WARN("Region '{}' already exists in atlas, overwriting", name);
             // Update existing region
-            m_Regions[it->second].uvMin = uvMin;
-            m_Regions[it->second].uvMax = uvMax;
-            m_Regions[it->second].size = glm::vec2(
+            m_Regions[it->second].UVMin = uvMin;
+            m_Regions[it->second].UVMax = uvMax;
+            m_Regions[it->second].Size = glm::vec2(
                 (uvMax.x - uvMin.x) * static_cast<float>(m_Width),
                 (uvMax.y - uvMin.y) * static_cast<float>(m_Height)
             );
@@ -36,14 +36,14 @@ namespace Lumina
         }
 
         AtlasRegion region;
-        region.name = name;
-        region.uvMin = uvMin;
-        region.uvMax = uvMax;
-        region.size = glm::vec2(
+        region.Name = name;
+        region.UVMin = uvMin;
+        region.UVMax = uvMax;
+        region.Size = glm::vec2(
             (uvMax.x - uvMin.x) * static_cast<float>(m_Width),
             (uvMax.y - uvMin.y) * static_cast<float>(m_Height)
         );
-        region.offset = {0.0f, 0.0f};
+        region.Offset = {0.0f, 0.0f};
 
         uint32_t index = static_cast<uint32_t>(m_Regions.size());
         m_Regions.push_back(region);
@@ -63,18 +63,18 @@ namespace Lumina
         if (it != m_RegionLookup.end())
         {
             LUMINA_LOG_WARN("Region '{}' already exists in atlas, overwriting", name);
-            m_Regions[it->second].uvMin = uvMin;
-            m_Regions[it->second].uvMax = uvMax;
-            m_Regions[it->second].size = glm::vec2(width, height);
+            m_Regions[it->second].UVMin = uvMin;
+            m_Regions[it->second].UVMax = uvMax;
+            m_Regions[it->second].Size = glm::vec2(width, height);
             return;
         }
 
         AtlasRegion region;
-        region.name = name;
-        region.uvMin = uvMin;
-        region.uvMax = uvMax;
-        region.size = glm::vec2(width, height);
-        region.offset = {0.0f, 0.0f};
+        region.Name = name;
+        region.UVMin = uvMin;
+        region.UVMax = uvMax;
+        region.Size = glm::vec2(width, height);
+        region.Offset = {0.0f, 0.0f};
 
         uint32_t index = static_cast<uint32_t>(m_Regions.size());
         m_Regions.push_back(region);
@@ -99,11 +99,11 @@ namespace Lumina
                 std::string name = prefix + std::to_string(index);
 
                 AtlasRegion region;
-                region.name = name;
-                region.uvMin = glm::vec2(x * invW, y * invH);
-                region.uvMax = glm::vec2((x + cellSize.x) * invW, (y + cellSize.y) * invH);
-                region.size = cellSize;
-                region.offset = {0.0f, 0.0f};
+                region.Name = name;
+                region.UVMin = glm::vec2(x * invW, y * invH);
+                region.UVMax = glm::vec2((x + cellSize.x) * invW, (y + cellSize.y) * invH);
+                region.Size = cellSize;
+                region.Offset = {0.0f, 0.0f};
 
                 uint32_t regionIndex = static_cast<uint32_t>(m_Regions.size());
                 m_Regions.push_back(region);
@@ -134,11 +134,11 @@ namespace Lumina
                 const std::string& name = names[index];
 
                 AtlasRegion region;
-                region.name = name;
-                region.uvMin = glm::vec2(x * invW, y * invH);
-                region.uvMax = glm::vec2((x + cellSize.x) * invW, (y + cellSize.y) * invH);
-                region.size = cellSize;
-                region.offset = {0.0f, 0.0f};
+                region.Name = name;
+                region.UVMin = glm::vec2(x * invW, y * invH);
+                region.UVMax = glm::vec2((x + cellSize.x) * invW, (y + cellSize.y) * invH);
+                region.Size = cellSize;
+                region.Offset = {0.0f, 0.0f};
 
                 uint32_t regionIndex = static_cast<uint32_t>(m_Regions.size());
                 m_Regions.push_back(region);
@@ -177,7 +177,7 @@ namespace Lumina
         names.reserve(m_Regions.size());
         for (const auto& region : m_Regions)
         {
-            names.push_back(region.name);
+            names.push_back(region.Name);
         }
         return names;
     }

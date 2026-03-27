@@ -30,6 +30,11 @@
 #include "shaders/composite_vs.h"
 #include "shaders/composite_ps.h"
 
+// Windows defines DrawText as a macro
+#ifdef DrawText
+#undef DrawText
+#endif
+
 namespace
 {
     // Helper to get correct bytecode for current backend
@@ -40,153 +45,153 @@ namespace
     };
 
     // Quad shaders
-    ShaderBytecode GetQuadVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetQuadVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_quad_vs_dxil, sizeof(g_quad_vs_dxil) };
         else
             return { g_quad_vs_spirv, sizeof(g_quad_vs_spirv) };
     }
 
-    ShaderBytecode GetQuadPS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetQuadPS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_quad_ps_dxil, sizeof(g_quad_ps_dxil) };
         else
             return { g_quad_ps_spirv, sizeof(g_quad_ps_spirv) };
     }
 
     // Line shaders
-    ShaderBytecode GetLineVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetLineVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_line_vs_dxil, sizeof(g_line_vs_dxil) };
         else
             return { g_line_vs_spirv, sizeof(g_line_vs_spirv) };
     }
 
-    ShaderBytecode GetLinePS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetLinePS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_line_ps_dxil, sizeof(g_line_ps_dxil) };
         else
             return { g_line_ps_spirv, sizeof(g_line_ps_spirv) };
     }
 
     // Circle shaders
-    ShaderBytecode GetCircleVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetCircleVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_circle_vs_dxil, sizeof(g_circle_vs_dxil) };
         else
             return { g_circle_vs_spirv, sizeof(g_circle_vs_spirv) };
     }
 
-    ShaderBytecode GetCirclePS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetCirclePS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_circle_ps_dxil, sizeof(g_circle_ps_dxil) };
         else
             return { g_circle_ps_spirv, sizeof(g_circle_ps_spirv) };
     }
 
     // Text shaders
-    ShaderBytecode GetTextVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetTextVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_text_vs_dxil, sizeof(g_text_vs_dxil) };
         else
             return { g_text_vs_spirv, sizeof(g_text_vs_spirv) };
     }
 
-    ShaderBytecode GetTextPS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetTextPS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_text_ps_dxil, sizeof(g_text_ps_dxil) };
         else
             return { g_text_ps_spirv, sizeof(g_text_ps_spirv) };
     }
 
     // Triangle shaders
-    ShaderBytecode GetTriangleVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetTriangleVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_triangle_vs_dxil, sizeof(g_triangle_vs_dxil) };
         else
             return { g_triangle_vs_spirv, sizeof(g_triangle_vs_spirv) };
     }
 
-    ShaderBytecode GetTrianglePS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetTrianglePS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_triangle_ps_dxil, sizeof(g_triangle_ps_dxil) };
         else
             return { g_triangle_ps_spirv, sizeof(g_triangle_ps_spirv) };
     }
 
     // Pixel shaders
-    ShaderBytecode GetPixelVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetPixelVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_pixel_vs_dxil, sizeof(g_pixel_vs_dxil) };
         else
             return { g_pixel_vs_spirv, sizeof(g_pixel_vs_spirv) };
     }
 
-    ShaderBytecode GetPixelPS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetPixelPS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_pixel_ps_dxil, sizeof(g_pixel_ps_dxil) };
         else
             return { g_pixel_ps_spirv, sizeof(g_pixel_ps_spirv) };
     }
 
     // Grid shaders
-    ShaderBytecode GetGridVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetGridVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_grid_vs_dxil, sizeof(g_grid_vs_dxil) };
         else
             return { g_grid_vs_spirv, sizeof(g_grid_vs_spirv) };
     }
 
-    ShaderBytecode GetGridPS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetGridPS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_grid_ps_dxil, sizeof(g_grid_ps_dxil) };
         else
             return { g_grid_ps_spirv, sizeof(g_grid_ps_spirv) };
     }
 
     // Point light shaders
-    ShaderBytecode GetPointLightVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetPointLightVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_point_light_vs_dxil, sizeof(g_point_light_vs_dxil) };
         else
             return { g_point_light_vs_spirv, sizeof(g_point_light_vs_spirv) };
     }
 
-    ShaderBytecode GetPointLightPS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetPointLightPS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_point_light_ps_dxil, sizeof(g_point_light_ps_dxil) };
         else
             return { g_point_light_ps_spirv, sizeof(g_point_light_ps_spirv) };
     }
 
     // Composite shaders
-    ShaderBytecode GetCompositeVS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetCompositeVS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_composite_vs_dxil, sizeof(g_composite_vs_dxil) };
         else
             return { g_composite_vs_spirv, sizeof(g_composite_vs_spirv) };
     }
 
-    ShaderBytecode GetCompositePS(Lumina::Core::GraphicsAPI api)
+    ShaderBytecode GetCompositePS(Lumina::GraphicsAPI api)
     {
-        if (api == Lumina::Core::GraphicsAPI::D3D12)
+        if (api == Lumina::GraphicsAPI::D3D12)
             return { g_composite_ps_dxil, sizeof(g_composite_ps_dxil) };
         else
             return { g_composite_ps_spirv, sizeof(g_composite_ps_spirv) };
@@ -195,7 +200,7 @@ namespace
 
 namespace Lumina
 {
-    Renderer2D::Renderer2D(Core::Device& dev)
+    Renderer2D::Renderer2D(Device& dev)
         : m_Device(dev)
     {
     }
@@ -268,7 +273,7 @@ namespace Lumina
         }
 
         // Create default font from embedded TTF
-        m_DefaultFont = FontAtlas::Create(m_Device, embedded_font_data, embedded_font_size, 16.0f);
+        m_DefaultFont = FontAtlas::Create(m_Device, EmbeddedFontData, EmbeddedFontSize, 16.0f);
         if (!m_DefaultFont)
         {
             LUMINA_LOG_ERROR("Failed to create default font atlas");
@@ -856,7 +861,7 @@ namespace Lumina
         }
 
         // Resolve MSAA if the current render target uses it
-        if (m_CurrentTarget && m_CurrentTarget->IsMsaa())
+        if (m_CurrentTarget && m_CurrentTarget->IsMSAA())
         {
             m_CurrentTarget->Resolve(m_Context->GetCommandList());
         }
@@ -1040,10 +1045,10 @@ namespace Lumina
         glm::vec4 world3 = glm::vec4(p3, pos.z, 1.0f);
 
         // Add vertices (CCW winding) with z_index from desc
-        batch.QuadVertices.push_back({ world0, desc.Color, desc.UvMin, texIndex, desc.Z });
-        batch.QuadVertices.push_back({ world1, desc.Color, { desc.UvMax.x, desc.UvMin.y }, texIndex, desc.Z });
-        batch.QuadVertices.push_back({ world2, desc.Color, desc.UvMax, texIndex, desc.Z });
-        batch.QuadVertices.push_back({ world3, desc.Color, { desc.UvMin.x, desc.UvMax.y }, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world0, desc.Color, desc.UVMin, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world1, desc.Color, { desc.UVMax.x, desc.UVMin.y }, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world2, desc.Color, desc.UVMax, texIndex, desc.Z });
+        batch.QuadVertices.push_back({ world3, desc.Color, { desc.UVMin.x, desc.UVMax.y }, texIndex, desc.Z });
 
         batch.QuadCount++;
         m_Stats.QuadCount++;
@@ -1096,10 +1101,10 @@ namespace Lumina
         glm::vec4 local3 = glm::vec4(-1.0f,  1.0f, 0.0f, 0.0f);
 
         // Add vertices with z_index from desc
-        CircleVertex v0 = { world0, local0, desc.Color, desc.UvMin, texIndex, desc.Thickness, desc.Fade, desc.Z };
-        CircleVertex v1 = { world1, local1, desc.Color, { desc.UvMax.x, desc.UvMin.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
-        CircleVertex v2 = { world2, local2, desc.Color, desc.UvMax, texIndex, desc.Thickness, desc.Fade, desc.Z };
-        CircleVertex v3 = { world3, local3, desc.Color, { desc.UvMin.x, desc.UvMax.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v0 = { world0, local0, desc.Color, desc.UVMin, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v1 = { world1, local1, desc.Color, { desc.UVMax.x, desc.UVMin.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v2 = { world2, local2, desc.Color, desc.UVMax, texIndex, desc.Thickness, desc.Fade, desc.Z };
+        CircleVertex v3 = { world3, local3, desc.Color, { desc.UVMin.x, desc.UVMax.y }, texIndex, desc.Thickness, desc.Fade, desc.Z };
 
         batch.CircleVertices.push_back(v0);
         batch.CircleVertices.push_back(v1);
@@ -1268,9 +1273,9 @@ namespace Lumina
         glm::vec4 world2 = glm::vec4(desc.P2, 1.0f);
 
         // Add vertices with z_index from desc
-        batch.TriangleVertices.push_back({ world0, desc.Color, desc.Uv0, texIndex, desc.Z });
-        batch.TriangleVertices.push_back({ world1, desc.Color, desc.Uv1, texIndex, desc.Z });
-        batch.TriangleVertices.push_back({ world2, desc.Color, desc.Uv2, texIndex, desc.Z });
+        batch.TriangleVertices.push_back({ world0, desc.Color, desc.UV0, texIndex, desc.Z });
+        batch.TriangleVertices.push_back({ world1, desc.Color, desc.UV1, texIndex, desc.Z });
+        batch.TriangleVertices.push_back({ world2, desc.Color, desc.UV2, texIndex, desc.Z });
 
         batch.TriangleCount++;
         m_Stats.TriangleCount++;
@@ -1369,8 +1374,8 @@ namespace Lumina
         }
 
         // Handle UV flipping
-        glm::vec2 uvMin = region.UvMin;
-        glm::vec2 uvMax = region.UvMax;
+        glm::vec2 uvMin = region.UVMin;
+        glm::vec2 uvMax = region.UVMax;
 
         if (desc.FlipX)
         {
@@ -1389,8 +1394,8 @@ namespace Lumina
         quad.Rotation = desc.Rotation;
         quad.Origin = desc.Origin;
         quad.Texture = atlasTexture;
-        quad.UvMin = uvMin;
-        quad.UvMax = uvMax;
+        quad.UVMin = uvMin;
+        quad.UVMax = uvMax;
         quad.Layer = desc.Layer;
         quad.Z = desc.Z;
         quad.Blend = desc.Blend;

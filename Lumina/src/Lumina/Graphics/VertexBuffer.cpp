@@ -24,7 +24,7 @@ namespace Lumina
     }
 
     Ref<VertexBuffer> VertexBuffer::Create(
-        Core::Device& dev,
+        Device& dev,
         const void* data,
         size_t size,
         size_t stride,

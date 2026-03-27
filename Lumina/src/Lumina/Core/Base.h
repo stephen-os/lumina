@@ -16,6 +16,9 @@ namespace Lumina
 	template<typename T>
 	using Ref = std::shared_ptr<T>;
 
+	template<typename T>
+	using ref = std::shared_ptr<T>;
+
 	template<typename T, typename... Args>
 	constexpr Ref<T> MakeRef(Args&&... args)
 	{

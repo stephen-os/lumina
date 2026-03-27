@@ -158,7 +158,7 @@ namespace Lumina
 
     Pipeline::~Pipeline() = default;
 
-    Ref<Pipeline> Pipeline::Create(Core::Device& dev, const PipelineDesc& desc)
+    Ref<Pipeline> Pipeline::Create(Device& dev, const PipelineDesc& desc)
     {
         auto* nvrhiDevice = dev.GetNvrhiDevice();
         if (!nvrhiDevice)
@@ -227,7 +227,7 @@ namespace Lumina
 
     // --- PipelineCache ---
 
-    PipelineCache::PipelineCache(Core::Device& dev)
+    PipelineCache::PipelineCache(Device& dev)
         : m_Device(dev)
     {
     }

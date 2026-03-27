@@ -15,7 +15,7 @@ namespace Lumina
 
             switch (type)
             {
-            case BodyType::StaticBody: return { 0.5f, 0.9f, 0.5f, 0.8f };
+            case BodyType::Static: return { 0.5f, 0.9f, 0.5f, 0.8f };
             case BodyType::Kinematic:   return { 0.5f, 0.5f, 0.9f, 0.8f };
             case BodyType::Dynamic:
             default:                     return { 0.9f, 0.7f, 0.7f, 0.8f };

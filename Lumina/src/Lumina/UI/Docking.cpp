@@ -63,61 +63,61 @@ namespace Lumina::UI
 
         for (const auto& request : m_Requests)
         {
-            switch (request.relation)
+            switch (request.Relation)
             {
             case DockRelation::Split:
             {
-                if (request.position == DockPosition::Center)
+                if (request.Position == DockPosition::Center)
                 {
-                    ImGui::DockBuilderDockWindow(request.windowName.c_str(), remainingSpace);
-                    m_WindowDockIds[request.windowName] = remainingSpace;
+                    ImGui::DockBuilderDockWindow(request.WindowName.c_str(), remainingSpace);
+                    m_WindowDockIds[request.WindowName] = remainingSpace;
                 }
                 else
                 {
-                    float adjustedRatio = request.sizeRatio / remainingRatio;
+                    float adjustedRatio = request.SizeRatio / remainingRatio;
                     adjustedRatio = std::clamp(adjustedRatio, 0.01f, 0.95f);
 
                     ImGuiID dockId = ImGui::DockBuilderSplitNode(
-                        remainingSpace, ToImGuiDir(request.position),
+                        remainingSpace, ToImGuiDir(request.Position),
                         adjustedRatio, nullptr, &remainingSpace);
 
-                    ImGui::DockBuilderDockWindow(request.windowName.c_str(), dockId);
-                    m_WindowDockIds[request.windowName] = dockId;
+                    ImGui::DockBuilderDockWindow(request.WindowName.c_str(), dockId);
+                    m_WindowDockIds[request.WindowName] = dockId;
 
-                    remainingRatio = std::max(0.05f, remainingRatio - request.sizeRatio);
+                    remainingRatio = std::max(0.05f, remainingRatio - request.SizeRatio);
                 }
                 break;
             }
 
             case DockRelation::SubSplit:
             {
-                auto it = m_WindowDockIds.find(request.relativeTo);
+                auto it = m_WindowDockIds.find(request.RelativeTo);
                 if (it != m_WindowDockIds.end())
                 {
                     ImGuiID parentDockId = it->second;
-                    float splitRatio = std::clamp(request.sizeRatio, 0.01f, 0.95f);
+                    float splitRatio = std::clamp(request.SizeRatio, 0.01f, 0.95f);
 
                     ImGuiID newDockId = 0;
                     ImGuiID remainingDockId = 0;
                     newDockId = ImGui::DockBuilderSplitNode(
-                        parentDockId, ToImGuiDir(request.position),
+                        parentDockId, ToImGuiDir(request.Position),
                         splitRatio, nullptr, &remainingDockId);
 
-                    ImGui::DockBuilderDockWindow(request.windowName.c_str(), newDockId);
-                    m_WindowDockIds[request.windowName] = newDockId;
-                    m_WindowDockIds[request.relativeTo] = remainingDockId;
+                    ImGui::DockBuilderDockWindow(request.WindowName.c_str(), newDockId);
+                    m_WindowDockIds[request.WindowName] = newDockId;
+                    m_WindowDockIds[request.RelativeTo] = remainingDockId;
                 }
                 break;
             }
 
             case DockRelation::Tab:
             {
-                auto it = m_WindowDockIds.find(request.relativeTo);
+                auto it = m_WindowDockIds.find(request.RelativeTo);
                 if (it != m_WindowDockIds.end())
                 {
                     ImGuiID tabDockId = it->second;
-                    ImGui::DockBuilderDockWindow(request.windowName.c_str(), tabDockId);
-                    m_WindowDockIds[request.windowName] = tabDockId;
+                    ImGui::DockBuilderDockWindow(request.WindowName.c_str(), tabDockId);
+                    m_WindowDockIds[request.WindowName] = tabDockId;
                 }
                 break;
             }

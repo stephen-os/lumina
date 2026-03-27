@@ -21,7 +21,7 @@ namespace Lumina
     {
         uint32_t Width = 1;
         uint32_t Height = 1;
-        Format PixelFormat = Format::RGBA8_UNORM;
+        Format PixelFormat = Format::RGBA8Unorm;
         bool GenerateMips = false;
         bool AllowUAV = false;     // Enable UAV access for compute shaders
     };
@@ -71,7 +71,7 @@ namespace Lumina
             Device& dev,
             uint32_t width,
             uint32_t height,
-            Format fmt = Format::RGBA8_UNORM,
+            Format fmt = Format::RGBA8Unorm,
             std::string_view debugName = "Lumina Storage Texture");
 
         [[nodiscard]] uint32_t GetWidth() const noexcept { return m_Width; }

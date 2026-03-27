@@ -19,7 +19,7 @@ namespace Lumina
         m_TtfData.clear();
     }
 
-    Ref<FontAtlas> FontAtlas::Create(Core::Device& dev, const uint8_t* ttfData, size_t ttfSize, float pixelHeight, const char* charset)
+    Ref<FontAtlas> FontAtlas::Create(Device& dev, const uint8_t* ttfData, size_t ttfSize, float pixelHeight, const char* charset)
     {
         if (!ttfData || ttfSize == 0)
         {
@@ -157,15 +157,15 @@ namespace Lumina
             uint32_t codepoint = static_cast<uint32_t>(codepoints[i]);
 
             GlyphInfo glyph;
-            glyph.u0 = pc.x0 * invW;
-            glyph.v0 = pc.y0 * invH;
-            glyph.u1 = pc.x1 * invW;
-            glyph.v1 = pc.y1 * invH;
-            glyph.x0 = pc.xoff;
-            glyph.y0 = pc.yoff + ascent;
-            glyph.x1 = pc.xoff2;
-            glyph.y1 = pc.yoff2 + ascent;
-            glyph.advanceX = pc.xadvance;
+            glyph.U0 = pc.x0 * invW;
+            glyph.V0 = pc.y0 * invH;
+            glyph.U1 = pc.x1 * invW;
+            glyph.V1 = pc.y1 * invH;
+            glyph.X0 = pc.xoff;
+            glyph.Y0 = pc.yoff + ascent;
+            glyph.X1 = pc.xoff2;
+            glyph.Y1 = pc.yoff2 + ascent;
+            glyph.AdvanceX = pc.xadvance;
 
             glyphs[codepoint] = glyph;
         }
@@ -192,7 +192,7 @@ namespace Lumina
         return atlas;
     }
 
-    Ref<FontAtlas> FontAtlas::Load(Core::Device& dev, const std::string& path, float pixelHeight, const char* charset)
+    Ref<FontAtlas> FontAtlas::Load(Device& dev, const std::string& path, float pixelHeight, const char* charset)
     {
         std::ifstream file(path, std::ios::binary | std::ios::ate);
         if (!file.is_open())
@@ -258,7 +258,7 @@ namespace Lumina
                 width += GetKerning(prevCodepoint, codepoint);
             }
 
-            width += glyph->advanceX;
+            width += glyph->AdvanceX;
             prevCodepoint = codepoint;
         }
 
