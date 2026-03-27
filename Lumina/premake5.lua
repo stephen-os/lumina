@@ -1,7 +1,7 @@
--- graphics premake5.lua
--- This file defines the graphics static library
+-- Lumina Engine
+-- Unified static library combining Core, Graphics, Physics, and UI modules
 
-project "graphics"
+project "Lumina"
     kind "StaticLib"
     language "C++"
     cppdialect "C++23"
@@ -52,32 +52,38 @@ project "graphics"
     includedirs {
         "src",
 
-        -- Lumina modules
-        "%{wks.location}/lumina/core/src",
-
         -- Dependencies
         "%{wks.location}/dependencies/glfw/include",
+        "%{wks.location}/dependencies/imgui",
+        "%{wks.location}/dependencies/imgui/backends",
+        "%{wks.location}/dependencies/imgui-node-editor",
+        "%{wks.location}/dependencies/imgui-file-dialog",
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/spdlog/include",
         "%{wks.location}/dependencies/nvrhi/include",
         "%{wks.location}/dependencies/nvrhi/thirdparty/DirectX-Headers/include",
         "%{wks.location}/dependencies/nvrhi/thirdparty/Vulkan-Headers/include",
-        "%{wks.location}/dependencies/stb_truetype",
         "%{wks.location}/dependencies/stb_image",
+        "%{wks.location}/dependencies/stb_truetype",
+        "%{wks.location}/dependencies/box2d/include",
         "%{wks.location}/dependencies/tracy/public",
     }
 
     links {
-        "core",
         "glfw",
+        "imgui",
+        "imgui-node-editor",
+        "imgui-file-dialog",
         "nvrhi",
         "nvrhi-d3d12",
         "nvrhi-vk",
+        "box2d",
         "tracy",
     }
 
     defines {
         "GLFW_INCLUDE_NONE",
+        "IMGUI_DEFINE_MATH_OPERATORS",
         "NVRHI_WITH_DX12=1",
         "NVRHI_WITH_VULKAN=1",
         "VULKAN_HPP_DISPATCH_LOADER_DYNAMIC=1",
@@ -99,6 +105,7 @@ project "graphics"
             "d3d12",
             "dxgi",
             "dxguid",
+            "dwmapi",
             "vulkan-1",
         }
 

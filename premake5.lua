@@ -25,12 +25,9 @@ group "dependencies"
     -- spdlog is header-only, no build needed
 group ""
 
--- Lumina Modules
-group "lumina"
-    include "lumina/core"
-    include "lumina/ui"
-    include "lumina/graphics"
-    include "lumina/physics"
+-- Lumina Engine
+group "Lumina"
+    include "Lumina"
 group ""
 
 -- Examples
@@ -55,10 +52,7 @@ group "sandbox"
         }
 
         includedirs {
-            "lumina/core/src",
-            "lumina/ui/src",
-            "lumina/graphics/src",
-            "lumina/physics/src",
+            "Lumina/src",
             "dependencies/glfw/include",
             "dependencies/glm",
             "dependencies/imgui",
@@ -73,10 +67,7 @@ group "sandbox"
         }
 
         links {
-            "core",
-            "ui",
-            "graphics",
-            "physics",
+            "Lumina",
             "box2d",
             "glfw",
             "imgui",

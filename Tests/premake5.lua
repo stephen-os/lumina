@@ -16,9 +16,7 @@ project "tests"
     includedirs
     {
         "%{wks.location}/dependencies/catch2/src",
-        "%{wks.location}/lumina/core/src",
-        "%{wks.location}/lumina/graphics/src",
-        "%{wks.location}/lumina/physics/src",
+        "%{wks.location}/Lumina/src",
         "%{wks.location}/dependencies/glfw/include",
         "%{wks.location}/dependencies/glm",
         "%{wks.location}/dependencies/imgui",
@@ -33,9 +31,7 @@ project "tests"
 
     links
     {
-        "core",
-        "graphics",
-        "physics",
+        "Lumina",
         "box2d",
         "catch2",
         "glfw",

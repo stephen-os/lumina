@@ -17,10 +17,7 @@ local function create_example(name, folder)
         }
 
         includedirs {
-            "%{wks.location}/lumina/core/src",
-            "%{wks.location}/lumina/ui/src",
-            "%{wks.location}/lumina/graphics/src",
-            "%{wks.location}/lumina/physics/src",
+            "%{wks.location}/Lumina/src",
             "%{wks.location}/dependencies/glfw/include",
             "%{wks.location}/dependencies/glm",
             "%{wks.location}/dependencies/imgui",
@@ -35,10 +32,7 @@ local function create_example(name, folder)
         }
 
         links {
-            "core",
-            "ui",
-            "graphics",
-            "physics",
+            "Lumina",
             "glfw",
             "imgui",
             "imgui-node-editor",
