@@ -63,22 +63,11 @@ namespace Lumina
 		Application(const Application&) = delete;
 		Application& operator=(const Application&) = delete;
 
+		void Create();
+		void Destroy(); 
+
 		void Run();
-		void Shutdown() { m_Running = false; }
-
-		// Layer management
-		template<typename T>
-		void PushLayer()
-		{
-			static_assert(std::is_base_of_v<Layer, T>, "T must derive from Layer");
-			m_LayerStack.emplace_back(std::make_shared<T>())->OnAttach();
-		}
-
-		void PushLayer(std::unique_ptr<Layer> layer)
-		{
-			m_LayerStack.emplace_back(std::move(layer));
-			m_LayerStack.back()->OnAttach();
-		}
+		void Stop() { m_Running = false; }
 
 		// Events
 		void OnEvent(Event& e);
@@ -110,6 +99,17 @@ namespace Lumina
 
 		[[nodiscard]] static Application& Get();
 		[[nodiscard]] static float GetTime();
+
+	protected:
+		virtual void OnCreate() = 0;
+		virtual void OnDestroy() = 0;
+
+		template<typename T, typename ...Args>
+		void PushLayer(Args&& ...args)
+		{
+			static_assert(std::is_base_of_v<Layer, T>, "T must derive from Layer");
+			m_LayerStack.emplace_back(std::make_shared<T>(std::forward<Args>(args)...))->OnAttach();
+		}
 
 	private:
 		void InitImGui();

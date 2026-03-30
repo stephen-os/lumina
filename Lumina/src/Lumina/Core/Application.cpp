@@ -102,11 +102,6 @@ namespace Lumina
 	{
 		m_EventQueue.clear();
 
-		for (auto& layer : m_LayerStack)
-			layer->OnDetach();
-
-		m_LayerStack.clear();
-
 		if (m_Specs.EnableImGui)
 		{
 			ShutdownImGui();
@@ -120,6 +115,21 @@ namespace Lumina
 
 		Log::Shutdown();
 		s_Instance = nullptr;
+	}
+
+	void Application::Create()
+	{
+		OnCreate();
+	}
+
+	void Application::Destroy()
+	{
+		for (auto& layer : m_LayerStack)
+			layer->OnDetach();
+		 
+		m_LayerStack.clear();
+
+		OnDestroy();
 	}
 
 	void Application::InitImGui()
@@ -271,7 +281,7 @@ namespace Lumina
 
 			if (m_Window->ShouldClose())
 			{
-				Shutdown();
+				Stop();
 				break;
 			}
 
